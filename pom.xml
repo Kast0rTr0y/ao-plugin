@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.pom</groupId>
@@ -11,7 +10,7 @@
     <groupId>com.atlassian.labs</groupId>
     <artifactId>activeobjects-plugin</artifactId>
     <packaging>atlassian-plugin</packaging>
-    <version>0.5-SNAPSHOT</version>
+    <version>0.5</version>
     <name>activeobjects-plugin</name>
     <url>https://labs.atlassian.com/browse/AO</url>
     <description>
@@ -149,8 +148,8 @@
     </dependencies>
 
     <scm>
-        <connection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</connection>
-        <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</developerConnection>
-        <url>https://studio.atlassian.com/svn/AO/trunk</url>
+        <connection>scm:svn:https://studio.atlassian.com/svn/AO/tags/activeobjects-plugin-0.5</connection>
+        <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/tags/activeobjects-plugin-0.5</developerConnection>
+        <url>https://studio.atlassian.com/svn/AO/tags/activeobjects-plugin-0.5</url>
     </scm>
 </project>
