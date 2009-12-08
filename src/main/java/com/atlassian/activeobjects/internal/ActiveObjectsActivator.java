@@ -1,13 +1,13 @@
-package com.atlassian.labs.activeobjects.internal;
+package com.atlassian.activeobjects.internal;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.labs.activeobjects.external.ActiveObjects;
-import com.atlassian.labs.activeobjects.external.ActiveObjectsConfiguration;
-import com.atlassian.labs.activeobjects.internal.util.MultiServiceTracker;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.internal.util.MultiServiceTracker;
 
 import java.util.Map;
 import java.util.Arrays;

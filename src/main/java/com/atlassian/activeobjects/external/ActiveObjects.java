@@ -1,4 +1,4 @@
-package com.atlassian.labs.activeobjects.external;
+package com.atlassian.activeobjects.external;
 
 import net.java.ao.RawEntity;
 import net.java.ao.DBParam;

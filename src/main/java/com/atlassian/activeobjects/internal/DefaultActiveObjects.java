@@ -1,12 +1,12 @@
-package com.atlassian.labs.activeobjects.internal;
+package com.atlassian.activeobjects.internal;
 
 import net.java.ao.EntityManager;
 import net.java.ao.RawEntity;
 import net.java.ao.DBParam;
 import net.java.ao.Query;
 import net.java.ao.Transaction;
-import com.atlassian.labs.activeobjects.external.ActiveObjects;
-import com.atlassian.labs.activeobjects.external.TransactionCallback;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.TransactionCallback;
 
 import java.sql.SQLException;
 import java.util.Map;

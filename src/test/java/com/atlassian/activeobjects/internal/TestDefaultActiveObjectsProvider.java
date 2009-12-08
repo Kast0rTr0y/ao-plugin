@@ -1,4 +1,4 @@
-package com.atlassian.labs.activeobjects.internal;
+package com.atlassian.activeobjects.internal;
 
 import junit.framework.TestCase;
 
@@ -8,12 +8,10 @@ import java.sql.SQLException;
 
 import com.atlassian.plugin.test.PluginTestUtils;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.labs.activeobjects.external.ActiveObjects;
-import com.atlassian.labs.activeobjects.external.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjects;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import net.java.ao.Entity;
-import net.java.ao.EntityManager;
 
 /**
  *

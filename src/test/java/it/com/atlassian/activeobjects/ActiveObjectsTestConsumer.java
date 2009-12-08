@@ -1,4 +1,4 @@
-package it.com.atlassian.labs.activeobjects;
+package it.com.atlassian.activeobjects;
 
 public interface ActiveObjectsTestConsumer
 {

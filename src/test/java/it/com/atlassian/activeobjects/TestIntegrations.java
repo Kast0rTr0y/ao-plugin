@@ -1,4 +1,4 @@
-package it.com.atlassian.labs.activeobjects;
+package it.com.atlassian.activeobjects;
 
 import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
@@ -211,8 +211,8 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "}")
                 .addFormattedJava("my.FooComponent",
                         "package my;",
-                        "import com.atlassian.labs.activeobjects.external.*;",
-                        "public class FooComponent implements it.com.atlassian.labs.activeobjects.ActiveObjectsTestConsumer, TransactionCallback {",
+                        "import com.atlassian.activeobjects.external.*;",
+                        "public class FooComponent implements it.com.atlassian.activeobjects.ActiveObjectsTestConsumer, TransactionCallback {",
                         "  ActiveObjects mgr;",
                         "  public FooComponent(ActiveObjects mgr) throws Exception {",
                         "    this.mgr = mgr;",
@@ -239,8 +239,8 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "    <plugin-info>",
                         "        <version>1.0</version>",
                         "    </plugin-info>",
-                        "    <component key='obj' class='my.FooComponent' public='true' interface='it.com.atlassian.labs.activeobjects.ActiveObjectsTestConsumer' />",
-                        "    <component-import key='emp' interface='com.atlassian.labs.activeobjects.external.ActiveObjects' />",
+                        "    <component key='obj' class='my.FooComponent' public='true' interface='it.com.atlassian.activeobjects.ActiveObjectsTestConsumer' />",
+                        "    <component-import key='emp' interface='com.atlassian.activeobjects.external.ActiveObjects' />",
                         "</atlassian-plugin>")
                 .build();
     }
@@ -249,7 +249,7 @@ public class TestIntegrations extends PluginInContainerTestBase
         return new PluginJarBuilder()
                 .addFormattedJava("config.MyConfig",
                         "package config;",
-                        "public class MyConfig implements com.atlassian.labs.activeobjects.external.ActiveObjectsConfiguration {",
+                        "public class MyConfig implements com.atlassian.activeobjects.external.ActiveObjectsConfiguration {",
                         "  public String getDatabaseBaseDirectory() { return '" + path + "'; }",
                         "}")
                 .addFormattedResource("atlassian-plugin.xml",
@@ -257,7 +257,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "    <plugin-info>",
                         "        <version>1.0</version>",
                         "    </plugin-info>",
-                        "    <component key='obj' class='config.MyConfig' public='true' interface='com.atlassian.labs.activeobjects.external.ActiveObjectsConfiguration' />",
+                        "    <component key='obj' class='config.MyConfig' public='true' interface='com.atlassian.activeobjects.external.ActiveObjectsConfiguration' />",
                         "</atlassian-plugin>")
                 .build();
     }

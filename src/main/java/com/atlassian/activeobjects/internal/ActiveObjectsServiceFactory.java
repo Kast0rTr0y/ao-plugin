@@ -1,10 +1,10 @@
-package com.atlassian.labs.activeobjects.internal;
+package com.atlassian.activeobjects.internal;
 
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
-import com.atlassian.labs.activeobjects.internal.ActiveObjectsProvider;
-import com.atlassian.labs.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.external.ActiveObjects;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
 
 /**
- * Service factory for providing pooled {@link com.atlassian.labs.activeobjects.external.ActiveObjects} instances.
+ * Service factory for providing pooled {@link com.atlassian.activeobjects.external.ActiveObjects} instances.
  */
 public class ActiveObjectsServiceFactory implements ServiceFactory
 {

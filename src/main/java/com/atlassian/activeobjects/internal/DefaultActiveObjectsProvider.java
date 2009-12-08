@@ -1,8 +1,8 @@
-package com.atlassian.labs.activeobjects.internal;
+package com.atlassian.activeobjects.internal;
 
-import com.atlassian.labs.activeobjects.internal.ActiveObjectsProvider;
-import com.atlassian.labs.activeobjects.external.ActiveObjects;
-import com.atlassian.labs.activeobjects.external.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.ApplicationProperties;
 
 import java.io.File;

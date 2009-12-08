@@ -1,6 +1,6 @@
-package com.atlassian.labs.activeobjects.internal;
+package com.atlassian.activeobjects.internal;
 
-import com.atlassian.labs.activeobjects.external.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjectsConfiguration;
 
 import java.io.File;
 

@@ -1,4 +1,4 @@
-package com.atlassian.labs.activeobjects.internal.util;
+package com.atlassian.activeobjects.internal.util;
 
 import org.osgi.framework.*;
 import org.osgi.util.tracker.ServiceTracker;

@@ -1,4 +1,4 @@
-package it.com.atlassian.labs.activeobjects;
+package it.com.atlassian.activeobjects;
 
 import com.atlassian.plugin.DefaultModuleDescriptorFactory;
 import com.atlassian.plugin.ModuleDescriptorFactory;
@@ -181,9 +181,9 @@ public abstract class PluginInContainerTestBase extends TestCase
         scannerConfig.getPackageIncludes().add("com.atlassian.plugin*");
         scannerConfig.getPackageIncludes().add("javax.servlet*");
         scannerConfig.getPackageIncludes().add("com_cenqua_clover");
-        scannerConfig.getPackageIncludes().add("it.com.atlassian.labs.activeobjects");
+        scannerConfig.getPackageIncludes().add("it.com.atlassian.activeobjects");
         scannerConfig.getPackageExcludes().add("com.atlassian.plugin.osgi.bridge*");
-        scannerConfig.getPackageExcludes().add("com.atlassian.labs*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.*");
         return scannerConfig;
     }
 }

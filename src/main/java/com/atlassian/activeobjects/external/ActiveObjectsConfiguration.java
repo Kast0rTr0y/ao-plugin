@@ -1,4 +1,4 @@
-package com.atlassian.labs.activeobjects.external;
+package com.atlassian.activeobjects.external;
 
 /**
  * Configuration settings for the ActiveObjects plugin.  Meant to be provided by the embedding product.
