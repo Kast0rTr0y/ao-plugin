@@ -7,12 +7,12 @@
     </parent>
 
 
-    <groupId>com.atlassian.labs</groupId>
+    <groupId>com.atlassian.activeobjects</groupId>
     <artifactId>activeobjects-plugin</artifactId>
     <packaging>atlassian-plugin</packaging>
     <version>0.6-SNAPSHOT</version>
     <name>activeobjects-plugin</name>
-    <url>https://labs.atlassian.com/browse/AO</url>
+    <url>https://studio.atlassian.com/browse/AO</url>
     <description>
         An OSGi bundle that provides a service that allows plugins to persist
         objects using the ActiveObjects framework
