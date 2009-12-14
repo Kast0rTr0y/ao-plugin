@@ -1,16 +1,14 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.HashMap;
 import java.lang.ref.WeakReference;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
+import java.util.HashMap;
 
 /**
  *
@@ -69,7 +67,7 @@ public class DefaultActiveObjectsProvider implements ActiveObjectsProvider
             {
                 dbdir.mkdir();
             }
-            ao = new DefaultActiveObjects("jdbc:hsqldb:file:" + dbdir.getAbsolutePath() + "/db", "sa", "");
+            ao = new DefaultActiveObjects("jdbc:hsqldb:file:" + dbdir.getAbsolutePath() + "/db;hsqldb.default_table_type=cached", "sa", "");
             activeObjectCache.put(pluginKey, new WeakReference<ActiveObjects>(ao));
             log.debug("Created ActiveObjects instance {} at {}", pluginKey, dbdir.getAbsolutePath());
         }

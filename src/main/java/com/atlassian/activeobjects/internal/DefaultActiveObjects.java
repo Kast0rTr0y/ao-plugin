@@ -1,12 +1,13 @@
 package com.atlassian.activeobjects.internal;
 
-import net.java.ao.EntityManager;
-import net.java.ao.RawEntity;
-import net.java.ao.DBParam;
-import net.java.ao.Query;
-import net.java.ao.Transaction;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.TransactionCallback;
+import net.java.ao.DBParam;
+import net.java.ao.DatabaseProvider;
+import net.java.ao.EntityManager;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+import net.java.ao.Transaction;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -19,7 +20,8 @@ public class DefaultActiveObjects implements ActiveObjects
     private final EntityManager entityManager;
     public DefaultActiveObjects(String uri, String username, String password)
     {
-        entityManager = new EntityManager(uri, username, password);
+        DatabaseProvider provider = DatabaseProvider.getInstance(uri, username, password, true);
+        entityManager = new EntityManager(provider, true);
     }
 
     public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException
