@@ -5,6 +5,7 @@ import net.java.ao.RawEntity;
 import net.java.ao.DBParam;
 import net.java.ao.Query;
 import net.java.ao.Transaction;
+import net.java.ao.DatabaseProvider;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.TransactionCallback;
 
@@ -19,7 +20,7 @@ public class DefaultActiveObjects implements ActiveObjects
     private final EntityManager entityManager;
     public DefaultActiveObjects(String uri, String username, String password)
     {
-        entityManager = new EntityManager(uri, username, password);
+        entityManager = new EntityManager(DatabaseProvider.getInstance(uri, username, password), true);
     }
 
     public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException
