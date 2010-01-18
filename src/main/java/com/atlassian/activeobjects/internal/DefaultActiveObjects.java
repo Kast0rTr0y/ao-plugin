@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.TransactionCallback;
+import com.atlassian.activeobjects.external.TransactionStatus;
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
@@ -10,6 +11,7 @@ import net.java.ao.RawEntity;
 import net.java.ao.Transaction;
 
 import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.Map;
 
 /**
@@ -111,7 +113,20 @@ public class DefaultActiveObjects implements ActiveObjects
             @Override
             public T run() throws SQLException
             {
-                return callback.doInTransaction();
+                return callback.doInTransaction(new TransactionStatus()
+                {
+
+                    public Connection getConnection()
+                    {
+                        try
+                        {
+                            return entityManager.getProvider().getConnection();
+                        } catch (SQLException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
             }
         }.execute();
     }

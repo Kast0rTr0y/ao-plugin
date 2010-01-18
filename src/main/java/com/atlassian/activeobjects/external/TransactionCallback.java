@@ -4,5 +4,5 @@ import java.sql.SQLException;
 
 public interface TransactionCallback<T>
 {
-    T doInTransaction() throws SQLException;
+    T doInTransaction(TransactionStatus transactionStatus) throws SQLException;
 }
