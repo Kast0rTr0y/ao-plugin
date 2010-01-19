@@ -223,7 +223,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "  public Object run() throws Exception {",
                         "    return mgr.executeInTransaction(this);",
                         "  }",
-                        "  public Object doInTransaction() throws java.sql.SQLException {",
+                        "  public Object doInTransaction(TransactionStatus status) throws java.sql.SQLException {",
                         "    Foo foo = (Foo) mgr.create(my.Foo.class, new net.java.ao.DBParam[0]);",
                         "    foo.setName('bob');",
                         "    foo.save();",
