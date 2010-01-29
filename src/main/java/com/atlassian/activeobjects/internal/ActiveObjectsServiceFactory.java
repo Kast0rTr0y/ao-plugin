@@ -1,19 +1,20 @@
 package com.atlassian.activeobjects.internal;
 
-import org.osgi.framework.ServiceFactory;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.ServiceRegistration;
-import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import net.java.ao.RawEntity;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceRegistration;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Map;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Service factory for providing pooled {@link com.atlassian.activeobjects.external.ActiveObjects} instances.
@@ -45,6 +46,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
         }
         this.activeObjectsProvider = null;
     }
+
     void destroy()
     {
         stop();
@@ -58,7 +60,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
 
         ActiveObjectsProxy proxy = new ActiveObjectsProxy(prefix, activeObjectsProvider);
         activeObjectProxies.put(bundle, new ProxyRegistration(prefix, proxy));
-        return Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {ActiveObjects.class}, proxy);
+        return Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{ActiveObjects.class}, proxy);
     }
 
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object o)
@@ -72,16 +74,19 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
         private final ActiveObjectsProxy proxy;
         private final String key;
 
-        public ProxyRegistration(String key, ActiveObjectsProxy proxy) {
+        public ProxyRegistration(String key, ActiveObjectsProxy proxy)
+        {
             this.key = key;
             this.proxy = proxy;
         }
 
-        public ActiveObjectsProxy getProxy() {
+        public ActiveObjectsProxy getProxy()
+        {
             return proxy;
         }
 
-        public String getKey() {
+        public String getKey()
+        {
             return key;
         }
     }
@@ -89,12 +94,15 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
     private static class ActiveObjectsProxy implements InvocationHandler
     {
         private volatile ActiveObjects delegate;
+        private volatile Class<? extends RawEntity<?>>[] migrateArgs;
+
         private final String key;
         private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-        private final Lock read  = readWriteLock.readLock();
+        private final Lock read = readWriteLock.readLock();
         private final Lock write = readWriteLock.writeLock();
 
-        public ActiveObjectsProxy(String key, ActiveObjectsProvider provider) {
+        public ActiveObjectsProxy(String key, ActiveObjectsProvider provider)
+        {
             this.key = key;
             if (provider != null)
             {
@@ -121,25 +129,46 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
             try
             {
                 delegate = provider.createActiveObjects(key);
+                if (migrateArgs != null) // then we need to actually to the "migration" now that we're ready
+                {
+                    try
+                    {
+                        delegate.migrate(migrateArgs);
+                    }
+                    catch (SQLException e)
+                    {
+                        stop();
+                        throw new IllegalStateException(e);
+                    }
+                }
             }
             finally
             {
                 write.unlock();
             }
-
-
         }
 
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+        {
             read.lock();
             try
             {
+                if (isMigrateMethod(method))
+                {
+                    migrateArgs = (Class[]) args[0];
+                }
+
                 if (delegate != null)
                 {
                     return method.invoke(delegate, args);
                 }
                 else
                 {
+                    if (isMigrateMethod(method))
+                    {
+                        return null; // we'll call the migrate method on start
+                    }
+
                     int triesLeft = 10;
                     while (triesLeft-- > 0)
                     {
@@ -157,6 +186,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
             {
                 read.unlock();
             }
+        }
+
+        private boolean isMigrateMethod(Method method)
+        {
+            return method.getName().equals("migrate");
         }
     }
 
