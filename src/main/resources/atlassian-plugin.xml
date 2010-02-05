@@ -1,0 +1,13 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+        <application-version min="1" max="10"/>
+    </plugin-info>
+
+    <servlet name="Datasources Configuration" key="datasources" class="com.atlassian.activeobjects.servlet.DataSourcesConfigurationServlet">
+        <description>Servlet to configure Active Objects data sources</description>
+        <url-pattern>/ao</url-pattern>
+    </servlet>
+</atlassian-plugin>

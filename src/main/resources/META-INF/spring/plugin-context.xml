@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/osgi"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.1.xsd
+                                 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.1.xsd">
+
+    <service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects">
+        <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused -->
+        <beans:bean class="com.atlassian.activeobjects.internal.ActiveObjectsServiceFactory">
+            <beans:constructor-arg index="0" ref="aoProvider"/>
+            <beans:constructor-arg index="1">
+                <beans:bean class="com.atlassian.activeobjects.internal.DefaultPluginKeyFactory"/>
+            </beans:constructor-arg>
+        </beans:bean>
+    </service>
+
+    <reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.external.ActiveObjectsConfiguration" cardinality="0..1" timeout="0">
+        <listener bind-method="onActiveObjectsConfigurationServiceUpdated" unbind-method="onActiveObjectsConfigurationServiceUpdated">
+            <beans:bean class="com.atlassian.activeobjects.internal.ActiveObjectsConfigurationServiceListener">
+                <beans:constructor-arg ref="registry"/>
+            </beans:bean>
+        </listener>
+    </reference>
+
+    <beans:bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
+        <beans:constructor-arg index="0" ref="registry"/>
+        <beans:constructor-arg index="1">
+            <beans:bean class="com.atlassian.activeobjects.internal.DefaultActiveObjectsFactoryResolver">
+                <beans:constructor-arg index="0">
+                    <reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
+                </beans:constructor-arg>
+                <beans:constructor-arg index="1">
+                    <beans:bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
+                        <beans:constructor-arg ref="activeObjectsConfiguration"/>
+                    </beans:bean>
+                </beans:constructor-arg>
+            </beans:bean>
+        </beans:constructor-arg>
+    </beans:bean>
+
+    <beans:bean id="registry" class="com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry"/>
+</beans:beans>

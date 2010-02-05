@@ -6,16 +6,17 @@ import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
 import com.atlassian.plugin.test.PluginTestUtils;
 import com.atlassian.sal.api.ApplicationProperties;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -24,7 +25,6 @@ public class TestIntegrations extends PluginInContainerTestBase
 {
     private File baseDir;
     private ServiceTracker runTracker;
-    private String activeObjectsPluginKey;
     private ApplicationProperties props;
     private HostComponentProvider defHostComponentProvider;
 
@@ -43,9 +43,10 @@ public class TestIntegrations extends PluginInContainerTestBase
         };
     }
 
-    private void initPluginManagerWithActiveObjects(HostComponentProvider prov) throws Exception {
+    private void initPluginManagerWithActiveObjects(HostComponentProvider prov) throws Exception
+    {
         initPluginManager(prov);
-        activeObjectsPluginKey = pluginManager.installPlugin(new JarPluginArtifact(new File(System.getProperty("plugin.jar"))));
+        String activeObjectsPluginKey = pluginManager.installPlugin(new JarPluginArtifact(new File(System.getProperty("plugin.jar"))));
         assertTrue(pluginManager.isPluginEnabled(activeObjectsPluginKey));
 
         runTracker = new ServiceTracker(osgiContainerManager.getBundles()[0].getBundleContext(), ActiveObjectsTestConsumer.class.getName(), null);
@@ -69,15 +70,18 @@ public class TestIntegrations extends PluginInContainerTestBase
         File plugin = buildConsumerPlugin("test-consumer");
         File configPlugin = buildConfigPlugin("foo");
 
-        pluginManager.installPlugin(new JarPluginArtifact(configPlugin));
+        final String configPluginKey = pluginManager.installPlugin(new JarPluginArtifact(configPlugin));
         pluginManager.installPlugin(new JarPluginArtifact(plugin));
 
         callActiveObjectsConsumer();
         assertTrue(pluginManager.isPluginEnabled("test-consumer"));
         assertDatabaseExists(baseDir, "foo", "test-");
 
+        pluginManager.uninstall(pluginManager.getPlugin(configPluginKey));
+
         configPlugin = buildConfigPlugin("foo2");
         pluginManager.installPlugin(new JarPluginArtifact(configPlugin));
+
         callActiveObjectsConsumer();
         assertDatabaseExists(baseDir, "foo2", "test-");
     }
@@ -101,8 +105,10 @@ public class TestIntegrations extends PluginInContainerTestBase
     public void testClientCallsWhenDown() throws Exception
     {
         final AtomicBoolean shouldExpose = new AtomicBoolean(true);
-        final HostComponentProvider componentProvider = new HostComponentProvider() {
-            public void provide(ComponentRegistrar componentRegistrar) {
+        final HostComponentProvider componentProvider = new HostComponentProvider()
+        {
+            public void provide(ComponentRegistrar componentRegistrar)
+            {
                 if (shouldExpose.get())
                 {
                     componentRegistrar.register(ApplicationProperties.class).forInstance(props);
@@ -121,15 +127,16 @@ public class TestIntegrations extends PluginInContainerTestBase
             callActiveObjectsConsumer();
             fail("Should have thrown an exception");
         }
-        catch (RuntimeException ex)
+        catch (RuntimeException e)
         {
-            assertEquals("Service not available", ex.getMessage());
-            assertTrue(System.currentTimeMillis() > start + 5000 );
+            assertEquals("service matching filter=[(objectClass=com.atlassian.sal.api.ApplicationProperties)] unavailable", e.getMessage());
+            assertTrue(System.currentTimeMillis() > start + 5000);
         }
     }
 
 
     // Test disabled until ActiveObjects is upgraded past 0.8.2
+
     public void _testBasicWithLotsOfConcurrentCalls() throws Exception
     {
         initPluginManagerWithActiveObjects(defHostComponentProvider);
@@ -145,13 +152,18 @@ public class TestIntegrations extends PluginInContainerTestBase
         Runnable r = new Runnable()
         {
             int count = 0;
-            public void run() {
+
+            public void run()
+            {
                 if (!failFlag.get())
                 {
                     System.out.println("calling " + (count++));
-                    try {
+                    try
+                    {
                         runnable.run();
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         failFlag.set(true);
                         e.printStackTrace();
                     }
@@ -159,7 +171,7 @@ public class TestIntegrations extends PluginInContainerTestBase
             }
         };
         ExecutorService executor = Executors.newFixedThreadPool(10);
-        for (int x=0; x<1000; x++)
+        for (int x = 0; x < 1000; x++)
         {
             executor.execute(r);
         }
@@ -170,7 +182,8 @@ public class TestIntegrations extends PluginInContainerTestBase
     }
 
 
-    private void callActiveObjectsConsumer() throws Exception {
+    private void callActiveObjectsConsumer() throws Exception
+    {
         ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) runTracker.waitForService(10000);
         runnable.init();
         runnable.run();
@@ -180,14 +193,18 @@ public class TestIntegrations extends PluginInContainerTestBase
     {
         assertDatabaseExists(baseDir, path, dbprefix, 1);
     }
+
     private void assertDatabaseDoesNotExists(File baseDir, String path, final String dbprefix)
     {
         assertDatabaseExists(baseDir, path, dbprefix, 0);
     }
+
     private void assertDatabaseExists(File baseDir, String path, final String dbprefix, int expected)
     {
-        final File[] files = new File(baseDir, path).listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
+        final File[] files = new File(baseDir, path).listFiles(new FilenameFilter()
+        {
+            public boolean accept(File dir, String name)
+            {
                 return name.startsWith(dbprefix);
             }
         });
@@ -201,7 +218,8 @@ public class TestIntegrations extends PluginInContainerTestBase
         }
     }
 
-    private File buildConsumerPlugin(String key) throws Exception {
+    private File buildConsumerPlugin(String key) throws Exception
+    {
         return new PluginJarBuilder()
                 .addFormattedJava("my.Foo",
                         "package my;",
@@ -245,7 +263,8 @@ public class TestIntegrations extends PluginInContainerTestBase
                 .build();
     }
 
-    private File buildConfigPlugin(String path) throws Exception {
+    private File buildConfigPlugin(String path) throws Exception
+    {
         return new PluginJarBuilder()
                 .addFormattedJava("config.MyConfig",
                         "package config;",
