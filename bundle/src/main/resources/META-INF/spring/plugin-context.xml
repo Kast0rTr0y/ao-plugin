@@ -23,6 +23,8 @@
         </listener>
     </reference>
 
+    <reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
+
     <beans:bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
         <beans:constructor-arg index="0" ref="registry"/>
         <beans:constructor-arg index="1">
