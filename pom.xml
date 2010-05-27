@@ -14,8 +14,7 @@
     <name>Atlassian ActiveObjects Support</name>
     <url>https://studio.atlassian.com/browse/AO</url>
     <description>
-        An OSGi bundle that provides a service that allows plugins to persist
-        objects using the ActiveObjects framework
+        Integrates ActiveObjects into the Atlassian Plugins system.
     </description>
     <scm>
         <connection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</connection>
@@ -33,6 +32,7 @@
 
     <modules>
         <module>spi</module>
+        <module>refimpl</module>
         <module>bundle</module>
     </modules>
 
@@ -77,6 +77,13 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>activeobjects-spi</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>activeobjects-refimpl-plugin</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+                <type>atlassian-plugin</type>
             </dependency>
             <dependency>
                 <groupId>net.java.dev.activeobjects</groupId>

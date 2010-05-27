@@ -5,4 +5,10 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}" />
     </plugin-info>
 
+    <!-- Export HSQL DataSourceProvider for ActiveObjects plugin's use -->
+    <component name="activeobjects-datasourceprovider-hsql" key="dataSourceProvider"
+               class="com.atlassian.activeobjects.refimpl.HSQLDataSourceProvider" public="true">
+        <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
 </atlassian-plugin>
