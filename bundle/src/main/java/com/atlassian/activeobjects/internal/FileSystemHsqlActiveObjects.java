@@ -13,9 +13,9 @@ public class FileSystemHsqlActiveObjects extends EntityManagedActiveObjects impl
     private static final String USER_NAME = "sa";
     private static final String PASSWORD = "";
 
-    public FileSystemHsqlActiveObjects(File dbDirectory)
+    public FileSystemHsqlActiveObjects(File dbDirectory, String pluginKey)
     {
-        super(new EntityManager(getDatabaseProvider(getUri(dbDirectory), USER_NAME, PASSWORD), true));
+        super(new EntityManager(getDatabaseProvider(getUri(dbDirectory), USER_NAME, PASSWORD), true), pluginKey);
     }
 
     private static DatabaseProvider getDatabaseProvider(String uri, String userName, String password)

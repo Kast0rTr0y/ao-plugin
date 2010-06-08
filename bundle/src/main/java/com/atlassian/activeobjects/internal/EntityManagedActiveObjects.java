@@ -26,9 +26,10 @@ abstract class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
 
-    protected EntityManagedActiveObjects(EntityManager entityManager)
+    protected EntityManagedActiveObjects(EntityManager entityManager, String pluginKey)
     {
         this.entityManager = checkNotNull(entityManager);
+        entityManager.setTableNameConverter(new PluginTableNameConverter(pluginKey));
     }
 
     ///CLOVER:OFF

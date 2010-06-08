@@ -28,7 +28,7 @@ public class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjects
     public ActiveObjects create()
     {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()));
-        return new FileSystemHsqlActiveObjects(dbDir);
+        return new FileSystemHsqlActiveObjects(dbDir, pluginKey);
     }
 
     private File getDatabaseDirectory(File databasesDirectory)

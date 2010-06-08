@@ -31,7 +31,7 @@ public class EntityManagedActiveObjectsTest
     @Before
     public void setUp()
     {
-        activeObjects = new EntityManagedActiveObjects(entityManager)
+        activeObjects = new EntityManagedActiveObjects(entityManager, "test.plugin.key")
         {
         };
     }
