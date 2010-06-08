@@ -34,6 +34,7 @@
         <module>spi</module>
         <module>refimpl</module>
         <module>bundle</module>
+        <module>confluence</module>
     </modules>
 
     <build>
@@ -122,6 +123,13 @@
             </dependency>
 
             <dependency>
+                <groupId>com.atlassian.confluence</groupId>
+                <artifactId>confluence</artifactId>
+                <version>${confluence.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.7</version>
@@ -159,5 +167,6 @@
     <properties>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.4.0</atlassian-plugins.version>
+        <confluence.version>3.0</confluence.version>
     </properties>
 </project>
