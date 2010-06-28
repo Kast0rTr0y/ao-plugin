@@ -1,5 +1,6 @@
 package it.com.atlassian.activeobjects;
 
+import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
@@ -39,6 +40,7 @@ public class TestIntegrations extends PluginInContainerTestBase
             public void provide(ComponentRegistrar componentRegistrar)
             {
                 componentRegistrar.register(ApplicationProperties.class).forInstance(props);
+                componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));
             }
         };
     }
@@ -113,6 +115,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                 {
                     componentRegistrar.register(ApplicationProperties.class).forInstance(props);
                 }
+                componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));                
             }
         };
         initPluginManagerWithActiveObjects(componentProvider);
