@@ -11,7 +11,9 @@
         <url-pattern>/ao</url-pattern>
     </servlet>
 
+    <!--
     <component-import key="dataSourceProvider">
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
     </component-import>
+    -->
 </atlassian-plugin>
