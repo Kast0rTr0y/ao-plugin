@@ -2,7 +2,7 @@
     <plugin-info>
         <description>${project.description}</description>
         <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
     </plugin-info>
 
     <!-- Export HSQL DataSourceProvider for ActiveObjects plugin's use -->
@@ -11,4 +11,7 @@
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
     </component>
 
+    <component name="hsql-datasource" key="hsql-datasource" class="com.atlassian.activeobjects.refimpl.HSQLDataSource"/>
+
+    <component-import key="application-properties" interface="com.atlassian.sal.api.ApplicationProperties"/>
 </atlassian-plugin>
