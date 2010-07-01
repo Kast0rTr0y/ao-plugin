@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.sal.api.backup.BackupRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,10 +25,16 @@ public class ActiveObjectsServiceFactoryTest
     @Mock
     private PluginKeyFactory keyFactory;
 
+    @Mock
+    private BackupRegistry backupRegistry;
+
+    @Mock
+    private ActiveObjectsBackupFactory backupFactory;
+
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(provider, keyFactory);
+        serviceFactory = new ActiveObjectsServiceFactory(provider, keyFactory, backupRegistry, backupFactory);
     }
 
     @Test

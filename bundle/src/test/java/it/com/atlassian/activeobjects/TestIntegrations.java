@@ -7,6 +7,7 @@ import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
 import com.atlassian.plugin.test.PluginTestUtils;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.backup.BackupRegistry;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.io.File;
@@ -41,6 +42,7 @@ public class TestIntegrations extends PluginInContainerTestBase
             {
                 componentRegistrar.register(ApplicationProperties.class).forInstance(props);
                 componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));
+                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
             }
         };
     }
@@ -115,7 +117,8 @@ public class TestIntegrations extends PluginInContainerTestBase
                 {
                     componentRegistrar.register(ApplicationProperties.class).forInstance(props);
                 }
-                componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));                
+                componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));
+                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
             }
         };
         initPluginManagerWithActiveObjects(componentProvider);

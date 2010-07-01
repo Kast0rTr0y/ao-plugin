@@ -12,6 +12,12 @@
             <beans:constructor-arg index="1">
                 <beans:bean class="com.atlassian.activeobjects.internal.DefaultPluginKeyFactory"/>
             </beans:constructor-arg>
+            <beans:constructor-arg index="2">
+                <reference interface="com.atlassian.sal.api.backup.BackupRegistry"/>
+            </beans:constructor-arg>
+            <beans:constructor-arg index="3">
+                <beans:bean class="com.atlassian.activeobjects.internal.ActiveObjectsBackupFactoryImpl"/>
+            </beans:constructor-arg>
         </beans:bean>
     </service>
 

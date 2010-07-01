@@ -26,10 +26,10 @@
                 <configuration>
                     <productVersion>2.4.1</productVersion>
                     <instructions>
-                        <!--<Bundle-Activator>com.atlassian.activeobjects.internal.ActiveObjectsActivator</Bundle-Activator>-->
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
                             com.atlassian.sal.api;version="2.0",
+                            com.atlassian.sal.api.backup;version="2.0",
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.*;resolution:=optional;version="0.0.0",
                             net.java.ao*;version="0.8",
