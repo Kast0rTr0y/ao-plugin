@@ -28,12 +28,7 @@
         <beans:constructor-arg index="1">
             <beans:bean class="com.atlassian.activeobjects.internal.DefaultActiveObjectsFactoryResolver">
                 <beans:constructor-arg index="0">
-                    <reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
-                </beans:constructor-arg>
-                <beans:constructor-arg index="1">
-                    <beans:bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
-                        <beans:constructor-arg ref="activeObjectsConfiguration"/>
-                    </beans:bean>
+                    <reference interface="com.atlassian.activeobjects.spi.DataSourceProvider" timeout="5000"/>
                 </beans:constructor-arg>
             </beans:bean>
         </beans:constructor-arg>
