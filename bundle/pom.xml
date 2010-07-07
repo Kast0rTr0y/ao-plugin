@@ -47,10 +47,12 @@
                         <Export-Package>
                             net.java.ao.*;version="0.8.2",
                             com.atlassian.activeobjects.external,
+                            com.atlassian.activeobjects.spi,
                             org.hsqldb*;version="1.8.0.7",
                         </Export-Package>
                     </instructions>
                     <noWebapp>true</noWebapp>
+                    <extractDependencies>true</extractDependencies>
                     <pluginArtifacts>
                         <pluginArtifact>
                             <groupId>${project.groupId}</groupId>
