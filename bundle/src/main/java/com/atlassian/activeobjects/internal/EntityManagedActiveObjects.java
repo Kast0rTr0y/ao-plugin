@@ -10,8 +10,12 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import net.java.ao.Transaction;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
@@ -20,15 +24,19 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
  * <p>Implementation of {@link com.atlassian.activeobjects.external.ActiveObjects} that mainly delegates to the
  * {@link net.java.ao.EntityManager}.</p>
  * <p>This is {@code abstract} and concrete implementations should have to provide a correctly configured {@link net.java.ao.EntityManager}</p>
+ *
  * @see net.java.ao.EntityManager
  */
 abstract class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
 
+    private final Collection<Class<? extends RawEntity<?>>> entities;
+
     protected EntityManagedActiveObjects(EntityManager entityManager)
     {
         this.entityManager = checkNotNull(entityManager);
+        this.entities = new HashSet<Class<? extends RawEntity<?>>>();
     }
 
     ///CLOVER:OFF
@@ -36,6 +44,17 @@ abstract class EntityManagedActiveObjects implements ActiveObjects
     public final void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException
     {
         entityManager.migrate(entities);
+        this.entities.addAll(Arrays.asList(entities));
+    }
+
+    public InputStream backup()
+    {
+        return entityManager.backup(entities.toArray(new Class[0]));
+    }
+
+    public void restore(InputStream backup)
+    {
+        entityManager.restore(backup);
     }
 
     public final void flushAll()

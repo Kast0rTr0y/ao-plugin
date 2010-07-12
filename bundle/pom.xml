@@ -44,6 +44,7 @@
                             org.hsqldb*;version="1.8",
                             org.springframework.osgi.service*,
                         </Import-Package>
+                        <Private-Package>com.google.gson*</Private-Package>
                         <Export-Package>
                             com.atlassian.activeobjects.external,
                             com.atlassian.activeobjects.spi,
@@ -71,6 +72,11 @@
         <dependency>
             <groupId>net.java.dev.activeobjects</groupId>
             <artifactId>activeobjects</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>

@@ -6,6 +6,7 @@ import net.java.ao.DBParam;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -28,6 +29,16 @@ final class DelegatingActiveObjects implements ActiveObjects
     public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException
     {
         getDelegate().migrate(entities);
+    }
+
+    public InputStream backup()
+    {
+        return getDelegate().backup();
+    }
+
+    public void restore(InputStream is)
+    {
+        getDelegate().restore(is);
     }
 
     public void flushAll()
