@@ -47,5 +47,5 @@
 
     <beans:bean id="registry" class="com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry"/>
 
-    <reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
+    <reference id="dataSourceProvider" interface="com.atlassian.sal.api.sql.DataSourceProvider"/>
 </beans:beans>

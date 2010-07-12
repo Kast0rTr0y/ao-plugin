@@ -13,9 +13,8 @@
     <version>0.6-SNAPSHOT</version>
     <name>Atlassian ActiveObjects Support</name>
     <url>https://studio.atlassian.com/browse/AO</url>
-    <description>
-        Integrates ActiveObjects into the Atlassian Plugins system.
-    </description>
+    <description>Integrates ActiveObjects into the Atlassian Plugins system.</description>
+
     <scm>
         <connection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</connection>
         <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</developerConnection>
@@ -31,8 +30,6 @@
     </licenses>
 
     <modules>
-        <module>spi</module>
-        <module>refimpl</module>
         <module>bundle</module>
     </modules>
 
@@ -158,7 +155,7 @@
 
     <properties>
         <ao.version>0.9-SNAPSHOT</ao.version>
-        <sal.version>2.1.0-backup-SNAPSHOT</sal.version>
+        <sal.version>2.2.0-ao-SNAPSHOT</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.4.0</atlassian-plugins.version>
     </properties>
