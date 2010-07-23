@@ -11,7 +11,7 @@ import com.atlassian.sal.api.backup.BackupRegistry;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.sql.DataSourceProvider;
-import org.hsqldb.jdbcDriver;
+import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -21,9 +21,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +54,8 @@ public class TestIntegrations extends PluginInContainerTestBase
      */
     private AtomicBoolean isSystemDown;
     private PluginSettings pluginSettings;
+    private DataSource dataSource;
+    private File applicationDbDir;
 
     @Before
     public void onSetUp() throws Exception
@@ -64,6 +63,8 @@ public class TestIntegrations extends PluginInContainerTestBase
         homeDirectory = getTmpDir(getClass().getName());
         applicationProperties = getMockApplicationProperties();
         pluginSettings = mock(PluginSettings.class);
+        dataSource = mock(DataSource.class);
+        applicationDbDir = getTmpDir("application_db");
 
         isSystemDown = new AtomicBoolean(false);
     }
@@ -72,10 +73,14 @@ public class TestIntegrations extends PluginInContainerTestBase
     public void onTearDown() throws Exception
     {
         deleteDirectory(homeDirectory);
+        deleteDirectory(applicationDbDir);
+
         isSystemDown = null;
         homeDirectory = null;
         applicationProperties = null;
         pluginSettings = null;
+        dataSource = null;
+        applicationDbDir = null;
     }
 
     @Test
@@ -88,6 +93,18 @@ public class TestIntegrations extends PluginInContainerTestBase
 
         callActiveObjectsConsumer(tracker);
         assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", "test-");
+    }
+
+    @Test
+    public void testWithDataSourceProvidedByApplication() throws Exception
+    {
+        setDataSourceType(DataSourceType.APPLICATION);
+
+        final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
+        installConsumerPlugin();
+
+        callActiveObjectsConsumer(tracker);
+        assertDatabaseExists(applicationDbDir, "test-");
     }
 
     @Test
@@ -136,6 +153,7 @@ public class TestIntegrations extends PluginInContainerTestBase
 
     /**
      * Here system is down is simulated by removing some necessary services to Active Objects
+     *
      * @throws Exception whatever
      */
     @Test
@@ -163,7 +181,8 @@ public class TestIntegrations extends PluginInContainerTestBase
     }
 
     @Test
-    @Ignore // Test disabled until ActiveObjects is upgraded past 0.8.2
+    @Ignore
+    // Test disabled until ActiveObjects is upgraded past 0.8.2
     public void testBasicWithLotsOfConcurrentCalls() throws Exception
     {
         final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
@@ -262,6 +281,19 @@ public class TestIntegrations extends PluginInContainerTestBase
     private void setDataSourceType(DataSourceType type)
     {
         when(pluginSettings.get(anyString())).thenReturn(type.name());
+        if (DataSourceType.APPLICATION.equals(type))
+        {
+            final jdbcDataSource hsqlDs = new jdbcDataSource();
+            hsqlDs.setDatabase(getApplicationDataSourceUrl());
+            hsqlDs.setUser("sa");
+            hsqlDs.setPassword("");
+            dataSource = hsqlDs;
+        }
+    }
+
+    private String getApplicationDataSourceUrl()
+    {
+        return "jdbc:hsqldb:file:" + applicationDbDir + "" + "/test-application/db;hsqldb.default_table_type=cached";
     }
 
     private ApplicationProperties getMockApplicationProperties()
@@ -274,21 +306,7 @@ public class TestIntegrations extends PluginInContainerTestBase
     private DataSourceProvider getMockDataSourceProvider()
     {
         final DataSourceProvider dataSourceProvider = mock(DataSourceProvider.class);
-        final DataSource dataSource = mock(DataSource.class);
-        final Connection connection = mock(Connection.class);
-        final DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
-        try
-        {
-            when(dataSource.getConnection()).thenReturn(connection);
-            when(connection.getMetaData()).thenReturn(metaData);
-            when(metaData.getDriverName()).thenReturn(jdbcDriver.class.getName());
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
         return dataSourceProvider;
     }
 
@@ -300,19 +318,24 @@ public class TestIntegrations extends PluginInContainerTestBase
         runnable.run();
     }
 
+    private void assertDatabaseExists(File dbDir, String dbPrefix)
+    {
+        assertDatabaseExists(dbDir, dbPrefix, 1);
+    }
+
     private void assertDatabaseExists(File baseDir, String path, final String dbprefix)
     {
-        assertDatabaseExists(baseDir, path, dbprefix, 1);
+        assertDatabaseExists(new File(baseDir, path), dbprefix, 1);
     }
 
     private void assertDatabaseDoesNotExists(File baseDir, String path, final String dbprefix)
     {
-        assertDatabaseExists(baseDir, path, dbprefix, 0);
+        assertDatabaseExists(new File(baseDir, path), dbprefix, 0);
     }
 
-    private void assertDatabaseExists(File baseDir, String path, final String dbprefix, int expected)
+    private void assertDatabaseExists(File dbDir, final String dbprefix, int expected)
     {
-        final File[] files = new File(baseDir, path).listFiles(new FilenameFilter()
+        final File[] files = dbDir.listFiles(new FilenameFilter()
         {
             public boolean accept(File dir, String name)
             {

@@ -11,89 +11,95 @@ import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
 
 import javax.sql.DataSource;
+import java.util.Locale;
 
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
 
 public final class JdbcDriverDatabaseProviderFactory implements DatabaseProviderFactory
 {
-    private DriverClassNameExtractor driverClassNameExtractor;
+    private DriverNameExtractor driverNameExtractor;
 
-    public JdbcDriverDatabaseProviderFactory(DriverClassNameExtractor driverClassNameExtractor)
+    public JdbcDriverDatabaseProviderFactory(DriverNameExtractor driverNameExtractor)
     {
-        this.driverClassNameExtractor = checkNotNull(driverClassNameExtractor);
+        this.driverNameExtractor = checkNotNull(driverNameExtractor);
     }
 
     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
     {
-        final String driverClassName = getDriverClassName(dataSource);
+        final String driverName = getDriverName(dataSource);
 
         for (DatabaseProviderFactoryEnum dbProviderFactory : DatabaseProviderFactoryEnum.values())
         {
-            if (dbProviderFactory.accept(driverClassName))
+            if (dbProviderFactory.accept(driverName))
             {
                 return dbProviderFactory.getDatabaseProvider(dataSource);
             }
         }
-        throw new DatabaseProviderNotFoundException(driverClassName);
+        throw new DatabaseProviderNotFoundException(driverName);
     }
 
-    private String getDriverClassName(DataSource dataSource)
+    private String getDriverName(DataSource dataSource)
     {
-        return driverClassNameExtractor.getDriverClassName(dataSource);
+        return driverNameExtractor.getDriverName(dataSource);
     }
 
+    /**
+     * TODO fix, this is actually not tested and needs to be. This is possibly quite fragile as well, as I don't know
+     * yet what happens to the driver name when using connection pooling, but I'd bet it changes to something that doesn't
+     * give much information
+     */
     private enum DatabaseProviderFactoryEnum implements DatabaseProviderFactory
     {
-        MYSQL("com.mysql.jdbc.Driver")
+        MYSQL("mysql")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new MySQLDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        DERBY_NETWORK("org.apache.derby.jdbc.ClientDriver")
+        DERBY_NETWORK("derby")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new ClientDerbyDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        DERBY_EMBEDDED("org.apache.derby.jdbc.EmbeddedDriver")
+        DERBY_EMBEDDED("derby")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new EmbeddedDerbyDatabaseProvider(getDisposableDataSource(dataSource), "a-fake-uri"); // TODO handle the URI issue
                     }
                 },
-        ORACLE("oracle.jdbc.OracleDriver")
+        ORACLE("oracle")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new OracleDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        POSTGRESQL("org.postgresql.Driver")
+        POSTGRESQL("postgres")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new PostgreSQLDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        MSSQL("com.microsoft.sqlserver.jdbc.SQLServerDriver")
+        MSSQL("sqlserver")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        MSSQL_JTDS("net.sourceforge.jtds.jdbc.Driver")
+        MSSQL_JTDS("jtds")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
                         return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        HSQLDB("org.hsqldb.jdbcDriver")
+        HSQLDB("hsql")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
@@ -101,16 +107,16 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                     }
                 };
 
-        private final String driverClassName;
+        private final String driverName;
 
-        DatabaseProviderFactoryEnum(String driverClassName)
+        DatabaseProviderFactoryEnum(String driverName)
         {
-            this.driverClassName = checkNotNull(driverClassName);
+            this.driverName = checkNotNull(driverName);
         }
 
-        boolean accept(String otherDriverClassName)
+        boolean accept(String otherDriverName)
         {
-            return this.driverClassName.equals(otherDriverClassName);
+            return otherDriverName != null && otherDriverName.toLowerCase(Locale.ENGLISH).contains(this.driverName);
         }
 
         // apparently useless, I know, but the compiler complains if not there

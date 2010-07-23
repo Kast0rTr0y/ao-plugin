@@ -57,7 +57,7 @@
                                             <beans:constructor-arg>
                                                 <beans:bean class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
                                                     <beans:constructor-arg>
-                                                        <beans:bean class="com.atlassian.activeobjects.internal.DriverClassNameExtractorImpl"/>
+                                                        <beans:bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
                                                     </beans:constructor-arg>
                                                 </beans:bean>
                                             </beans:constructor-arg>

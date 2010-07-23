@@ -5,7 +5,7 @@ import javax.sql.DataSource;
 /**
  * A class to resolve the driver class name from a given data source
  */
-public interface DriverClassNameExtractor
+public interface DriverNameExtractor
 {
     /**
      * Gets the driver class name from the data source
@@ -13,5 +13,5 @@ public interface DriverClassNameExtractor
      * @param dataSource the data source to resolve the driver class name from
      * @return a driver class name
      */
-    String getDriverClassName(DataSource dataSource);
+    String getDriverName(DataSource dataSource);
 }

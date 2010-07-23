@@ -6,9 +6,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public final class DriverClassNameExtractorImpl implements DriverClassNameExtractor
+public final class DriverNameExtractorImpl implements DriverNameExtractor
 {
-    public String getDriverClassName(DataSource dataSource)
+    public String getDriverName(DataSource dataSource)
     {
         Connection connection = null;
         try
