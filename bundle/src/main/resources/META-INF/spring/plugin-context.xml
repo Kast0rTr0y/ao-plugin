@@ -71,16 +71,6 @@
                         </beans:bean>
                     </beans:list>
                 </beans:constructor-arg>
-                <!--
-                <beans:constructor-arg index="0">
-                    <reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
-                </beans:constructor-arg>
-                <beans:constructor-arg index="1">
-                    <beans:bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
-                        <beans:constructor-arg ref="activeObjectsConfiguration"/>
-                    </beans:bean>
-                </beans:constructor-arg>
-                -->
             </beans:bean>
         </beans:constructor-arg>
         <beans:constructor-arg index="2">
@@ -88,7 +78,7 @@
                 <beans:constructor-arg index="0">
                     <reference interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
                 </beans:constructor-arg>
-                <beans:constructor-arg index="1" value="HSQLDB"/>
+                <beans:constructor-arg index="1" value="APPLICATION"/>
             </beans:bean>
         </beans:constructor-arg>
     </beans:bean>

@@ -1,6 +1,7 @@
 package it.com.atlassian.activeobjects;
 
 
+import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
@@ -37,6 +38,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,12 +56,14 @@ public class TestIntegrations extends PluginInContainerTestBase
      * @see #getHostComponentProvider()
      */
     private AtomicBoolean isSystemDown;
+    private PluginSettings pluginSettings;
 
     @Before
     public void onSetUp() throws Exception
     {
         homeDirectory = getTmpDir(getClass().getName());
         applicationProperties = getMockApplicationProperties();
+        pluginSettings = mock(PluginSettings.class);
 
         isSystemDown = new AtomicBoolean(false);
     }
@@ -71,11 +75,14 @@ public class TestIntegrations extends PluginInContainerTestBase
         isSystemDown = null;
         homeDirectory = null;
         applicationProperties = null;
+        pluginSettings = null;
     }
 
     @Test
     public void testWithHsqlDatabaseInDefaultDirectoryWithinHomeDirectory() throws Exception
     {
+        setDataSourceType(DataSourceType.HSQLDB);
+
         final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
         installConsumerPlugin();
 
@@ -86,6 +93,8 @@ public class TestIntegrations extends PluginInContainerTestBase
     @Test
     public void testWithHsqlDatabaseInConfiguredDirectoryWithinHomeDirectory() throws Exception
     {
+        setDataSourceType(DataSourceType.HSQLDB);
+
         final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
 
         // the plugin that configures the database in a specific directory
@@ -106,6 +115,8 @@ public class TestIntegrations extends PluginInContainerTestBase
     @Test
     public void testClientSurvivesRequiredDepChange() throws Exception
     {
+        setDataSourceType(DataSourceType.HSQLDB);
+
         final File childDir = getDir(homeDirectory, "child");
 
         final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
@@ -130,6 +141,8 @@ public class TestIntegrations extends PluginInContainerTestBase
     @Test
     public void testActiveObjectsConsumerWhenSystemIsDown() throws Exception
     {
+        setDataSourceType(DataSourceType.HSQLDB);
+
         final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
         installConsumerPlugin();
 
@@ -242,9 +255,13 @@ public class TestIntegrations extends PluginInContainerTestBase
     private PluginSettingsFactory getMockPluginSettingsFactory()
     {
         final PluginSettingsFactory pluginSettingsFactory = mock(PluginSettingsFactory.class);
-        final PluginSettings pluginSettings = mock(PluginSettings.class);
         when(pluginSettingsFactory.createGlobalSettings()).thenReturn(pluginSettings);
         return pluginSettingsFactory;
+    }
+
+    private void setDataSourceType(DataSourceType type)
+    {
+        when(pluginSettings.get(anyString())).thenReturn(type.name());
     }
 
     private ApplicationProperties getMockApplicationProperties()
