@@ -1,7 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
-import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
+import net.java.ao.builder.EntityManagerBuilder;
 
 import java.io.File;
 
@@ -15,12 +15,7 @@ public class FileSystemHsqlActiveObjects extends EntityManagedActiveObjects impl
 
     public FileSystemHsqlActiveObjects(File dbDirectory)
     {
-        super(new EntityManager(getDatabaseProvider(getUri(dbDirectory), USER_NAME, PASSWORD), true));
-    }
-
-    private static DatabaseProvider getDatabaseProvider(String uri, String userName, String password)
-    {
-        return DatabaseProvider.getInstance(uri, userName, password, true);
+        super(EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto().useWeakCache().build());
     }
 
     private static String getUri(File dbDirectory)

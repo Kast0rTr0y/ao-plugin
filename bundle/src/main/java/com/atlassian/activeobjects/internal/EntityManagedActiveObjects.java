@@ -10,6 +10,7 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import net.java.ao.Transaction;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,7 +28,7 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
  *
  * @see net.java.ao.EntityManager
  */
-abstract class EntityManagedActiveObjects implements ActiveObjects
+class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
 
@@ -49,12 +50,13 @@ abstract class EntityManagedActiveObjects implements ActiveObjects
 
     public InputStream backup()
     {
-        return entityManager.backup(entities.toArray(new Class[0]));
+//        return entityManager.backup(entities.toArray(new Class[0]));
+        return new ByteArrayInputStream(new byte[0]);
     }
 
     public void restore(InputStream backup)
     {
-        entityManager.restore(backup);
+//        entityManager.restore(backup);
     }
 
     public final void flushAll()

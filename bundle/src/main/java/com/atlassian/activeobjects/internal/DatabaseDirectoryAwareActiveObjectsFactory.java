@@ -14,26 +14,24 @@ public class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjects
 {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private final String pluginKey;
     private final ApplicationProperties applicationProperties;
     private final DatabaseConfiguration configuration;
 
-    public DatabaseDirectoryAwareActiveObjectsFactory(String pluginKey, ApplicationProperties applicationProperties, DatabaseConfiguration configuration)
+    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration configuration)
     {
-        this.pluginKey = checkNotNull(pluginKey);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.configuration = checkNotNull(configuration);
     }
 
-    public ActiveObjects create()
+    public ActiveObjects create(PluginKey pluginKey)
     {
-        final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()));
+        final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), pluginKey);
         return new FileSystemHsqlActiveObjects(dbDir);
     }
 
-    private File getDatabaseDirectory(File databasesDirectory)
+    private File getDatabaseDirectory(File databasesDirectory, PluginKey pluginKey)
     {
-        final File dbDir = new File(databasesDirectory, pluginKey);
+        final File dbDir = new File(databasesDirectory, pluginKey.toString());
         if (!dbDir.exists() && !dbDir.mkdir())
         {
             throw new ActiveObjectsPluginException("Could not create database directory for plugin <" + pluginKey + "> at  <" + dbDir.getAbsolutePath() + ">");

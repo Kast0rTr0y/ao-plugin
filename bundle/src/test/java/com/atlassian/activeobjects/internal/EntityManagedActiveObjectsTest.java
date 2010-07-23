@@ -12,9 +12,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.util.Set;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,39 +36,15 @@ public class EntityManagedActiveObjectsTest
     @Test
     public void testExecuteInTransaction() throws Exception
     {
+        final DatabaseProvider databaseProvider = mock(DatabaseProvider.class);
         final Connection connection = mock(Connection.class);
-        final DatabaseProvider databaseProvider = getDatabaseProvider(connection);
 
         when(entityManager.getProvider()).thenReturn(databaseProvider);
+        when(databaseProvider.getConnection()).thenReturn(connection);
 
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
 
         verify(callback).doInTransaction(Mockito.<TransactionStatus>anyObject());
-    }
-
-    ///CLOVER:OFF
-    private DatabaseProvider getDatabaseProvider(final Connection connection)
-    {
-        return new DatabaseProvider("", "", "")
-        {
-            @Override
-            public Class<? extends Driver> getDriverClass() throws ClassNotFoundException
-            {
-                return null;
-            }
-
-            @Override
-            protected Set<String> getReservedWords()
-            {
-                return null;
-            }
-
-            @Override
-            protected Connection getConnectionImpl() throws SQLException
-            {
-                return connection;
-            }
-        };
     }
 }

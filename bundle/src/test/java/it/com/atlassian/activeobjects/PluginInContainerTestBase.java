@@ -6,9 +6,7 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.event.PluginEventManager;
 import com.atlassian.plugin.event.impl.DefaultPluginEventManager;
 import com.atlassian.plugin.factories.LegacyDynamicPluginFactory;
-import com.atlassian.plugin.factories.PluginFactory;
 import com.atlassian.plugin.hostcontainer.DefaultHostContainer;
-import com.atlassian.plugin.loaders.BundledPluginLoader;
 import com.atlassian.plugin.loaders.DirectoryPluginLoader;
 import com.atlassian.plugin.loaders.PluginLoader;
 import com.atlassian.plugin.manager.DefaultPluginManager;
@@ -24,144 +22,85 @@ import com.atlassian.plugin.osgi.factory.OsgiPluginFactory;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.repositories.FilePluginInstaller;
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.osgi.util.tracker.ServiceTracker;
 
-import java.io.*;
+import java.io.File;
 import java.util.Arrays;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.deleteDirectory;
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.getDir;
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.getTmpDir;
 
 /**
  * Base for in-container unit tests
  */
-public abstract class PluginInContainerTestBase extends TestCase
+public abstract class PluginInContainerTestBase
 {
-    protected OsgiContainerManager osgiContainerManager;
-    protected File tmpDir;
-    protected File cacheDir;
-    protected File pluginsDir;
-    protected ModuleDescriptorFactory moduleDescriptorFactory;
-    protected DefaultPluginManager pluginManager;
-    protected PluginEventManager pluginEventManager;
+    private OsgiContainerManager osgiContainerManager;
+    private File tmpDir;
 
-    @Override
-    public void setUp() throws Exception
+    protected DefaultPluginManager pluginManager;
+
+    @Before
+    public final void setUp() throws Exception
     {
-        tmpDir = new File("target/plugin-temp").getAbsoluteFile();
-        if (tmpDir.exists())
-        {
-            FileUtils.cleanDirectory(tmpDir);
-        }
-        tmpDir.mkdirs();
-        cacheDir = new File(tmpDir, "cache");
-        cacheDir.mkdir();
-        pluginsDir = new File(tmpDir, "plugins");
-        pluginsDir.mkdir();
-        this.pluginEventManager = new DefaultPluginEventManager();
+        tmpDir = getTmpDir("plugin-tmp");
     }
 
-    @Override
-    public void tearDown() throws Exception
+    @After
+    public final void tearDown() throws Exception
     {
-        if (osgiContainerManager != null)
-        {
-            osgiContainerManager.stop();
-        }
-        FileUtils.deleteDirectory(tmpDir);
+        stopOsgiContainer();
+        deleteDirectory(tmpDir);
+
         osgiContainerManager = null;
         tmpDir = null;
-        pluginsDir = null;
-        moduleDescriptorFactory = null;
         pluginManager = null;
-        pluginEventManager = null;
     }
 
-    protected void initPluginManager() throws Exception
+    protected final ServiceTracker getServiceTracker(Class<?> aClass)
     {
-        initPluginManager(new HostComponentProvider()
-        {
-            public void provide(final ComponentRegistrar registrar)
-            {
-                registrar.register(PluginEventManager.class).forInstance(pluginEventManager);
-            }
-        }, new DefaultModuleDescriptorFactory(new DefaultHostContainer()));
+        final ServiceTracker tracker = new ServiceTracker(osgiContainerManager.getBundles()[0].getBundleContext(), aClass.getName(), null);
+        tracker.open();
+        return tracker;
     }
 
-    protected void initPluginManager(final HostComponentProvider hostComponentProvider) throws Exception
+    protected final void initPluginManager(final HostComponentProvider hostComponentProvider) throws Exception
     {
-        initPluginManager(hostComponentProvider, new DefaultModuleDescriptorFactory(new DefaultHostContainer()));
-    }
+        final PluginEventManager pluginEventManager = new DefaultPluginEventManager();
+        final ModuleDescriptorFactory moduleDescriptorFactory = new DefaultModuleDescriptorFactory(new DefaultHostContainer());
+        final PackageScannerConfiguration scannerConfig = buildScannerConfiguration(null);
+        final HostComponentProvider requiredWrappingProvider = getHostComponentProvider(pluginEventManager, hostComponentProvider);
+        final OsgiPersistentCache cache = new DefaultOsgiPersistentCache(getDir(tmpDir, "cache"));
 
-    protected void initPluginManager(final HostComponentProvider hostComponentProvider, final ModuleDescriptorFactory moduleDescriptorFactory) throws Exception
-    {
-        initPluginManager(hostComponentProvider, moduleDescriptorFactory, null);
-    }
-
-    protected void initPluginManager(final HostComponentProvider hostComponentProvider, final ModuleDescriptorFactory moduleDescriptorFactory, final String version) throws Exception
-    {
-        this.moduleDescriptorFactory = moduleDescriptorFactory;
-        final PackageScannerConfiguration scannerConfig = buildScannerConfiguration(version);
-        HostComponentProvider requiredWrappingProvider = getWrappingHostComponentProvider(hostComponentProvider);
-        OsgiPersistentCache cache = new DefaultOsgiPersistentCache(cacheDir);
         osgiContainerManager = new FelixOsgiContainerManager(cache, scannerConfig, requiredWrappingProvider, pluginEventManager);
 
         final LegacyDynamicPluginFactory legacyFactory = new LegacyDynamicPluginFactory(PluginAccessor.Descriptor.FILENAME, tmpDir);
         final OsgiPluginFactory osgiPluginDeployer = new OsgiPluginFactory(PluginAccessor.Descriptor.FILENAME, (String) null, cache, osgiContainerManager, pluginEventManager);
         final OsgiBundleFactory osgiBundleFactory = new OsgiBundleFactory(osgiContainerManager, pluginEventManager);
 
-        final DirectoryPluginLoader loader = new DirectoryPluginLoader(pluginsDir, Arrays.asList(legacyFactory, osgiPluginDeployer, osgiBundleFactory),
-            new DefaultPluginEventManager());
+        final File pluginsDir = getDir(tmpDir, "plugins");
 
-        pluginManager = new DefaultPluginManager(new MemoryPluginPersistentStateStore(), Arrays.<PluginLoader> asList(loader), moduleDescriptorFactory,
-            pluginEventManager);
+        final DirectoryPluginLoader loader = new DirectoryPluginLoader(pluginsDir, Arrays.asList(legacyFactory, osgiPluginDeployer, osgiBundleFactory), pluginEventManager);
+
+        pluginManager = new DefaultPluginManager(new MemoryPluginPersistentStateStore(), Arrays.<PluginLoader>asList(loader), moduleDescriptorFactory, pluginEventManager);
         pluginManager.setPluginInstaller(new FilePluginInstaller(pluginsDir));
         pluginManager.init();
     }
 
-    protected void initBundlingPluginManager(final ModuleDescriptorFactory moduleDescriptorFactory, File bundledPluginJar) throws Exception
+    private void stopOsgiContainer()
     {
-        this.moduleDescriptorFactory = moduleDescriptorFactory;
-        final PackageScannerConfiguration scannerConfig = buildScannerConfiguration("1.0");
-        HostComponentProvider requiredWrappingProvider = getWrappingHostComponentProvider(null);
-        OsgiPersistentCache cache = new DefaultOsgiPersistentCache(cacheDir);
-        osgiContainerManager = new FelixOsgiContainerManager(cache, scannerConfig, requiredWrappingProvider, pluginEventManager);
-
-        final OsgiPluginFactory osgiPluginDeployer = new OsgiPluginFactory(PluginAccessor.Descriptor.FILENAME, (String) null, cache, osgiContainerManager, pluginEventManager);
-
-        final DirectoryPluginLoader loader = new DirectoryPluginLoader(pluginsDir, Arrays.<PluginFactory>asList(osgiPluginDeployer),
-            new DefaultPluginEventManager());
-
-        File zip = new File(bundledPluginJar.getParentFile(), "bundled-plugins.zip");
-        ZipOutputStream stream = null;
-        InputStream in = null;
-        try
+        if (osgiContainerManager != null)
         {
-            stream = new ZipOutputStream(new FileOutputStream(zip));
-            in = new FileInputStream(bundledPluginJar);
-            stream.putNextEntry(new ZipEntry(bundledPluginJar.getName()));
-            IOUtils.copy(in, stream);
-            stream.closeEntry();
+            osgiContainerManager.stop();
         }
-        catch (IOException ex)
-        {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(stream);
-        }
-        File bundledDir = new File(bundledPluginJar.getParentFile(), "bundled-plugins");
-        final BundledPluginLoader bundledLoader = new BundledPluginLoader(zip.toURL(), bundledDir, Arrays.<PluginFactory>asList(osgiPluginDeployer),
-            new DefaultPluginEventManager());
-
-        pluginManager = new DefaultPluginManager(new MemoryPluginPersistentStateStore(), Arrays.<PluginLoader> asList(bundledLoader, loader), moduleDescriptorFactory,
-            pluginEventManager);
-        pluginManager.setPluginInstaller(new FilePluginInstaller(pluginsDir));
-        pluginManager.init();
     }
 
-    private HostComponentProvider getWrappingHostComponentProvider(final HostComponentProvider hostComponentProvider)
+    private HostComponentProvider getHostComponentProvider(final PluginEventManager pluginEventManager, final HostComponentProvider hostComponentProvider)
     {
-        HostComponentProvider requiredWrappingProvider = new HostComponentProvider()
+        return new HostComponentProvider()
         {
             public void provide(ComponentRegistrar registrar)
             {
@@ -172,7 +111,6 @@ public abstract class PluginInContainerTestBase extends TestCase
                 }
             }
         };
-        return requiredWrappingProvider;
     }
 
     private PackageScannerConfiguration buildScannerConfiguration(String version)

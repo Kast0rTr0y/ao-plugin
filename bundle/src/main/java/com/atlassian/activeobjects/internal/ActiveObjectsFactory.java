@@ -8,8 +8,10 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 public interface ActiveObjectsFactory
 {
     /**
-     * Creates a new instance of {@link com.atlassian.activeobjects.external.ActiveObjects} each time it is called.
+     * Creates a <em>new</em> instance of {@link com.atlassian.activeobjects.external.ActiveObjects} each time it is called.
+     *
+     * @param pluginKey the plugin key of the current plugin
      * @return the new {@link com.atlassian.activeobjects.external.ActiveObjects}
      */
-    ActiveObjects create();
+    ActiveObjects create(PluginKey pluginKey);
 }

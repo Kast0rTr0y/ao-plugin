@@ -24,13 +24,13 @@ public class WeakReferencedActiveObjectsRegistryTest
     @Test
     public void testGet() throws Exception
     {
-        assertNull(registry.get("a-not-so-random-key"));
+        assertNull(registry.get(new PluginKey("a-not-so-random-key")));
     }
 
     @Test
     public void testRegister() throws Exception
     {
-        final String key = "a-key";
+        final PluginKey key = new PluginKey("a-key");
         final ActiveObjects ao = mock(ActiveObjects.class);
 
         assertNull(registry.get(key));
@@ -41,8 +41,8 @@ public class WeakReferencedActiveObjectsRegistryTest
     @Test
     public void testOnDirectoryUpdated() throws Exception
     {
-        final String key1 = "key1";
-        final String key2 = "key2";
+        final PluginKey key1 = new PluginKey("key1");
+        final PluginKey key2 = new PluginKey("key2");
         final ActiveObjects ao1 = mock(ActiveObjects.class);
         final ActiveObjects ao2 = mock(DatabaseDirectoryAwareActiveObjects.class);
 

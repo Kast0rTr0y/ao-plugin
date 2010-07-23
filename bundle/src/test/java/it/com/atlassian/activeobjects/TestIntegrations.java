@@ -5,133 +5,141 @@ import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
-import com.atlassian.plugin.test.PluginTestUtils;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.backup.BackupRegistry;
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.sql.DataSourceProvider;
+import org.hsqldb.jdbcDriver;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.osgi.util.tracker.ServiceTracker;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.deleteDirectory;
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.getDir;
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.getPluginJar;
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.getTmpDir;
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- *
+ * Integration tests for the active objects plugin
  */
 public class TestIntegrations extends PluginInContainerTestBase
 {
-    private File baseDir;
-    private ServiceTracker runTracker;
-    private ApplicationProperties props;
-    private HostComponentProvider defHostComponentProvider;
+    private File homeDirectory;
+    private ApplicationProperties applicationProperties;
 
-    public void setUp() throws Exception
+    /**
+     * an atomic boolean to simulate the system being down, i.e. some services not being available anymore
+     *
+     * @see #getHostComponentProvider()
+     */
+    private AtomicBoolean isSystemDown;
+
+    @Before
+    public void onSetUp() throws Exception
     {
-        super.setUp();
-        props = mock(ApplicationProperties.class);
-        baseDir = PluginTestUtils.createTempDirectory(getClass());
-        when(props.getHomeDirectory()).thenReturn(baseDir);
-        defHostComponentProvider = new HostComponentProvider()
-        {
-            public void provide(ComponentRegistrar componentRegistrar)
-            {
-                componentRegistrar.register(ApplicationProperties.class).forInstance(props);
-                componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));
-                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
-            }
-        };
+        homeDirectory = getTmpDir(getClass().getName());
+        applicationProperties = getMockApplicationProperties();
+
+        isSystemDown = new AtomicBoolean(false);
     }
 
-    private void initPluginManagerWithActiveObjects(HostComponentProvider prov) throws Exception
+    @After
+    public void onTearDown() throws Exception
     {
-        initPluginManager(prov);
-        String activeObjectsPluginKey = pluginManager.installPlugin(new JarPluginArtifact(new File(System.getProperty("plugin.jar"))));
-        assertTrue(pluginManager.isPluginEnabled(activeObjectsPluginKey));
-
-        runTracker = new ServiceTracker(osgiContainerManager.getBundles()[0].getBundleContext(), ActiveObjectsTestConsumer.class.getName(), null);
-        runTracker.open();
+        deleteDirectory(homeDirectory);
+        isSystemDown = null;
+        homeDirectory = null;
+        applicationProperties = null;
     }
 
-    public void testBasic() throws Exception
+    @Test
+    public void testWithHsqlDatabaseInDefaultDirectoryWithinHomeDirectory() throws Exception
     {
-        initPluginManagerWithActiveObjects(defHostComponentProvider);
-        File plugin = buildConsumerPlugin("test-consumer");
+        final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
+        installConsumerPlugin();
 
-        pluginManager.installPlugin(new JarPluginArtifact(plugin));
-        assertTrue(pluginManager.isPluginEnabled("test-consumer"));
-        callActiveObjectsConsumer();
-        assertDatabaseExists(baseDir, "data/plugins/activeobjects", "test-");
+        callActiveObjectsConsumer(tracker);
+        assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", "test-");
     }
 
-    public void testBasicWithConfig() throws Exception
+    @Test
+    public void testWithHsqlDatabaseInConfiguredDirectoryWithinHomeDirectory() throws Exception
     {
-        initPluginManagerWithActiveObjects(defHostComponentProvider);
-        File plugin = buildConsumerPlugin("test-consumer");
-        File configPlugin = buildConfigPlugin("foo");
+        final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
 
-        final String configPluginKey = pluginManager.installPlugin(new JarPluginArtifact(configPlugin));
-        pluginManager.installPlugin(new JarPluginArtifact(plugin));
+        // the plugin that configures the database in a specific directory
+        final String configPluginKey = installPlugin(buildConfigPlugin("foo"));
+        installConsumerPlugin();
 
-        callActiveObjectsConsumer();
-        assertTrue(pluginManager.isPluginEnabled("test-consumer"));
-        assertDatabaseExists(baseDir, "foo", "test-");
+        callActiveObjectsConsumer(tracker);
+        assertDatabaseExists(homeDirectory, "foo", "test-");
 
-        pluginManager.uninstall(pluginManager.getPlugin(configPluginKey));
+        uninstallPlugin(configPluginKey);
 
-        configPlugin = buildConfigPlugin("foo2");
-        pluginManager.installPlugin(new JarPluginArtifact(configPlugin));
+        installPlugin(buildConfigPlugin("foo2"));
 
-        callActiveObjectsConsumer();
-        assertDatabaseExists(baseDir, "foo2", "test-");
+        callActiveObjectsConsumer(tracker);
+        assertDatabaseExists(homeDirectory, "foo2", "test-");
     }
 
+    @Test
     public void testClientSurvivesRequiredDepChange() throws Exception
     {
-        initPluginManagerWithActiveObjects(defHostComponentProvider);
-        File childBaseDir = new File(baseDir, "child");
-        childBaseDir.mkdir();
-        File plugin = buildConsumerPlugin("test-consumer");
+        final File childDir = getDir(homeDirectory, "child");
 
-        pluginManager.installPlugin(new JarPluginArtifact(plugin));
-        assertDatabaseDoesNotExists(childBaseDir, "data/plugins/activeobjects", "test-");
+        final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
+        installConsumerPlugin();
 
-        when(props.getHomeDirectory()).thenReturn(childBaseDir);
+//        callActiveObjectsConsumer(tracker); TODO should that line be part of the test???
+        assertDatabaseDoesNotExists(childDir, "data/plugins/activeobjects", "test-");
+
+        // updating the home directory
+        when(applicationProperties.getHomeDirectory()).thenReturn(childDir);
+
         pluginManager.warmRestart();
-        callActiveObjectsConsumer();
-        assertDatabaseExists(childBaseDir, "data/plugins/activeobjects", "test-");
+
+        callActiveObjectsConsumer(tracker);
+        assertDatabaseExists(childDir, "data/plugins/activeobjects", "test-");
     }
 
-    public void testClientCallsWhenDown() throws Exception
+    /**
+     * Here system is down is simulated by removing some necessary services to Active Objects
+     * @throws Exception whatever
+     */
+    @Test
+    public void testActiveObjectsConsumerWhenSystemIsDown() throws Exception
     {
-        final AtomicBoolean shouldExpose = new AtomicBoolean(true);
-        final HostComponentProvider componentProvider = new HostComponentProvider()
-        {
-            public void provide(ComponentRegistrar componentRegistrar)
-            {
-                if (shouldExpose.get())
-                {
-                    componentRegistrar.register(ApplicationProperties.class).forInstance(props);
-                }
-                componentRegistrar.register(DataSourceProvider.class).forInstance(mock(DataSourceProvider.class));
-                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
-            }
-        };
-        initPluginManagerWithActiveObjects(componentProvider);
-        File plugin = buildConsumerPlugin("test-consumer");
-        pluginManager.installPlugin(new JarPluginArtifact(plugin));
-        shouldExpose.set(false);
+        final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
+        installConsumerPlugin();
+
+        isSystemDown.set(true);
         pluginManager.warmRestart();
 
         long start = System.currentTimeMillis();
         try
         {
-            callActiveObjectsConsumer();
+            callActiveObjectsConsumer(tracker);
             fail("Should have thrown an exception");
         }
         catch (RuntimeException e)
@@ -141,18 +149,15 @@ public class TestIntegrations extends PluginInContainerTestBase
         }
     }
 
-
-    // Test disabled until ActiveObjects is upgraded past 0.8.2
-
-    public void _testBasicWithLotsOfConcurrentCalls() throws Exception
+    @Test
+    @Ignore // Test disabled until ActiveObjects is upgraded past 0.8.2
+    public void testBasicWithLotsOfConcurrentCalls() throws Exception
     {
-        initPluginManagerWithActiveObjects(defHostComponentProvider);
-        File plugin = buildConsumerPlugin("test-consumer");
+        final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
 
-        pluginManager.installPlugin(new JarPluginArtifact(plugin));
-        assertTrue(pluginManager.isPluginEnabled("test-consumer"));
+        installConsumerPlugin();
 
-        final ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) runTracker.waitForService(10000);
+        final ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) tracker.waitForService(10000);
         runnable.init();
 
         final AtomicBoolean failFlag = new AtomicBoolean(false);
@@ -185,13 +190,95 @@ public class TestIntegrations extends PluginInContainerTestBase
         executor.shutdown();
         executor.awaitTermination(60, TimeUnit.SECONDS);
         assertFalse(failFlag.get());
-        assertDatabaseExists(baseDir, "data/plugins/activeobjects", "test-");
+        assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", "test-");
+    }
+
+    private ServiceTracker initPluginManagerWithActiveObjects(final Class<?> serviceToTrack) throws Exception
+    {
+        initPluginManager(getHostComponentProvider());
+        installActiveObjectsPlugin();
+        return getServiceTracker(serviceToTrack);
+    }
+
+    private void installActiveObjectsPlugin()
+    {
+        installPlugin(getPluginJar());
+    }
+
+    private void installConsumerPlugin() throws Exception
+    {
+        installPlugin(buildConsumerPlugin("test-consumer"));
+    }
+
+    private String installPlugin(File plugin)
+    {
+        final String pluginKey = pluginManager.installPlugin(new JarPluginArtifact(plugin));
+        assertTrue(pluginManager.isPluginEnabled(pluginKey));
+        return pluginKey;
+    }
+
+    private void uninstallPlugin(String configPluginKey)
+    {
+        pluginManager.uninstall(pluginManager.getPlugin(configPluginKey));
+    }
+
+    private HostComponentProvider getHostComponentProvider()
+    {
+        return new HostComponentProvider()
+        {
+            public void provide(ComponentRegistrar componentRegistrar)
+            {
+                if (!isSystemDown.get())
+                {
+                    componentRegistrar.register(ApplicationProperties.class).forInstance(applicationProperties);
+                }
+                componentRegistrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
+                componentRegistrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
+                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
+            }
+        };
+    }
+
+    private PluginSettingsFactory getMockPluginSettingsFactory()
+    {
+        final PluginSettingsFactory pluginSettingsFactory = mock(PluginSettingsFactory.class);
+        final PluginSettings pluginSettings = mock(PluginSettings.class);
+        when(pluginSettingsFactory.createGlobalSettings()).thenReturn(pluginSettings);
+        return pluginSettingsFactory;
+    }
+
+    private ApplicationProperties getMockApplicationProperties()
+    {
+        final ApplicationProperties properties = mock(ApplicationProperties.class);
+        when(properties.getHomeDirectory()).thenReturn(homeDirectory);
+        return properties;
+    }
+
+    private DataSourceProvider getMockDataSourceProvider()
+    {
+        final DataSourceProvider dataSourceProvider = mock(DataSourceProvider.class);
+        final DataSource dataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+
+        when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
+        try
+        {
+            when(dataSource.getConnection()).thenReturn(connection);
+            when(connection.getMetaData()).thenReturn(metaData);
+            when(metaData.getDriverName()).thenReturn(jdbcDriver.class.getName());
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return dataSourceProvider;
     }
 
 
-    private void callActiveObjectsConsumer() throws Exception
+    private void callActiveObjectsConsumer(ServiceTracker tracker) throws Exception
     {
-        ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) runTracker.waitForService(10000);
+        ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) tracker.waitForService(10000);
         runnable.init();
         runnable.run();
     }

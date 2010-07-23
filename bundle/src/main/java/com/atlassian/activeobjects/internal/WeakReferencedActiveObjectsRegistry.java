@@ -9,14 +9,14 @@ import java.util.Map;
 
 public class WeakReferencedActiveObjectsRegistry implements ActiveObjectsRegistry, DatabaseDirectoryListener
 {
-    private final Map<String, WeakReference<ActiveObjects>> cache = new HashMap<String, WeakReference<ActiveObjects>>();
+    private final Map<PluginKey, WeakReference<ActiveObjects>> cache = new HashMap<PluginKey, WeakReference<ActiveObjects>>();
 
-    public synchronized ActiveObjects get(String pluginKey)
+    public synchronized ActiveObjects get(PluginKey pluginKey)
     {
         return cache.get(pluginKey) != null ? cache.get(pluginKey).get() : null;
     }
 
-    public synchronized ActiveObjects register(String pluginKey, ActiveObjects ao)
+    public synchronized ActiveObjects register(PluginKey pluginKey, ActiveObjects ao)
     {
         cache.put(pluginKey, new WeakReference<ActiveObjects>(ao));
         return ao;
@@ -24,9 +24,9 @@ public class WeakReferencedActiveObjectsRegistry implements ActiveObjectsRegistr
 
     public synchronized void onDirectoryUpdated()
     {
-        for (Iterator<Map.Entry<String, WeakReference<ActiveObjects>>> it = cache.entrySet().iterator(); it.hasNext();)
+        for (Iterator<Map.Entry<PluginKey, WeakReference<ActiveObjects>>> it = cache.entrySet().iterator(); it.hasNext();)
         {
-            final Map.Entry<String, WeakReference<ActiveObjects>> aoEntry = it.next();
+            final Map.Entry<PluginKey, WeakReference<ActiveObjects>> aoEntry = it.next();
             if (aoEntry.getValue() != null && aoEntry.getValue().get() != null && aoEntry.getValue().get() instanceof DatabaseDirectoryAware)
             {
                 it.remove();

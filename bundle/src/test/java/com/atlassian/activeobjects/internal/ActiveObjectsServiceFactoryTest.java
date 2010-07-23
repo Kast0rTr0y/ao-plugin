@@ -41,13 +41,13 @@ public class ActiveObjectsServiceFactoryTest
     public void testGetService()
     {
         final Bundle bundle = mock(Bundle.class);
-        when(keyFactory.get(bundle)).thenReturn("a-key");
+        when(keyFactory.get(bundle)).thenReturn(new PluginKey("a-key"));
 
         final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
         assertNotNull(ao);
         assertTrue(ao instanceof DelegatingActiveObjects);
 
-        assertEquals("a-key", ((DelegatingActiveObjects) ao).getPluginKey());
+        assertEquals(new PluginKey("a-key"), ((DelegatingActiveObjects) ao).getPluginKey());
         assertEquals(provider, ((DelegatingActiveObjects) ao).getProvider());
     }
 

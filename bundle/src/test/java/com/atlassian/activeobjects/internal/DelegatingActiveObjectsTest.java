@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DelegatingActiveObjectsTest
 {
-    private static final String PLUGIN_KEY = "plugin-key";
+    private static final PluginKey PLUGIN_KEY = new PluginKey("plugin-key");
 
     private ActiveObjects activeObjects;
     @Mock

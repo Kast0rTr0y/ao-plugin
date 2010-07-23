@@ -17,10 +17,10 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
  */
 final class DelegatingActiveObjects implements ActiveObjects
 {
-    private final String pluginKey;
+    private final PluginKey pluginKey;
     private final ActiveObjectsProvider provider;
 
-    public DelegatingActiveObjects(String pluginKey, ActiveObjectsProvider provider)
+    public DelegatingActiveObjects(PluginKey pluginKey, ActiveObjectsProvider provider)
     {
         this.pluginKey = checkNotNull(pluginKey);
         this.provider = checkNotNull(provider);
@@ -121,7 +121,7 @@ final class DelegatingActiveObjects implements ActiveObjects
         return getDelegate().executeInTransaction(callback);
     }
 
-    String getPluginKey()
+    PluginKey getPluginKey()
     {
         return pluginKey;
     }

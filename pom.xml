@@ -154,7 +154,7 @@
     </dependencyManagement>
 
     <properties>
-        <ao.version>0.9-SNAPSHOT</ao.version>
+        <ao.version>0.9-m5</ao.version>
         <sal.version>2.2.0-ao-SNAPSHOT</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.4.0</atlassian-plugins.version>

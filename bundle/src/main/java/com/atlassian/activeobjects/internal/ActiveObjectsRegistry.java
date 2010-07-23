@@ -4,7 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 
 public interface ActiveObjectsRegistry
 {
-    ActiveObjects get(String pluginKey);
+    ActiveObjects get(PluginKey pluginKey);
 
-    ActiveObjects register(String pluginKey, ActiveObjects ao);
+    ActiveObjects register(PluginKey pluginKey, ActiveObjects ao);
 }

@@ -10,7 +10,7 @@
         <beans:bean class="com.atlassian.activeobjects.internal.ActiveObjectsServiceFactory">
             <beans:constructor-arg index="0" ref="aoProvider"/>
             <beans:constructor-arg index="1">
-                <beans:bean class="com.atlassian.activeobjects.internal.DefaultPluginKeyFactory"/>
+                <beans:bean class="com.atlassian.activeobjects.internal.PluginKeyFactoryImpl"/>
             </beans:constructor-arg>
             <beans:constructor-arg index="2">
                 <reference interface="com.atlassian.sal.api.backup.BackupRegistry"/>
@@ -32,7 +32,46 @@
     <beans:bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
         <beans:constructor-arg index="0" ref="registry"/>
         <beans:constructor-arg index="1">
-            <beans:bean class="com.atlassian.activeobjects.internal.DefaultActiveObjectsFactoryResolver">
+            <beans:bean class="com.atlassian.activeobjects.internal.DelegatingActiveObjectsFactoryResolver">
+                <beans:constructor-arg index="0">
+                    <beans:list>
+                        <beans:bean class="com.atlassian.activeobjects.internal.HomeDirectoryHsqlDbActiveObjectsFactoryResolver">
+                            <beans:constructor-arg index="0">
+                                <beans:bean class="com.atlassian.activeobjects.internal.DatabaseDirectoryAwareActiveObjectsFactory">
+                                    <beans:constructor-arg index="0">
+                                        <reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
+                                    </beans:constructor-arg>
+                                    <beans:constructor-arg index="1">
+                                        <beans:bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
+                                            <beans:constructor-arg ref="activeObjectsConfiguration"/>
+                                        </beans:bean>
+                                    </beans:constructor-arg>
+                                </beans:bean>
+                            </beans:constructor-arg>
+                        </beans:bean>
+                        <beans:bean class="com.atlassian.activeobjects.internal.ApplicationDataSourceProviderActiveObjectsFactoryResolver">
+                            <beans:constructor-arg>
+                                <beans:bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
+                                    <beans:constructor-arg index="0">
+                                        <beans:bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
+                                            <beans:constructor-arg>
+                                                <beans:bean class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
+                                                    <beans:constructor-arg>
+                                                        <beans:bean class="com.atlassian.activeobjects.internal.DriverClassNameExtractorImpl"/>
+                                                    </beans:constructor-arg>
+                                                </beans:bean>
+                                            </beans:constructor-arg>
+                                        </beans:bean>
+                                    </beans:constructor-arg>
+                                    <beans:constructor-arg index="1">
+                                        <reference interface="com.atlassian.sal.api.sql.DataSourceProvider" timeout="5000"/>
+                                    </beans:constructor-arg>
+                                </beans:bean>
+                            </beans:constructor-arg>
+                        </beans:bean>
+                    </beans:list>
+                </beans:constructor-arg>
+                <!--
                 <beans:constructor-arg index="0">
                     <reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
                 </beans:constructor-arg>
@@ -41,11 +80,18 @@
                         <beans:constructor-arg ref="activeObjectsConfiguration"/>
                     </beans:bean>
                 </beans:constructor-arg>
+                -->
+            </beans:bean>
+        </beans:constructor-arg>
+        <beans:constructor-arg index="2">
+            <beans:bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
+                <beans:constructor-arg index="0">
+                    <reference interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+                </beans:constructor-arg>
+                <beans:constructor-arg index="1" value="HSQLDB"/>
             </beans:bean>
         </beans:constructor-arg>
     </beans:bean>
 
     <beans:bean id="registry" class="com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry"/>
-
-    <reference id="dataSourceProvider" interface="com.atlassian.sal.api.sql.DataSourceProvider"/>
 </beans:beans>
