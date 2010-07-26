@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.sal.api.backup.BackupRegistry;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -19,15 +18,14 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
 {
     private final ActiveObjectsProvider provider;
     private final PluginKeyFactory keyFactory;
-    private final BackupRegistry backupRegistry;
-    private final ActiveObjectsBackupFactory backupFactory;
+//    private final BackupRegistry backupRegistry;
+//    private final ActiveObjectsBackupFactory backupFactory;
 
-    public ActiveObjectsServiceFactory(ActiveObjectsProvider provider, PluginKeyFactory keyFactory, BackupRegistry backupRegistry, ActiveObjectsBackupFactory backupFactory)
+    public ActiveObjectsServiceFactory(ActiveObjectsProvider provider, PluginKeyFactory keyFactory)
     {
         this.provider = checkNotNull(provider);
         this.keyFactory = checkNotNull(keyFactory);
-        this.backupRegistry = checkNotNull(backupRegistry);
-        this.backupFactory = checkNotNull(backupFactory);
+//        this.backupFactory = checkNotNull(backupFactory);
     }
 
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
@@ -49,11 +47,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
 
     private void registerForBackup(Bundle bundle, ActiveObjects ao)
     {
-        backupRegistry.register(backupFactory.getBackup(bundle, ao));
+//        backupRegistry.register(backupFactory.getBackup(bundle, ao));
     }
 
     private void unregisterForbackup(Bundle bundle, Object ao)
     {
-        backupRegistry.unregister(backupFactory.getBackup(bundle, (ActiveObjects) ao));
+//        backupRegistry.unregister(backupFactory.getBackup(bundle, (ActiveObjects) ao));
     }
 }
