@@ -7,7 +7,6 @@ import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.backup.BackupRegistry;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.sql.DataSourceProvider;
@@ -266,7 +265,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                 }
                 componentRegistrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
                 componentRegistrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
-                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
+//                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
             }
         };
     }
