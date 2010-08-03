@@ -1,12 +1,12 @@
 package com.atlassian.activeobjects.external;
 
-import net.java.ao.RawEntity;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.Query;
+import net.java.ao.RawEntity;
 
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -289,5 +289,4 @@ public interface ActiveObjects
 	public <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException;
 
     public <T> T executeInTransaction(TransactionCallback<T> callback) throws SQLException;
-
 }

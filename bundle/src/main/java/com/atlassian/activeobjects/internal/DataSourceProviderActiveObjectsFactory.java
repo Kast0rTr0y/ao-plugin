@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.sql.DataSourceProvider;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 
 import javax.sql.DataSource;
 
@@ -11,24 +12,27 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 /**
  * Creates a new instance of ActiveObjects given a dataSourceProvider
  */
-public class DataSourceProviderActiveObjectsFactory implements ActiveObjectsFactory
+public final class DataSourceProviderActiveObjectsFactory implements ActiveObjectsFactory
 {
     private final EntityManagerFactory entityManagerFactory;
     private final DataSourceProvider dataSourceProvider;
+    private final TransactionTemplate transactionTemplate;
 
-    public DataSourceProviderActiveObjectsFactory(EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider)
+    public DataSourceProviderActiveObjectsFactory(EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
     {
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.transactionTemplate = checkNotNull(transactionTemplate);
     }
 
     /**
      * Creates an {@link com.atlassian.activeobjects.external.ActiveObjects} using the
      * {@link com.atlassian.sal.api.sql.DataSourceProvider}
+     *
      * @param pluginKey the plugin key of the current plugin
      * @return a new configured, ready to go ActiveObjects instance
      * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.sal.api.sql.DataSourceProvider}
-     * is {@code null}
+     *                                      is {@code null}
      */
     public ActiveObjects create(PluginKey pluginKey)
     {
@@ -38,6 +42,6 @@ public class DataSourceProviderActiveObjectsFactory implements ActiveObjectsFact
         {
             throw new ActiveObjectsPluginException("No data source defined in the application");
         }
-        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource));
+        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource), new SalTransactionManager(transactionTemplate));
     }
 }

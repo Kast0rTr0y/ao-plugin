@@ -10,6 +10,7 @@ import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.sql.DataSourceProvider;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -263,9 +264,9 @@ public class TestIntegrations extends PluginInContainerTestBase
                 {
                     componentRegistrar.register(ApplicationProperties.class).forInstance(applicationProperties);
                 }
+                componentRegistrar.register(TransactionTemplate.class).forInstance(mock(TransactionTemplate.class));
                 componentRegistrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
                 componentRegistrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
-//                componentRegistrar.register(BackupRegistry.class).forInstance(mock(BackupRegistry.class));
             }
         };
     }
@@ -363,7 +364,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                 .addFormattedJava("my.FooComponent",
                         "package my;",
                         "import com.atlassian.activeobjects.external.*;",
-                        "public class FooComponent implements it.com.atlassian.activeobjects.ActiveObjectsTestConsumer, TransactionCallback {",
+                        "public class FooComponent implements it.com.atlassian.activeobjects.ActiveObjectsTestConsumer, com.atlassian.sal.api.transaction.TransactionCallback {",
                         "  ActiveObjects mgr;",
                         "  public FooComponent(ActiveObjects mgr) throws Exception {",
                         "    this.mgr = mgr;",
@@ -374,15 +375,17 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "  public Object run() throws Exception {",
                         "    return mgr.executeInTransaction(this);",
                         "  }",
-                        "  public Object doInTransaction(TransactionStatus status) throws java.sql.SQLException {",
-                        "    Foo foo = (Foo) mgr.create(my.Foo.class, new net.java.ao.DBParam[0]);",
-                        "    foo.setName('bob');",
-                        "    foo.save();",
-                        "    foo = (Foo) mgr.find(Foo.class, 'id = ?', new Object[]{foo.getID()})[0];",
-                        "    if (foo == null) throw new RuntimeException('no foo found');",
-                        "    if (foo.getName() == null) throw new RuntimeException('foo has no name');",
-                        "    if (!foo.getName().equals('bob')) throw new RuntimeException('foo name wrong');",
-                        "    return null;",
+                        "  public Object doInTransaction() {",
+                        "    try {",
+                        "        Foo foo = (Foo) mgr.create(my.Foo.class, new net.java.ao.DBParam[0]);",
+                        "        foo.setName('bob');",
+                        "        foo.save();",
+                        "        foo = (Foo) mgr.find(Foo.class, 'id = ?', new Object[]{foo.getID()})[0];",
+                        "        if (foo == null) throw new RuntimeException('no foo found');",
+                        "        if (foo.getName() == null) throw new RuntimeException('foo has no name');",
+                        "        if (!foo.getName().equals('bob')) throw new RuntimeException('foo name wrong');",
+                        "        return null;",
+                        "    } catch (java.sql.SQLException e) { throw new RuntimeException(e); }",
                         "  }",
                         "}")
                 .addFormattedResource("atlassian-plugin.xml",

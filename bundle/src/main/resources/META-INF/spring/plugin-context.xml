@@ -16,7 +16,7 @@
     </service>
 
     <reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.external.ActiveObjectsConfiguration" cardinality="0..1" timeout="0">
-        <listener bind-method="onActiveObjectsConfigurationServiceUpdated" unbind-method="onActiveObjectsConfigurationServiceUpdated">
+        <listener bind-method="onActiveObjectsConfigurationServiceBind" unbind-method="onActiveObjectsConfigurationServiceUnbind">
             <beans:bean class="com.atlassian.activeobjects.internal.ActiveObjectsConfigurationServiceListener">
                 <beans:constructor-arg ref="registry"/>
             </beans:bean>
@@ -59,6 +59,9 @@
                                     </beans:constructor-arg>
                                     <beans:constructor-arg index="1">
                                         <reference interface="com.atlassian.sal.api.sql.DataSourceProvider" timeout="5000"/>
+                                    </beans:constructor-arg>
+                                    <beans:constructor-arg index="2">
+                                        <reference interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="5000"/>
                                     </beans:constructor-arg>
                                 </beans:bean>
                             </beans:constructor-arg>

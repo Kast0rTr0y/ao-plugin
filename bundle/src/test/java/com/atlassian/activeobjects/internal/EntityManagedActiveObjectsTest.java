@@ -1,14 +1,12 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.external.TransactionCallback;
-import com.atlassian.activeobjects.external.TransactionStatus;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Connection;
@@ -24,13 +22,13 @@ public class EntityManagedActiveObjectsTest
 
     @Mock
     private EntityManager entityManager;
+    @Mock
+    private TransactionManager transactionManager;
 
     @Before
     public void setUp()
     {
-        activeObjects = new EntityManagedActiveObjects(entityManager)
-        {
-        };
+        activeObjects = new EntityManagedActiveObjects(entityManager, transactionManager);
     }
 
     @Test
@@ -45,6 +43,6 @@ public class EntityManagedActiveObjectsTest
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
 
-        verify(callback).doInTransaction(Mockito.<TransactionStatus>anyObject());
+        verify(transactionManager).doInTransaction(callback);
     }
 }

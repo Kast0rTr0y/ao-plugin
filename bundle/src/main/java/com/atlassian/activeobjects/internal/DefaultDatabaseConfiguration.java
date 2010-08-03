@@ -27,7 +27,7 @@ public class DefaultDatabaseConfiguration implements DatabaseConfiguration
         }
         catch (ServiceUnavailableException e)
         {
-            log.debug("Active objects configuration service not present, so using default", e);
+            log.debug("Active objects configuration service not present, so using default base directory <{}>", DEFAULT_BASE_DIR);
             return DEFAULT_BASE_DIR;
         }
     }

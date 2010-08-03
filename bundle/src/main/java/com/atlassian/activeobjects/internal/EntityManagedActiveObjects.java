@@ -1,18 +1,14 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.TransactionCallback;
-import com.atlassian.activeobjects.external.TransactionStatus;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
-import net.java.ao.Transaction;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,12 +27,14 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
+    private final TransactionManager transactionManager;
 
     private final Collection<Class<? extends RawEntity<?>>> entities;
 
-    protected EntityManagedActiveObjects(EntityManager entityManager)
+    EntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
     {
         this.entityManager = checkNotNull(entityManager);
+        this.transactionManager = checkNotNull(transactionManager);
         this.entities = new HashSet<Class<? extends RawEntity<?>>>();
     }
 
@@ -138,26 +136,6 @@ class EntityManagedActiveObjects implements ActiveObjects
 
     public final <T> T executeInTransaction(final TransactionCallback<T> callback) throws SQLException
     {
-        return new Transaction<T>(entityManager)
-        {
-            @Override
-            public T run() throws SQLException
-            {
-                return callback.doInTransaction(new TransactionStatus()
-                {
-                    public Connection getConnection()
-                    {
-                        try
-                        {
-                            return entityManager.getProvider().getConnection();
-                        }
-                        catch (SQLException e)
-                        {
-                            throw new ActiveObjectsPluginException(e);
-                        }
-                    }
-                });
-            }
-        }.execute();
+        return transactionManager.doInTransaction(callback);
     }
 }

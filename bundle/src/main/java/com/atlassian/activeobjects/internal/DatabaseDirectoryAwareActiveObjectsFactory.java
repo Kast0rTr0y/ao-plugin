@@ -3,6 +3,8 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.ApplicationProperties;
+import net.java.ao.EntityManager;
+import net.java.ao.builder.EntityManagerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,8 +12,11 @@ import java.io.File;
 
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
 
-public class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjectsFactory
+public final class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjectsFactory
 {
+    private static final String USER_NAME = "sa";
+    private static final String PASSWORD = "";
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final ApplicationProperties applicationProperties;
@@ -26,7 +31,18 @@ public class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjects
     public ActiveObjects create(PluginKey pluginKey)
     {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), pluginKey);
-        return new FileSystemHsqlActiveObjects(dbDir);
+        final EntityManager entityManager = getEntityManager(dbDir);
+        return new DatabaseDirectoryAwareEntityManagedActiveObjects(entityManager, new EntityManagedTransactionManager(entityManager));
+    }
+
+    private EntityManager getEntityManager(File dbDirectory)
+    {
+        return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto().useWeakCache().build();
+    }
+
+    private static String getUri(File dbDirectory)
+    {
+        return "jdbc:hsqldb:file:" + dbDirectory.getAbsolutePath() + "/db;hsqldb.default_table_type=cached";
     }
 
     private File getDatabaseDirectory(File databasesDirectory, PluginKey pluginKey)
@@ -78,5 +94,13 @@ public class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjects
             throw new ActiveObjectsPluginException("The ActiveObjects plugin couldn't find a home directory at <" + home.getAbsolutePath() + ">");
         }
         return home;
+    }
+
+    private static final class DatabaseDirectoryAwareEntityManagedActiveObjects extends EntityManagedActiveObjects implements DatabaseDirectoryAware
+    {
+        DatabaseDirectoryAwareEntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
+        {
+            super(entityManager, transactionManager);
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.sal.api.sql.DataSourceProvider;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import net.java.ao.EntityManager;
 import org.junit.After;
 import org.junit.Before;
@@ -32,10 +33,13 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Mock
     private EntityManagerFactory entityManagerFactory;
 
+    @Mock
+    private TransactionTemplate transactionTemplate;
+
     @Before
     public void setUp()
     {
-        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(entityManagerFactory, dataSourceProvider);
+        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(entityManagerFactory, dataSourceProvider, transactionTemplate);
     }
 
     @After
