@@ -45,6 +45,7 @@
                             com.atlassian.activeobjects.external;version="${project.version}",
                             org.hsqldb*;version="1.8",
                             org.springframework.osgi.service*,
+                            org.springframework.osgi.context*,
                         </Import-Package>
                         <Private-Package>com.google.gson*</Private-Package>
                         <Export-Package>

@@ -1,6 +1,9 @@
 package com.atlassian.activeobjects.internal;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,11 +28,17 @@ public class EntityManagerFactoryImplTest
 
     @Mock
     private DatabaseProviderFactory databaseProviderFactory;
+    @Mock
+    private TableNameConverter tableNameConverter;
+    @Mock
+    private FieldNameConverter fieldNameConverter;
+    @Mock
+    private SchemaConfiguration schemaConfiguration;
 
     @Before
     public void setUp() throws Exception
     {
-        entityManagerFactory = new EntityManagerFactoryImpl(databaseProviderFactory);
+        entityManagerFactory = new EntityManagerFactoryImpl(databaseProviderFactory, tableNameConverter, fieldNameConverter, schemaConfiguration);
     }
 
     @After

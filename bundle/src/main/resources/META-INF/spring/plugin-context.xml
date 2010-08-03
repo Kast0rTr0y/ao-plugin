@@ -40,6 +40,9 @@
                                             <beans:constructor-arg ref="activeObjectsConfiguration"/>
                                         </beans:bean>
                                     </beans:constructor-arg>
+                                    <beans:constructor-arg index="2" ref="tableNameConverter"/>
+                                    <beans:constructor-arg index="3" ref="fieldNameConverter"/>
+                                    <beans:constructor-arg index="4" ref="schemaConfiguration"/>
                                 </beans:bean>
                             </beans:constructor-arg>
                         </beans:bean>
@@ -48,13 +51,16 @@
                                 <beans:bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
                                     <beans:constructor-arg index="0">
                                         <beans:bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
-                                            <beans:constructor-arg>
+                                            <beans:constructor-arg index="0">
                                                 <beans:bean class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
                                                     <beans:constructor-arg>
                                                         <beans:bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
                                                     </beans:constructor-arg>
                                                 </beans:bean>
                                             </beans:constructor-arg>
+                                            <beans:constructor-arg index="1" ref="tableNameConverter"/>
+                                            <beans:constructor-arg index="2" ref="fieldNameConverter"/>
+                                            <beans:constructor-arg index="3" ref="schemaConfiguration"/>
                                         </beans:bean>
                                     </beans:constructor-arg>
                                     <beans:constructor-arg index="1">
@@ -79,6 +85,19 @@
             </beans:bean>
         </beans:constructor-arg>
     </beans:bean>
+
+    <beans:bean id="tableNameConverter" class="com.atlassian.activeobjects.internal.PrefixedTableNameConverter">
+        <beans:constructor-arg index="0" ref="prefix"/>
+        <beans:constructor-arg index="1">
+            <beans:bean class="net.java.ao.schema.CamelCaseTableNameConverter"/>
+        </beans:constructor-arg>
+    </beans:bean>
+    <beans:bean id="fieldNameConverter" class="net.java.ao.schema.CamelCaseFieldNameConverter"/>
+    <beans:bean id="schemaConfiguration" class="com.atlassian.activeobjects.internal.PrefixedSchemaConfiguration">
+        <beans:constructor-arg index="0" ref="prefix"/>
+    </beans:bean>
+
+    <beans:bean id="prefix" class="com.atlassian.activeobjects.internal.PluginPrefix"/>
 
     <beans:bean id="registry" class="com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry"/>
 </beans:beans>

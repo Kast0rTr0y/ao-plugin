@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.sql.DataSource;
@@ -72,9 +73,9 @@ public class DataSourceProviderActiveObjectsFactoryTest
         final EntityManager entityManager = mock(EntityManager.class);
 
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
-        when(entityManagerFactory.getEntityManager(dataSource)).thenReturn(entityManager);
+        when(entityManagerFactory.getEntityManager(Mockito.<DataSource>anyObject())).thenReturn(entityManager);
 
         assertNotNull(activeObjectsFactory.create(null));
-        verify(entityManagerFactory).getEntityManager(dataSource);
+        verify(entityManagerFactory).getEntityManager(Mockito.<DataSource>anyObject());
     }
 }

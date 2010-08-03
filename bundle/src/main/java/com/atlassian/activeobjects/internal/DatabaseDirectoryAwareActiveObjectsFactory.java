@@ -4,7 +4,10 @@ import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.ApplicationProperties;
 import net.java.ao.EntityManager;
+import net.java.ao.SchemaConfiguration;
 import net.java.ao.builder.EntityManagerBuilder;
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +24,17 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveO
 
     private final ApplicationProperties applicationProperties;
     private final DatabaseConfiguration configuration;
+    private final TableNameConverter tableNameConverter;
+    private final FieldNameConverter fieldNameConverter;
+    private final SchemaConfiguration schemaConfiguration;
 
-    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration configuration)
+    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration configuration, TableNameConverter tableNameConverter, FieldNameConverter fieldNameConverter, SchemaConfiguration schemaConfiguration)
     {
         this.applicationProperties = checkNotNull(applicationProperties);
         this.configuration = checkNotNull(configuration);
+        this.tableNameConverter = checkNotNull(tableNameConverter);
+        this.fieldNameConverter = checkNotNull(fieldNameConverter);
+        this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
     public ActiveObjects create(PluginKey pluginKey)
@@ -37,7 +46,12 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveO
 
     private EntityManager getEntityManager(File dbDirectory)
     {
-        return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto().useWeakCache().build();
+        return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto()
+                .useWeakCache()
+                .tableNameConverter(tableNameConverter)
+                .fieldNameConverter(fieldNameConverter)
+                .schemaConfiguration(schemaConfiguration)
+                .build();
     }
 
     private static String getUri(File dbDirectory)
