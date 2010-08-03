@@ -125,5 +125,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-core</artifactId>
+            <version>${sal.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

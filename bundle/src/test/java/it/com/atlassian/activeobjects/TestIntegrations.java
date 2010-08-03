@@ -11,6 +11,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.sql.DataSourceProvider;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.sal.core.transaction.NoOpTransactionTemplate;
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -264,7 +265,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                 {
                     componentRegistrar.register(ApplicationProperties.class).forInstance(applicationProperties);
                 }
-                componentRegistrar.register(TransactionTemplate.class).forInstance(mock(TransactionTemplate.class));
+                componentRegistrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
                 componentRegistrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
                 componentRegistrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
             }

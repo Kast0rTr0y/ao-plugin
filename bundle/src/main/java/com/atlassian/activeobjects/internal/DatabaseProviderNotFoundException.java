@@ -20,7 +20,7 @@ public class DatabaseProviderNotFoundException extends ActiveObjectsPluginExcept
     public String getMessage()
     {
         return new StringBuilder()
-                .append("Could not find databaser provider for data source which uses JDBC driver <")
+                .append("Could not find database provider for data source which uses JDBC driver <")
                 .append(driverClassName)
                 .append(">")
                 .toString();
