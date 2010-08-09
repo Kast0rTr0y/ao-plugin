@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.osgi.context.BundleContextAware;
 
+import java.util.Locale;
+
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
 
 /**
@@ -23,14 +25,31 @@ public final class PluginPrefix implements Prefix, BundleContextAware
         return new StringBuilder().append(prefix).append(SEPARATOR).append(string).toString();
     }
 
-    public boolean isStarting(String string)
+    /**
+     * Checks whether the string parameter starts with the prefix. This method is {@code null} safe and will return
+     * {@code false} if the {@code string} parameter is {@code null}.
+     * When checking case insensitively, the default locale will be used to lower case both the prefix and the
+     * {@code string} parameter before comparing.
+     *
+     * @param string        checks whether {@code this} starts the String
+     * @param caseSensitive whether or not we're case sensitive
+     * @return {@code true} of {@code string} starts with the prefix
+     */
+    public boolean isStarting(String string, boolean caseSensitive)
     {
-        return string != null && string.startsWith(prefix + SEPARATOR);
+        return string != null &&
+                transform(string, caseSensitive).startsWith(transform(prefix + SEPARATOR, caseSensitive));
+    }
+
+    private String transform(String s, boolean caseSensitive)
+    {
+        return caseSensitive ? s : s.toLowerCase(Locale.getDefault());
     }
 
     /**
      * The 'real' underlying prefix is calculated in that method, on setter injection. I really don't like that.
      * TODO consider using a factory bean to create the Prefix.
+     *
      * @param bundleContext
      */
     public void setBundleContext(BundleContext bundleContext)

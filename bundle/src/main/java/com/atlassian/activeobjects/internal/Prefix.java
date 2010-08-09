@@ -17,7 +17,8 @@ public interface Prefix
      * Tells whether the prefix is at the start of the given String
      *
      * @param string checks whether {@code this} starts the String
+     * @param caseSensitive whether or not we're case sensitive
      * @return {@code true} if the string starts with the given prefix.
      */
-    boolean isStarting(String string);
+    boolean isStarting(String string, boolean caseSensitive);
 }

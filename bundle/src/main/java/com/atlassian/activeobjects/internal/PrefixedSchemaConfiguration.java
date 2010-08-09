@@ -21,9 +21,9 @@ public class PrefixedSchemaConfiguration implements SchemaConfiguration
         this.prefix = checkNotNull(prefix);
     }
 
-    public final boolean shouldManageTable(String tableName)
+    public final boolean shouldManageTable(String tableName, boolean caseSensitive)
     {
-        final boolean should = prefix.isStarting(tableName);
+        final boolean should = prefix.isStarting(tableName, caseSensitive);
         logger.debug("Active objects will {} manage table {}", should ? "" : "NOT", tableName);
         return should;
     }
