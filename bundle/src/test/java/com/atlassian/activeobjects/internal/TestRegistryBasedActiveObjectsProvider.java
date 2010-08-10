@@ -27,8 +27,6 @@ public class TestRegistryBasedActiveObjectsProvider
     @Mock
     private ActiveObjectsRegistry registry;
     @Mock
-    private ActiveObjectsFactoryResolver resolver;
-    @Mock
     private ActiveObjects activeObjects;
     @Mock
     private ActiveObjectsFactory activeObjectsFactory;
@@ -39,15 +37,14 @@ public class TestRegistryBasedActiveObjectsProvider
     public void setUp() throws Exception
     {
 
-        provider = new RegistryBasedActiveObjectsProvider(registry, resolver, dataSourceTypeResolver);
+        provider = new RegistryBasedActiveObjectsProvider(registry, activeObjectsFactory, dataSourceTypeResolver);
 
         when(registry.get(PLUGIN_KEY_1)).thenReturn(activeObjects);
         when(registry.get(PLUGIN_KEY_2)).thenReturn(null);
         when(registry.register(Matchers.<PluginKey>anyObject(), eq(activeObjects))).thenReturn(activeObjects);
         when(dataSourceTypeResolver.getDataSourceType(PLUGIN_KEY_2)).thenReturn(PLUGIN_KEY_2_DATA_SOURCE_TYPE);
-        when(resolver.get(PLUGIN_KEY_2_DATA_SOURCE_TYPE)).thenReturn(activeObjectsFactory);
 
-        when(activeObjectsFactory.create(PLUGIN_KEY_2)).thenReturn(activeObjects);
+        when(activeObjectsFactory.create(PLUGIN_KEY_2_DATA_SOURCE_TYPE, PLUGIN_KEY_2)).thenReturn(activeObjects);
     }
 
     @Test
@@ -62,7 +59,6 @@ public class TestRegistryBasedActiveObjectsProvider
     {
         assertEquals(activeObjects, provider.get(PLUGIN_KEY_2));
 
-        verify(resolver).get(PLUGIN_KEY_2_DATA_SOURCE_TYPE);
-        verify(activeObjectsFactory).create(PLUGIN_KEY_2);
+        verify(activeObjectsFactory).create(PLUGIN_KEY_2_DATA_SOURCE_TYPE, PLUGIN_KEY_2);
     }
 }

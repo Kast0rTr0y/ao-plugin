@@ -15,7 +15,7 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 /**
  * Creates a new instance of ActiveObjects given a dataSourceProvider
  */
-public final class DataSourceProviderActiveObjectsFactory implements ActiveObjectsFactory
+public final class DataSourceProviderActiveObjectsFactory extends AbstractActiveObjectsFactory
 {
     private final EntityManagerFactory entityManagerFactory;
     private final DataSourceProvider dataSourceProvider;
@@ -23,6 +23,7 @@ public final class DataSourceProviderActiveObjectsFactory implements ActiveObjec
 
     public DataSourceProviderActiveObjectsFactory(EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
     {
+        super(DataSourceType.APPLICATION);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
@@ -35,9 +36,9 @@ public final class DataSourceProviderActiveObjectsFactory implements ActiveObjec
      * @param pluginKey the plugin key of the current plugin
      * @return a new configured, ready to go ActiveObjects instance
      * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.sal.api.sql.DataSourceProvider}
-     *                                      is {@code null}
+     * is {@code null}
      */
-    public ActiveObjects create(PluginKey pluginKey)
+    protected ActiveObjects create(PluginKey pluginKey)
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();

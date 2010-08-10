@@ -57,7 +57,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
         when(dataSourceProvider.getDataSource()).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
-            activeObjectsFactory.create(null);
+            activeObjectsFactory.create(DataSourceType.APPLICATION, null);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
         }
         catch (ActiveObjectsPluginException e)
@@ -75,7 +75,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
         when(entityManagerFactory.getEntityManager(Mockito.<DataSource>anyObject())).thenReturn(entityManager);
 
-        assertNotNull(activeObjectsFactory.create(null));
+        assertNotNull(activeObjectsFactory.create(DataSourceType.APPLICATION, null));
         verify(entityManagerFactory).getEntityManager(Mockito.<DataSource>anyObject());
     }
 }

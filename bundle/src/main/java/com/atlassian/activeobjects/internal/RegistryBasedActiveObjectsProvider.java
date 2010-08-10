@@ -10,13 +10,13 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 public class RegistryBasedActiveObjectsProvider implements ActiveObjectsProvider
 {
     private final ActiveObjectsRegistry registry;
-    private final ActiveObjectsFactoryResolver resolver;
+    private final ActiveObjectsFactory activeObjectsFactory;
     private final DataSourceTypeResolver dataSourceTypeResolver;
 
-    public RegistryBasedActiveObjectsProvider(ActiveObjectsRegistry registry, ActiveObjectsFactoryResolver resolver, DataSourceTypeResolver dataSourceTypeResolver)
+    public RegistryBasedActiveObjectsProvider(ActiveObjectsRegistry registry, ActiveObjectsFactory activeObjectsFactory, DataSourceTypeResolver dataSourceTypeResolver)
     {
         this.registry = checkNotNull(registry);
-        this.resolver = checkNotNull(resolver);
+        this.activeObjectsFactory = checkNotNull(activeObjectsFactory);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
     }
 
@@ -25,7 +25,7 @@ public class RegistryBasedActiveObjectsProvider implements ActiveObjectsProvider
         ActiveObjects ao = registry.get(pluginKey);
         if (ao == null) // we need to create one
         {
-            ao = registry.register(pluginKey, resolver.get(dataSourceTypeResolver.getDataSourceType(pluginKey)).create(pluginKey));
+            ao = registry.register(pluginKey, activeObjectsFactory.create(dataSourceTypeResolver.getDataSourceType(pluginKey), pluginKey));
         }
         return ao;
     }

@@ -15,7 +15,7 @@ import java.io.File;
 
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
 
-public final class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveObjectsFactory
+public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractActiveObjectsFactory
 {
     private static final String USER_NAME = "sa";
     private static final String PASSWORD = "";
@@ -30,6 +30,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveO
 
     public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration configuration, TableNameConverter tableNameConverter, FieldNameConverter fieldNameConverter, SchemaConfiguration schemaConfiguration)
     {
+        super(DataSourceType.HSQLDB);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.configuration = checkNotNull(configuration);
         this.tableNameConverter = checkNotNull(tableNameConverter);
@@ -37,7 +38,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory implements ActiveO
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
-    public ActiveObjects create(PluginKey pluginKey)
+    protected ActiveObjects create(PluginKey pluginKey)
     {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), pluginKey);
         final EntityManager entityManager = getEntityManager(dbDir);

@@ -23,50 +23,42 @@
     <bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
         <constructor-arg index="0" ref="registry"/>
         <constructor-arg index="1">
-            <bean class="com.atlassian.activeobjects.internal.DelegatingActiveObjectsFactoryResolver">
+            <bean class="com.atlassian.activeobjects.internal.DelegatingActiveObjectsFactory">
                 <constructor-arg index="0">
                     <list>
-                        <bean class="com.atlassian.activeobjects.internal.HomeDirectoryHsqlDbActiveObjectsFactoryResolver">
+                        <bean class="com.atlassian.activeobjects.internal.DatabaseDirectoryAwareActiveObjectsFactory">
                             <constructor-arg index="0">
-                                <bean class="com.atlassian.activeobjects.internal.DatabaseDirectoryAwareActiveObjectsFactory">
-                                    <constructor-arg index="0">
-                                        <osgi:reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
-                                    </constructor-arg>
-                                    <constructor-arg index="1">
-                                        <bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
-                                            <constructor-arg ref="activeObjectsConfiguration"/>
-                                        </bean>
-                                    </constructor-arg>
-                                    <constructor-arg index="2" ref="tableNameConverter"/>
-                                    <constructor-arg index="3" ref="fieldNameConverter"/>
-                                    <constructor-arg index="4" ref="schemaConfiguration"/>
+                                <osgi:reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
+                            </constructor-arg>
+                            <constructor-arg index="1">
+                                <bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
+                                    <constructor-arg ref="activeObjectsConfiguration"/>
                                 </bean>
                             </constructor-arg>
+                            <constructor-arg index="2" ref="tableNameConverter"/>
+                            <constructor-arg index="3" ref="fieldNameConverter"/>
+                            <constructor-arg index="4" ref="schemaConfiguration"/>
                         </bean>
-                        <bean class="com.atlassian.activeobjects.internal.ApplicationDataSourceProviderActiveObjectsFactoryResolver">
-                            <constructor-arg>
-                                <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
+                        <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
+                            <constructor-arg index="0">
+                                <bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
                                     <constructor-arg index="0">
-                                        <bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
-                                            <constructor-arg index="0">
-                                                <bean class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
-                                                    <constructor-arg>
-                                                        <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
-                                                    </constructor-arg>
-                                                </bean>
+                                        <bean class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
+                                            <constructor-arg>
+                                                <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
                                             </constructor-arg>
-                                            <constructor-arg index="1" ref="tableNameConverter"/>
-                                            <constructor-arg index="2" ref="fieldNameConverter"/>
-                                            <constructor-arg index="3" ref="schemaConfiguration"/>
                                         </bean>
                                     </constructor-arg>
-                                    <constructor-arg index="1">
-                                        <osgi:reference interface="com.atlassian.sal.api.sql.DataSourceProvider" timeout="5000"/>
-                                    </constructor-arg>
-                                    <constructor-arg index="2">
-                                        <osgi:reference interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="5000"/>
-                                    </constructor-arg>
+                                    <constructor-arg index="1" ref="tableNameConverter"/>
+                                    <constructor-arg index="2" ref="fieldNameConverter"/>
+                                    <constructor-arg index="3" ref="schemaConfiguration"/>
                                 </bean>
+                            </constructor-arg>
+                            <constructor-arg index="1">
+                                <osgi:reference interface="com.atlassian.sal.api.sql.DataSourceProvider" timeout="5000"/>
+                            </constructor-arg>
+                            <constructor-arg index="2">
+                                <osgi:reference interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="5000"/>
                             </constructor-arg>
                         </bean>
                     </list>
