@@ -9,9 +9,6 @@
         <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused -->
         <beans:bean class="com.atlassian.activeobjects.internal.ActiveObjectsServiceFactory">
             <beans:constructor-arg index="0" ref="aoProvider"/>
-            <beans:constructor-arg index="1">
-                <beans:bean class="com.atlassian.activeobjects.internal.PluginKeyFactoryImpl"/>
-            </beans:constructor-arg>
         </beans:bean>
     </service>
 

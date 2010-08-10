@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.osgi.framework.Bundle;
 
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
 
@@ -21,6 +22,12 @@ final class PluginKey
     PluginKey(String bundleSymbolicName)
     {
         this.bundleSymbolicName = checkNotNull(bundleSymbolicName);
+    }
+
+    public static PluginKey fromBundle(Bundle bundle)
+    {
+        checkNotNull(bundle);
+        return new PluginKey(bundle.getSymbolicName());
     }
 
     @Override

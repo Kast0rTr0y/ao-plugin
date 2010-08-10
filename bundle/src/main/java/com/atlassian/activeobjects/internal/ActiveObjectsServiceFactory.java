@@ -17,14 +17,12 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 public class ActiveObjectsServiceFactory implements ServiceFactory
 {
     private final ActiveObjectsProvider provider;
-    private final PluginKeyFactory keyFactory;
 //    private final BackupRegistry backupRegistry;
 //    private final ActiveObjectsBackupFactory backupFactory;
 
-    public ActiveObjectsServiceFactory(ActiveObjectsProvider provider, PluginKeyFactory keyFactory)
+    public ActiveObjectsServiceFactory(ActiveObjectsProvider provider)
     {
         this.provider = checkNotNull(provider);
-        this.keyFactory = checkNotNull(keyFactory);
 //        this.backupFactory = checkNotNull(backupFactory);
     }
 
@@ -42,7 +40,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory
 
     private DelegatingActiveObjects createActiveObjects(Bundle bundle)
     {
-        return new DelegatingActiveObjects(keyFactory.get(bundle), provider);
+        return new DelegatingActiveObjects(PluginKey.fromBundle(bundle), provider);
     }
 
     private void registerForBackup(Bundle bundle, ActiveObjects ao)

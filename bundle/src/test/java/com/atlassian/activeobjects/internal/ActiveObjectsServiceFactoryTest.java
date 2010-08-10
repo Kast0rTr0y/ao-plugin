@@ -21,8 +21,6 @@ public class ActiveObjectsServiceFactoryTest
 
     @Mock
     private ActiveObjectsProvider provider;
-    @Mock
-    private PluginKeyFactory keyFactory;
 
 //    @Mock
 //    private BackupRegistry backupRegistry;
@@ -33,14 +31,14 @@ public class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(provider, keyFactory);
+        serviceFactory = new ActiveObjectsServiceFactory(provider);
     }
 
     @Test
     public void testGetService()
     {
         final Bundle bundle = mock(Bundle.class);
-        when(keyFactory.get(bundle)).thenReturn(new PluginKey("a-key"));
+        when(bundle.getSymbolicName()).thenReturn("a-key");
 
         final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
         assertNotNull(ao);
@@ -54,6 +52,6 @@ public class ActiveObjectsServiceFactoryTest
     public void testUnGetService()
     {
         serviceFactory.ungetService(null, null, null);
-        verifyZeroInteractions(provider, keyFactory);
+        verifyZeroInteractions(provider);
     }
 }
