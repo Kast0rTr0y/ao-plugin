@@ -2,6 +2,8 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 
+import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+
 /**
  * Abstract implementation of {@link com.atlassian.activeobjects.internal.ActiveObjectsFactory} that implements the
  * basic contract for a single {@link com.atlassian.activeobjects.internal.DataSourceType}.
@@ -12,7 +14,7 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 
     AbstractActiveObjectsFactory(DataSourceType dataSourceType)
     {
-        this.supportedDataSourceType = dataSourceType;
+        this.supportedDataSourceType = checkNotNull(dataSourceType);
     }
 
     public final boolean accept(DataSourceType dataSourceType)
