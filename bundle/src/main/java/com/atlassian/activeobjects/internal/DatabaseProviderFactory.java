@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 
 import javax.sql.DataSource;
@@ -9,5 +10,5 @@ import javax.sql.DataSource;
  */
 public interface DatabaseProviderFactory
 {
-    DatabaseProvider getDatabaseProvider(DataSource dataSource);
+    DatabaseProvider getDatabaseProvider(DataSource dataSource, DatabaseType databaseType);
 }

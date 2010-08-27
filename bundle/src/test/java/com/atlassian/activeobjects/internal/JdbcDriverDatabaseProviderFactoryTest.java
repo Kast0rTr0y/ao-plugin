@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.db.ClientDerbyDatabaseProvider;
 import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
@@ -33,8 +34,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class JdbcDriverDatabaseProviderFactoryTest
 {
-    private DatabaseProviderFactory databaseProviderFactory;
+    private static final String SOME_UNKOWN_DRIVER = "com.example.jdbc.SomeUnkownDriver";
 
+    private DatabaseProviderFactory databaseProviderFactory;
     @Mock
     private DriverNameExtractor driverNameExtractor;
 
@@ -54,72 +56,113 @@ public class JdbcDriverDatabaseProviderFactoryTest
     @Test
     public void testGetDatabaseProviderForUnknownDriver() throws Exception
     {
-        final String driverClassName = "com.example.jdbc.SomeUnkownDriver";
         try
         {
-            databaseProviderFactory.getDatabaseProvider(getMockDataSource(driverClassName));
+            databaseProviderFactory.getDatabaseProvider(getMockDataSource(SOME_UNKOWN_DRIVER), DatabaseType.UNKNOWN);
             fail("Should have thrown " + DatabaseProviderNotFoundException.class.getName());
         }
         catch (DatabaseProviderNotFoundException e)
         {
-            assertEquals(driverClassName, e.getDriverClassName());
+            assertEquals(SOME_UNKOWN_DRIVER, e.getDriverClassName());
         }
     }
 
     @Test
     public void testGetDatabaseProviderForMySqlDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(MySQLDatabaseProvider.class, "com.mysql.jdbc.Driver");
+        testGetProviderOfTypeForDriverClassName(MySQLDatabaseProvider.class, "com.mysql.jdbc.Driver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForMySqlDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(MySQLDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.MYSQL);
     }
 
     @Test
     public void testGetDatabaseProviderForClientDerbyDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, "org.apache.derby.jdbc.ClientDriver");
+        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, "org.apache.derby.jdbc.ClientDriver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForClientDerbyDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.DEBRY_NETWORK);
     }
 
     @Test
     @Ignore
     public void testGetDatabaseProviderForEmbeddedDerbyDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(EmbeddedDerbyDatabaseProvider.class, "org.apache.derby.jdbc.EmbeddedDriver");
+        testGetProviderOfTypeForDriverClassName(EmbeddedDerbyDatabaseProvider.class, "org.apache.derby.jdbc.EmbeddedDriver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForEmbeddedDerbyDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(EmbeddedDerbyDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.DERBY_EMBEDDED);
     }
 
     @Test
     public void testGetDatabaseProviderForOracleDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(OracleDatabaseProvider.class, "oracle.jdbc.OracleDriver");
+        testGetProviderOfTypeForDriverClassName(OracleDatabaseProvider.class, "oracle.jdbc.OracleDriver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForOracleDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(OracleDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.ORACLE);
     }
 
     @Test
     public void testGetDatabaseProviderForPostgresDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, "org.postgresql.Driver");
+        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, "org.postgresql.Driver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForPostgresDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.POSTGRES);
     }
 
     @Test
     public void testGetDatabaseProviderForMsSqlDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForMsSqlDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.MS_SQL);
     }
 
     @Test
     public void testGetDatabaseProviderForJtdsDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver");
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.UNKNOWN);
     }
 
     @Test
     public void testGetDatabaseProviderForHsqlDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(HSQLDatabaseProvider.class, "org.hsqldb.jdbcDriver");
+        testGetProviderOfTypeForDriverClassName(HSQLDatabaseProvider.class, "org.hsqldb.jdbcDriver", DatabaseType.UNKNOWN);
     }
 
-    private void testGetProviderOfTypeForDriverClassName(Class<? extends DatabaseProvider> providerClass, String driver) throws Exception
+    @Test
+    public void testGetDatabaseProviderForHsqlDatabaseType() throws Exception
+    {
+        testGetProviderOfTypeForDriverClassName(HSQLDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.HSQL);
+    }
+
+    private void testGetProviderOfTypeForDriverClassName(Class<? extends DatabaseProvider> providerClass, String driver, DatabaseType databaseType) throws Exception
     {
         final DataSource dataSource = getMockDataSource(driver);
 
-        final DatabaseProvider provider = databaseProviderFactory.getDatabaseProvider(dataSource);
+        final DatabaseProvider provider = databaseProviderFactory.getDatabaseProvider(dataSource, databaseType);
         assertNotNull(provider);
         assertEquals(providerClass, provider.getClass());
     }

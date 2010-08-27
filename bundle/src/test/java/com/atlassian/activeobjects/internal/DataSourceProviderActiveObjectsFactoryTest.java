@@ -1,7 +1,8 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.sal.api.sql.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import net.java.ao.EntityManager;
 import org.junit.After;
@@ -73,9 +74,19 @@ public class DataSourceProviderActiveObjectsFactoryTest
         final EntityManager entityManager = mock(EntityManager.class);
 
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
-        when(entityManagerFactory.getEntityManager(Mockito.<DataSource>anyObject())).thenReturn(entityManager);
+        when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType())).thenReturn(entityManager);
 
         assertNotNull(activeObjectsFactory.create(DataSourceType.APPLICATION, null));
-        verify(entityManagerFactory).getEntityManager(Mockito.<DataSource>anyObject());
+        verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType());
+    }
+
+    private static DataSource anyDataSource()
+    {
+        return Mockito.anyObject();
+    }
+
+    private static DatabaseType anyDatabaseType()
+    {
+        return Mockito.anyObject();
     }
 }

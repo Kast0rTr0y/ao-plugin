@@ -55,7 +55,7 @@
                                 </bean>
                             </constructor-arg>
                             <constructor-arg index="1">
-                                <osgi:reference interface="com.atlassian.sal.api.sql.DataSourceProvider" timeout="5000"/>
+                                <osgi:reference interface="com.atlassian.activeobjects.spi.DataSourceProvider" timeout="5000"/>
                             </constructor-arg>
                             <constructor-arg index="2">
                                 <osgi:reference interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="5000"/>

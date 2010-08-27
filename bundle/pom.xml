@@ -2,18 +2,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
-        <artifactId>activeobjects-parent-pom</artifactId>
+        <artifactId>activeobjects-plugin-parent-pom</artifactId>
         <version>0.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>activeobjects-plugin</artifactId>
     <packaging>atlassian-plugin</packaging>
-    <name>ActiveObjects Bundle Plugin</name>
+    <name>ActiveObjects Plugin - OSGi Bundle</name>
 
-    <description>
-        An OSGi bundle that provides a service that allows plugins to persist
-        objects using the ActiveObjects framework
-    </description>
+    <description>An OSGi bundle that provides a service that allows plugins to persist objects using the ActiveObjects framework</description>
 
     <build>
         <plugins>
@@ -27,9 +24,10 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
+                            com.atlassian.activeobjects.spi;version="${project.version}",
                             com.atlassian.sal.api;version="2.0",
+                            com.atlassian.sal.api.backup,
                             com.atlassian.sal.api.pluginsettings;version="2.0",
-                            com.atlassian.sal.api.sql,
                             com.atlassian.sal.api.transaction;version="2.0",
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.*;resolution:=optional;version="0.0.0",
@@ -42,15 +40,14 @@
                             org.osgi.util.tracker;version="1.3",
                             snaq.db;resolution:=optional;version="4.9",
                             org.slf4j;version="1.5",
-                            com.atlassian.activeobjects.external;version="${project.version}",
                             org.hsqldb*;version="1.8",
                             org.springframework.osgi.service*,
                             org.springframework.osgi.context*,
                         </Import-Package>
                         <Private-Package>com.google.gson*</Private-Package>
                         <Export-Package>
-                            com.atlassian.activeobjects.external,
-                            net.java.ao.*;version="0.8.2",
+                            com.atlassian.activeobjects.external;version="${project.version}",
+                            net.java.ao.*;version="${ao.version}",
                             org.hsqldb*;version="1.8.0.7",
                         </Export-Package>
                     </instructions>
@@ -68,6 +65,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-spi</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.java.dev.activeobjects</groupId>
             <artifactId>activeobjects</artifactId>
         </dependency>
@@ -76,15 +82,6 @@
             <artifactId>commons-lang</artifactId>
             <version>2.4</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.atlassian.sal</groupId>
-            <artifactId>sal-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.osgi</groupId>

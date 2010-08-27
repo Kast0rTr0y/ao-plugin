@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.EntityManager;
 import net.java.ao.EntityManagerConfiguration;
 import net.java.ao.SchemaConfiguration;
@@ -26,9 +27,9 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
-    public EntityManager getEntityManager(DataSource dataSource)
+    public EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType)
     {
-        return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource), new DataSourceEntityManagerConfiguration(), new EventManagerImpl());
+        return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType), new DataSourceEntityManagerConfiguration(), new EventManagerImpl());
     }
 
     private class DataSourceEntityManagerConfiguration implements EntityManagerConfiguration

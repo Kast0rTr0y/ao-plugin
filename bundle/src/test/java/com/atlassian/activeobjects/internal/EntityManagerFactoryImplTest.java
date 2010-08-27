@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.FieldNameConverter;
@@ -52,11 +53,12 @@ public class EntityManagerFactoryImplTest
     public void testGetEntityManager() throws Exception
     {
         final DataSource dataSource = mock(DataSource.class);
+        final DatabaseType databaseType = DatabaseType.UNKNOWN;
         final DatabaseProvider databaseProvider = mock(DatabaseProvider.class);
 
-        when(databaseProviderFactory.getDatabaseProvider(dataSource)).thenReturn(databaseProvider);
-        assertNotNull(entityManagerFactory.getEntityManager(dataSource));
+        when(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType)).thenReturn(databaseProvider);
+        assertNotNull(entityManagerFactory.getEntityManager(dataSource, databaseType));
 
-        verify(databaseProviderFactory).getDatabaseProvider(dataSource);
+        verify(databaseProviderFactory).getDatabaseProvider(dataSource, databaseType);
     }
 }

@@ -2,7 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.sal.api.sql.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
 import javax.sql.DataSource;
@@ -31,18 +31,18 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
 
     /**
      * Creates an {@link com.atlassian.activeobjects.external.ActiveObjects} using the
-     * {@link com.atlassian.sal.api.sql.DataSourceProvider}
+     * {@link com.atlassian.activeobjects.spi.DataSourceProvider}
      *
      * @param pluginKey the plugin key of the current plugin
      * @return a new configured, ready to go ActiveObjects instance
-     * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.sal.api.sql.DataSourceProvider}
+     * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.activeobjects.spi.DataSourceProvider}
      * is {@code null}
      */
     protected ActiveObjects create(PluginKey pluginKey)
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();
-        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource), new SalTransactionManager(transactionTemplate));
+        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType()), new SalTransactionManager(transactionTemplate));
     }
 
     private DataSource getDataSource()
