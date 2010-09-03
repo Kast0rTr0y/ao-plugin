@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
@@ -38,6 +39,9 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Mock
     private TransactionTemplate transactionTemplate;
 
+    @Mock
+    private ActiveObjectsConfiguration configuration;
+
     @Before
     public void setUp()
     {
@@ -56,9 +60,10 @@ public class DataSourceProviderActiveObjectsFactoryTest
     public void testCreateWithNullDataSource() throws Exception
     {
         when(dataSourceProvider.getDataSource()).thenReturn(null); // not really needed, but just to make the test clear
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         try
         {
-            activeObjectsFactory.create(DataSourceType.APPLICATION, null);
+            activeObjectsFactory.create(configuration);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
         }
         catch (ActiveObjectsPluginException e)
@@ -75,8 +80,9 @@ public class DataSourceProviderActiveObjectsFactoryTest
 
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType())).thenReturn(entityManager);
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
 
-        assertNotNull(activeObjectsFactory.create(DataSourceType.APPLICATION, null));
+        assertNotNull(activeObjectsFactory.create(configuration));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType());
     }
 

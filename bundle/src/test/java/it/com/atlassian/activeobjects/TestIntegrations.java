@@ -192,8 +192,6 @@ public class TestIntegrations extends PluginInContainerTestBase
         installConsumerPlugin();
 
         final ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) tracker.waitForService(10000);
-        runnable.init();
-
         final AtomicBoolean failFlag = new AtomicBoolean(false);
         Runnable r = new Runnable()
         {
@@ -345,7 +343,6 @@ public class TestIntegrations extends PluginInContainerTestBase
     private void callActiveObjectsConsumer(ServiceTracker tracker) throws Exception
     {
         ActiveObjectsTestConsumer runnable = (ActiveObjectsTestConsumer) tracker.waitForService(10000);
-        runnable.init();
         runnable.run();
     }
 
@@ -400,9 +397,6 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "  public FooComponent(ActiveObjects mgr) throws Exception {",
                         "    this.mgr = mgr;",
                         "  }",
-                        "  public void init() throws Exception {",
-                        "    mgr.migrate(new Class[]{my.Foo.class});",
-                        "  }",
                         "  public Object run() throws Exception {",
                         "    return mgr.executeInTransaction(this);",
                         "  }",
@@ -425,7 +419,9 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "        <version>1.0</version>",
                         "    </plugin-info>",
                         "    <component key='obj' class='my.FooComponent' public='true' interface='it.com.atlassian.activeobjects.ActiveObjectsTestConsumer' />",
-                        "    <ao key='ao' />",
+                        "    <ao key='ao'>",
+                        "        <entity>my.Foo</entity>",
+                        "    </ao>",
                         "    <component-import key='emp' interface='com.atlassian.activeobjects.external.ActiveObjects' />",
                         "</atlassian-plugin>")
                 .build();

@@ -1,10 +1,12 @@
-package com.atlassian.activeobjects.internal;
+package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactory;
-import com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtils;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.backup.Backup;
 import com.atlassian.sal.api.backup.BackupRegistry;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,14 +24,15 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ActiveObjectsServiceFactoryTest
+public final class ActiveObjectsServiceFactoryTest
 {
-    private static final String BUNDLE_SYMBOLIC_NAME = "a-key";
-
     private ActiveObjectsServiceFactory serviceFactory;
 
     @Mock
-    private ActiveObjectOsgiServiceUtils osgiUtils;
+    private ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils;
+
+    @Mock
+    private ActiveObjectsConfiguration configuration;
 
     @Mock
     private ActiveObjectsProvider provider;
@@ -51,7 +54,7 @@ public class ActiveObjectsServiceFactoryTest
     {
         serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, provider, backupRegistry, backupFactory);
 
-        when(bundle.getSymbolicName()).thenReturn(BUNDLE_SYMBOLIC_NAME);
+        when(osgiUtils.getService(bundle)).thenReturn(configuration);
         when(backupFactory.getBackup(eq(bundle), anyActiveObjects())).thenReturn(backup);
     }
 
@@ -62,7 +65,7 @@ public class ActiveObjectsServiceFactoryTest
         assertNotNull(ao);
         assertTrue(ao instanceof DelegatingActiveObjects);
 
-        assertEquals(new PluginKey(BUNDLE_SYMBOLIC_NAME), ((DelegatingActiveObjects) ao).getPluginKey());
+        Assert.assertEquals(configuration, ((DelegatingActiveObjects) ao).getConfiguration());
         assertEquals(provider, ((DelegatingActiveObjects) ao).getProvider());
 
         verify(backupRegistry).register(backup);

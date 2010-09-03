@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.ApplicationProperties;
 import net.java.ao.EntityManager;
 import net.java.ao.SchemaConfiguration;
@@ -38,9 +39,10 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
-    protected ActiveObjects create(PluginKey pluginKey)
+    @Override
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration)
     {
-        final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), pluginKey);
+        final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), configuration.getPluginKey());
         final EntityManager entityManager = getEntityManager(dbDir);
         return new DatabaseDirectoryAwareEntityManagedActiveObjects(entityManager, new EntityManagedTransactionManager(entityManager));
     }

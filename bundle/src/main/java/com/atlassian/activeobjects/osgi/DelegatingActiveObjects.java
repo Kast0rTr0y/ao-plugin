@@ -1,6 +1,8 @@
-package com.atlassian.activeobjects.internal;
+package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.Query;
@@ -15,14 +17,14 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link com.atlassian.activeobjects.internal.ActiveObjectsProvider}</p>
  */
-public final class DelegatingActiveObjects implements ActiveObjects
+final class DelegatingActiveObjects implements ActiveObjects
 {
-    private final PluginKey pluginKey;
+    private final ActiveObjectsConfiguration configuration;
     private final ActiveObjectsProvider provider;
 
-    public DelegatingActiveObjects(PluginKey pluginKey, ActiveObjectsProvider provider)
+    public DelegatingActiveObjects(ActiveObjectsConfiguration configuration, ActiveObjectsProvider provider)
     {
-        this.pluginKey = checkNotNull(pluginKey);
+        this.configuration = checkNotNull(configuration);
         this.provider = checkNotNull(provider);
     }
 
@@ -121,9 +123,9 @@ public final class DelegatingActiveObjects implements ActiveObjects
         return getDelegate().executeInTransaction(callback);
     }
 
-    PluginKey getPluginKey()
+    ActiveObjectsConfiguration getConfiguration()
     {
-        return pluginKey;
+        return configuration;
     }
 
     ActiveObjectsProvider getProvider()
@@ -133,6 +135,6 @@ public final class DelegatingActiveObjects implements ActiveObjects
 
     private ActiveObjects getDelegate()
     {
-        return provider.get(pluginKey);
+        return provider.get(configuration);
     }
 }

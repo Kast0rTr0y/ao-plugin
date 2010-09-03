@@ -32,6 +32,7 @@
                             com.atlassian.sal.api.transaction;version="2.0",
                             com.atlassian.plugin*,
                             com.atlassian.plugin.osgi.external*,
+                            org.dom4j*,
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.*;resolution:=optional;version="0.0.0",
                             net.java.ao*;version="0.8",

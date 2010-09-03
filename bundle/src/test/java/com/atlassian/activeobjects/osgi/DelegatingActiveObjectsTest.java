@@ -1,6 +1,8 @@
-package com.atlassian.activeobjects.internal;
+package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
@@ -21,24 +23,27 @@ import static org.mockito.Mockito.when;
 
 /**
  * The main reason for this tests is to ensure that we use the private
- * {@link com.atlassian.activeobjects.internal.DelegatingActiveObjects#getDelegate()} method.
+ * {@link com.atlassian.activeobjects.osgi.DelegatingActiveObjects#getDelegate()} method.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DelegatingActiveObjectsTest
 {
-    private static final PluginKey PLUGIN_KEY = new PluginKey("plugin-key");
-
     private ActiveObjects activeObjects;
+
+    @Mock
+    private ActiveObjectsConfiguration configuration;
+
     @Mock
     private ActiveObjectsProvider provider;
+
     @Mock
     private ActiveObjects delegateActiveObjects;
 
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(PLUGIN_KEY, provider);
-        when(provider.get(PLUGIN_KEY)).thenReturn(delegateActiveObjects);
+        activeObjects = new DelegatingActiveObjects(configuration, provider);
+        when(provider.get(configuration)).thenReturn(delegateActiveObjects);
     }
 
     @Test
@@ -46,7 +51,7 @@ public class DelegatingActiveObjectsTest
     {
         activeObjects.migrate(AnEntity.class);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).migrate(AnEntity.class);
     }
 
@@ -55,7 +60,7 @@ public class DelegatingActiveObjectsTest
     {
         activeObjects.flushAll();
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).flushAll();
     }
 
@@ -64,7 +69,7 @@ public class DelegatingActiveObjectsTest
     {
         activeObjects.flush();
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).flush();
     }
 
@@ -74,7 +79,7 @@ public class DelegatingActiveObjectsTest
         final Integer key = 1;
         activeObjects.get(AnEntity.class, key);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).get(AnEntity.class, key);
     }
 
@@ -85,7 +90,7 @@ public class DelegatingActiveObjectsTest
         final Integer key2 = 2;
         activeObjects.get(AnEntity.class, key1, key2);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).get(AnEntity.class, key1, key2);
     }
 
@@ -95,7 +100,7 @@ public class DelegatingActiveObjectsTest
         final HashMap<String, Object> aMap = new HashMap<String, Object>();
         activeObjects.create(AnEntity.class, aMap);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).create(AnEntity.class, aMap);
 
     }
@@ -106,7 +111,7 @@ public class DelegatingActiveObjectsTest
         final DBParam dbParam = new DBParam("field", "value");
         activeObjects.create(AnEntity.class, dbParam);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).create(AnEntity.class, dbParam);
     }
 
@@ -116,7 +121,7 @@ public class DelegatingActiveObjectsTest
         final AnEntity entity = new AnEntity();
         activeObjects.delete(entity);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).delete(entity);
     }
 
@@ -125,7 +130,7 @@ public class DelegatingActiveObjectsTest
     {
         activeObjects.find(AnEntity.class);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(AnEntity.class);
     }
 
@@ -138,7 +143,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.find(type, criteria, param);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(type, criteria, param);
     }
 
@@ -150,7 +155,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.find(type, query);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(type, query);
     }
 
@@ -163,7 +168,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.find(type, field, query);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(type, field, query);
     }
 
@@ -177,7 +182,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.findWithSQL(type, keyField, sql, param);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).findWithSQL(type, keyField, sql, param);
     }
 
@@ -188,7 +193,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.count(type);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).count(type);
     }
 
@@ -201,7 +206,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.count(type, criteria, param);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).count(type, criteria, param);
     }
 
@@ -213,7 +218,7 @@ public class DelegatingActiveObjectsTest
 
         activeObjects.count(type, query);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).count(type, query);
     }
 
@@ -223,7 +228,7 @@ public class DelegatingActiveObjectsTest
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
 
-        verify(provider).get(PLUGIN_KEY);
+        verify(provider).get(configuration);
         verify(delegateActiveObjects).executeInTransaction(callback);
     }
 

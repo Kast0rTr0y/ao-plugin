@@ -1,19 +1,25 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
 /**
- *
+ * Testing {@link com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry}
  */
-public class WeakReferencedActiveObjectsRegistryTest
+@RunWith(MockitoJUnitRunner.class)
+public final class WeakReferencedActiveObjectsRegistryTest
 {
     private WeakReferencedActiveObjectsRegistry registry;
+
+    private ActiveObjectsConfiguration configuration;
 
     @Before
     public void setUp() throws Exception
@@ -24,38 +30,36 @@ public class WeakReferencedActiveObjectsRegistryTest
     @Test
     public void testGet() throws Exception
     {
-        assertNull(registry.get(new PluginKey("a-not-so-random-key")));
+        assertNull(registry.get(configuration));
     }
 
     @Test
     public void testRegister() throws Exception
     {
-        final PluginKey key = new PluginKey("a-key");
         final ActiveObjects ao = mock(ActiveObjects.class);
 
-        assertNull(registry.get(key));
-        assertEquals(ao, registry.register(key, ao));
-        assertEquals(ao, registry.get(key));
+        assertNull(registry.get(configuration));
+        assertEquals(ao, registry.register(configuration, ao));
+        assertEquals(ao, registry.get(configuration));
     }
 
     @Test
     public void testOnDirectoryUpdated() throws Exception
     {
-        final PluginKey key1 = new PluginKey("key1");
-        final PluginKey key2 = new PluginKey("key2");
+        final ActiveObjectsConfiguration configuration2 = mock(ActiveObjectsConfiguration.class);
         final ActiveObjects ao1 = mock(ActiveObjects.class);
         final ActiveObjects ao2 = mock(DatabaseDirectoryAwareActiveObjects.class);
 
-        registry.register(key1, ao1);
-        registry.register(key2, ao2);
+        registry.register(configuration, ao1);
+        registry.register(configuration2, ao2);
 
-        assertEquals(ao1, registry.get(key1));
-        assertEquals(ao2, registry.get(key2));
+        assertEquals(ao1, registry.get(configuration));
+        assertEquals(ao2, registry.get(configuration2));
 
         registry.onDirectoryUpdated();
 
-        assertEquals(ao1, registry.get(key1));
-        assertNull(registry.get(key2));
+        assertEquals(ao1, registry.get(configuration));
+        assertNull(registry.get(configuration2));
     }
 
     private static interface DatabaseDirectoryAwareActiveObjects extends ActiveObjects, DatabaseDirectoryAware

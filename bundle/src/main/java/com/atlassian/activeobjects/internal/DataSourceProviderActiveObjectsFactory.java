@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
@@ -33,12 +34,13 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
      * Creates an {@link com.atlassian.activeobjects.external.ActiveObjects} using the
      * {@link com.atlassian.activeobjects.spi.DataSourceProvider}
      *
-     * @param pluginKey the plugin key of the current plugin
+     * @param configuration the configuration of active objects
      * @return a new configured, ready to go ActiveObjects instance
      * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.activeobjects.spi.DataSourceProvider}
      * is {@code null}
      */
-    protected ActiveObjects create(PluginKey pluginKey)
+    @Override
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration)
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();

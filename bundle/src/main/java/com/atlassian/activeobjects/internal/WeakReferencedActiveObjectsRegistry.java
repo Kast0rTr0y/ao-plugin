@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -9,24 +10,24 @@ import java.util.Map;
 
 public class WeakReferencedActiveObjectsRegistry implements ActiveObjectsRegistry, DatabaseDirectoryListener
 {
-    private final Map<PluginKey, WeakReference<ActiveObjects>> cache = new HashMap<PluginKey, WeakReference<ActiveObjects>>();
+    private final Map<ActiveObjectsConfiguration, WeakReference<ActiveObjects>> cache = new HashMap<ActiveObjectsConfiguration, WeakReference<ActiveObjects>>();
 
-    public synchronized ActiveObjects get(PluginKey pluginKey)
+    public synchronized ActiveObjects get(ActiveObjectsConfiguration configuration)
     {
-        return cache.get(pluginKey) != null ? cache.get(pluginKey).get() : null;
+        return cache.get(configuration) != null ? cache.get(configuration).get() : null;
     }
 
-    public synchronized ActiveObjects register(PluginKey pluginKey, ActiveObjects ao)
+    public synchronized ActiveObjects register(ActiveObjectsConfiguration configuration, ActiveObjects ao)
     {
-        cache.put(pluginKey, new WeakReference<ActiveObjects>(ao));
+        cache.put(configuration, new WeakReference<ActiveObjects>(ao));
         return ao;
     }
 
     public synchronized void onDirectoryUpdated()
     {
-        for (Iterator<Map.Entry<PluginKey, WeakReference<ActiveObjects>>> it = cache.entrySet().iterator(); it.hasNext();)
+        for (Iterator<Map.Entry<ActiveObjectsConfiguration, WeakReference<ActiveObjects>>> it = cache.entrySet().iterator(); it.hasNext();)
         {
-            final Map.Entry<PluginKey, WeakReference<ActiveObjects>> aoEntry = it.next();
+            final Map.Entry<ActiveObjectsConfiguration, WeakReference<ActiveObjects>> aoEntry = it.next();
             if (aoEntry.getValue() != null && aoEntry.getValue().get() != null && aoEntry.getValue().get() instanceof DatabaseDirectoryAware)
             {
                 it.remove();

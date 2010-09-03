@@ -1,17 +1,29 @@
 package com.atlassian.activeobjects.plugin;
 
-import com.atlassian.activeobjects.internal.config.ActiveObjectsBundleConfiguration;
+import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.internal.DataSourceType;
+import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
+import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtils;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.plugin.util.validation.ValidationPattern;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import net.java.ao.RawEntity;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.dom4j.Element;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceRegistration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
@@ -19,21 +31,33 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 /**
  * <p>The module descriptor for active objects.</p>
  * <p>This parses the 'ao' module definition and registers a 'bundle specific'
- * {@link com.atlassian.activeobjects.internal.config.ActiveObjectsBundleConfiguration configuration}
+ * {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration configuration}
  * as an OSGi service.</p>
  * <p>This configuration is then looked up when the active object service is requested by the given bundle
  * through a &lt;component-import ... &gt; module to configure the service appropriately.</p>
  */
 public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
 {
+    private final Logger logger  = LoggerFactory.getLogger(this.getClass());
+
     /**
      * Easy registration of service
      */
-    private final ActiveObjectOsgiServiceUtils<ActiveObjectsBundleConfiguration> osgiUtils;
+    private final ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils;
 
-    public ActiveObjectModuleDescriptor(ActiveObjectOsgiServiceUtils<ActiveObjectsBundleConfiguration> osgiUtils)
+
+    private final DataSourceTypeResolver dataSourceTypeResolver;
+
+    /**
+     * The service registration for the active objects configuration, defined by this plugin.
+     */
+    private ServiceRegistration activeObjectsConfigurationServiceRegistration;
+
+    public ActiveObjectModuleDescriptor(ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils,
+                                        DataSourceTypeResolver dataSourceTypeResolver)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
+        this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
     }
 
     @Override
@@ -50,7 +74,17 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
     public void init(Plugin plugin, Element element) throws PluginParseException
     {
         super.init(plugin, element);
-        osgiUtils.registerService(getBundle(), getActiveObjectsBundleConfiguration());
+        activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), getActiveObjectsBundleConfiguration(element));
+    }
+
+    @Override
+    public void disabled()
+    {
+        if (activeObjectsConfigurationServiceRegistration != null)
+        {
+            activeObjectsConfigurationServiceRegistration.unregister();
+        }
+        super.disabled();
     }
 
     @Override
@@ -59,9 +93,49 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         return null; // no module
     }
 
-    private ActiveObjectsBundleConfiguration getActiveObjectsBundleConfiguration()
+    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Element element)
     {
-        return new DefaultActiveObjectsBundleConfiguration();
+        final DefaultActiveObjectsConfiguration configuration =
+                new DefaultActiveObjectsConfiguration(PluginKey.fromBundle(getBundle()), dataSourceTypeResolver);
+
+        configuration.setEntities(getEntities(element));
+        return configuration;
+    }
+
+    private Set<Class<? extends RawEntity<?>>> getEntities(Element element)
+    {
+        return Sets.newHashSet(Iterables.transform(getEntityClassNames(element), new Function<String, Class<? extends RawEntity<?>>>()
+        {
+            public Class<? extends RawEntity<?>> apply(String entityClassName)
+            {
+                return getEntityClass(entityClassName);
+            }
+        }));
+    }
+
+    private Class<? extends RawEntity<?>> getEntityClass(String entityClassName)
+    {
+        try
+        {
+            return getPlugin().loadClass(entityClassName, getClass());
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new ActiveObjectsPluginException(e);
+        }
+    }
+
+    private Iterable<String> getEntityClassNames(Element element)
+    {
+        return Iterables.transform(getSubElements(element, "entity"), new Function<Element, String>()
+        {
+            public String apply(Element entityElement)
+            {
+                final String entityClassName = entityElement.getText().trim();
+                logger.debug("Found entity class <{}>", entityClassName);
+                return entityClassName;
+            }
+        });
     }
 
     private Bundle getBundle()
@@ -69,11 +143,74 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         return ((OsgiPlugin) getPlugin()).getBundle();
     }
 
-    private static class DefaultActiveObjectsBundleConfiguration implements ActiveObjectsBundleConfiguration
+    @SuppressWarnings("unchecked")
+    private static List<Element> getSubElements(Element element, String name)
     {
+        return element.elements(name);
+    }
+
+    /**
+     * <p>Default implementation of the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration}.</p>
+     * <p>Note: it implements {@link #hashCode()} and {@link #equals(Object)} correctly to be used safely with collections. Those
+     * implementation are based solely on the {@link com.atlassian.activeobjects.internal.PluginKey} and nothing else as this is
+     * the only immutable field.</p>
+     */
+    private static class DefaultActiveObjectsConfiguration implements ActiveObjectsConfiguration
+    {
+        private final PluginKey pluginKey;
+        private final DataSourceTypeResolver dataSourceTypeResolver;
+        private Set<Class<? extends RawEntity<?>>> entities;
+
+        public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
+        {
+            this.pluginKey = checkNotNull(pluginKey);
+            this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
+        }
+
+        public PluginKey getPluginKey()
+        {
+            return pluginKey;
+        }
+
+        public DataSourceType getDataSourceType()
+        {
+            return dataSourceTypeResolver.getDataSourceType(pluginKey);
+        }
+
         public Set<Class<? extends RawEntity<?>>> getEntities()
         {
-            return Collections.emptySet();
+            return entities;
+        }
+
+        public void setEntities(Set<Class<? extends RawEntity<?>>> entities)
+        {
+            this.entities = entities;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return new HashCodeBuilder(5, 13).append(pluginKey).toHashCode();
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (o == null)
+            {
+                return false;
+            }
+            if (o == this)
+            {
+                return true;
+            }
+            if (o.getClass() != getClass())
+            {
+                return false;
+            }
+
+            final DefaultActiveObjectsConfiguration configuration = (DefaultActiveObjectsConfiguration) o;
+            return new EqualsBuilder().append(pluginKey, configuration.pluginKey).isEquals();
         }
     }
 }

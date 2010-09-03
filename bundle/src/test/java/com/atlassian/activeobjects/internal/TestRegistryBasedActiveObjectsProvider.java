@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,11 +20,12 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class TestRegistryBasedActiveObjectsProvider
 {
-    private static final PluginKey PLUGIN_KEY_1 = new PluginKey("foo");
-    private static final PluginKey PLUGIN_KEY_2 = new PluginKey("bar");
-    private static final DataSourceType PLUGIN_KEY_2_DATA_SOURCE_TYPE = DataSourceType.APPLICATION;
-
     private ActiveObjectsProvider provider;
+
+    @Mock
+    private ActiveObjectsConfiguration configuration1;
+    @Mock
+    private ActiveObjectsConfiguration configuration2;
     @Mock
     private ActiveObjectsRegistry registry;
     @Mock
@@ -36,29 +38,30 @@ public class TestRegistryBasedActiveObjectsProvider
     @Before
     public void setUp() throws Exception
     {
+        provider = new RegistryBasedActiveObjectsProvider(registry, activeObjectsFactory);
 
-        provider = new RegistryBasedActiveObjectsProvider(registry, activeObjectsFactory, dataSourceTypeResolver);
-
-        when(registry.get(PLUGIN_KEY_1)).thenReturn(activeObjects);
-        when(registry.get(PLUGIN_KEY_2)).thenReturn(null);
-        when(registry.register(Matchers.<PluginKey>anyObject(), eq(activeObjects))).thenReturn(activeObjects);
-        when(dataSourceTypeResolver.getDataSourceType(PLUGIN_KEY_2)).thenReturn(PLUGIN_KEY_2_DATA_SOURCE_TYPE);
-
-        when(activeObjectsFactory.create(PLUGIN_KEY_2_DATA_SOURCE_TYPE, PLUGIN_KEY_2)).thenReturn(activeObjects);
+        when(registry.get(configuration1)).thenReturn(activeObjects);
+        when(registry.get(configuration2)).thenReturn(null);
+        when(registry.register(anyActiveObjectsConfiguration(), eq(activeObjects))).thenReturn(activeObjects);
+        when(activeObjectsFactory.create(configuration2)).thenReturn(activeObjects);
     }
 
     @Test
     public void testGetExistingActiveObjectsReturnsSameInstance()
     {
-        assertEquals(activeObjects, provider.get(PLUGIN_KEY_1));
-        assertEquals(activeObjects, provider.get(PLUGIN_KEY_1));
+        assertEquals(activeObjects, provider.get(configuration1));
+        assertEquals(activeObjects, provider.get(configuration1));
     }
 
     @Test
     public void testGetNonExistingActiveObjectReturnsNewInstance()
     {
-        assertEquals(activeObjects, provider.get(PLUGIN_KEY_2));
+        assertEquals(activeObjects, provider.get(configuration2));
+        verify(activeObjectsFactory).create(configuration2);
+    }
 
-        verify(activeObjectsFactory).create(PLUGIN_KEY_2_DATA_SOURCE_TYPE, PLUGIN_KEY_2);
+    private ActiveObjectsConfiguration anyActiveObjectsConfiguration()
+    {
+        return Matchers.anyObject();
     }
 }

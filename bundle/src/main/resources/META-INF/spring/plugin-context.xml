@@ -11,12 +11,20 @@
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
             </constructor-arg>
             <constructor-arg index="1" ref="osgiUtils"/>
+            <constructor-arg index="2">
+                <bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
+                    <constructor-arg index="0">
+                        <osgi:reference interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+                    </constructor-arg>
+                    <constructor-arg index="1" value="APPLICATION"/>
+                </bean>
+            </constructor-arg>
         </bean>
     </osgi:service>
 
     <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects">
         <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
-        <bean class="com.atlassian.activeobjects.internal.ActiveObjectsServiceFactory">
+        <bean class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
             <constructor-arg index="0" ref="osgiUtils"/>
             <constructor-arg index="1" ref="aoProvider"/>
             <constructor-arg index="2">
@@ -41,7 +49,7 @@
     </osgi:reference>
 
     <bean id="osgiUtils" class="com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtilsImpl">
-        <constructor-arg value="com.atlassian.activeobjects.internal.config.ActiveObjectsBundleConfiguration"/>
+        <constructor-arg value="com.atlassian.activeobjects.config.ActiveObjectsConfiguration"/>
     </bean>
 
     <bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
@@ -87,14 +95,6 @@
                         </bean>
                     </list>
                 </constructor-arg>
-            </bean>
-        </constructor-arg>
-        <constructor-arg index="2">
-            <bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
-                <constructor-arg index="0">
-                    <osgi:reference interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
-                </constructor-arg>
-                <constructor-arg index="1" value="APPLICATION"/>
             </bean>
         </constructor-arg>
     </bean>

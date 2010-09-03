@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Collection;
@@ -17,11 +18,11 @@ public final class DelegatingActiveObjectsFactory implements ActiveObjectsFactor
         this.factories = ImmutableSet.<ActiveObjectsFactory>builder().addAll(factories).build();
     }
 
-    public boolean accept(DataSourceType dataSourceType)
+    public boolean accept(ActiveObjectsConfiguration configuration)
     {
         for (ActiveObjectsFactory factory : factories)
         {
-            if (factory.accept(dataSourceType))
+            if (factory.accept(configuration))
             {
                 return true;
             }
@@ -29,16 +30,16 @@ public final class DelegatingActiveObjectsFactory implements ActiveObjectsFactor
         return false;
     }
 
-    public ActiveObjects create(DataSourceType dataSourceType, PluginKey pluginKey)
+    public ActiveObjects create(ActiveObjectsConfiguration configuration)
     {
         for (ActiveObjectsFactory factory : factories)
         {
-            if (factory.accept(dataSourceType))
+            if (factory.accept(configuration))
             {
-                return factory.create(dataSourceType, pluginKey);
+                return factory.create(configuration);
             }
         }
-        throw new IllegalStateException("Could not find a factory for this data source type, " + dataSourceType + ", " +
-                "did you call #accept(DataSourceType) before calling me?");
+        throw new IllegalStateException("Could not find a factory for this configuration, " + configuration + ", " +
+                "did you call #accept(ActiveObjectsConfiguration) before calling me?");
     }
 }
