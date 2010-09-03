@@ -5,18 +5,28 @@
        xsi:schemaLocation="http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi-1.1.xsd
                                  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.1.xsd">
 
+    <osgi:service id="ao-module-descriptor-factory" interface="com.atlassian.plugin.osgi.external.ListableModuleDescriptorFactory">
+        <bean class="com.atlassian.activeobjects.plugin.ActiveObjectsModuleDescriptorFactory">
+            <constructor-arg index="0">
+                <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
+            </constructor-arg>
+            <constructor-arg index="1" ref="osgiUtils"/>
+        </bean>
+    </osgi:service>
+
     <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects">
-        <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused -->
+        <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
         <bean class="com.atlassian.activeobjects.internal.ActiveObjectsServiceFactory">
-            <constructor-arg index="0" ref="aoProvider"/>
-            <constructor-arg index="1">
+            <constructor-arg index="0" ref="osgiUtils"/>
+            <constructor-arg index="1" ref="aoProvider"/>
+            <constructor-arg index="2">
                 <bean class="com.atlassian.activeobjects.internal.backup.SpringAwareBackupRegistry">
                     <constructor-arg index="0">
                         <osgi:reference id="backupRegistry" interface="com.atlassian.sal.api.backup.BackupRegistry" cardinality="0..1" timeout="1000"/>
                     </constructor-arg>
                 </bean>
             </constructor-arg>
-            <constructor-arg index="2">
+            <constructor-arg index="3">
                 <bean class="com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactoryImpl"/>
             </constructor-arg>
         </bean>
@@ -29,6 +39,10 @@
             </bean>
         </osgi:listener>
     </osgi:reference>
+
+    <bean id="osgiUtils" class="com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtilsImpl">
+        <constructor-arg value="com.atlassian.activeobjects.internal.config.ActiveObjectsBundleConfiguration"/>
+    </bean>
 
     <bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
         <constructor-arg index="0" ref="registry"/>

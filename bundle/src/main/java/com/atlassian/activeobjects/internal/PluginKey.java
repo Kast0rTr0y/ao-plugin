@@ -15,7 +15,7 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
  * <p>So are {@link #equals(Object)} and {@link #hashCode()} as this class can be used and IS used as
  * key in Maps and other such collections.</p>
  */
-final class PluginKey
+public final class PluginKey
 {
     private final String bundleSymbolicName;
 

@@ -15,7 +15,7 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link com.atlassian.activeobjects.internal.ActiveObjectsProvider}</p>
  */
-final class DelegatingActiveObjects implements ActiveObjects
+public final class DelegatingActiveObjects implements ActiveObjects
 {
     private final PluginKey pluginKey;
     private final ActiveObjectsProvider provider;

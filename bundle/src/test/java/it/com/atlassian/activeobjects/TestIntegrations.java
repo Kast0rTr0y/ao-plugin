@@ -203,7 +203,6 @@ public class TestIntegrations extends PluginInContainerTestBase
             {
                 if (!failFlag.get())
                 {
-                    System.out.println("calling " + (count++));
                     try
                     {
                         runnable.run();
@@ -426,6 +425,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "        <version>1.0</version>",
                         "    </plugin-info>",
                         "    <component key='obj' class='my.FooComponent' public='true' interface='it.com.atlassian.activeobjects.ActiveObjectsTestConsumer' />",
+                        "    <ao key='ao' />",
                         "    <component-import key='emp' interface='com.atlassian.activeobjects.external.ActiveObjects' />",
                         "</atlassian-plugin>")
                 .build();
