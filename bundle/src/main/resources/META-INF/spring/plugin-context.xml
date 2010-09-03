@@ -9,6 +9,16 @@
         <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused -->
         <bean class="com.atlassian.activeobjects.internal.ActiveObjectsServiceFactory">
             <constructor-arg index="0" ref="aoProvider"/>
+            <constructor-arg index="1">
+                <bean class="com.atlassian.activeobjects.internal.backup.SpringAwareBackupRegistry">
+                    <constructor-arg index="0">
+                        <osgi:reference id="backupRegistry" interface="com.atlassian.sal.api.backup.BackupRegistry" cardinality="0..1" timeout="1000"/>
+                    </constructor-arg>
+                </bean>
+            </constructor-arg>
+            <constructor-arg index="2">
+                <bean class="com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactoryImpl"/>
+            </constructor-arg>
         </bean>
     </osgi:service>
 

@@ -8,14 +8,15 @@ import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.backup.BackupRegistry;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.sal.core.backup.MemoryBackupRegistry;
 import com.atlassian.sal.core.transaction.NoOpTransactionTemplate;
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -182,10 +183,10 @@ public class TestIntegrations extends PluginInContainerTestBase
     }
 
     @Test
-    @Ignore
-    // Test disabled until ActiveObjects is upgraded past 0.8.2
     public void testBasicWithLotsOfConcurrentCalls() throws Exception
     {
+        setDataSourceType(DataSourceType.HSQLDB);
+
         final ServiceTracker tracker = initPluginManagerWithActiveObjects(ActiveObjectsTestConsumer.class);
 
         installConsumerPlugin();
@@ -224,6 +225,36 @@ public class TestIntegrations extends PluginInContainerTestBase
         executor.awaitTermination(60, TimeUnit.SECONDS);
         assertFalse(failFlag.get());
         assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", "test-");
+    }
+
+    @Test
+    public void testActiveObjectsRegistersAgainstDatabaseRegistry() throws Exception
+    {
+        final MemoryBackupRegistry registry = new MemoryBackupRegistry();
+        HostComponentProvider hostComponentProvider = new HostComponentProvider()
+        {
+            public void provide(ComponentRegistrar registrar)
+            {
+                registrar.register(ApplicationProperties.class).forInstance(applicationProperties);
+                registrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
+                registrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
+                registrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
+                registrar.register(BackupRegistry.class).forInstance(registry);
+            }
+        };
+
+        initPluginManager(hostComponentProvider);
+        installActiveObjectsPlugin();
+
+        assertTrue(registry.getRegistered().isEmpty());
+
+        final String aoConsumerPluginKey = installPlugin(buildConsumerPlugin("test-consumer"));
+
+        assertEquals(1, registry.getRegistered().size());
+
+        uninstallPlugin(aoConsumerPluginKey);
+
+        assertTrue(registry.getRegistered().isEmpty());
     }
 
     private ServiceTracker initPluginManagerWithActiveObjects(final Class<?> serviceToTrack) throws Exception

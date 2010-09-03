@@ -5,9 +5,4 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
         <application-version min="1" max="10"/>
     </plugin-info>
-
-    <servlet name="Datasources Configuration" key="datasources" class="com.atlassian.activeobjects.servlet.DataSourcesConfigurationServlet">
-        <description>Servlet to configure Active Objects data sources</description>
-        <url-pattern>/ao</url-pattern>
-    </servlet>
 </atlassian-plugin>

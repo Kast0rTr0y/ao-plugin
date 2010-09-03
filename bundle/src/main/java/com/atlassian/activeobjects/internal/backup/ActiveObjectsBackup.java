@@ -1,28 +1,22 @@
-package com.atlassian.activeobjects.internal;
+package com.atlassian.activeobjects.internal.backup;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.backup.Backup;
-import net.java.ao.schema.SchemaGenerator;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.osgi.framework.Bundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+
+import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
 
 class ActiveObjectsBackup implements Backup
 {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final Bundle bundle;
     private final ActiveObjects ao;
 
     public ActiveObjectsBackup(Bundle bundle, ActiveObjects ao)
     {
-        this.bundle = bundle;
-        this.ao = ao;
+        this.bundle = checkNotNull(bundle);
+        this.ao = checkNotNull(ao);
     }
 
     public String getId()

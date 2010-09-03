@@ -1,4 +1,4 @@
-package com.atlassian.activeobjects.internal;
+package com.atlassian.activeobjects.internal.backup;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.backup.Backup;
