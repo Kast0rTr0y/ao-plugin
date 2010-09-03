@@ -1,6 +1,8 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
+import com.atlassian.activeobjects.ao.PrefixedTableNameConverter;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
@@ -18,6 +20,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import net.java.ao.RawEntity;
+import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.CamelCaseFieldNameConverter;
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.dom4j.Element;
@@ -52,17 +58,23 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
 
     private final DataSourceTypeResolver dataSourceTypeResolver;
 
+    private final TableNameConverter delegateTableNameConverter;
+
     /**
      * The service registration for the active objects configuration, defined by this plugin.
      */
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
+    private ServiceRegistration tableNameConverterServiceRegistration;
 
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
-                                        DataSourceTypeResolver dataSourceTypeResolver, Digester digester)
+                                        DataSourceTypeResolver dataSourceTypeResolver,
+                                        Digester digester,
+                                        TableNameConverter delegateTableNameConverter)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
+        this.delegateTableNameConverter = checkNotNull(delegateTableNameConverter);
     }
 
     @Override
@@ -79,16 +91,20 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
     public void init(Plugin plugin, Element element) throws PluginParseException
     {
         super.init(plugin, element);
-        activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(element));
+
+        final Prefix tableNamePrefix = getTableNamePrefix(element);
+        final TableNameConverter tableNameConverter = getTableNameConverter(tableNamePrefix);
+        final ActiveObjectsConfiguration activeObjectsConfiguration = getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, getEntities(element));
+
+        tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, tableNameConverter);
+        activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, activeObjectsConfiguration);
     }
 
     @Override
     public void disabled()
     {
-        if (activeObjectsConfigurationServiceRegistration != null)
-        {
-            activeObjectsConfigurationServiceRegistration.unregister();
-        }
+        unregister(activeObjectsConfigurationServiceRegistration);
+        unregister(tableNameConverterServiceRegistration);
         super.disabled();
     }
 
@@ -98,14 +114,30 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         return null; // no module
     }
 
-    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Element element)
+    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, TableNameConverter tableNameConverter, Set<Class<? extends RawEntity<?>>> entities)
     {
         final DefaultActiveObjectsConfiguration configuration =
                 new DefaultActiveObjectsConfiguration(PluginKey.fromBundle(getBundle()), dataSourceTypeResolver);
 
-        configuration.setTableNamePrefix(getTableNamePrefix(element));
-        configuration.setEntities(getEntities(element));
+        configuration.setTableNamePrefix(tableNamePrefix);
+        configuration.setTableNameConverter(tableNameConverter);
+        configuration.setFieldNameConverter(new CamelCaseFieldNameConverter());
+        configuration.setSchemaConfiguration(new PrefixedSchemaConfiguration(tableNamePrefix));
+        configuration.setEntities(entities);
         return configuration;
+    }
+
+    private TableNameConverter getTableNameConverter(Prefix tableNamePrefix)
+    {
+        return new PrefixedTableNameConverter(tableNamePrefix, delegateTableNameConverter);
+    }
+
+    private void unregister(ServiceRegistration serviceRegistration)
+    {
+        if (serviceRegistration != null)
+        {
+            serviceRegistration.unregister();
+        }
     }
 
     private Prefix getTableNamePrefix(Element element)
@@ -183,6 +215,9 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         private final PluginKey pluginKey;
         private final DataSourceTypeResolver dataSourceTypeResolver;
         private Prefix tableNamePrefix;
+        private TableNameConverter tableNameConverter;
+        private FieldNameConverter fieldNameConverter;
+        private SchemaConfiguration schemaConfiguration;
         private Set<Class<? extends RawEntity<?>>> entities;
 
         public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
@@ -209,6 +244,36 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         public void setTableNamePrefix(Prefix tableNamePrefix)
         {
             this.tableNamePrefix = tableNamePrefix;
+        }
+
+        public TableNameConverter getTableNameConverter()
+        {
+            return tableNameConverter;
+        }
+
+        public void setTableNameConverter(TableNameConverter tableNameConverter)
+        {
+            this.tableNameConverter = tableNameConverter;
+        }
+
+        public FieldNameConverter getFieldNameConverter()
+        {
+            return fieldNameConverter;
+        }
+
+        public void setFieldNameConverter(FieldNameConverter fieldNameConverter)
+        {
+            this.fieldNameConverter = fieldNameConverter;
+        }
+
+        public SchemaConfiguration getSchemaConfiguration()
+        {
+            return schemaConfiguration;
+        }
+
+        public void setSchemaConfiguration(SchemaConfiguration schemaConfiguration)
+        {
+            this.schemaConfiguration = schemaConfiguration;
         }
 
         public Set<Class<? extends RawEntity<?>>> getEntities()

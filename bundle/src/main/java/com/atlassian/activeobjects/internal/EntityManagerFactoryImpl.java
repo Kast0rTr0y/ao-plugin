@@ -1,7 +1,5 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.ao.PrefixedSchemaConfigurationFactory;
-import com.atlassian.activeobjects.ao.PrefixedTableNameConverterFactory;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.EntityManager;
@@ -18,24 +16,19 @@ import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 public class EntityManagerFactoryImpl implements EntityManagerFactory
 {
     private final DatabaseProviderFactory databaseProviderFactory;
-    private final PrefixedTableNameConverterFactory tableNameConverterFactory;
-    private final FieldNameConverter fieldNameConverter;
-    private final PrefixedSchemaConfigurationFactory schemaConfigurationFactory;
 
-    public EntityManagerFactoryImpl(DatabaseProviderFactory databaseProviderFactory, PrefixedTableNameConverterFactory tableNameConverterFactory, FieldNameConverter fieldNameConverter, PrefixedSchemaConfigurationFactory schemaConfigurationFactory)
+    public EntityManagerFactoryImpl(DatabaseProviderFactory databaseProviderFactory)
     {
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
-        this.tableNameConverterFactory = checkNotNull(tableNameConverterFactory);
-        this.fieldNameConverter = checkNotNull(fieldNameConverter);
-        this.schemaConfigurationFactory = checkNotNull(schemaConfigurationFactory);
     }
 
     public EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, ActiveObjectsConfiguration configuration)
     {
-        final Prefix prefix = configuration.getTableNamePrefix();
-        final TableNameConverter tableNameConverter = tableNameConverterFactory.getTableNameConverter(prefix);
-        final SchemaConfiguration schemaConfiguration = schemaConfigurationFactory.getSchemaConfiguration(prefix);
-        final DataSourceEntityManagerConfiguration entityManagerConfiguration = new DataSourceEntityManagerConfiguration(tableNameConverter, fieldNameConverter, schemaConfiguration);
+        final DataSourceEntityManagerConfiguration entityManagerConfiguration =
+                new DataSourceEntityManagerConfiguration(
+                        configuration.getTableNameConverter(),
+                        configuration.getFieldNameConverter(),
+                        configuration.getSchemaConfiguration());
 
         return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType), entityManagerConfiguration, new EventManagerImpl());
     }

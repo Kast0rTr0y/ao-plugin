@@ -1,7 +1,5 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.ao.PrefixedSchemaConfigurationFactory;
-import com.atlassian.activeobjects.ao.PrefixedTableNameConverterFactory;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
@@ -33,27 +31,11 @@ public class EntityManagerFactoryImplTest
 
     @Mock
     private DatabaseProviderFactory databaseProviderFactory;
-    @Mock
-    private PrefixedTableNameConverterFactory tableNameConverterFactory;
-
-    @Mock
-    private TableNameConverter tableNameConverter;
-
-    @Mock
-    private FieldNameConverter fieldNameConverter;
-
-    @Mock
-    private PrefixedSchemaConfigurationFactory schemaConfigurationFactory;
-
-    @Mock
-    private SchemaConfiguration schemaConfiguration;
 
     @Before
     public void setUp() throws Exception
     {
-        when(tableNameConverterFactory.getTableNameConverter(anyPrefix())).thenReturn(tableNameConverter);
-        when(schemaConfigurationFactory.getSchemaConfiguration(anyPrefix())).thenReturn(schemaConfiguration);
-        entityManagerFactory = new EntityManagerFactoryImpl(databaseProviderFactory, tableNameConverterFactory, fieldNameConverter, schemaConfigurationFactory);
+        entityManagerFactory = new EntityManagerFactoryImpl(databaseProviderFactory);
     }
 
     @After
@@ -69,7 +51,8 @@ public class EntityManagerFactoryImplTest
         final DataSource dataSource = mock(DataSource.class);
         final DatabaseType databaseType = DatabaseType.UNKNOWN;
         final DatabaseProvider databaseProvider = mock(DatabaseProvider.class);
-        final ActiveObjectsConfiguration configuration = mock(ActiveObjectsConfiguration.class);
+
+        final ActiveObjectsConfiguration configuration = getMockConfiguration();
 
         when(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType)).thenReturn(databaseProvider);
         assertNotNull(entityManagerFactory.getEntityManager(dataSource, databaseType, configuration));
@@ -77,8 +60,16 @@ public class EntityManagerFactoryImplTest
         verify(databaseProviderFactory).getDatabaseProvider(dataSource, databaseType);
     }
 
-    private static Prefix anyPrefix()
+    private ActiveObjectsConfiguration getMockConfiguration()
     {
-        return Mockito.any();
+        final TableNameConverter tableNameConverter = mock(TableNameConverter.class);
+        final FieldNameConverter value = mock(FieldNameConverter.class);
+        final SchemaConfiguration schemaConfiguration = mock(SchemaConfiguration.class);
+
+        final ActiveObjectsConfiguration configuration = mock(ActiveObjectsConfiguration.class);
+        when(configuration.getTableNameConverter()).thenReturn(tableNameConverter);
+        when(configuration.getFieldNameConverter()).thenReturn(value);
+        when(configuration.getSchemaConfiguration()).thenReturn(schemaConfiguration);
+        return configuration;
     }
 }

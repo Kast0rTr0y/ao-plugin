@@ -1,8 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.ao.PrefixedSchemaConfigurationFactory;
-import com.atlassian.activeobjects.ao.PrefixedTableNameConverterFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -25,18 +23,12 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
 
     private final ApplicationProperties applicationProperties;
     private final DatabaseConfiguration dbConfiguration;
-    private final PrefixedTableNameConverterFactory tableNameConverterFactory;
-    private final FieldNameConverter fieldNameConverter;
-    private final PrefixedSchemaConfigurationFactory schemaConfigurationFactory;
 
-    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration dbConfiguration, PrefixedTableNameConverterFactory tableNameConverterFactory, FieldNameConverter fieldNameConverter, PrefixedSchemaConfigurationFactory schemaConfigurationFactory)
+    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration dbConfiguration)
     {
         super(DataSourceType.HSQLDB);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.dbConfiguration = checkNotNull(dbConfiguration);
-        this.tableNameConverterFactory = checkNotNull(tableNameConverterFactory);
-        this.fieldNameConverter = checkNotNull(fieldNameConverter);
-        this.schemaConfigurationFactory = checkNotNull(schemaConfigurationFactory);
     }
 
     @Override
@@ -49,12 +41,11 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
 
     private EntityManager getEntityManager(File dbDirectory, ActiveObjectsConfiguration configuration)
     {
-        final Prefix prefix = configuration.getTableNamePrefix();
         return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto()
                 .useWeakCache()
-                .tableNameConverter(tableNameConverterFactory.getTableNameConverter(prefix))
-                .fieldNameConverter(fieldNameConverter)
-                .schemaConfiguration(schemaConfigurationFactory.getSchemaConfiguration(prefix))
+                .tableNameConverter(configuration.getTableNameConverter())
+                .fieldNameConverter(configuration.getFieldNameConverter())
+                .schemaConfiguration(configuration.getSchemaConfiguration())
                 .build();
     }
 

@@ -22,6 +22,9 @@
             <constructor-arg index="3">
                 <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
             </constructor-arg>
+            <constructor-arg index="4">
+                <bean class="net.java.ao.schema.CamelCaseTableNameConverter"/>
+            </constructor-arg>
         </bean>
     </osgi:service>
 
@@ -68,9 +71,6 @@
                                     <constructor-arg ref="activeObjectsConfiguration"/>
                                 </bean>
                             </constructor-arg>
-                            <constructor-arg index="2" ref="tableNameConverterFactory"/>
-                            <constructor-arg index="3" ref="fieldNameConverter"/>
-                            <constructor-arg index="4" ref="schemaConfigurationFactory"/>
                         </bean>
                         <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
                             <constructor-arg index="0">
@@ -82,9 +82,6 @@
                                             </constructor-arg>
                                         </bean>
                                     </constructor-arg>
-                                    <constructor-arg index="1" ref="tableNameConverterFactory"/>
-                                    <constructor-arg index="2" ref="fieldNameConverter"/>
-                                    <constructor-arg index="3" ref="schemaConfigurationFactory"/>
                                 </bean>
                             </constructor-arg>
                             <constructor-arg index="1">
@@ -99,14 +96,6 @@
             </bean>
         </constructor-arg>
     </bean>
-
-    <bean id="tableNameConverterFactory" class="com.atlassian.activeobjects.ao.DelegatingPrefixedTableNameConverterFactory">
-        <constructor-arg>
-            <bean class="net.java.ao.schema.CamelCaseTableNameConverter"/>
-        </constructor-arg>
-    </bean>
-    <bean id="fieldNameConverter" class="net.java.ao.schema.CamelCaseFieldNameConverter"/>
-    <bean id="schemaConfigurationFactory" class="com.atlassian.activeobjects.ao.PrefixedSchemaConfigurationFactoryImpl"/>
 
     <bean id="registry" class="com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry"/>
 </beans>

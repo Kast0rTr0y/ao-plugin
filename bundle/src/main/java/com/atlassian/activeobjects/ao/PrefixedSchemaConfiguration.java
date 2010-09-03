@@ -11,13 +11,13 @@ import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
  * A {@link SchemaConfiguration schema configuration} that will allow table starting with a given {@link com.atlassian.activeobjects.internal.Prefix prefix}
  * to be managed.
  */
-final class PrefixedSchemaConfiguration implements SchemaConfiguration
+public final class PrefixedSchemaConfiguration implements SchemaConfiguration
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Prefix prefix;
 
-    PrefixedSchemaConfiguration(Prefix prefix)
+    public PrefixedSchemaConfiguration(Prefix prefix)
     {
         this.prefix = checkNotNull(prefix);
     }

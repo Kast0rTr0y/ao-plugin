@@ -12,7 +12,7 @@ import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
  * A {@link TableNameConverter table name converter} that will prepend the given {@link com.atlassian.activeobjects.internal.Prefix} to table names.
  * It uses a {@link TableNameConverter delegate table name converter} for the <em>general</em> conversion strategy.
  */
-final class PrefixedTableNameConverter implements TableNameConverter
+public final class PrefixedTableNameConverter implements TableNameConverter
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -23,7 +23,7 @@ final class PrefixedTableNameConverter implements TableNameConverter
      */
     private final TableNameConverter delegate;
 
-    PrefixedTableNameConverter(Prefix prefix, TableNameConverter delegate)
+    public PrefixedTableNameConverter(Prefix prefix, TableNameConverter delegate)
     {
         this.prefix = checkNotNull(prefix);
         this.delegate = checkNotNull(delegate);
