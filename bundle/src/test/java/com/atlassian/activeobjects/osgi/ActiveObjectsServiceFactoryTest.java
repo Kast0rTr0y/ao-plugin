@@ -1,9 +1,9 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactory;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.backup.Backup;
 import com.atlassian.sal.api.backup.BackupRegistry;
 import org.junit.Assert;
@@ -29,7 +29,7 @@ public final class ActiveObjectsServiceFactoryTest
     private ActiveObjectsServiceFactory serviceFactory;
 
     @Mock
-    private ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils;
+    private OsgiServiceUtils osgiUtils;
 
     @Mock
     private ActiveObjectsConfiguration configuration;
@@ -54,7 +54,7 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, provider, backupRegistry, backupFactory);
 
-        when(osgiUtils.getService(bundle)).thenReturn(configuration);
+        when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
         when(backupFactory.getBackup(eq(bundle), anyActiveObjects())).thenReturn(backup);
     }
 

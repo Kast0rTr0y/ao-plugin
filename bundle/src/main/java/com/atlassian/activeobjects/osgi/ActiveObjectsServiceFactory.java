@@ -1,9 +1,9 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactory;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.backup.BackupRegistry;
 import org.osgi.framework.Bundle;
@@ -27,13 +27,13 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils;
+    private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsProvider provider;
 
     private final BackupRegistry backupRegistry;
     private final ActiveObjectsBackupFactory backupFactory;
 
-    public ActiveObjectsServiceFactory(ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils, ActiveObjectsProvider provider, BackupRegistry backupRegistry, ActiveObjectsBackupFactory backupFactory)
+    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsProvider provider, BackupRegistry backupRegistry, ActiveObjectsBackupFactory backupFactory)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.provider = checkNotNull(provider);
@@ -76,7 +76,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     {
         try
         {
-            return osgiUtils.getService(bundle);
+            return osgiUtils.getService(bundle, ActiveObjectsConfiguration.class);
         }
         catch (TooManyServicesFoundException e)
         {

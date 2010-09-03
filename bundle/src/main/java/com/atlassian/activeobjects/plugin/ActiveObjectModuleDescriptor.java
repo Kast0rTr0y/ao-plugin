@@ -7,7 +7,7 @@ import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
-import com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtils;
+import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
@@ -46,7 +46,7 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
     /**
      * Easy registration of service
      */
-    private final ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils;
+    private final OsgiServiceUtils osgiUtils;
 
     private final Digester digester;
 
@@ -57,7 +57,7 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
      */
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
 
-    public ActiveObjectModuleDescriptor(ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils,
+    public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver, Digester digester)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
@@ -79,7 +79,7 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
     public void init(Plugin plugin, Element element) throws PluginParseException
     {
         super.init(plugin, element);
-        activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), getActiveObjectsBundleConfiguration(element));
+        activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(element));
     }
 
     @Override

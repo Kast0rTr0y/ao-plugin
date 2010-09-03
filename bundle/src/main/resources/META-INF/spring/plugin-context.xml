@@ -51,9 +51,7 @@
         </osgi:listener>
     </osgi:reference>
 
-    <bean id="osgiUtils" class="com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtilsImpl">
-        <constructor-arg value="com.atlassian.activeobjects.config.ActiveObjectsConfiguration"/>
-    </bean>
+    <bean id="osgiUtils" class="com.atlassian.activeobjects.osgi.OsgiServiceUtilsImpl"/>
 
     <bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
         <constructor-arg index="0" ref="registry"/>

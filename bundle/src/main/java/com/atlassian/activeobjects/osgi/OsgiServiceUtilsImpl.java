@@ -15,52 +15,46 @@ import java.util.Map;
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
- * Default implementation of {@link ActiveObjectOsgiServiceUtils}
+ * Default implementation of {@link OsgiServiceUtils}
  */
-public class ActiveObjectOsgiServiceUtilsImpl<S> implements ActiveObjectOsgiServiceUtils<S>
+public class OsgiServiceUtilsImpl implements OsgiServiceUtils
 {
-    private static final String BUNDLE_SYMBOLIC_NAME = "com.atlassian.activeobjects.bundleSymbolicName";
+    private static final String PROPERTY_KEY = "com.atlassian.plugin.key";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final Class<S> serviceInterface;
 
-    public ActiveObjectOsgiServiceUtilsImpl(Class<S> serviceInterface)
-    {
-        this.serviceInterface = checkNotNull(serviceInterface);
-    }
-
-    public <O extends S> ServiceRegistration registerService(Bundle bundle, O obj)
+    public <S, O extends S> ServiceRegistration registerService(Bundle bundle, Class<S> ifce, O obj)
     {
         checkNotNull(bundle);
         checkNotNull(obj);
         final Map<String, String> properties = getProperties(bundle);
 
-        logger.debug("Registering service {} with interface {} and properties {}", new Object[]{obj, serviceInterface.getName(), properties});
+        logger.debug("Registering service {} with interface {} and properties {}", new Object[]{obj, ifce.getName(), properties});
 
-        return getContext(bundle).registerService(serviceInterface.getName(), obj, new Hashtable<String, String>(properties));
+        return getContext(bundle).registerService(ifce.getName(), obj, new Hashtable<String, String>(properties));
     }
 
-    public S getService(Bundle bundle) throws TooManyServicesFoundException, NoServicesFoundException
+    public <S> S getService(Bundle bundle, Class<S> ifce) throws TooManyServicesFoundException, NoServicesFoundException
     {
         checkNotNull(bundle);
 
-        return serviceInterface.cast(getContext(bundle).getService(getServiceReference(bundle)));
+        return ifce.cast(getContext(bundle).getService(getServiceReference(bundle, ifce)));
     }
 
-    private ServiceReference getServiceReference(Bundle bundle) throws NoServicesFoundException, TooManyServicesFoundException
+    private ServiceReference getServiceReference(Bundle bundle, Class<?> ifce) throws NoServicesFoundException, TooManyServicesFoundException
     {
         final String filter = getFilter(getProperties(bundle));
-        final ServiceReference[] serviceReferences = getServiceReferences(bundle, filter);
+        final ServiceReference[] serviceReferences = getServiceReferences(bundle, ifce, filter);
         if (serviceReferences == null || serviceReferences.length == 0)
         {
             throw new NoServicesFoundException("Was expecting at least one service reference for interface <"
-                    + serviceInterface.getName() + "> and filter <" + filter + ">. Got "
+                    + ifce.getName() + "> and filter <" + filter + ">. Got "
                     + (serviceReferences == null ? null : serviceReferences.length) + " !");
         }
         else if (serviceReferences.length > 1)
         {
             throw new TooManyServicesFoundException("Was expecting at mone one service reference for interface <"
-                    + serviceInterface.getName() + "> and filter <" + filter + ">. Got " + serviceReferences.length + " !");
+                    + ifce.getName() + "> and filter <" + filter + ">. Got " + serviceReferences.length + " !");
         }
         else
         {
@@ -68,23 +62,23 @@ public class ActiveObjectOsgiServiceUtilsImpl<S> implements ActiveObjectOsgiServ
         }
     }
 
-    ServiceReference[] getServiceReferences(Bundle bundle, String filter)
+    ServiceReference[] getServiceReferences(Bundle bundle, Class<?> ifce, String filter)
     {
         try
         {
-            return getContext(bundle).getServiceReferences(serviceInterface.getName(), filter);
+            return getContext(bundle).getServiceReferences(ifce.getName(), filter);
         }
         catch (InvalidSyntaxException e)
         {
             throw new IllegalStateException("There was a syntax issue getting service reference for interface <"
-                    + serviceInterface.getName() + "> and filter <" + filter + ">.\nHow is that possible ?!", e);
+                    + ifce.getName() + "> and filter <" + filter + ">.\nHow is that possible ?!", e);
         }
     }
 
     Map<String, String> getProperties(Bundle bundle)
     {
         final Map<String, String> props = new HashMap<String, String>();
-        props.put(BUNDLE_SYMBOLIC_NAME, bundle.getSymbolicName());
+        props.put(PROPERTY_KEY, bundle.getSymbolicName());
         return props;
     }
 
