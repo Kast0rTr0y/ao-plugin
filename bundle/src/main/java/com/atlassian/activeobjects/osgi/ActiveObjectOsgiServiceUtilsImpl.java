@@ -51,10 +51,11 @@ public class ActiveObjectOsgiServiceUtilsImpl<S> implements ActiveObjectOsgiServ
     {
         final String filter = getFilter(getProperties(bundle));
         final ServiceReference[] serviceReferences = getServiceReferences(bundle, filter);
-        if (serviceReferences.length == 0)
+        if (serviceReferences == null || serviceReferences.length == 0)
         {
             throw new NoServicesFoundException("Was expecting at least one service reference for interface <"
-                    + serviceInterface.getName() + "> and filter <" + filter + ">. Got " + serviceReferences.length + " !");
+                    + serviceInterface.getName() + "> and filter <" + filter + ">. Got "
+                    + (serviceReferences == null ? null : serviceReferences.length) + " !");
         }
         else if (serviceReferences.length > 1)
         {

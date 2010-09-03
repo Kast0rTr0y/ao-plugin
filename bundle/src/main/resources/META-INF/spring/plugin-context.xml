@@ -40,9 +40,9 @@
         </bean>
     </osgi:service>
 
-    <osgi:reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.external.ActiveObjectsConfiguration" cardinality="0..1" timeout="0">
+    <osgi:reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration" cardinality="0..1" timeout="0">
         <osgi:listener bind-method="onActiveObjectsConfigurationServiceBind" unbind-method="onActiveObjectsConfigurationServiceUnbind">
-            <bean class="com.atlassian.activeobjects.internal.ActiveObjectsConfigurationServiceListener">
+            <bean class="com.atlassian.activeobjects.config.internal.ActiveObjectsPluginConfigurationServiceListener">
                 <constructor-arg ref="registry"/>
             </bean>
         </osgi:listener>

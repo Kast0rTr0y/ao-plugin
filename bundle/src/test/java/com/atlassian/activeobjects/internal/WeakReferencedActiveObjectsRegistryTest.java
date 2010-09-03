@@ -1,7 +1,8 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.internal.ConfigurationUpdatedPredicate;
+import com.atlassian.activeobjects.external.ActiveObjects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +49,7 @@ public final class WeakReferencedActiveObjectsRegistryTest
     {
         final ActiveObjectsConfiguration configuration2 = mock(ActiveObjectsConfiguration.class);
         final ActiveObjects ao1 = mock(ActiveObjects.class);
-        final ActiveObjects ao2 = mock(DatabaseDirectoryAwareActiveObjects.class);
+        final ActiveObjects ao2 = mock(ActiveObjects.class);
 
         registry.register(configuration, ao1);
         registry.register(configuration2, ao2);
@@ -56,13 +57,15 @@ public final class WeakReferencedActiveObjectsRegistryTest
         assertEquals(ao1, registry.get(configuration));
         assertEquals(ao2, registry.get(configuration2));
 
-        registry.onDirectoryUpdated();
+        registry.onConfigurationUpdated(new ConfigurationUpdatedPredicate()
+        {
+            public boolean matches(ActiveObjects activeObjects, ActiveObjectsConfiguration configuration)
+            {
+                return activeObjects == ao2;
+            }
+        });
 
         assertEquals(ao1, registry.get(configuration));
         assertNull(registry.get(configuration2));
-    }
-
-    private static interface DatabaseDirectoryAwareActiveObjects extends ActiveObjects, DatabaseDirectoryAware
-    {
     }
 }

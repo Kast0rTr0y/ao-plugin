@@ -432,7 +432,7 @@ public class TestIntegrations extends PluginInContainerTestBase
         return new PluginJarBuilder()
                 .addFormattedJava("config.MyConfig",
                         "package config;",
-                        "public class MyConfig implements com.atlassian.activeobjects.external.ActiveObjectsConfiguration {",
+                        "public class MyConfig implements com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration {",
                         "  public String getDatabaseBaseDirectory() { return '" + path + "'; }",
                         "}")
                 .addFormattedResource("atlassian-plugin.xml",
@@ -440,7 +440,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                         "    <plugin-info>",
                         "        <version>1.0</version>",
                         "    </plugin-info>",
-                        "    <component key='obj' class='config.MyConfig' public='true' interface='com.atlassian.activeobjects.external.ActiveObjectsConfiguration' />",
+                        "    <component key='obj' class='config.MyConfig' public='true' interface='com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration' />",
                         "</atlassian-plugin>")
                 .build();
     }

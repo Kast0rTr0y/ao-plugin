@@ -1,5 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.config.internal.ActiveObjectsConfigurationListener;
+import com.atlassian.activeobjects.config.internal.ConfigurationUpdatedPredicate;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 
@@ -8,7 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class WeakReferencedActiveObjectsRegistry implements ActiveObjectsRegistry, DatabaseDirectoryListener
+public final class WeakReferencedActiveObjectsRegistry implements ActiveObjectsRegistry, ActiveObjectsConfigurationListener
 {
     private final Map<ActiveObjectsConfiguration, WeakReference<ActiveObjects>> cache = new HashMap<ActiveObjectsConfiguration, WeakReference<ActiveObjects>>();
 
@@ -23,12 +25,12 @@ public class WeakReferencedActiveObjectsRegistry implements ActiveObjectsRegistr
         return ao;
     }
 
-    public synchronized void onDirectoryUpdated()
+    public synchronized void onConfigurationUpdated(ConfigurationUpdatedPredicate predicate)
     {
         for (Iterator<Map.Entry<ActiveObjectsConfiguration, WeakReference<ActiveObjects>>> it = cache.entrySet().iterator(); it.hasNext();)
         {
             final Map.Entry<ActiveObjectsConfiguration, WeakReference<ActiveObjects>> aoEntry = it.next();
-            if (aoEntry.getValue() != null && aoEntry.getValue().get() != null && aoEntry.getValue().get() instanceof DatabaseDirectoryAware)
+            if (predicate.matches(aoEntry.getValue().get(), aoEntry.getKey()))
             {
                 it.remove();
             }
