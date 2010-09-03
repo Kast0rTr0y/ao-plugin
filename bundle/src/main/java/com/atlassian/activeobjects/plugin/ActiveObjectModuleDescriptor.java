@@ -12,6 +12,7 @@ import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.PluginException;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
@@ -45,7 +46,7 @@ import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
  * <p>This configuration is then looked up when the active object service is requested by the given bundle
  * through a &lt;component-import ... &gt; module to configure the service appropriately.</p>
  */
-public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
+public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -94,10 +95,31 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
 
         final Prefix tableNamePrefix = getTableNamePrefix(element);
         final TableNameConverter tableNameConverter = getTableNameConverter(tableNamePrefix);
-        final ActiveObjectsConfiguration activeObjectsConfiguration = getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, getEntities(element));
+        final Set<Class<? extends RawEntity<?>>> entityClasses = getEntities(element);
+
+        validateEntities(entityClasses, tableNameConverter);
+
+        final ActiveObjectsConfiguration activeObjectsConfiguration = getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, entityClasses);
 
         tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, tableNameConverter);
         activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, activeObjectsConfiguration);
+    }
+
+    void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, TableNameConverter tableNameConverter)
+    {
+        for (Class<? extends RawEntity<?>> entityClass : entityClasses)
+        {
+            final String tableName = tableNameConverter.getName(entityClass);
+            if (tableName.length() > 30)
+            {
+                logger.error("Invalid entity defined in AO module of plugin, {}", getPluginKey());
+                logger.error("Table names cannot be longer than 30 chars long in order to work with Oracle. " +
+                        "Entity class <{}> gets a generated table name of <{}> with is beyond the 30 chars long limit.", entityClass.getName(), tableName);
+                logger.error("Please rename this entity to get a shorter table name.");
+
+                throw new PluginException("Invalid entity in AO descriptor of plugin " + getPluginKey() + ", generated table name is too long! Should be no more than 30 chars.");
+            }
+        }
     }
 
     @Override
