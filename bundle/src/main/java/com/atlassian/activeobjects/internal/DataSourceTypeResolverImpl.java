@@ -5,7 +5,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * Sole implementation of {@link com.atlassian.activeobjects.internal.DataSourceTypeResolver},

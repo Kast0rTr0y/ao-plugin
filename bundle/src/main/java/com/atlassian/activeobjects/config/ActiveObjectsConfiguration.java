@@ -2,7 +2,9 @@ package com.atlassian.activeobjects.config;
 
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.PluginKey;
+import com.atlassian.activeobjects.internal.Prefix;
 import net.java.ao.RawEntity;
+import net.java.ao.schema.TableNameConverter;
 
 import java.util.Set;
 
@@ -24,6 +26,13 @@ public interface ActiveObjectsConfiguration
      * @return a valid DataSourceType
      */
     DataSourceType getDataSourceType();
+
+    /**
+     * The prefix to use for table names in the database
+     *
+     * @return the prefix to use for table names in the database.
+     */
+    Prefix getTableNamePrefix();
 
     /**
      * The set of 'configured' entitites for the active objects configuration.

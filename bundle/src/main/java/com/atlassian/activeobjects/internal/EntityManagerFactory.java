@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.EntityManager;
 
@@ -15,7 +16,8 @@ interface EntityManagerFactory
      *
      * @param dataSource the data source for which to create the entity manager
      * @param databaseType the type of database that the data source connects to.
+     * @param configuration the configuration for this active objects instance
      * @return a new entity manager
      */
-    EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType);
+    EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, ActiveObjectsConfiguration configuration);
 }

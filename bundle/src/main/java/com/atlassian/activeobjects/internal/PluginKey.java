@@ -4,7 +4,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * <p>Represents a key used throughout the ActiveObjects plugin to store information

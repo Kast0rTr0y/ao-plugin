@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * <p>Implementation of {@link com.atlassian.activeobjects.external.ActiveObjects} that mainly delegates to the

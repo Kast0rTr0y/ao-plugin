@@ -7,7 +7,7 @@ import net.java.ao.Transaction;
 
 import java.sql.SQLException;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * Implementation of the {@link com.atlassian.activeobjects.internal.TransactionManager} that

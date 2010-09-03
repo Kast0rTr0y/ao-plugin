@@ -8,7 +8,7 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 public final class ActiveObjectsPluginConfigurationServiceListener
 {

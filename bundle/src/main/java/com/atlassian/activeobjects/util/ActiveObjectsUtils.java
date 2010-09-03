@@ -1,4 +1,4 @@
-package com.atlassian.activeobjects.internal.util;
+package com.atlassian.activeobjects.util;
 
 /**
  * A set of utils functions. Those mainly come from Google Collections or Commons Lang. It might be wise to replace usage with those

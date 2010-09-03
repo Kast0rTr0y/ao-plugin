@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * Creates a new instance of ActiveObjects given a dataSourceProvider
@@ -44,7 +44,7 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();
-        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType()), new SalTransactionManager(transactionTemplate));
+        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), configuration), new SalTransactionManager(transactionTemplate));
     }
 
     private DataSource getDataSource()

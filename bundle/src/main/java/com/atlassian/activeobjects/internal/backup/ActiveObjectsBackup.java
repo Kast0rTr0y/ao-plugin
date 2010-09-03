@@ -6,7 +6,7 @@ import org.osgi.framework.Bundle;
 
 import java.io.InputStream;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 class ActiveObjectsBackup implements Backup
 {

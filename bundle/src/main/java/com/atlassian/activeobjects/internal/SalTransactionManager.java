@@ -3,7 +3,7 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * Implementation of the {@link com.atlassian.activeobjects.internal.TransactionManager}

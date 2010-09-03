@@ -79,11 +79,11 @@ public class DataSourceProviderActiveObjectsFactoryTest
         final EntityManager entityManager = mock(EntityManager.class);
 
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
-        when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType())).thenReturn(entityManager);
+        when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
 
         assertNotNull(activeObjectsFactory.create(configuration));
-        verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType());
+        verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyConfiguration());
     }
 
     private static DataSource anyDataSource()
@@ -92,6 +92,11 @@ public class DataSourceProviderActiveObjectsFactoryTest
     }
 
     private static DatabaseType anyDatabaseType()
+    {
+        return Mockito.anyObject();
+    }
+
+    private static ActiveObjectsConfiguration anyConfiguration()
     {
         return Mockito.anyObject();
     }

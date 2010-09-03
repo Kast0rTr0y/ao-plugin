@@ -5,7 +5,10 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.internal.PluginKey;
+import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.osgi.ActiveObjectOsgiServiceUtils;
+import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
@@ -26,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * <p>The module descriptor for active objects.</p>
@@ -38,13 +41,14 @@ import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.check
  */
 public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
 {
-    private final Logger logger  = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Easy registration of service
      */
     private final ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils;
 
+    private final Digester digester;
 
     private final DataSourceTypeResolver dataSourceTypeResolver;
 
@@ -54,10 +58,11 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
 
     public ActiveObjectModuleDescriptor(ActiveObjectOsgiServiceUtils<ActiveObjectsConfiguration> osgiUtils,
-                                        DataSourceTypeResolver dataSourceTypeResolver)
+                                        DataSourceTypeResolver dataSourceTypeResolver, Digester digester)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
+        this.digester = checkNotNull(digester);
     }
 
     @Override
@@ -98,8 +103,26 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         final DefaultActiveObjectsConfiguration configuration =
                 new DefaultActiveObjectsConfiguration(PluginKey.fromBundle(getBundle()), dataSourceTypeResolver);
 
+        configuration.setTableNamePrefix(getTableNamePrefix(element));
         configuration.setEntities(getEntities(element));
         return configuration;
+    }
+
+    private Prefix getTableNamePrefix(Element element)
+    {
+        return new SimplePrefix("ao_" + digester.digest(getNameSpace(element), 6), "_");
+    }
+
+    /**
+     * The table name space is either the custom namespace set by the product, or the bundle symbolic name
+     *
+     * @param element the 'ao' descriptor element
+     * @return the name space for names
+     */
+    private String getNameSpace(Element element)
+    {
+        final String custom = element.attributeValue("namespace");
+        return custom != null ? custom : getBundle().getSymbolicName();
     }
 
     private Set<Class<? extends RawEntity<?>>> getEntities(Element element)
@@ -159,6 +182,7 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
     {
         private final PluginKey pluginKey;
         private final DataSourceTypeResolver dataSourceTypeResolver;
+        private Prefix tableNamePrefix;
         private Set<Class<? extends RawEntity<?>>> entities;
 
         public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
@@ -175,6 +199,16 @@ public final class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor
         public DataSourceType getDataSourceType()
         {
             return dataSourceTypeResolver.getDataSourceType(pluginKey);
+        }
+
+        public Prefix getTableNamePrefix()
+        {
+            return tableNamePrefix;
+        }
+
+        public void setTableNamePrefix(Prefix tableNamePrefix)
+        {
+            this.tableNamePrefix = tableNamePrefix;
         }
 
         public Set<Class<? extends RawEntity<?>>> getEntities()

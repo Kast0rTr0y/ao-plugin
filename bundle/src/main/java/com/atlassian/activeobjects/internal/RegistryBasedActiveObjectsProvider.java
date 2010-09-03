@@ -3,11 +3,8 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
-/**
- *
- */
 public class RegistryBasedActiveObjectsProvider implements ActiveObjectsProvider
 {
     private final ActiveObjectsRegistry registry;

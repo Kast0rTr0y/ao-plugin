@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * Default implementation of {@link ActiveObjectOsgiServiceUtils}

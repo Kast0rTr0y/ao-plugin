@@ -14,7 +14,7 @@ import net.java.ao.db.SQLServerDatabaseProvider;
 import javax.sql.DataSource;
 import java.util.Locale;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 public final class JdbcDriverDatabaseProviderFactory implements DatabaseProviderFactory
 {

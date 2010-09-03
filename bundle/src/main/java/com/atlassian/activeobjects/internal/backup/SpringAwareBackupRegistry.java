@@ -9,7 +9,7 @@ import org.springframework.osgi.service.ServiceUnavailableException;
 import java.util.Collections;
 import java.util.Set;
 
-import static com.atlassian.activeobjects.internal.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
  * This is a spring OSGi aware backup registry that will "fail" gracefully if the backup service is not available
