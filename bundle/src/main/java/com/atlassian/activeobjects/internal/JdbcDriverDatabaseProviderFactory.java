@@ -66,7 +66,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                         return new MySQLDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        DERBY_NETWORK(DatabaseType.DEBRY_NETWORK, "derby")
+        DERBY_NETWORK(DatabaseType.DERBY_NETWORK, "derby")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
@@ -87,7 +87,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                         return new OracleDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
-        POSTGRESQL(DatabaseType.POSTGRES, "postgres")
+        POSTGRESQL(DatabaseType.POSTGRESQL, "postgres")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {

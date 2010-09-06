@@ -28,7 +28,7 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
     private static final Map<Class<? extends Dialect>, DatabaseType> DIALECT_TO_DATABASE_MAPPING = ImmutableMap.<Class<? extends Dialect>, DatabaseType>builder()
             .put(HSQLDialect.class, DatabaseType.HSQL)
             .put(MySQLDialect.class, DatabaseType.MYSQL)
-            .put(PostgreSQLDialect.class, DatabaseType.POSTGRES)
+            .put(PostgreSQLDialect.class, DatabaseType.POSTGRESQL)
             .put(Oracle9Dialect.class, DatabaseType.ORACLE)
             .put(SQLServerDialect.class, DatabaseType.MS_SQL)
             .put(DB2Dialect.class, DatabaseType.DB2)

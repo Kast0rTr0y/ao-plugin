@@ -7,11 +7,11 @@ public enum DatabaseType
 {
     HSQL,
     MYSQL,
-    POSTGRES,
+    POSTGRESQL,
     ORACLE,
     MS_SQL,
     DB2,
     DERBY_EMBEDDED,
-    DEBRY_NETWORK,
+    DERBY_NETWORK,
     UNKNOWN
 }

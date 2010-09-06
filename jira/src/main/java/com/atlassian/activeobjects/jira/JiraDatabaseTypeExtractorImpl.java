@@ -22,6 +22,7 @@ public class JiraDatabaseTypeExtractorImpl implements JiraDatabaseTypeExtractor
         catch (Exception e)
         {
             logger.warn("Could not load JIRA settings, can't determine database type at this time.");
+            logger.debug("This is the exception we got:", e);
             return null;
         }
     }

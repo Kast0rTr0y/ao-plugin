@@ -20,7 +20,7 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
             .put(com.atlassian.jira.configurator.config.DatabaseType.HSQL, DatabaseType.HSQL)
             .put(com.atlassian.jira.configurator.config.DatabaseType.MY_SQL, DatabaseType.MYSQL)
             .put(com.atlassian.jira.configurator.config.DatabaseType.ORACLE, DatabaseType.ORACLE)
-            .put(com.atlassian.jira.configurator.config.DatabaseType.POSTGRES, DatabaseType.POSTGRES)
+            .put(com.atlassian.jira.configurator.config.DatabaseType.POSTGRES, DatabaseType.POSTGRESQL)
             .put(com.atlassian.jira.configurator.config.DatabaseType.SQL_SERVER, DatabaseType.MS_SQL)
             .build();
 

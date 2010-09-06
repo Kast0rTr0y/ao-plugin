@@ -56,7 +56,7 @@ public class JiraDataSourceProviderTest
     @Test
     public void testGetPostgreSqlDatabaseType() throws Exception
     {
-        assertDatabaseTypeFromJiraDatabaseType(DatabaseType.POSTGRES, com.atlassian.jira.configurator.config.DatabaseType.POSTGRES);
+        assertDatabaseTypeFromJiraDatabaseType(DatabaseType.POSTGRESQL, com.atlassian.jira.configurator.config.DatabaseType.POSTGRES);
     }
 
     @Test

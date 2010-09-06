@@ -88,7 +88,7 @@ public class JdbcDriverDatabaseProviderFactoryTest
     @Test
     public void testGetDatabaseProviderForClientDerbyDatabaseType() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.DEBRY_NETWORK);
+        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.DERBY_NETWORK);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class JdbcDriverDatabaseProviderFactoryTest
     @Test
     public void testGetDatabaseProviderForPostgresDatabaseType() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.POSTGRES);
+        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.POSTGRESQL);
     }
 
     @Test

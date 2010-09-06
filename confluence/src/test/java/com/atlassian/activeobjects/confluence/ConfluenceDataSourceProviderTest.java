@@ -72,7 +72,7 @@ public class ConfluenceDataSourceProviderTest
     @Test
     public void testGetPostgresDatabaseTypeWithPostgresDialect()
     {
-        assertDatabaseTypeForDialect(DatabaseType.POSTGRES, PostgreSQLDialect.class);
+        assertDatabaseTypeForDialect(DatabaseType.POSTGRESQL, PostgreSQLDialect.class);
     }
 
     @Test
