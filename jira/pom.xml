@@ -41,10 +41,13 @@
                             com.atlassian.activeobjects.spi*;version="${project.version}",
                         </Export-Package>
                         <Import-Package>
+                            com.atlassian.jira.configurator.config*,
+                            com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,
                             javax.sql,
                             org.ofbiz.core.entity*,
+                            org.slf4j*,
                         </Import-Package>
                         <Private-Package>
                             com.atlassian.activeobjects.jira*,
@@ -69,6 +72,18 @@
             <artifactId>atlassian-jira</artifactId>
             <version>4.1.2</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.4</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

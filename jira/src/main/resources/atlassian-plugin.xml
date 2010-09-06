@@ -9,4 +9,6 @@
     <component key="dataSourceProvider" class="com.atlassian.activeobjects.jira.JiraDataSourceProvider" name="Data Source Provider" public="true">
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
     </component>
+
+    <component key="databaseTypeExtractor" class="com.atlassian.activeobjects.jira.JiraDatabaseTypeExtractorImpl" name="Database Type Extractor"/>
 </atlassian-plugin>

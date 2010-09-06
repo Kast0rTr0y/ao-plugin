@@ -42,10 +42,12 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.hibernate,
+                            com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,
                             javax.sql,
-                            net.sf.hibernate,
+                            net.sf.hibernate*,
+                            org.slf4j*,
                         </Import-Package>
                         <Private-Package>
                             com.atlassian.activeobjects.confluence*,
@@ -87,6 +89,18 @@
             <artifactId>hibernate</artifactId>
             <version>2.1.8-atlassian</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.4</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

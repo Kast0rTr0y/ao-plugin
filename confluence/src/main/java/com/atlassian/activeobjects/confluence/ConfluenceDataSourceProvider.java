@@ -1,27 +1,69 @@
 package com.atlassian.activeobjects.confluence;
 
+import com.atlassian.activeobjects.confluence.hibernate.DialectExtractor;
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.hibernate.PluginHibernateSessionFactory;
+import com.google.common.collect.ImmutableMap;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.Session;
+import net.sf.hibernate.dialect.DB2Dialect;
+import net.sf.hibernate.dialect.Dialect;
+import net.sf.hibernate.dialect.HSQLDialect;
+import net.sf.hibernate.dialect.MySQLDialect;
+import net.sf.hibernate.dialect.Oracle9Dialect;
+import net.sf.hibernate.dialect.PostgreSQLDialect;
+import net.sf.hibernate.dialect.SQLServerDialect;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvider
 {
-    private final SessionFactoryDataSource dataSource;
+    private static final Map<Class<? extends Dialect>, DatabaseType> DIALECT_TO_DATABASE_MAPPING = ImmutableMap.<Class<? extends Dialect>, DatabaseType>builder()
+            .put(HSQLDialect.class, DatabaseType.HSQL)
+            .put(MySQLDialect.class, DatabaseType.MYSQL)
+            .put(PostgreSQLDialect.class, DatabaseType.POSTGRES)
+            .put(Oracle9Dialect.class, DatabaseType.ORACLE)
+            .put(SQLServerDialect.class, DatabaseType.MS_SQL)
+            .put(DB2Dialect.class, DatabaseType.DB2)
+            .build();
 
-    public ConfluenceDataSourceProvider(PluginHibernateSessionFactory sessionFactory)
+    private final SessionFactoryDataSource dataSource;
+    private final DialectExtractor dialectExtractor;
+
+    public ConfluenceDataSourceProvider(PluginHibernateSessionFactory sessionFactory, DialectExtractor dialectExtractor)
     {
-        this.dataSource = new SessionFactoryDataSource(sessionFactory);
+        this.dataSource = new SessionFactoryDataSource(checkNotNull(sessionFactory));
+        this.dialectExtractor = checkNotNull(dialectExtractor);
     }
 
     public DataSource getDataSource()
     {
         return dataSource;
+    }
+
+    @Override
+    public DatabaseType getDatabaseType()
+    {
+        final Class<? extends Dialect> dialect = dialectExtractor.getDialect();
+        if (dialect == null)
+        {
+            return DatabaseType.UNKNOWN;
+        }
+        for (Map.Entry<Class<? extends Dialect>, DatabaseType> entry : DIALECT_TO_DATABASE_MAPPING.entrySet())
+        {
+            if (entry.getKey().isAssignableFrom(dialect))
+            {
+                return entry.getValue();
+            }
+        }
+        return super.getDatabaseType();
     }
 
     private static class SessionFactoryDataSource extends AbstractDataSource

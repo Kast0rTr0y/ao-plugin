@@ -1,6 +1,8 @@
 package com.atlassian.activeobjects.jira;
 
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
+import com.google.common.collect.ImmutableMap;
 import org.ofbiz.core.entity.ConnectionFactory;
 import org.ofbiz.core.entity.GenericEntityException;
 
@@ -8,19 +10,39 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class JiraDataSourceProvider extends AbstractDataSourceProvider
 {
-    private final DataSource ds;
+    private static final Map<com.atlassian.jira.configurator.config.DatabaseType, DatabaseType> DB_TYPE_TO_DB_TYPE = ImmutableMap.<com.atlassian.jira.configurator.config.DatabaseType, DatabaseType>builder()
+            .put(com.atlassian.jira.configurator.config.DatabaseType.HSQL, DatabaseType.HSQL)
+            .put(com.atlassian.jira.configurator.config.DatabaseType.MY_SQL, DatabaseType.MYSQL)
+            .put(com.atlassian.jira.configurator.config.DatabaseType.ORACLE, DatabaseType.ORACLE)
+            .put(com.atlassian.jira.configurator.config.DatabaseType.POSTGRES, DatabaseType.POSTGRES)
+            .put(com.atlassian.jira.configurator.config.DatabaseType.SQL_SERVER, DatabaseType.MS_SQL)
+            .build();
 
-    public JiraDataSourceProvider()
+    private final DataSource ds;
+    private final JiraDatabaseTypeExtractor databaseTypeExtractor;
+
+    public JiraDataSourceProvider(JiraDatabaseTypeExtractor databaseTypeExtractor)
     {
-        ds = new OfBizDataSource("defaultDS");
+        this.ds = new OfBizDataSource("defaultDS");
+        this.databaseTypeExtractor = checkNotNull(databaseTypeExtractor);
     }
 
     public DataSource getDataSource()
     {
         return ds;
+    }
+
+    @Override
+    public DatabaseType getDatabaseType()
+    {
+        final DatabaseType databaseType = DB_TYPE_TO_DB_TYPE.get(databaseTypeExtractor.getDatabaseType());
+        return databaseType != null ? databaseType : super.getDatabaseType();
     }
 
     private static class OfBizDataSource extends AbstractDataSource
