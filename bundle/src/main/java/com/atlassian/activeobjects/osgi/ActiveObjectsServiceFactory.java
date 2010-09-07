@@ -3,9 +3,7 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
-import com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactory;
 import com.atlassian.plugin.PluginException;
-import com.atlassian.sal.api.backup.BackupRegistry;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -30,27 +28,20 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsProvider provider;
 
-    private final BackupRegistry backupRegistry;
-    private final ActiveObjectsBackupFactory backupFactory;
-
-    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsProvider provider, BackupRegistry backupRegistry, ActiveObjectsBackupFactory backupFactory)
+    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsProvider provider)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.provider = checkNotNull(provider);
-        this.backupRegistry = backupRegistry;
-        this.backupFactory = checkNotNull(backupFactory);
     }
 
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
-        final ActiveObjects ao = createActiveObjects(bundle);
-        registerForBackup(bundle, ao);
-        return ao;
+        return createActiveObjects(bundle);
     }
 
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
-        unregisterForbackup(bundle, ao);
+        // no-op
     }
 
     /**
@@ -90,15 +81,5 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
                     "Try adding this in your atlassian-plugin.xml file: <ao key='some-key' />");
             throw new PluginException(e);
         }
-    }
-
-    private void registerForBackup(Bundle bundle, ActiveObjects ao)
-    {
-        backupRegistry.register(backupFactory.getBackup(bundle, ao));
-    }
-
-    private void unregisterForbackup(Bundle bundle, Object ao)
-    {
-        backupRegistry.unregister(backupFactory.getBackup(bundle, (ActiveObjects) ao));
     }
 }

@@ -27,7 +27,6 @@
                             com.atlassian.activeobjects.spi;version="${project.version}",
                             com.atlassian.activeobjects.plugin;version="${project.version}",
                             com.atlassian.sal.api;version="2.0",
-                            com.atlassian.sal.api.backup;version="2.1",
                             com.atlassian.sal.api.pluginsettings;version="2.0",
                             com.atlassian.sal.api.transaction;version="2.0",
                             com.atlassian.plugin*,
@@ -45,10 +44,14 @@
                             snaq.db;resolution:=optional;version="4.9",
                             org.slf4j;version="1.5",
                             org.hsqldb*;version="1.8",
+                            org.springframework.beans.factory.config,
                             org.springframework.osgi.service*,
                             org.springframework.osgi.context*,
                         </Import-Package>
-                        <Private-Package>com.google.gson*</Private-Package>
+                        <Private-Package>
+                            com.atlassian.activeobjects.spring*,
+                            com.google.gson*
+                        </Private-Package>
                         <Export-Package>
                             com.atlassian.activeobjects*;version="${project.version}",
                             net.java.ao.*;version="${ao.version}",

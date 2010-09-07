@@ -2,17 +2,17 @@ package it.com.atlassian.activeobjects;
 
 
 import com.atlassian.activeobjects.internal.DataSourceType;
+import com.atlassian.activeobjects.spi.BackupRegistry;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.MemoryBackupRegistry;
 import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.backup.BackupRegistry;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-import com.atlassian.sal.core.backup.MemoryBackupRegistry;
 import com.atlassian.sal.core.transaction.NoOpTransactionTemplate;
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
@@ -225,7 +225,7 @@ public class TestIntegrations extends PluginInContainerTestBase
     }
 
     @Test
-    public void testActiveObjectsRegistersAgainstDatabaseRegistry() throws Exception
+    public void testActiveObjectsRegistersAgainstBackupRegistry() throws Exception
     {
         final MemoryBackupRegistry registry = new MemoryBackupRegistry();
         HostComponentProvider hostComponentProvider = new HostComponentProvider()
@@ -241,17 +241,16 @@ public class TestIntegrations extends PluginInContainerTestBase
         };
 
         initPluginManager(hostComponentProvider);
-        installActiveObjectsPlugin();
 
-        assertTrue(registry.getRegistered().isEmpty());
+        assertTrue(registry.getBackups().isEmpty());
 
-        final String aoConsumerPluginKey = installPlugin(buildConsumerPlugin("test-consumer"));
+        final String ao = installActiveObjectsPlugin();
 
-        assertEquals(1, registry.getRegistered().size());
+        assertEquals(1, registry.getBackups().size());
 
-        uninstallPlugin(aoConsumerPluginKey);
+        uninstallPlugin(ao);
 
-        assertTrue(registry.getRegistered().isEmpty());
+        assertTrue(registry.getBackups().isEmpty());
     }
 
     private ServiceTracker initPluginManagerWithActiveObjects(final Class<?> serviceToTrack) throws Exception
@@ -261,9 +260,9 @@ public class TestIntegrations extends PluginInContainerTestBase
         return getServiceTracker(serviceToTrack);
     }
 
-    private void installActiveObjectsPlugin()
+    private String installActiveObjectsPlugin()
     {
-        installPlugin(getPluginJar());
+        return installPlugin(getPluginJar());
     }
 
     private void installConsumerPlugin() throws Exception

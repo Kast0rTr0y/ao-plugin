@@ -6,6 +6,7 @@
                                  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.1.xsd">
 
     <osgi:service id="ao-module-descriptor-factory" interface="com.atlassian.plugin.osgi.external.ListableModuleDescriptorFactory">
+        <osgi:registration-listener ref="backupRegister" unregistration-method="unregister" />
         <bean class="com.atlassian.activeobjects.plugin.ActiveObjectsModuleDescriptorFactory">
             <constructor-arg index="0">
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
@@ -33,18 +34,22 @@
         <bean class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
             <constructor-arg index="0" ref="osgiUtils"/>
             <constructor-arg index="1" ref="aoProvider"/>
-            <constructor-arg index="2">
-                <bean class="com.atlassian.activeobjects.internal.backup.SpringAwareBackupRegistry">
-                    <constructor-arg index="0">
-                        <osgi:reference id="backupRegistry" interface="com.atlassian.sal.api.backup.BackupRegistry" cardinality="0..1" timeout="1000"/>
-                    </constructor-arg>
-                </bean>
-            </constructor-arg>
-            <constructor-arg index="3">
-                <bean class="com.atlassian.activeobjects.internal.backup.ActiveObjectsBackupFactoryImpl"/>
-            </constructor-arg>
         </bean>
     </osgi:service>
+
+    <osgi:reference id="backupRegistry" interface="com.atlassian.activeobjects.spi.BackupRegistry" cardinality="0..1" timeout="0">
+        <osgi:listener ref="backupRegister" bind-method="register" unbind-method="unregister" />
+    </osgi:reference>
+
+    <bean id="backupRegister" class="com.atlassian.activeobjects.backup.BackupRegister">
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
+                <constructor-arg>
+                    <bean class="com.atlassian.activeobjects.spring.BundleFactoryBean"/>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+    </bean>
 
     <osgi:reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration" cardinality="0..1" timeout="0">
         <osgi:listener bind-method="onActiveObjectsConfigurationServiceBind" unbind-method="onActiveObjectsConfigurationServiceUnbind">

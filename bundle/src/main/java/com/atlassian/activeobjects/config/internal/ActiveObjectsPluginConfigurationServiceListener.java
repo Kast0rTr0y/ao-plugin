@@ -21,7 +21,6 @@ public final class ActiveObjectsPluginConfigurationServiceListener
         this.activeObjectsConfigurationListener = checkNotNull(activeObjectsConfigurationListener);
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
     void onActiveObjectsConfigurationServiceUpdated(ServiceReference reference)
     {
         activeObjectsConfigurationListener.onConfigurationUpdated(new ConfigurationUpdatedPredicate()
@@ -33,12 +32,14 @@ public final class ActiveObjectsPluginConfigurationServiceListener
         });
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public void onActiveObjectsConfigurationServiceBind(ServiceReference reference)
     {
         logger.debug("A new {} service has been bound, as {}", ActiveObjectsPluginConfiguration.class, reference);
         onActiveObjectsConfigurationServiceUpdated(reference);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public void onActiveObjectsConfigurationServiceUnbind(ServiceReference reference)
     {
         logger.debug("Reference {} for service {} has been unbound", reference, ActiveObjectsPluginConfiguration.class);
