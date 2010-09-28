@@ -1,20 +1,37 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
 import com.atlassian.activeobjects.spi.Backup;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import net.java.ao.DatabaseProvider;
+import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.BackupRestore;
+import net.java.ao.schema.ddl.DDLAction;
 import org.osgi.framework.Bundle;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.collect.Lists.newLinkedList;
 
-class ActiveObjectsBackup implements Backup
+public final class ActiveObjectsBackup implements Backup
 {
     private final BackupId backupId;
+    private final DatabaseProviderFactory databaseProviderFactory;
+    private final DataSourceProvider dataSourceProvider;
+    private final SchemaConfiguration schemaConfiguration;
+    private final BackupRestore backupRestore;
+    private final BackupSerialiser<Iterable<DDLAction>> serialiser;
 
-    public ActiveObjectsBackup(Bundle bundle)
+    public ActiveObjectsBackup(Bundle bundle, DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider, SchemaConfiguration schemaConfiguration, BackupSerialiser<Iterable<DDLAction>> serialiser, BackupRestore backupRestore)
     {
         this.backupId = BackupId.fromBundle(checkNotNull(bundle));
+        this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
+        this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.schemaConfiguration = checkNotNull(schemaConfiguration);
+        this.serialiser = checkNotNull(serialiser);
+        this.backupRestore = checkNotNull(backupRestore);
     }
 
     public String getId()
@@ -34,24 +51,44 @@ class ActiveObjectsBackup implements Backup
 
     public void save(OutputStream os)
     {
-        unsupported();
+        final DatabaseProvider provider = getProvider();
+        try
+        {
+            serialiser.serialise(backupRestore.backup(provider, schemaConfiguration), os);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            provider.dispose();
+        }
     }
 
-    public void restore(String id, InputStream stream)
+    public void restore(String id, InputStream backup)
     {
         if (accept(id))
         {
-            unsupported();
-        }
-        else
-        {
-            throw new IllegalStateException("Cannot restore backup with ID " + id + ".");
+            final DatabaseProvider provider = getProvider();
+            try
+            {
+                backupRestore.restore(newLinkedList(serialiser.deserialise(backup)), provider);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+            finally
+            {
+                provider.dispose();
+            }
         }
     }
 
-    private void unsupported()
+    private DatabaseProvider getProvider()
     {
-        throw new UnsupportedOperationException("Backup is not yet supported as part of the Active Objects plugin");
+        return databaseProviderFactory.getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType());
     }
 
     @Override

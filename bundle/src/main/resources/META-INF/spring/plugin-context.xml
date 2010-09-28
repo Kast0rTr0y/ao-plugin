@@ -6,7 +6,7 @@
                                  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.1.xsd">
 
     <osgi:service id="ao-module-descriptor-factory" interface="com.atlassian.plugin.osgi.external.ListableModuleDescriptorFactory">
-        <osgi:registration-listener ref="backupRegister" unregistration-method="unregister" />
+        <osgi:registration-listener ref="backupRegister" unregistration-method="unregister"/>
         <bean class="com.atlassian.activeobjects.plugin.ActiveObjectsModuleDescriptorFactory">
             <constructor-arg index="0">
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
@@ -14,9 +14,7 @@
             <constructor-arg index="1" ref="osgiUtils"/>
             <constructor-arg index="2">
                 <bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
-                    <constructor-arg index="0">
-                        <osgi:reference interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
-                    </constructor-arg>
+                    <constructor-arg index="0" ref="pluginSettingsFactory"/>
                     <constructor-arg index="1" value="APPLICATION"/>
                 </bean>
             </constructor-arg>
@@ -38,26 +36,47 @@
     </osgi:service>
 
     <osgi:reference id="backupRegistry" interface="com.atlassian.activeobjects.spi.BackupRegistry" cardinality="0..1" timeout="0">
-        <osgi:listener ref="backupRegister" bind-method="register" unbind-method="unregister" />
+        <osgi:listener ref="backupRegister" bind-method="register" unbind-method="unregister"/>
     </osgi:reference>
 
     <bean id="backupRegister" class="com.atlassian.activeobjects.backup.BackupRegister">
+        <constructor-arg ref="backup"/>
+    </bean>
+
+    <bean id="backup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg>
-            <bean class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
+            <bean class="com.atlassian.activeobjects.spring.BundleFactoryBean"/>
+        </constructor-arg>
+        <constructor-arg ref="databaseProviderFactory"/>
+        <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration">
                 <constructor-arg>
-                    <bean class="com.atlassian.activeobjects.spring.BundleFactoryBean"/>
+                    <bean class="com.atlassian.activeobjects.internal.SimplePrefix">
+                        <constructor-arg value="ao"/>
+                    </bean>
                 </constructor-arg>
             </bean>
         </constructor-arg>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.spring.GsonBackupSerialiserFactoryBean"/>
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="net.java.ao.schema.BackupRestoreImpl"/>
+        </constructor-arg>
     </bean>
 
-    <osgi:reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration" cardinality="0..1" timeout="0">
-        <osgi:listener bind-method="onActiveObjectsConfigurationServiceBind" unbind-method="onActiveObjectsConfigurationServiceUnbind">
-            <bean class="com.atlassian.activeobjects.config.internal.ActiveObjectsPluginConfigurationServiceListener">
-                <constructor-arg ref="registry"/>
-            </bean>
-        </osgi:listener>
-    </osgi:reference>
+    <bean id="aoPluginConfiguration" class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsPluginConfiguration">
+        <constructor-arg>
+            <osgi:reference id="activeObjectsConfiguration" interface="com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration" cardinality="0..1" timeout="0">
+                <osgi:listener bind-method="onActiveObjectsConfigurationServiceBind" unbind-method="onActiveObjectsConfigurationServiceUnbind">
+                    <bean class="com.atlassian.activeobjects.config.internal.ActiveObjectsPluginConfigurationServiceListener">
+                        <constructor-arg ref="registry"/>
+                    </bean>
+                </osgi:listener>
+            </osgi:reference>
+        </constructor-arg>
+    </bean>
 
     <bean id="osgiUtils" class="com.atlassian.activeobjects.osgi.OsgiServiceUtilsImpl"/>
 
@@ -68,37 +87,27 @@
                 <constructor-arg index="0">
                     <list>
                         <bean class="com.atlassian.activeobjects.internal.DatabaseDirectoryAwareActiveObjectsFactory">
-                            <constructor-arg index="0">
-                                <osgi:reference interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000"/>
-                            </constructor-arg>
-                            <constructor-arg index="1">
-                                <bean class="com.atlassian.activeobjects.internal.DefaultDatabaseConfiguration">
-                                    <constructor-arg ref="activeObjectsConfiguration"/>
-                                </bean>
-                            </constructor-arg>
+                            <constructor-arg index="0" ref="applicationProperties"/>
+                            <constructor-arg index="1" ref="aoPluginConfiguration"/>
                         </bean>
                         <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
                             <constructor-arg index="0">
                                 <bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
-                                    <constructor-arg index="0">
-                                        <bean class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
-                                            <constructor-arg>
-                                                <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
-                                            </constructor-arg>
-                                        </bean>
-                                    </constructor-arg>
+                                    <constructor-arg index="0" ref="databaseProviderFactory"/>
                                 </bean>
                             </constructor-arg>
-                            <constructor-arg index="1">
-                                <osgi:reference interface="com.atlassian.activeobjects.spi.DataSourceProvider" timeout="5000"/>
-                            </constructor-arg>
-                            <constructor-arg index="2">
-                                <osgi:reference interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="5000"/>
-                            </constructor-arg>
+                            <constructor-arg index="1" ref="dataSourceProvider"/>
+                            <constructor-arg index="2" ref="transactionTemplate"/>
                         </bean>
                     </list>
                 </constructor-arg>
             </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="databaseProviderFactory" class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
         </constructor-arg>
     </bean>
 
