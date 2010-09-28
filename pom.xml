@@ -33,6 +33,7 @@
     <modules>
         <module>bundle</module>
         <module>spi</module>
+        <module>refapp-activeobjects-spi</module>
         <module>confluence</module>
         <module>jira</module>
     </modules>
@@ -148,18 +149,6 @@
             </dependency>
 
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.7</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>1.8.2</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.atlassian.plugins.test</groupId>
                 <artifactId>atlassian-plugins-test</artifactId>
                 <version>${atlassian-plugins.version}</version>
@@ -182,12 +171,27 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <properties>
         <ao.version>0.9-m8</ao.version>
         <sal.version>2.1.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
-        <atlassian-plugins.version>2.5.4</atlassian-plugins.version>
-        <spring.library.version>2.5.6.SEC01</spring.library.version>
-        <spring.osgi.version>1.2.1</spring.osgi.version>
+        <atlassian-plugins.version>2.4.4</atlassian-plugins.version>
+        <spring.library.version>2.5.6</spring.library.version>
+        <spring.osgi.version>1.2.0</spring.osgi.version>
     </properties>
 </project>

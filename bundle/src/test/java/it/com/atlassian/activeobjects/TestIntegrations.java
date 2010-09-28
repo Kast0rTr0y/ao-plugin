@@ -6,6 +6,7 @@ import com.atlassian.activeobjects.spi.BackupRegistry;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.MemoryBackupRegistry;
 import com.atlassian.plugin.JarPluginArtifact;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
@@ -246,6 +247,7 @@ public class TestIntegrations extends PluginInContainerTestBase
                 registrar.register(LoginUriProvider.class).forInstance(mock(LoginUriProvider.class));
                 registrar.register(WebResourceManager.class).forInstance(mock(WebResourceManager.class));
                 registrar.register(WebInterfaceManager.class).forInstance(mock(WebInterfaceManager.class));
+                registrar.register(PluginAccessor.class).forInstance(mock(PluginAccessor.class));
                 registrar.register(BackupRegistry.class).forInstance(registry);
             }
         };
@@ -296,20 +298,21 @@ public class TestIntegrations extends PluginInContainerTestBase
     {
         return new HostComponentProvider()
         {
-            public void provide(ComponentRegistrar componentRegistrar)
+            public void provide(ComponentRegistrar registrar)
             {
                 if (!isSystemDown.get())
                 {
-                    componentRegistrar.register(ApplicationProperties.class).forInstance(applicationProperties);
+                    registrar.register(ApplicationProperties.class).forInstance(applicationProperties);
                 }
-                componentRegistrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
-                componentRegistrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
-                componentRegistrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
-                componentRegistrar.register(I18nResolver.class).forInstance(mock(I18nResolver.class));
-                componentRegistrar.register(UserManager.class).forInstance(mock(UserManager.class));
-                componentRegistrar.register(LoginUriProvider.class).forInstance(mock(LoginUriProvider.class));
-                componentRegistrar.register(WebResourceManager.class).forInstance(mock(WebResourceManager.class));
-                componentRegistrar.register(WebInterfaceManager.class).forInstance(mock(WebInterfaceManager.class));
+                registrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
+                registrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
+                registrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
+                registrar.register(I18nResolver.class).forInstance(mock(I18nResolver.class));
+                registrar.register(UserManager.class).forInstance(mock(UserManager.class));
+                registrar.register(LoginUriProvider.class).forInstance(mock(LoginUriProvider.class));
+                registrar.register(WebResourceManager.class).forInstance(mock(WebResourceManager.class));
+                registrar.register(WebInterfaceManager.class).forInstance(mock(WebInterfaceManager.class));
+                registrar.register(PluginAccessor.class).forInstance(mock(PluginAccessor.class));
             }
         };
     }

@@ -36,7 +36,7 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <Bundle-SymbolicName>com.atlassian.activeobjects.jira-spi</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
                         <Export-Package>
                             com.atlassian.activeobjects.spi*;version="${project.version}",
                         </Export-Package>
@@ -72,18 +72,6 @@
             <artifactId>atlassian-jira</artifactId>
             <version>4.1.2</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.8.4</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

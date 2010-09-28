@@ -19,7 +19,7 @@
                 <artifactId>maven-refapp-plugin</artifactId>
                 <version>3.1.3</version>
                 <configuration>
-                    <productVersion>2.4.1</productVersion>
+                    <productVersion>2.7.1</productVersion>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
@@ -41,6 +41,7 @@
                             com.atlassian.plugin.web;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.webresource;version="${atlassian-plugins.version}",
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
+                            javax.naming;version="0.0.0",
                             javax.servlet*;version="2.4",
                             javax.sql,
                             net.java.ao*;version="${ao.version}",
@@ -84,8 +85,9 @@
                     <noWebapp>true</noWebapp>
                     <pluginArtifacts>
                         <pluginArtifact>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>activeobjects-refimpl-plugin</artifactId>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>refapp-activeobjects-spi</artifactId>
+                            <version>${project.version}</version>
                         </pluginArtifact>
                     </pluginArtifacts>
                 </configuration>
@@ -201,14 +203,6 @@
             <artifactId>velocity</artifactId>
             <version>1.6.4</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins.test</groupId>
