@@ -26,6 +26,7 @@
     <web-resource key="web-resources" name="Web Resources">
         <resource type="download" name="active-objects-admin.css" location="com/atlassian/activeobjects/admin/ActiveObjectsAdmin.css"/>
         <resource type="download" name="active-objects-admin.js" location="com/atlassian/activeobjects/admin/ActiveObjectsAdmin.js"/>
-        <!--<dependency>com.atlassian.auiplugin:ajs</dependency>-->
+        <resource type="download" name="images/" location="images"/>
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
     </web-resource>
 </atlassian-plugin>

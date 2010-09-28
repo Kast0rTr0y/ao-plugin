@@ -56,6 +56,8 @@
         <property name="delegate">
             <bean class="com.atlassian.activeobjects.web.admin.ConfigurationController">
                 <constructor-arg ref="aoPluginConfiguration"/>
+                <constructor-arg ref="pluginConfigurations"/>
+                <constructor-arg ref="pluginAccessor"/>
             </bean>
         </property>
     </bean>

@@ -1,0 +1,54 @@
+#ao table {
+    width: 90%;
+    margin: 1em auto;
+}
+
+#ao th {
+    text-align:center;
+    background-color: #f3f3f3;
+}
+
+#ao td {
+    padding: 0.3em 0.6em;
+}
+
+#ao table, #ao tr, #ao th, #ao td {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+}
+
+.ao-plugins {
+    border: 1px solid #ccc;
+}
+
+.ao-plugins .ao-plugin-header {
+    background: #f3f3f3 url(images/puzzle-piece.gif) no-repeat 0.4em 0.4em;
+    overflow: hidden;
+    padding: 0.5em 0.8em;
+    position: relative;
+    border-bottom: 1px solid #CCC;
+}
+
+.ao-plugins h4.ao-plugin-name {
+    display: inline;
+    float: left;
+    font-size: 1em;
+    margin: 0.1em 0 0 0;
+    padding: 0 18px;
+    width: 30%;
+}
+
+.ao-plugins .ao-plugin-header p {
+    display: inline;
+    float: right;
+    color: #666;
+    width: 65%;
+    margin: 0.1em 0 0 0;
+}
+
+.ao-no-plugins {
+    background-color: #fff3f3;
+    border: 1px solid #ffcfcf;
+    margin: 1em;
+    padding: 0.3em 1.2em;
+}
