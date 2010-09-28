@@ -4,5 +4,28 @@
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
         <application-version min="1" max="10"/>
+        <param name="configure.url">/plugins/servlet/ao/config/view</param>
     </plugin-info>
+
+    <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet">
+        <url-pattern>/ao/*</url-pattern>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:/META-INF/spring/web-context.xml</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-context-param key="enable-html-escaping" name="Enable HTML escaping context parameter">
+        <description>Enables automatic HTML escaping in Spring MVC.</description>
+        <param-name>defaultHtmlEscape</param-name>
+        <param-value>true</param-value>
+    </servlet-context-param>
+
+    <resource type="i18n" name="i18n" location="com.atlassian.activeobjects.admin.ActiveObjectsAdmin"/>
+
+    <web-resource key="web-resources" name="Web Resources">
+        <resource type="download" name="active-objects-admin.css" location="com/atlassian/activeobjects/admin/ActiveObjectsAdmin.css"/>
+        <resource type="download" name="active-objects-admin.js" location="com/atlassian/activeobjects/admin/ActiveObjectsAdmin.js"/>
+        <!--<dependency>com.atlassian.auiplugin:ajs</dependency>-->
+    </web-resource>
 </atlassian-plugin>

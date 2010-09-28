@@ -9,10 +9,15 @@ import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.test.PluginJarBuilder;
+import com.atlassian.plugin.web.WebInterfaceManager;
+import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.auth.LoginUriProvider;
+import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.core.transaction.NoOpTransactionTemplate;
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
@@ -178,7 +183,7 @@ public class TestIntegrations extends PluginInContainerTestBase
         catch (RuntimeException e)
         {
             assertEquals("service matching filter=[(objectClass=com.atlassian.sal.api.ApplicationProperties)] unavailable", e.getMessage());
-            assertTrue(System.currentTimeMillis() > start + 5000);
+            assertTrue(System.currentTimeMillis() - (start + 3000) > 0);
         }
     }
 
@@ -236,6 +241,11 @@ public class TestIntegrations extends PluginInContainerTestBase
                 registrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
                 registrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
                 registrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
+                registrar.register(I18nResolver.class).forInstance(mock(I18nResolver.class));
+                registrar.register(UserManager.class).forInstance(mock(UserManager.class));
+                registrar.register(LoginUriProvider.class).forInstance(mock(LoginUriProvider.class));
+                registrar.register(WebResourceManager.class).forInstance(mock(WebResourceManager.class));
+                registrar.register(WebInterfaceManager.class).forInstance(mock(WebInterfaceManager.class));
                 registrar.register(BackupRegistry.class).forInstance(registry);
             }
         };
@@ -295,6 +305,11 @@ public class TestIntegrations extends PluginInContainerTestBase
                 componentRegistrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
                 componentRegistrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
                 componentRegistrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
+                componentRegistrar.register(I18nResolver.class).forInstance(mock(I18nResolver.class));
+                componentRegistrar.register(UserManager.class).forInstance(mock(UserManager.class));
+                componentRegistrar.register(LoginUriProvider.class).forInstance(mock(LoginUriProvider.class));
+                componentRegistrar.register(WebResourceManager.class).forInstance(mock(WebResourceManager.class));
+                componentRegistrar.register(WebInterfaceManager.class).forInstance(mock(WebInterfaceManager.class));
             }
         };
     }

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="handler" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/config/**">configController</prop>
+                <prop key="/backup">backupRestoreController</prop>
+                <prop key="/restore">backupRestoreController</prop>
+            </props>
+        </property>
+        <property name="interceptors">
+            <list>
+                <bean class="com.atlassian.plugin.web.springmvc.interceptor.ContentTypeInterceptor"/>
+                <bean class="com.atlassian.plugin.web.springmvc.interceptor.SystemAdminAuthorisationInterceptor">
+                    <constructor-arg index="0" ref="userManager"/>
+                    <constructor-arg index="1" ref="loginUriProvider"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
+        <property name="prefix" value="/templates/"/>
+        <property name="suffix" value=".vm"/>
+        <property name="exposeSpringMacroHelpers" value="true"/>
+        <!--<property name="contentType" value="text/html; charset=UTF-8"/>--> <!-- this should ensure Sitemesh decoration but doesn't, so instead we use a ContentTypeInterceptor -->
+        <property name="attributesMap">
+            <map>
+                <entry key="i18n" value-ref="i18nResolver"/>
+                <entry key="applicationProperties" value-ref="applicationProperties"/>
+                <entry key="webResourceManager" value-ref="webResourceManager"/>
+                <entry key="webInterfaceManager" value-ref="webInterfaceManager"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
+        <!--<property name="velocityProperties">
+            <props>
+                <prop key="velocimacro.library">templates/aui-form-macros.vm</prop>
+            </props>
+        </property>-->
+    </bean>
+
+    <!--
+    <bean id="messageSource" class="com.atlassian.plugin.web.springmvc.message.ApplicationMessageSource">
+        <property name="keyPrefix" value="embedded.crowd.validation."/>
+        <property name="i18nResolver" ref="i18nResolver"/>
+    </bean>
+    -->
+
+    <bean id="configController" class="org.springframework.web.servlet.mvc.multiaction.MultiActionController">
+        <property name="delegate">
+            <bean class="com.atlassian.activeobjects.web.admin.ConfigurationController">
+                <constructor-arg ref="aoPluginConfiguration"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="backupRestoreController" class="org.springframework.web.servlet.mvc.multiaction.MultiActionController">
+        <property name="delegate">
+            <bean class="com.atlassian.activeobjects.web.admin.BackupRestoreController">
+                <constructor-arg ref="backup"/>
+            </bean>
+        </property>
+    </bean>
+</beans>

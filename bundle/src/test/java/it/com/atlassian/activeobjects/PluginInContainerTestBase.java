@@ -122,7 +122,8 @@ public abstract class PluginInContainerTestBase
         scannerConfig.getPackageIncludes().add("it.com.atlassian.activeobjects");
         scannerConfig.getPackageIncludes().add("org.dom4j*");
         scannerConfig.getPackageExcludes().add("com.atlassian.plugin.osgi.bridge*");
-        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.plugin.web.springmvc*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects*");
         return scannerConfig;
     }
 }

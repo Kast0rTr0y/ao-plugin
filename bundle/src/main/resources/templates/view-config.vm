@@ -1,0 +1,30 @@
+<html>
+<head>
+    <meta name="decorator" content="atl.admin">
+    <title>$i18n.getText("ao.view.config.title")</title>
+</head>
+<body>
+<div id="ao">
+    <h1>$i18n.getText("ao.view.config.backup.title")</h1>
+    <p>
+        $i18n.getText("ao.view.config.backup.text")
+        <a href="#springUrl("/plugins/servlet/ao/backup")">$i18n.getText("ao.view.config.backup.link")</a>
+    </p>
+    <h1>$i18n.getText("ao.view.config.global.title")</h1>
+    <table class="grid">
+        <thead>
+        <tr>
+            <th>$i18n.getText("ao.view.config.property")</th>
+            <th>$i18n.getText("ao.view.config.value")</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>$i18n.getText("ao.view.config.base.db.dir")</td>
+            <td>$pluginConfig.databaseBaseDirectory</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

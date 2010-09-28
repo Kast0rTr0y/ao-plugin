@@ -18,45 +18,68 @@
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-refapp-plugin</artifactId>
                 <version>3.1.3</version>
-                <extensions>true</extensions>
                 <configuration>
                     <productVersion>2.4.1</productVersion>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
+                            !javax.servlet.jsp*,
+                            !org.apache.velocity.tools*,
+                            !freemarker*,
                             com.atlassian.activeobjects.spi;version="${project.version}",
-                            com.atlassian.activeobjects.plugin;version="${project.version}",
                             com.atlassian.sal.api;version="2.0",
+                            com.atlassian.sal.api.auth;version="2.0",
+                            com.atlassian.sal.api.message;version="2.0",
                             com.atlassian.sal.api.pluginsettings;version="2.0",
                             com.atlassian.sal.api.transaction;version="2.0",
-                            com.atlassian.plugin*,
-                            com.atlassian.plugin.osgi.external*,
-                            org.dom4j*,
+                            com.atlassian.sal.api.user;version="2.0",
+                            com.atlassian.plugin;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.descriptors;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.hostcontainer;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.osgi.external;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.osgi.factory;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.web;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.webresource;version="${atlassian-plugins.version}",
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
-                            javax.*;resolution:=optional;version="0.0.0",
-                            net.java.ao*;version="0.8",
+                            javax.servlet*;version="2.4",
+                            javax.sql,
+                            net.java.ao*;version="${ao.version}",
+                            org.apache.commons.lang;version="2.0",
                             org.apache.commons.lang.builder;version="2.0",
+                            org.apache.commons.logging;version="1.1.1",
                             org.apache.commons.dbcp;resolution:=optional;version="1.2",
                             org.apache.lucene.*;version="2.0";resolution:=optional,
+                            org.apache.velocity*;version="1.6.1",
+                            org.dom4j*,
                             org.logicalcobwebs.proxool;version="0.9";resolution:=optional,
                             org.osgi.framework;version="1.4",
                             org.osgi.util.tracker;version="1.3",
-                            snaq.db;resolution:=optional;version="4.9",
                             org.slf4j;version="1.5",
                             org.hsqldb*;version="1.8",
-                            org.springframework.beans.factory.config,
-                            org.springframework.osgi.service*,
-                            org.springframework.osgi.context*,
+                            org.springframework.beans*;version="${spring.library.version}",
+                            org.springframework.context*;version="${spring.library.version}",
+                            org.springframework.core*;version="${spring.library.version}",
+                            org.springframework.web*;version="${spring.library.version}",
+                            org.springframework.osgi*;version="${spring.osgi.version}",
+                            org.springframework.ui*;version="${spring.library.version}",
+                            org.springframework.util*;version="${spring.library.version}",
+                            org.springframework.validation*;version="${spring.library.version}",
+                            snaq.db;resolution:=optional;version="4.9",
                         </Import-Package>
                         <Private-Package>
                             com.atlassian.activeobjects.spring*,
-                            com.google.gson*
+                            com.google.gson*,
                         </Private-Package>
                         <Export-Package>
                             com.atlassian.activeobjects*;version="${project.version}",
-                            net.java.ao.*;version="${ao.version}",
+                            net.java.ao;version="${ao.version}",
+                            net.java.ao.builder;version="${ao.version}",
+                            net.java.ao.db;version="${ao.version}",
+                            net.java.ao.event;version="${ao.version}",
+                            net.java.ao.schema;version="${ao.version}",
                             org.hsqldb*;version="1.8.0.7",
                         </Export-Package>
+                        <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
                     <pluginArtifacts>
@@ -72,9 +95,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.atlassian.plugins</groupId>
-            <artifactId>atlassian-plugins-osgi-bridge</artifactId>
-            <version>2.5.4</version>
+            <groupId>net.java.dev.activeobjects</groupId>
+            <artifactId>activeobjects</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
@@ -86,16 +108,6 @@
             <artifactId>sal-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.activeobjects</groupId>
-            <artifactId>activeobjects</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.osgi</groupId>
             <artifactId>spring-osgi-core</artifactId>
         </dependency>
@@ -104,14 +116,92 @@
             <artifactId>atlassian-plugins-osgi</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-osgi-bridge</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-webresource</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-webfragment</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>1.4</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.library.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.library.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.library.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.library.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.library.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${spring.library.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.16</version>
+            <scope>test</scope>
+            <!-- include freemarker temporrarily as spring mvc seems to require it! -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+            <version>1.6.4</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -139,7 +229,7 @@
 
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
+            <artifactId>slf4j-log4j12</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>
