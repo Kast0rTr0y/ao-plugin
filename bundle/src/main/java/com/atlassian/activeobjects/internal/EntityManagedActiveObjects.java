@@ -6,6 +6,7 @@ import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
+import net.java.ao.sql.ActiveObjectSqlException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -40,10 +41,17 @@ class EntityManagedActiveObjects implements ActiveObjects
 
     ///CLOVER:OFF
 
-    public final void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException
+    public final void migrate(Class<? extends RawEntity<?>>... entities)
     {
-        entityManager.migrate(entities);
-        this.entities.addAll(Arrays.asList(entities));
+        try
+        {
+            entityManager.migrate(entities);
+            this.entities.addAll(Arrays.asList(entities));
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
     public InputStream backup()
@@ -77,64 +85,140 @@ class EntityManagedActiveObjects implements ActiveObjects
         return entityManager.get(type, key);
     }
 
-    public final <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException
+    public final <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params)
     {
-        return entityManager.create(type, params);
+        try
+        {
+            return entityManager.create(type, params);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params) throws SQLException
+    public final <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params)
     {
-        return entityManager.create(type, params);
+        try
+        {
+            return entityManager.create(type, params);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final void delete(RawEntity<?>... entities) throws SQLException
+    public final void delete(RawEntity<?>... entities)
     {
-        entityManager.delete(entities);
+        try
+        {
+            entityManager.delete(entities);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <T extends RawEntity<K>, K> T[] find(Class<T> type) throws SQLException
+    public final <T extends RawEntity<K>, K> T[] find(Class<T> type)
     {
-        return entityManager.find(type);
+        try
+        {
+            return entityManager.find(type);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException
+    public final <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters)
     {
-        return entityManager.find(type, criteria, parameters);
+        try
+        {
+            return entityManager.find(type, criteria, parameters);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query) throws SQLException
+    public final <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query)
     {
-        return entityManager.find(type, query);
+        try
+        {
+            return entityManager.find(type, query);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query) throws SQLException
+    public final <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query)
     {
-        return entityManager.find(type, field, query);
+        try
+        {
+            return entityManager.find(type, field, query);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException
+    public final <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters)
     {
-        return entityManager.findWithSQL(type, keyField, sql, parameters);
+        try
+        {
+            return entityManager.findWithSQL(type, keyField, sql, parameters);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <K> int count(Class<? extends RawEntity<K>> type) throws SQLException
+    public final <K> int count(Class<? extends RawEntity<K>> type)
     {
-        return entityManager.count(type);
+        try
+        {
+            return entityManager.count(type);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters) throws SQLException
+    public final <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
     {
-        return entityManager.count(type, criteria, parameters);
+        try
+        {
+            return entityManager.count(type, criteria, parameters);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
-    public final <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException
+    public final <K> int count(Class<? extends RawEntity<K>> type, Query query)
     {
-        return entityManager.count(type, query);
+        try
+        {
+            return entityManager.count(type, query);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectSqlException(e);
+        }
     }
 
     ///CLOVER:ON
-
-    public final <T> T executeInTransaction(final TransactionCallback<T> callback) throws SQLException
+    public final <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
         return transactionManager.doInTransaction(callback);
     }

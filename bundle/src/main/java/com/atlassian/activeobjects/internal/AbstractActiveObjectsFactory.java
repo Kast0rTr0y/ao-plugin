@@ -1,10 +1,9 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjects;
 import net.java.ao.RawEntity;
 
-import java.sql.SQLException;
 import java.util.Collection;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
@@ -34,15 +33,7 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
         final ActiveObjects ao = doCreate(configuration);
-
-        try
-        {
-            ao.migrate(asArray(configuration.getEntities()));
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        ao.migrate(asArray(configuration.getEntities()));
         return ao;
     }
 

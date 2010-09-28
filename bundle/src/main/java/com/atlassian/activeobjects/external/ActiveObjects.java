@@ -6,7 +6,6 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -18,7 +17,7 @@ public interface ActiveObjects
     /**
      * Creates the schema for the specified entities
      */
-    public void migrate(Class<? extends RawEntity<?>>... entities) throws java.sql.SQLException;
+    public void migrate(Class<? extends RawEntity<?>>... entities);
 
     /**
      * Backup known entities
@@ -64,10 +63,10 @@ public interface ActiveObjects
      *
      * @param type The type of the entities to retrieve.
      * @param keys The primary keys corresponding to the entities to retrieve.  All
-     *             keys must be typed according to the generic type parameter of the entity's
-     *             {@link RawEntity} inheritence (if inheriting from {@link net.java.ao.Entity}, this is <code>Integer</code>
-     *             or <code>int</code>).  Thus, the <code>keys</code> array is type-checked at compile
-     *             time.
+     * keys must be typed according to the generic type parameter of the entity's
+     * {@link RawEntity} inheritence (if inheriting from {@link net.java.ao.Entity}, this is <code>Integer</code>
+     * or <code>int</code>).  Thus, the <code>keys</code> array is type-checked at compile
+     * time.
      * @return An array of entities of the given type corresponding with the specified primary keys.
      */
     public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys);
@@ -79,7 +78,7 @@ public interface ActiveObjects
      * and functions as syntactical sugar.
      *
      * @param type The type of the entity instance to retrieve.
-     * @param key  The primary key corresponding to the entity to be retrieved.
+     * @param key The primary key corresponding to the entity to be retrieved.
      * @return An entity instance of the given type corresponding to the specified primary key.
      * @see #get(Class, Object...)
      */
@@ -110,13 +109,13 @@ public interface ActiveObjects
      * responsible for handling INSERTion and retrieval of the correct primary key
      * value.</p>
      *
-     * @param type   The type of the entity to INSERT.
+     * @param type The type of the entity to INSERT.
      * @param params An optional varargs array of initial values for the fields in the row.  These
-     *               values will be passed to the database within the INSERT statement.
+     * values will be passed to the database within the INSERT statement.
      * @return The new entity instance corresponding to the INSERTed row.
      * @see net.java.ao.DBParam
      */
-    public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException;
+    public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params);
 
     /**
      * Creates and INSERTs a new entity of the specified type with the given map of
@@ -126,12 +125,12 @@ public interface ActiveObjects
      * anonymous inner class constructor syntax who might be more comfortable with
      * creating a map than with passing a number of objects.
      *
-     * @param type   The type of the entity to INSERT.
+     * @param type The type of the entity to INSERT.
      * @param params A map of parameters to pass to the INSERT.
      * @return The new entity instance corresponding to the INSERTed row.
      * @see #create(Class, DBParam...)
      */
-    public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params) throws SQLException;
+    public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params);
 
     /**
      * <p>Deletes the specified entities from the database.  DELETE statements are
@@ -153,10 +152,10 @@ public interface ActiveObjects
      * unique type.</p>
      *
      * @param entities A varargs array of entities to delete.  Method returns immediately
-     *                 if length == 0.
+     * if length == 0.
      */
     @SuppressWarnings("unchecked")
-    public void delete(RawEntity<?>... entities) throws SQLException;
+    public void delete(RawEntity<?>... entities);
 
     /**
      * Returns all entities of the given type.  This actually peers the call to
@@ -165,7 +164,7 @@ public interface ActiveObjects
      * @param type The type of entity to retrieve.
      * @return An array of all entities which correspond to the given type.
      */
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type) throws SQLException;
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type);
 
     /**
      * <p>Convenience method to select all entities of the given type with the
@@ -180,14 +179,14 @@ public interface ActiveObjects
      * <p>This actually delegates the call to the {@link #find(Class, net.java.ao.Query)}
      * method, properly parameterizing the {@link net.java.ao.Query} object.</p>
      *
-     * @param type       The type of the entities to retrieve.
-     * @param criteria   A parameterized WHERE statement used to determine the results.
+     * @param type The type of the entities to retrieve.
+     * @param criteria A parameterized WHERE statement used to determine the results.
      * @param parameters A varargs array of parameters to be passed to the executed
-     *                   prepared statement.  The length of this array <i>must</i> match the number of
-     *                   parameters (denoted by the '?' char) in the <code>criteria</code>.
+     * prepared statement.  The length of this array <i>must</i> match the number of
+     * parameters (denoted by the '?' char) in the <code>criteria</code>.
      * @return An array of entities of the given type which match the specified criteria.
      */
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException;
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters);
 
     /**
      * <p>Selects all entities matching the given type and {@link net.java.ao.Query}.  By default, the
@@ -201,11 +200,11 @@ public interface ActiveObjects
      * <p>This method delegates the call to {@link #find(Class, String, net.java.ao.Query)}, passing the
      * primary key field for the given type as the <code>String</code> parameter.</p>
      *
-     * @param type  The type of the entities to retrieve.
+     * @param type The type of the entities to retrieve.
      * @param query The {@link net.java.ao.Query} instance to be used to determine the results.
      * @return An array of entities of the given type which match the specified query.
      */
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query) throws SQLException;
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query);
 
     /**
      * <p>Selects all entities of the specified type which match the given
@@ -216,13 +215,13 @@ public interface ActiveObjects
      * the result set and extracts the specified field, mapping an entity
      * of the given type to each row.  This array of entities is returned.</p>
      *
-     * @param type  The type of the entities to retrieve.
+     * @param type The type of the entities to retrieve.
      * @param field The field value to use in the creation of the entities.  This is usually
-     *              the primary key field of the corresponding table.
+     * the primary key field of the corresponding table.
      * @param query The {@link Query} instance to use in determining the results.
      * @return An array of entities of the given type which match the specified query.
      */
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query) throws SQLException;
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query);
 
     /**
      * <p>Executes the specified SQL and extracts the given key field, wrapping each
@@ -240,17 +239,17 @@ public interface ActiveObjects
      * careful about what SQL is executed using this method, or else be conscious of the
      * fact that you may be locking yourself to a specific DBMS.</p>
      *
-     * @param type       The type of the entities to retrieve.
-     * @param keyField   The field value to use in the creation of the entities.  This is usually
-     *                   the primary key field of the corresponding table.
-     * @param sql        The SQL statement to execute.
+     * @param type The type of the entities to retrieve.
+     * @param keyField The field value to use in the creation of the entities.  This is usually
+     * the primary key field of the corresponding table.
+     * @param sql The SQL statement to execute.
      * @param parameters A varargs array of parameters to be passed to the executed
-     *                   prepared statement.  The length of this array <i>must</i> match the number of
-     *                   parameters (denoted by the '?' char) in the <code>criteria</code>.
+     * prepared statement.  The length of this array <i>must</i> match the number of
+     * parameters (denoted by the '?' char) in the <code>criteria</code>.
      * @return An array of entities of the given type which match the specified query.
      */
     @SuppressWarnings("unchecked")
-    public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException;
+    public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters);
 
     /**
      * Counts all entities of the specified type.  This method is actually
@@ -259,34 +258,34 @@ public interface ActiveObjects
      * @param type The type of the entities which should be counted.
      * @return The number of entities of the specified type.
      */
-    public <K> int count(Class<? extends RawEntity<K>> type) throws SQLException;
+    public <K> int count(Class<? extends RawEntity<K>> type);
 
     /**
      * Counts all entities of the specified type matching the given criteria
      * and parameters.  This is a convenience method for:
      * <code>count(type, Query.select().where(criteria, parameters))</code>
      *
-     * @param type       The type of the entities which should be counted.
-     * @param criteria   A parameterized WHERE statement used to determine the result
-     *                   set which will be counted.
+     * @param type The type of the entities which should be counted.
+     * @param criteria A parameterized WHERE statement used to determine the result
+     * set which will be counted.
      * @param parameters A varargs array of parameters to be passed to the executed
-     *                   prepared statement.  The length of this array <i>must</i> match the number of
-     *                   parameters (denoted by the '?' char) in the <code>criteria</code>.
+     * prepared statement.  The length of this array <i>must</i> match the number of
+     * parameters (denoted by the '?' char) in the <code>criteria</code>.
      * @return The number of entities of the given type which match the specified criteria.
      */
-    public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters) throws SQLException;
+    public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters);
 
     /**
      * Counts all entities of the specified type matching the given {@link Query}
      * instance.  The SQL runs as a <code>SELECT COUNT(*)</code> to
      * ensure maximum performance.
      *
-     * @param type  The type of the entities which should be counted.
+     * @param type The type of the entities which should be counted.
      * @param query The {@link Query} instance used to determine the result set which
-     *              will be counted.
+     * will be counted.
      * @return The number of entities of the given type which match the specified query.
      */
-	public <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException;
+    public <K> int count(Class<? extends RawEntity<K>> type, Query query);
 
-    public <T> T executeInTransaction(TransactionCallback<T> callback) throws SQLException;
+    public <T> T executeInTransaction(TransactionCallback<T> callback);
 }

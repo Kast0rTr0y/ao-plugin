@@ -1,15 +1,14 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.Map;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
@@ -28,7 +27,7 @@ final class DelegatingActiveObjects implements ActiveObjects
         this.provider = checkNotNull(provider);
     }
 
-    public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException
+    public void migrate(Class<? extends RawEntity<?>>... entities)
     {
         getDelegate().migrate(entities);
     }
@@ -63,62 +62,62 @@ final class DelegatingActiveObjects implements ActiveObjects
         return getDelegate().get(type, key);
     }
 
-    public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException
+    public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params)
     {
         return getDelegate().create(type, params);
     }
 
-    public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params) throws SQLException
+    public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params)
     {
         return getDelegate().create(type, params);
     }
 
-    public void delete(RawEntity<?>... entities) throws SQLException
+    public void delete(RawEntity<?>... entities)
     {
         getDelegate().delete(entities);
     }
 
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type) throws SQLException
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type)
     {
         return getDelegate().find(type);
     }
 
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters)
     {
         return getDelegate().find(type, criteria, parameters);
     }
 
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query) throws SQLException
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query)
     {
         return getDelegate().find(type, query);
     }
 
-    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query) throws SQLException
+    public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query)
     {
         return getDelegate().find(type, field, query);
     }
 
-    public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException
+    public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters)
     {
         return getDelegate().findWithSQL(type, keyField, sql, parameters);
     }
 
-    public <K> int count(Class<? extends RawEntity<K>> type) throws SQLException
+    public <K> int count(Class<? extends RawEntity<K>> type)
     {
         return getDelegate().count(type);
     }
 
-    public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters) throws SQLException
+    public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
     {
         return getDelegate().count(type, criteria, parameters);
     }
 
-    public <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException
+    public <K> int count(Class<? extends RawEntity<K>> type, Query query)
     {
         return getDelegate().count(type, query);
     }
 
-    public <T> T executeInTransaction(TransactionCallback<T> callback) throws SQLException
+    public <T> T executeInTransaction(TransactionCallback<T> callback)
     {
         return getDelegate().executeInTransaction(callback);
     }
