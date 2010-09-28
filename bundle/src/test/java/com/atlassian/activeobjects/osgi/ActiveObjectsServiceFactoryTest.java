@@ -2,7 +2,6 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +47,7 @@ public final class ActiveObjectsServiceFactoryTest
         assertNotNull(ao);
         assertTrue(ao instanceof DelegatingActiveObjects);
 
-        Assert.assertEquals(configuration, ((DelegatingActiveObjects) ao).getConfiguration());
+        assertEquals(configuration, ((ActiveObjectsServiceFactory.LazyActiveObjectConfiguration) ((DelegatingActiveObjects) ao).getConfiguration()).getDelegate());
         assertEquals(provider, ((DelegatingActiveObjects) ao).getProvider());
     }
 

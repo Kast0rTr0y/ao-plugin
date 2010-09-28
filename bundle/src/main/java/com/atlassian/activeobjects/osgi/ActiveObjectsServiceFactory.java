@@ -3,12 +3,21 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.internal.DataSourceType;
+import com.atlassian.activeobjects.internal.PluginKey;
+import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.plugin.PluginException;
+import net.java.ao.RawEntity;
+import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
@@ -53,7 +62,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     private ActiveObjects createActiveObjects(Bundle bundle)
     {
         logger.debug("Creating active object service for bundle {}", bundle.getSymbolicName());
-        return new DelegatingActiveObjects(getConfiguration(bundle), provider);
+        return new DelegatingActiveObjects(new LazyActiveObjectConfiguration(bundle), provider);
     }
 
     /**
@@ -80,6 +89,56 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
                     "Did you define an 'ao' module descriptor in your plugin?\n" +
                     "Try adding this in your atlassian-plugin.xml file: <ao key='some-key' />");
             throw new PluginException(e);
+        }
+    }
+
+    final class LazyActiveObjectConfiguration implements ActiveObjectsConfiguration
+    {
+        private final Bundle bundle;
+
+        public LazyActiveObjectConfiguration(Bundle bundle)
+        {
+            this.bundle = checkNotNull(bundle);
+        }
+
+        public PluginKey getPluginKey()
+        {
+            return getDelegate().getPluginKey();
+        }
+
+        public DataSourceType getDataSourceType()
+        {
+            return getDelegate().getDataSourceType();
+        }
+
+        public Prefix getTableNamePrefix()
+        {
+            return getDelegate().getTableNamePrefix();
+        }
+
+        public TableNameConverter getTableNameConverter()
+        {
+            return getDelegate().getTableNameConverter();
+        }
+
+        public FieldNameConverter getFieldNameConverter()
+        {
+            return getDelegate().getFieldNameConverter();
+        }
+
+        public SchemaConfiguration getSchemaConfiguration()
+        {
+            return getDelegate().getSchemaConfiguration();
+        }
+
+        public Set<Class<? extends RawEntity<?>>> getEntities()
+        {
+            return getDelegate().getEntities();
+        }
+
+        ActiveObjectsConfiguration getDelegate()
+        {
+            return getConfiguration(bundle);
         }
     }
 }

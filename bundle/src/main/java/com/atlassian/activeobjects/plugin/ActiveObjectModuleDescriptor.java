@@ -61,6 +61,10 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private final TableNameConverter delegateTableNameConverter;
 
+    private Prefix tableNamePrefix;
+    private TableNameConverter tableNameConverter;
+    private Set<Class<? extends RawEntity<?>>> entityClasses;
+
     /**
      * The service registration for the active objects configuration, defined by this plugin.
      */
@@ -93,16 +97,11 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     {
         super.init(plugin, element);
 
-        final Prefix tableNamePrefix = getTableNamePrefix(element);
-        final TableNameConverter tableNameConverter = getTableNameConverter(tableNamePrefix);
-        final Set<Class<? extends RawEntity<?>>> entityClasses = getEntities(element);
+        tableNamePrefix = getTableNamePrefix(element);
+        tableNameConverter = getTableNameConverter(tableNamePrefix);
+        entityClasses = getEntities(element);
 
         validateEntities(entityClasses, tableNameConverter);
-
-        final ActiveObjectsConfiguration activeObjectsConfiguration = getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, entityClasses);
-
-        tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, tableNameConverter);
-        activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, activeObjectsConfiguration);
     }
 
     void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, TableNameConverter tableNameConverter)
@@ -123,10 +122,27 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     }
 
     @Override
+    public void enabled()
+    {
+        super.enabled();
+
+        if (tableNameConverterServiceRegistration == null)
+        {
+            tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, tableNameConverter);
+        }
+        if (activeObjectsConfigurationServiceRegistration == null)
+        {
+            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, entityClasses));
+        }
+    }
+
+    @Override
     public void disabled()
     {
         unregister(activeObjectsConfigurationServiceRegistration);
+        activeObjectsConfigurationServiceRegistration = null;
         unregister(tableNameConverterServiceRegistration);
+        tableNameConverterServiceRegistration = null;
         super.disabled();
     }
 
@@ -158,7 +174,14 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     {
         if (serviceRegistration != null)
         {
-            serviceRegistration.unregister();
+            try
+            {
+                serviceRegistration.unregister();
+            }
+            catch (IllegalStateException ignored)
+            {
+                logger.debug("Service has already been unregistered", ignored);
+            }
         }
     }
 

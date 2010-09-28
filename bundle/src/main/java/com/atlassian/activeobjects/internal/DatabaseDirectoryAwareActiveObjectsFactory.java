@@ -1,12 +1,12 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import com.atlassian.sal.api.ApplicationProperties;
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
-import net.java.ao.schema.FieldNameConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +22,9 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final ApplicationProperties applicationProperties;
-    private final DatabaseConfiguration dbConfiguration;
+    private final ActiveObjectsPluginConfiguration dbConfiguration;
 
-    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, DatabaseConfiguration dbConfiguration)
+    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration)
     {
         super(DataSourceType.HSQLDB);
         this.applicationProperties = checkNotNull(applicationProperties);
@@ -69,7 +69,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
 
     private File getDatabasesDirectory(File home)
     {
-        String path = dbConfiguration.getBaseDirectory();
+        String path = dbConfiguration.getDatabaseBaseDirectory();
         if (path.startsWith("/"))
         {
             path = path.substring(1);

@@ -5,7 +5,6 @@ import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.PluginException;
 import com.google.common.collect.Sets;
-import junit.framework.TestCase;
 import net.java.ao.Entity;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.TableNameConverter;
@@ -13,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.fail;
