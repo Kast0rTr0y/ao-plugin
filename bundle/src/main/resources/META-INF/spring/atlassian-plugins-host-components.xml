@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ DO NOT change that file's name! It's there so that the plugin system doesn't automagically generate it for us.
+-->
 <beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:osgi="http://www.springframework.org/schema/osgi"
-        xsi:schemaLocation="
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xsi:schemaLocation="
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 

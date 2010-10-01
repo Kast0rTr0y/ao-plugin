@@ -121,9 +121,26 @@ public abstract class PluginInContainerTestBase
         scannerConfig.getPackageIncludes().add("com_cenqua_clover");
         scannerConfig.getPackageIncludes().add("it.com.atlassian.activeobjects");
         scannerConfig.getPackageIncludes().add("org.dom4j*");
-        scannerConfig.getPackageExcludes().add("com.atlassian.plugin.osgi.bridge*");
+        scannerConfig.getPackageIncludes().add("com.atlassian.activeobjects.spi");
+
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.ao*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.admin*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.backup*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.config*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.external*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.internal*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.osgi*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.plugin*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.spring*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.test*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.tx*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.util*");
+        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects.web*");
         scannerConfig.getPackageExcludes().add("com.atlassian.plugin.web.springmvc*");
-        scannerConfig.getPackageExcludes().add("com.atlassian.activeobjects*");
+
+        scannerConfig.getPackageVersions().put("com.atlassian.activeobjects*", "100"); // just make is an insanely huge number so that importing it will just work
+
         return scannerConfig;
     }
 }

@@ -36,6 +36,7 @@
                             com.atlassian.plugin;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.descriptors;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.hostcontainer;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.osgi.bridge.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.factory;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.web;version="${atlassian-plugins.version}",
@@ -189,14 +190,6 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.16</version>
-            <scope>test</scope>
-            <!-- include freemarker temporrarily as spring mvc seems to require it! -->
         </dependency>
         <dependency>
             <groupId>org.apache.velocity</groupId>
