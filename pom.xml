@@ -32,6 +32,7 @@
 
     <modules>
         <module>bundle</module>
+        <module>activeobjects-test</module>
         <module>spi</module>
         <module>refapp-activeobjects-spi</module>
         <module>confluence</module>

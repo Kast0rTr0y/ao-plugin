@@ -25,14 +25,14 @@ import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
  *
  * @see net.java.ao.EntityManager
  */
-class EntityManagedActiveObjects implements ActiveObjects
+public class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
     private final TransactionManager transactionManager;
 
     private final Collection<Class<? extends RawEntity<?>>> entities;
 
-    EntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
+    protected EntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
     {
         this.entityManager = checkNotNull(entityManager);
         this.transactionManager = checkNotNull(transactionManager);
