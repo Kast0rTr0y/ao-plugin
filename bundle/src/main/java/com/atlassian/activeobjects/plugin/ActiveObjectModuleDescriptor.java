@@ -50,6 +50,9 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private static final int MAX_NUMBER_OF_ENTITIES = 50;
+    private static final int MAX_LENGTH_ENTITY_NAME = 30;
+
     /**
      * Easy registration of service
      */
@@ -106,10 +109,15 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, TableNameConverter tableNameConverter)
     {
+        if (entityClasses.size() > MAX_NUMBER_OF_ENTITIES)
+        {
+            throw new PluginException("Plugins are allowed no more than " + MAX_NUMBER_OF_ENTITIES + " entities!");
+        }
+
         for (Class<? extends RawEntity<?>> entityClass : entityClasses)
         {
             final String tableName = tableNameConverter.getName(entityClass);
-            if (tableName.length() > 30)
+            if (tableName.length() > MAX_LENGTH_ENTITY_NAME)
             {
                 logger.error("Invalid entity defined in AO module of plugin, {}", getPluginKey());
                 logger.error("Table names cannot be longer than 30 chars long in order to work with Oracle. " +
