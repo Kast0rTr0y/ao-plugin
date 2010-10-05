@@ -7,11 +7,25 @@
         <param name="configure.url">/plugins/servlet/ao/config/view</param>
     </plugin-info>
 
-    <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet">
+    <!--
+     Dispatcher servlet used with the Refapp
+     -->
+    <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet" application="refapp">
         <url-pattern>/ao/*</url-pattern>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>classpath:/META-INF/spring/web-context.xml</param-value>
+            <param-value>classpath:/META-INF/spring-web/web-context.xml</param-value>
+        </init-param>
+    </servlet>
+
+    <!--
+     Dispatcher servlet used with Confluence only (i.e. it doesn't work in JIRA yet, will work in 4.3)
+     -->
+    <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet" application="com.atlassian.confluence">
+        <url-pattern>/ao/*</url-pattern>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:/META-INF/spring-web/web-context.xml</param-value>
         </init-param>
     </servlet>
 
