@@ -87,7 +87,7 @@
                     <pluginArtifacts>
                         <pluginArtifact>
                             <groupId>com.atlassian.activeobjects</groupId>
-                            <artifactId>refapp-activeobjects-spi</artifactId>
+                            <artifactId>activeobjects-refapp-spi</artifactId>
                             <version>${project.version}</version>
                         </pluginArtifact>
                     </pluginArtifacts>

@@ -6,7 +6,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>refapp-activeobjects-spi</artifactId>
+    <artifactId>activeobjects-refapp-spi</artifactId>
     <packaging>bundle</packaging>
 
     <name>ActiveObjects Plugin - Refapp SPI implementation</name>
