@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>atlassian-public-pom</artifactId>
-        <version>26</version>
+        <version>28</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -77,14 +77,27 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-refapp-plugin</artifactId>
+                <version>3.2</version>
+                    <extensions>true</extensions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-dependency-tracker-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-refapp-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.2.2</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <productVersion>2.7.1</productVersion>                    
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -151,6 +164,13 @@
             </dependency>
 
             <dependency>
+                <groupId>com.google.collections</groupId>
+                <artifactId>google-collections</artifactId>
+                <version>1.0</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>com.atlassian.plugins.test</groupId>
                 <artifactId>atlassian-plugins-test</artifactId>
                 <version>${atlassian-plugins.version}</version>
@@ -189,7 +209,8 @@
     </dependencies>
 
     <properties>
-        <ao.version>0.9-m8</ao.version>
+        <plugin-sdk.version>3.2</plugin-sdk.version>
+        <ao.version>0.9-m9</ao.version>
         <sal.version>2.1.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.4.4</atlassian-plugins.version>

@@ -17,9 +17,7 @@
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-refapp-plugin</artifactId>
-                <version>3.1.3</version>
                 <configuration>
-                    <productVersion>2.7.1</productVersion>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
@@ -41,6 +39,7 @@
                             com.atlassian.plugin.osgi.factory;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.web;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.webresource;version="${atlassian-plugins.version}",
+                            com.google.common*;version="1.0",
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.naming;version="0.0.0",
                             javax.servlet*;version="2.4",
