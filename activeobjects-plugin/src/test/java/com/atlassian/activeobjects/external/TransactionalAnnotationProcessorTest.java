@@ -1,6 +1,6 @@
-package com.atlassian.activeobjects.tx;
+package com.atlassian.activeobjects.external;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.tx.Transactional;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +12,7 @@ import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 
 /**
- * Testing {@link com.atlassian.activeobjects.tx.TransactionalAnnotationProcessor}
+ * Testing {@link com.atlassian.activeobjects.external.TransactionalAnnotationProcessor}
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionalAnnotationProcessorTest
@@ -20,6 +20,7 @@ public class TransactionalAnnotationProcessorTest
     private TransactionalAnnotationProcessor transactionalAnnotationProcessor;
 
     @Mock
+    @SuppressWarnings("unused")
     private ActiveObjects ao;
 
     @Before
@@ -72,6 +73,7 @@ public class TransactionalAnnotationProcessorTest
     public static interface AnnotatedMethodInInterface
     {
         @Transactional
+        @SuppressWarnings("unused")
         public void doSomething();
     }
 }

@@ -1,6 +1,5 @@
-package com.atlassian.activeobjects.tx;
+package com.atlassian.activeobjects.external;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
@@ -13,8 +12,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * within a plugin.</p>
  * <p>Simply add this snippet of code in your plugin descriptor:</p>
  * <code>
- *   &lt;component key="tx-annotation-processor" class="com.atlassian.activeobjects.tx.TransactionalAnnotationProcessor" /&gt;
+ *   &lt;component key="tx-annotation-processor" class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor" /&gt;
  * </code>
+ * <p><strong>Note:</strong> This class does not live in the {@link com.atlassian.activeobjects.tx} package in order to
+ * be available to plugins without any additional imports (OSGi wise).</p>
  * @see com.atlassian.activeobjects.tx.Transactional
  */
 public final class TransactionalAnnotationProcessor implements BeanPostProcessor
