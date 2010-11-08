@@ -32,16 +32,6 @@ final class DelegatingActiveObjects implements ActiveObjects
         getDelegate().migrate(entities);
     }
 
-    public InputStream backup()
-    {
-        return getDelegate().backup();
-    }
-
-    public void restore(InputStream is)
-    {
-        getDelegate().restore(is);
-    }
-
     public void flushAll()
     {
         getDelegate().flushAll();

@@ -1,0 +1,29 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+    </plugin-info>
+
+    <ao key="ao-module">
+        <description>The module configuring the Active Objects service used by this plugin</description>
+        <entity>com.atlassian.activeobjects.testplugin.model.Book</entity>
+    </ao>
+
+    <component-import key="ao" name="Active Objects components"
+                      interface="com.atlassian.activeobjects.external.ActiveObjects">
+        <description>Component to access Active Objects functionality from the plugin</description>
+    </component-import>
+
+    <component key="tx-processor" name="Transactional Annotation Processor"
+               class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor">
+        <decription>Processes @Transactional annotations.</decription>
+    </component>
+
+    <component-import key="backup" name="Active Objects backup" interface="com.atlassian.activeobjects.spi.Backup"/>
+
+    <servlet name="Backup" class="com.atlassian.activeobjects.testplugin.BackupTestServlet" key="backup-test-servlet">
+        <description>Backups the data in the database when GETing, restores when POSTing, empties when DELETEing</description>
+        <url-pattern>/ao-test</url-pattern>
+    </servlet>
+</atlassian-plugin>

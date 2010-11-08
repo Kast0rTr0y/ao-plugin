@@ -43,11 +43,13 @@
 
     <osgi:list id="pluginConfigurations" cardinality="0..N" interface="com.atlassian.activeobjects.config.ActiveObjectsConfiguration"/>
 
+    <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
+
     <bean id="backupRegister" class="com.atlassian.activeobjects.backup.BackupRegister">
-        <constructor-arg ref="backup"/>
+        <constructor-arg ref="aoBackup"/>
     </bean>
 
-    <bean id="backup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
+    <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg>
             <bean class="com.atlassian.activeobjects.spring.BundleFactoryBean"/>
         </constructor-arg>

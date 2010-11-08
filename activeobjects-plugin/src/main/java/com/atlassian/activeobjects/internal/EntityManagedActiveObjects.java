@@ -8,8 +8,6 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import net.java.ao.sql.ActiveObjectSqlException;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,13 +28,10 @@ public class EntityManagedActiveObjects implements ActiveObjects
     private final EntityManager entityManager;
     private final TransactionManager transactionManager;
 
-    private final Collection<Class<? extends RawEntity<?>>> entities;
-
     protected EntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
     {
         this.entityManager = checkNotNull(entityManager);
         this.transactionManager = checkNotNull(transactionManager);
-        this.entities = new HashSet<Class<? extends RawEntity<?>>>();
     }
 
     ///CLOVER:OFF
@@ -46,23 +41,11 @@ public class EntityManagedActiveObjects implements ActiveObjects
         try
         {
             entityManager.migrate(entities);
-            this.entities.addAll(Arrays.asList(entities));
         }
         catch (SQLException e)
         {
             throw new ActiveObjectSqlException(e);
         }
-    }
-
-    public InputStream backup()
-    {
-//        return entityManager.backup(entities.toArray(new Class[0]));
-        return new ByteArrayInputStream(new byte[0]);
-    }
-
-    public void restore(InputStream backup)
-    {
-//        entityManager.restore(backup);
     }
 
     public final void flushAll()

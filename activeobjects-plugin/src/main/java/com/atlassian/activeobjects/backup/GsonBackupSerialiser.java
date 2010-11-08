@@ -2,6 +2,15 @@ package com.atlassian.activeobjects.backup;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import net.java.ao.types.DatabaseType;
+import net.java.ao.types.TypeManager;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -29,7 +38,23 @@ public class GsonBackupSerialiser<T> implements BackupSerialiser<T>
     public GsonBackupSerialiser(Type type)
     {
         this.type = checkNotNull(type);
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(DatabaseType.class, new DatabaseTypeAdapter())
+                .setPrettyPrinting()
+                .create();
+    }
+
+    private static class DatabaseTypeAdapter implements JsonSerializer<DatabaseType<?>>, JsonDeserializer<DatabaseType<?>>
+    {
+        public JsonElement serialize(DatabaseType<?> src, Type typeOfSrc, JsonSerializationContext context)
+        {
+            return new JsonPrimitive(src.getType());
+        }
+
+        public DatabaseType<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+        {
+            return TypeManager.getInstance().getType(json.getAsJsonPrimitive().getAsInt());
+        }
     }
 
     public void serialise(T t, OutputStream os)

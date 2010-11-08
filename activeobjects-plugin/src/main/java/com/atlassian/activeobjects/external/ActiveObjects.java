@@ -13,20 +13,10 @@ import java.util.Map;
  */
 public interface ActiveObjects
 {
-
     /**
      * Creates the schema for the specified entities
      */
     public void migrate(Class<? extends RawEntity<?>>... entities);
-
-    /**
-     * Backup known entities
-     *
-     * @return
-     */
-    public InputStream backup();
-
-    public void restore(InputStream is);
 
     /**
      * Flushes all value caches contained within entities controlled by this <code>EntityManager</code>
