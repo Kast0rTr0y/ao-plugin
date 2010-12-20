@@ -82,7 +82,6 @@ glue:glue:5.0b2:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1
 hsqldb:hsqldb:1.8.0.7:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
 javacvs:javacvs:2007-04-04-patched:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}26a794546b3d0f215ce49ba0122d74658f5718fb|{sha1}af74e9d8a559a5589c244fed61b46689106d1ee4
 javax.activation:activation:1.1.1:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}485de3a253e23f645037828c07f1d7f1af40763a|{sha1}b39fa8fc6c7ab6d48cb286e69f4c156f264e9038
-javax.jms:jms:1.1:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,log4j:log4j:jar:1.2.15|{sha1}5e106d07e523fb6d40cf086b9b413268f6302f26|{sha1}27a2e84f6118a2bbd0266edd9d53870528473f92
 javax.mail:mail:1.4.1:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}8b7bc69010655425dabf091b51d1e90b4de36715|{sha1}f96eb8dfd7e8255eb0157ebea9347d602afb2083
 javax.servlet:servlet-api:2.4:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,com.atlassian.ofbiz:atlassian-ofbiz:jar:2.7.3|{sha1}3fc542fe8bb8164e8d3e840fe7403bc0518053c0|{sha1}2d97d4b5f4dce36ac757f41db6415b85855bde8d
 jaxen:jaxen:1.1-beta-9:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,org.codehaus.xfire:xfire-core:jar:1.2.6|{sha1}18e8a67a731fb79e7d48b0ac1e14d79563e538e6|{sha1}ecda8f1c8f6dd4c7f5a36d1e502e751cd4e346a8

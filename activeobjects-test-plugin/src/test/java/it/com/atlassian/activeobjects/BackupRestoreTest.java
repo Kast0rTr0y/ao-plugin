@@ -56,6 +56,10 @@ public final class BackupRestoreTest
     @Before
     public final void createHttpClient()
     {
+        if (BASE_URL == null || BASE_URL.equals(""))
+        {
+            throw new IllegalStateException("BASE_URL is not set properly!");
+        }
         client = new HttpClient();
     }
 
