@@ -2,13 +2,13 @@ aopalliance:aopalliance:1.0:jar:-:compile|com.atlassian.activeobjects:activeobje
 com.atlassian.activeobjects:activeobjects-plugin:1.0-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
 com.atlassian.sal:sal-api:2.1.0:jar:-:provided||{sha1}4e1d34761e29324eb6e9cbdd9b6d56e6bbe3c294|{sha1}c6bdd6a5a0b691df0fa953c23c0222e34a1f7b4a
 com.google.code.gson:gson:1.4:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}c2c2d342e134a390723e4802891c0df1bf749171|{sha1}c2c9963d2c0c23dd947b2cc5c511e838f696dfda
-com.google.collections:google-collections:1.0:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,net.java.dev.activeobjects:activeobjects:jar:0.9-SNAPSHOT|{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
+com.google.collections:google-collections:1.0:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,net.java.dev.activeobjects:activeobjects:jar:0.9-m10|{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
 commons-codec:commons-codec:1.4:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}4216af16d38465bbab0f3dff8efa14204f7a399a|{sha1}393db4ae967c6e831025d432632d1f72f7108b01
 commons-logging:commons-logging:1.1.1:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.springframework:spring-webmvc:jar:2.5.6|{sha1}5043bfebc3db072ed80fbd362e7caf00e885d8ae|{sha1}76672afb562b9e903674ad3a544cdf2092f1faa3
 hsqldb:hsqldb:1.8.0.7:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
-net.java.dev.activeobjects:activeobjects:0.9-SNAPSHOT:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|SNAPSHOT|SNAPSHOT
-net.java.dev.activeobjects:activeobjects-test:0.9-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
+net.java.dev.activeobjects:activeobjects:0.9-m10:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}3eb07889acfc53f9cb5e0bd5ba905c7f4378eafb|{sha1}8a29b762d112d71d876bc9c3c3ab87a09c9e933e
+net.java.dev.activeobjects:activeobjects-test:0.9-m10:jar:-:compile||{sha1}9f866fd3d585693edbb37c6ae0247f22677bb01f|{sha1}c89ff59527b9140987fc62196f1f6e83c71bf1a4
 org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
 org.springframework:spring-beans:2.5.6:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.springframework:spring-webmvc:jar:2.5.6|{sha1}449ea46b27426eb846611a90b2fb8b4dcf271191|{sha1}24ffcedb04c6c114d841de2b3bc6e75f7bac19ec
 org.springframework:spring-context:2.5.6:jar:-:compile|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.springframework:spring-webmvc:jar:2.5.6|{sha1}983416e612875bdcf877dad4c9d5d77ae37e06ee|{sha1}cc79cbd268e5554661c6beb3a3c728c349e42022
