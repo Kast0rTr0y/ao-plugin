@@ -33,6 +33,6 @@ public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDesc
     @Override
     public ModuleDescriptor getModuleDescriptor(String type) throws PluginParseException, IllegalAccessException, InstantiationException, ClassNotFoundException
     {
-        return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(osgiUtils, dataSourceTypeResolver, digester, tableNameConverter) : null;
+        return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(osgiUtils, dataSourceTypeResolver, digester) : null;
     }
 }

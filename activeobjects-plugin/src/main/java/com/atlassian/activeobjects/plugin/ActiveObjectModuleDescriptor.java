@@ -1,8 +1,11 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.ao.ClassNameTableNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.ao.PrefixedTableNameConverter;
+import com.atlassian.activeobjects.ao.UpperCaseFieldNameConverter;
+import com.atlassian.activeobjects.ao.UpperCaseTableNameConverter;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
@@ -36,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
+import static com.atlassian.activeobjects.ao.ConverterUtils.toUpperCase;
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
 /**
@@ -53,36 +57,30 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     private static final int MAX_NUMBER_OF_ENTITIES = 50;
     private static final int MAX_LENGTH_ENTITY_NAME = 30;
 
-    /**
-     * Easy registration of service
-     */
+    /** Easy registration of service */
     private final OsgiServiceUtils osgiUtils;
 
     private final Digester digester;
 
     private final DataSourceTypeResolver dataSourceTypeResolver;
 
-    private final TableNameConverter delegateTableNameConverter;
-
     private Prefix tableNamePrefix;
     private TableNameConverter tableNameConverter;
+    private FieldNameConverter fieldNameConverter;
+
     private Set<Class<? extends RawEntity<?>>> entityClasses;
 
-    /**
-     * The service registration for the active objects configuration, defined by this plugin.
-     */
+    /** The service registration for the active objects configuration, defined by this plugin. */
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
     private ServiceRegistration tableNameConverterServiceRegistration;
 
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver,
-                                        Digester digester,
-                                        TableNameConverter delegateTableNameConverter)
+                                        Digester digester)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
-        this.delegateTableNameConverter = checkNotNull(delegateTableNameConverter);
     }
 
     @Override
@@ -102,6 +100,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
         tableNamePrefix = getTableNamePrefix(element);
         tableNameConverter = getTableNameConverter(tableNamePrefix);
+        fieldNameConverter = getFieldNameConverter();
         entityClasses = getEntities(element);
 
         validateEntities(entityClasses, tableNameConverter);
@@ -140,7 +139,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         }
         if (activeObjectsConfigurationServiceRegistration == null)
         {
-            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, entityClasses));
+            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, fieldNameConverter, entityClasses));
         }
     }
 
@@ -160,14 +159,14 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         return null; // no module
     }
 
-    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, TableNameConverter tableNameConverter, Set<Class<? extends RawEntity<?>>> entities)
+    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, TableNameConverter tableNameConverter, FieldNameConverter fieldNameConverter, Set<Class<? extends RawEntity<?>>> entities)
     {
         final DefaultActiveObjectsConfiguration configuration =
                 new DefaultActiveObjectsConfiguration(PluginKey.fromBundle(getBundle()), dataSourceTypeResolver);
 
         configuration.setTableNamePrefix(tableNamePrefix);
         configuration.setTableNameConverter(tableNameConverter);
-        configuration.setFieldNameConverter(new CamelCaseFieldNameConverter());
+        configuration.setFieldNameConverter(fieldNameConverter);
         configuration.setSchemaConfiguration(new PrefixedSchemaConfiguration(tableNamePrefix));
         configuration.setEntities(entities);
         return configuration;
@@ -175,7 +174,12 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private TableNameConverter getTableNameConverter(Prefix tableNamePrefix)
     {
-        return new PrefixedTableNameConverter(tableNamePrefix, delegateTableNameConverter);
+        return new PrefixedTableNameConverter(tableNamePrefix, new UpperCaseTableNameConverter(new ClassNameTableNameConverter()));
+    }
+
+    private FieldNameConverter getFieldNameConverter()
+    {
+        return new UpperCaseFieldNameConverter(new CamelCaseFieldNameConverter());
     }
 
     private void unregister(ServiceRegistration serviceRegistration)
@@ -195,7 +199,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private Prefix getTableNamePrefix(Element element)
     {
-        return new SimplePrefix("ao_" + digester.digest(getNameSpace(element), 6), "_");
+        return new SimplePrefix(toUpperCase("ao_" + digester.digest(getNameSpace(element), 6)), "_");
     }
 
     /**

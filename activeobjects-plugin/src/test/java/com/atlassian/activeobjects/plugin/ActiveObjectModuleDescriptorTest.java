@@ -31,8 +31,8 @@ public final class ActiveObjectModuleDescriptorTest
         moduleDescriptor = new ActiveObjectModuleDescriptor(
                 mock(OsgiServiceUtils.class),
                 mock(DataSourceTypeResolver.class),
-                mock(Digester.class),
-                mock(TableNameConverter.class))
+                mock(Digester.class)
+        )
         {
             @Override
             public String getPluginKey()
