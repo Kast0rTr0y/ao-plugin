@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
@@ -44,6 +45,7 @@
                             javax.naming;version="0.0.0",
                             javax.servlet*;version="2.4",
                             javax.sql,
+                            javax.xml.transform*,
                             net.java.ao*;version="${ao.version}",
                             org.apache.commons.lang;version="2.0",
                             org.apache.commons.lang.builder;version="2.0",
@@ -70,6 +72,9 @@
                         <Private-Package>
                             com.atlassian.activeobjects.spring*,
                             com.google.gson*,
+                            javax.xml.stream*,
+                            com.ctc.wstx*,
+                            org.codehaus.stax2*,
                         </Private-Package>
                         <Export-Package>
                             com.atlassian.activeobjects*;version="${project.version}",
@@ -110,6 +115,10 @@
             <artifactId>sal-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.collections</groupId>
+            <artifactId>google-collections</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.osgi</groupId>
             <artifactId>spring-osgi-core</artifactId>
         </dependency>
@@ -144,11 +153,16 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>1.4</version>
+            <groupId>com.atlassian.dbexporter</groupId>
+            <artifactId>atlassian-db-exporter</artifactId>
+            <version>0.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-asl</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>

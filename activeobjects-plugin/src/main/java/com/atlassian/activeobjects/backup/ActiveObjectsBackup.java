@@ -3,86 +3,92 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.dbexporter.DbExporter;
+import com.atlassian.dbexporter.DbImporter;
+import com.atlassian.dbexporter.exporter.DataExporter;
+import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
+import com.atlassian.dbexporter.exporter.TableDefinitionExporter;
+import com.atlassian.dbexporter.importer.DataImporter;
+import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
+import com.atlassian.dbexporter.importer.TableDefinitionImporter;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.atlassian.dbexporter.progress.Slf4jProgressMonitor;
+import com.atlassian.dbexporter.xml.NodeStreamReader;
+import com.atlassian.dbexporter.xml.NodeStreamWriter;
+import com.atlassian.dbexporter.xml.stax.StaxStreamReader;
+import com.atlassian.dbexporter.xml.stax.StaxStreamWriter;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.BackupRestore;
-import net.java.ao.schema.ddl.DDLAction;
-import org.osgi.framework.Bundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
-import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.base.Preconditions.*;
 
 public final class ActiveObjectsBackup implements Backup
 {
-    private final BackupId backupId;
+    private static final String NAMESPACE = "http://www.atlassian.com/ao";
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final DatabaseProviderFactory databaseProviderFactory;
     private final DataSourceProvider dataSourceProvider;
-    private final SchemaConfiguration schemaConfiguration;
-    private final BackupRestore backupRestore;
-    private final BackupSerialiser<Iterable<DDLAction>> serialiser;
 
-    public ActiveObjectsBackup(Bundle bundle, DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider, SchemaConfiguration schemaConfiguration, BackupSerialiser<Iterable<DDLAction>> serialiser, BackupRestore backupRestore)
+    public ActiveObjectsBackup(DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider)
     {
-        this.backupId = BackupId.fromBundle(checkNotNull(bundle));
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
-        this.schemaConfiguration = checkNotNull(schemaConfiguration);
-        this.serialiser = checkNotNull(serialiser);
-        this.backupRestore = checkNotNull(backupRestore);
     }
 
-    public String getId()
-    {
-        return backupId.toString();
-    }
-
-    public boolean accept(String id)
-    {
-        return accept(BackupId.fromString(id));
-    }
-
-    private boolean accept(BackupId backupId)
-    {
-        return this.backupId.isCompatible(backupId);
-    }
-
-    public void save(OutputStream os)
+    public void save(OutputStream stream)
     {
         final DatabaseProvider provider = getProvider();
+
+        final DbExporter dbExporter = new DbExporter(
+                getProgressMonitor(),
+                new DatabaseInformationExporter(),
+                new TableDefinitionExporter(new ActiveObjectsTableReader(provider)),
+                new DataExporter());
+
+
+        NodeStreamWriter streamWriter = null;
         try
         {
-            serialiser.serialise(backupRestore.backup(provider, schemaConfiguration), os);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
+            streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream), NAMESPACE);
+            dbExporter.exportData(streamWriter, new DatabaseProviderConnectionProvider(provider));
+            streamWriter.flush();
         }
         finally
         {
-            provider.dispose();
+            closeCloseable(streamWriter);
         }
     }
 
-    public void restore(String id, InputStream backup)
+    public void restore(InputStream stream)
     {
-        if (accept(id))
+        final DatabaseProvider provider = getProvider();
+
+        final DbImporter dbImporter = new DbImporter(
+                getProgressMonitor(),
+                new DatabaseInformationImporter(),
+                new TableDefinitionImporter(new ActiveObjectsTableCreator(provider)),
+                new DataImporter(new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(provider))));
+
+
+        NodeStreamReader streamReader = null;
+        try
         {
-            final DatabaseProvider provider = getProvider();
-            try
-            {
-                backupRestore.restore(newLinkedList(serialiser.deserialise(backup)), provider);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-            finally
-            {
-                provider.dispose();
-            }
+            streamReader = new StaxStreamReader(new InputStreamReader(stream));
+            dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(provider));
+        }
+        finally
+        {
+            closeCloseable(streamReader);
         }
     }
 
@@ -91,20 +97,23 @@ public final class ActiveObjectsBackup implements Backup
         return databaseProviderFactory.getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType());
     }
 
-    @Override
-    public int hashCode()
+    private ProgressMonitor getProgressMonitor()
     {
-        return getId().hashCode();
+        return new Slf4jProgressMonitor(logger);
     }
 
-    @Override
-    public boolean equals(Object o)
+    private static void closeCloseable(Closeable streamWriter)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ActiveObjectsBackup aoBackup = (ActiveObjectsBackup) o;
-
-        return getId().equals(aoBackup.getId());
+        if (streamWriter != null)
+        {
+            try
+            {
+                streamWriter.close();
+            }
+            catch (IOException e)
+            {
+                // ignore
+            }
+        }
     }
 }

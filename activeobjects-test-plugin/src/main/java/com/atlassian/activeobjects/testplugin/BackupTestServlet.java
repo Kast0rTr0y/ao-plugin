@@ -60,7 +60,7 @@ public class BackupTestServlet extends HttpServlet
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
-        backup.restore(backup.getId(), newInputStream(req.getParameter(BACKUP)));
+        backup.restore(newInputStream(req.getParameter(BACKUP)));
     }
 
     private InputStream newInputStream(String backupString)

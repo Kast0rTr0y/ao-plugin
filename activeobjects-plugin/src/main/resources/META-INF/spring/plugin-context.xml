@@ -6,7 +6,6 @@
                                  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.1.xsd">
 
     <osgi:service id="ao-module-descriptor-factory" interface="com.atlassian.plugin.osgi.external.ListableModuleDescriptorFactory">
-        <osgi:registration-listener ref="backupRegister" unregistration-method="unregister"/>
         <bean class="com.atlassian.activeobjects.plugin.ActiveObjectsModuleDescriptorFactory">
             <constructor-arg index="0">
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
@@ -35,41 +34,15 @@
         </bean>
     </osgi:service>
 
-    <osgi:reference id="backupRegistry" interface="com.atlassian.activeobjects.spi.BackupRegistry" cardinality="0..1" timeout="0">
-        <osgi:listener ref="backupRegister" bind-method="register" unbind-method="unregister"/>
-    </osgi:reference>
-
     <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
 
     <osgi:list id="pluginConfigurations" cardinality="0..N" interface="com.atlassian.activeobjects.config.ActiveObjectsConfiguration"/>
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
-    <bean id="backupRegister" class="com.atlassian.activeobjects.backup.BackupRegister">
-        <constructor-arg ref="aoBackup"/>
-    </bean>
-
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
-        <constructor-arg>
-            <bean class="com.atlassian.activeobjects.spring.BundleFactoryBean"/>
-        </constructor-arg>
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="dataSourceProvider"/>
-        <constructor-arg>
-            <bean class="com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration">
-                <constructor-arg>
-                    <bean class="com.atlassian.activeobjects.internal.SimplePrefix">
-                        <constructor-arg value="ao"/>
-                    </bean>
-                </constructor-arg>
-            </bean>
-        </constructor-arg>
-        <constructor-arg>
-            <bean class="com.atlassian.activeobjects.backup.spring.GsonBackupSerialiserFactoryBean"/>
-        </constructor-arg>
-        <constructor-arg>
-            <bean class="net.java.ao.schema.BackupRestoreImpl"/>
-        </constructor-arg>
     </bean>
 
     <bean id="aoPluginConfiguration" class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsPluginConfiguration">

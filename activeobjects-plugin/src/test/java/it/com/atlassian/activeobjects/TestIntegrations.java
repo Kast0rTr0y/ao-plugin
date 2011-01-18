@@ -2,9 +2,7 @@ package it.com.atlassian.activeobjects;
 
 
 import com.atlassian.activeobjects.internal.DataSourceType;
-import com.atlassian.activeobjects.spi.BackupRegistry;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.MemoryBackupRegistry;
 import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
@@ -34,18 +32,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.atlassian.activeobjects.test.IntegrationTestHelper.deleteDirectory;
-import static com.atlassian.activeobjects.test.IntegrationTestHelper.getDir;
-import static com.atlassian.activeobjects.test.IntegrationTestHelper.getPluginJar;
-import static com.atlassian.activeobjects.test.IntegrationTestHelper.getTmpDir;
+import static com.atlassian.activeobjects.test.IntegrationTestHelper.*;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Integration tests for the active objects plugin
@@ -228,41 +222,6 @@ public class TestIntegrations extends PluginInContainerTestBase
         executor.awaitTermination(60, TimeUnit.SECONDS);
         assertFalse(failFlag.get());
         assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", "test-");
-    }
-
-    @Test
-    public void testActiveObjectsRegistersAgainstBackupRegistry() throws Exception
-    {
-        final MemoryBackupRegistry registry = new MemoryBackupRegistry();
-        HostComponentProvider hostComponentProvider = new HostComponentProvider()
-        {
-            public void provide(ComponentRegistrar registrar)
-            {
-                registrar.register(ApplicationProperties.class).forInstance(applicationProperties);
-                registrar.register(TransactionTemplate.class).forInstance(new NoOpTransactionTemplate());
-                registrar.register(PluginSettingsFactory.class).forInstance(getMockPluginSettingsFactory());
-                registrar.register(DataSourceProvider.class).forInstance(getMockDataSourceProvider());
-                registrar.register(I18nResolver.class).forInstance(mock(I18nResolver.class));
-                registrar.register(UserManager.class).forInstance(mock(UserManager.class));
-                registrar.register(LoginUriProvider.class).forInstance(mock(LoginUriProvider.class));
-                registrar.register(WebResourceManager.class).forInstance(mock(WebResourceManager.class));
-                registrar.register(WebInterfaceManager.class).forInstance(mock(WebInterfaceManager.class));
-                registrar.register(PluginAccessor.class).forInstance(mock(PluginAccessor.class));
-                registrar.register(BackupRegistry.class).forInstance(registry);
-            }
-        };
-
-        initPluginManager(hostComponentProvider);
-
-        assertTrue(registry.getBackups().isEmpty());
-
-        final String ao = installActiveObjectsPlugin();
-
-        assertEquals(1, registry.getBackups().size());
-
-        uninstallPlugin(ao);
-
-        assertTrue(registry.getBackups().isEmpty());
     }
 
     private ServiceTracker initPluginManagerWithActiveObjects(final Class<?> serviceToTrack) throws Exception
