@@ -2,18 +2,16 @@ aopalliance:aopalliance:1.0:jar:-:provided|com.atlassian.activeobjects:activeobj
 com.atlassian.activeobjects:activeobjects-plugin:1.0-SNAPSHOT:jar:-:provided||SNAPSHOT|SNAPSHOT
 com.atlassian.activeobjects:activeobjects-refapp-spi:1.0-SNAPSHOT:jar:-:provided||SNAPSHOT|SNAPSHOT
 com.atlassian.activeobjects:activeobjects-spi:1.0-SNAPSHOT:jar:-:provided|com.atlassian.activeobjects:activeobjects-refapp-spi:jar:1.0-SNAPSHOT|SNAPSHOT|SNAPSHOT
-com.atlassian.dbexporter:atlassian-db-exporter:0.1:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}be3c204919100852d1b96470f87a533b76dda557|{sha1}683f8ad0f87a4f995386771f0d2caefe9f86171c
+com.atlassian.dbexporter:atlassian-db-exporter:0.2.1:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}9a5950bbacc25abafba07c485ca9a1d53f8802db|{sha1}92e5213a9c70b9a48df4fb5b14ab4ba787a5a7b0
 com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
 commons-codec:commons-codec:1.4:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}4216af16d38465bbab0f3dff8efa14204f7a399a|{sha1}393db4ae967c6e831025d432632d1f72f7108b01
 commons-httpclient:commons-httpclient:3.1:jar:-:test||{sha1}964cd74171f427720480efdec40a7c7f6e58426a|{sha1}7e64d764d7f7ebc75ae3920490fcb58fbaf504a8
 commons-logging:commons-logging:1.0.4:jar:-:test|commons-httpclient:commons-httpclient:jar:3.1|{sha1}f029a2aefe2b3e1517573c580f948caac31b1056|{sha1}7d32e7520b801cabc3dc704d2afe59d020d00c45
-fastutil:fastutil:5.1.4:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,com.atlassian.dbexporter:atlassian-db-exporter:jar:0.1|{sha1}8f2b09f1c70728d96dcc55a05bf7c0c4922d2fd6|{sha1}51188f0f0b0620d09761ef31befaadcdb6a95698
 hsqldb:hsqldb:1.8.0.7:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
 javax.servlet:servlet-api:2.4:jar:-:provided||{sha1}3fc542fe8bb8164e8d3e840fe7403bc0518053c0|{sha1}2d97d4b5f4dce36ac757f41db6415b85855bde8d
-javax.xml.stream:stax-api:1.0-2:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.codehaus.woodstox:woodstox-core-asl:jar:4.1.0|{sha1}d6337b0de8b25e53e81b922352fbea9f9f57ba0b|{sha1}5379b69f557c5ab7c144d22bf7c3768bd2adb93d
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
 log4j:log4j:1.2.15:jar:-:test||{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
-net.java.dev.activeobjects:activeobjects:0.9-m11:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}b06bc6d1ba0f0583d406f2bca3f1c3c632312bff|{sha1}1e81cbae6cdb90f84e341cd9c62f8bb73a471589
+net.java.dev.activeobjects:activeobjects:0.9-m12:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}f13e6794bedc853accac9b5a00e01c40e70ab351|{sha1}2b1115436614d779bfaffff6eac8c60e63587cf9
 org.codehaus.woodstox:stax2-api:3.1.0:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.codehaus.woodstox:woodstox-core-asl:jar:4.1.0|{sha1}e2bc096b64420aeeb7f2ee1554322701bf2b31e6|{sha1}e86fd4a17c54107dcf7386677ba5de7da4f4807b
 org.codehaus.woodstox:woodstox-core-asl:4.1.0:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}095ec20544f31bce1ea58ab3f876171afb7c0745|{sha1}9b072fb61cb221206cd8b53da2e8c91740baa6eb
 org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
@@ -25,4 +23,3 @@ org.springframework:spring-context-support:2.5.6:jar:-:provided|com.atlassian.ac
 org.springframework:spring-core:2.5.6:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.springframework:spring-webmvc:jar:2.5.6|{sha1}c450bc49099430e13d21548d1e3d1a564b7e35e9|{sha1}4584af961234a191b07b90efbd71c2e717681ed6
 org.springframework:spring-web:2.5.6:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,org.springframework:spring-webmvc:jar:2.5.6|{sha1}890cc0f716f191f8151630910b7305aa6153c3e9|{sha1}ae2921b153c81fbd1667743f05e94248bbc16888
 org.springframework:spring-webmvc:2.5.6:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT|{sha1}fa425355629ce2ce0bfb870849a6b6634f299649|{sha1}a05795d978e73fc725d52b2f40781801e96ed8c6
-stax:stax-api:1.0.1:jar:-:provided|com.atlassian.activeobjects:activeobjects-plugin:jar:1.0-SNAPSHOT,com.atlassian.dbexporter:atlassian-db-exporter:jar:0.1|{sha1}49c100caf72d658aca8e58bd74a4ba90fa2b0d70|{sha1}da39a3ee5e6b4b0d3255bfef95601890afd80709

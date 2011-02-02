@@ -2,7 +2,6 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.ForeignKey;
-import com.atlassian.dbexporter.importer.ForeignKeyCreator;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;

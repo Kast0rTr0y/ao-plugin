@@ -91,6 +91,16 @@ public final class RefappDataSource implements DataSource
         return delegate.getLoginTimeout();
     }
 
+    public <T> T unwrap(Class<T> tClass) throws SQLException
+    {
+        return delegate.unwrap(tClass);
+    }
+
+    public boolean isWrapperFor(Class<?> aClass) throws SQLException
+    {
+        return delegate.isWrapperFor(aClass);
+    }
+
     private static File checkHomeDirectory(final File homeDirectory)
     {
         if (homeDirectory == null)

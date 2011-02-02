@@ -107,5 +107,15 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         {
             throw new UnsupportedOperationException("setLogWriter");
         }
+
+        public <T> T unwrap(Class<T> tClass) throws SQLException
+        {
+            throw new UnsupportedOperationException("unwrap");
+        }
+
+        public boolean isWrapperFor(Class<?> aClass) throws SQLException
+        {
+            throw new UnsupportedOperationException("isWrapperFor");
+        }
     }
 }

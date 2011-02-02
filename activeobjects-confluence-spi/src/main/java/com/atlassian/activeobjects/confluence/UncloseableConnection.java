@@ -1,14 +1,22 @@
 package com.atlassian.activeobjects.confluence;
 
+import java.sql.Array;
+import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Struct;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * <p>A connection that can't be closed.</p>
@@ -203,6 +211,71 @@ final class UncloseableConnection implements Connection
     public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException
     {
         return connection.prepareStatement(sql, columnNames);
+    }
+
+    public Clob createClob() throws SQLException
+    {
+        return connection.createClob();
+    }
+
+    public Blob createBlob() throws SQLException
+    {
+        return connection.createBlob();
+    }
+
+    public NClob createNClob() throws SQLException
+    {
+        return connection.createNClob();
+    }
+
+    public SQLXML createSQLXML() throws SQLException
+    {
+        return connection.createSQLXML();
+    }
+
+    public boolean isValid(int i) throws SQLException
+    {
+        return connection.isValid(i);
+    }
+
+    public void setClientInfo(String s, String s1) throws SQLClientInfoException
+    {
+        connection.setClientInfo(s, s1);
+    }
+
+    public void setClientInfo(Properties properties) throws SQLClientInfoException
+    {
+        connection.setClientInfo(properties);
+    }
+
+    public String getClientInfo(String s) throws SQLException
+    {
+        return connection.getClientInfo(s);
+    }
+
+    public Properties getClientInfo() throws SQLException
+    {
+        return connection.getClientInfo();
+    }
+
+    public Array createArrayOf(String s, Object[] objects) throws SQLException
+    {
+        return connection.createArrayOf(s, objects);
+    }
+
+    public Struct createStruct(String s, Object[] objects) throws SQLException
+    {
+        return connection.createStruct(s, objects);
+    }
+
+    public <T> T unwrap(Class<T> tClass) throws SQLException
+    {
+        return connection.unwrap(tClass);
+    }
+
+    public boolean isWrapperFor(Class<?> aClass) throws SQLException
+    {
+        return connection.isWrapperFor(aClass);
     }
 }
 

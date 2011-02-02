@@ -12,6 +12,7 @@ import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Locale;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
@@ -147,6 +148,16 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
             public void dispose()
             {
                 // do nothing
+            }
+
+            public <T> T unwrap(Class<T> tClass) throws SQLException
+            {
+                throw new UnsupportedOperationException("unwrap");
+            }
+
+            public boolean isWrapperFor(Class<?> aClass) throws SQLException
+            {
+                throw new UnsupportedOperationException("isWrapperFor");
             }
         };
     }

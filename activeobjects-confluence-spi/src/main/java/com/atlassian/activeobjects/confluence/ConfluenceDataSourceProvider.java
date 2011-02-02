@@ -92,6 +92,16 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
         {
             throw new IllegalStateException("Not allowed to get a connection for non default username/password");
         }
+
+        public <T> T unwrap(Class<T> tClass) throws SQLException
+        {
+            return null;
+        }
+
+        public boolean isWrapperFor(Class<?> aClass) throws SQLException
+        {
+            return false;
+        }
     }
 
     private static abstract class AbstractDataSource implements DataSource

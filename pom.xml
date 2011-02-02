@@ -66,8 +66,8 @@
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <source>1.5</source>
-                        <target>1.5</target>
+                        <source>1.6</source>
+                        <target>1.6</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -235,7 +235,7 @@
 
     <properties>
         <plugin-sdk.version>3.2.3</plugin-sdk.version>
-        <ao.version>0.9-m11</ao.version>
+        <ao.version>0.9-m12</ao.version>
         <sal.version>2.1.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.4.4</atlassian-plugins.version>

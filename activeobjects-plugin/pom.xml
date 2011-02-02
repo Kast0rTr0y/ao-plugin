@@ -11,7 +11,9 @@
     <packaging>atlassian-plugin</packaging>
     <name>ActiveObjects Plugin - OSGi Bundle</name>
 
-    <description>An OSGi bundle that provides a service that allows plugins to persist objects using the ActiveObjects framework</description>
+    <description>An OSGi bundle that provides a service that allows plugins to persist objects using the ActiveObjects
+        framework
+    </description>
 
     <build>
         <plugins>
@@ -45,6 +47,8 @@
                             javax.naming;version="0.0.0",
                             javax.servlet*;version="2.4",
                             javax.sql,
+                            javax.xml.namespace*;version="0.0.0.1_006_JavaSE",
+                            javax.xml.stream*;version="0.0.0.1_006_JavaSE",
                             javax.xml.transform*,
                             net.java.ao*;version="${ao.version}",
                             org.apache.commons.lang;version="2.0",
@@ -71,8 +75,7 @@
                         </Import-Package>
                         <Private-Package>
                             com.atlassian.activeobjects.spring*,
-                            com.google.gson*,
-                            javax.xml.stream*,
+                            <!--javax.xml.stream*,-->
                             com.ctc.wstx*,
                             org.codehaus.stax2*,
                         </Private-Package>
@@ -155,14 +158,20 @@
         <dependency>
             <groupId>com.atlassian.dbexporter</groupId>
             <artifactId>atlassian-db-exporter</artifactId>
-            <version>0.1</version>
+            <version>0.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>woodstox-core-asl</artifactId>
             <version>4.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>

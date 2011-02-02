@@ -4,8 +4,7 @@ import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.AroundImporter;
-import com.atlassian.dbexporter.importer.ForeignKeyCreator;
-import com.atlassian.dbexporter.xml.NodeParser;
+import com.atlassian.dbexporter.node.NodeParser;
 import com.google.common.base.Function;
 
 import java.util.Collection;

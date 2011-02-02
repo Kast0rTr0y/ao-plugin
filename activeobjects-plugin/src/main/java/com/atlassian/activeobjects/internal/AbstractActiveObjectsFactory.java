@@ -3,8 +3,11 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import net.java.ao.RawEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Set;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
 
@@ -14,6 +17,8 @@ import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
  */
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final DataSourceType supportedDataSourceType;
 
     AbstractActiveObjectsFactory(DataSourceType dataSourceType)
@@ -33,7 +38,9 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
         final ActiveObjects ao = doCreate(configuration);
-        ao.migrate(asArray(configuration.getEntities()));
+        final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
+        logger.debug("Created active objects instance with configuration {}, now migrating entities {}", configuration, entitiesToMigrate);
+        ao.migrate(asArray(entitiesToMigrate));
         return ao;
     }
 

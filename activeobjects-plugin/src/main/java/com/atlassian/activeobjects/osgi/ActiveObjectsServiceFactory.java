@@ -136,6 +136,20 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
             return getDelegate().getEntities();
         }
 
+        @Override
+        public int hashCode()
+        {
+            return getDelegate().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return obj != null
+                    && obj instanceof LazyActiveObjectConfiguration
+                    && getDelegate().equals(((LazyActiveObjectConfiguration) obj).getDelegate());
+        }
+
         ActiveObjectsConfiguration getDelegate()
         {
             return getConfiguration(bundle);

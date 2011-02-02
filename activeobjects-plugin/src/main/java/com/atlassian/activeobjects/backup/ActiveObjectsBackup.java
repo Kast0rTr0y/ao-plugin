@@ -13,10 +13,10 @@ import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
 import com.atlassian.dbexporter.importer.TableDefinitionImporter;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.progress.Slf4jProgressMonitor;
-import com.atlassian.dbexporter.xml.NodeStreamReader;
-import com.atlassian.dbexporter.xml.NodeStreamWriter;
-import com.atlassian.dbexporter.xml.stax.StaxStreamReader;
-import com.atlassian.dbexporter.xml.stax.StaxStreamWriter;
+import com.atlassian.dbexporter.node.NodeStreamReader;
+import com.atlassian.dbexporter.node.NodeStreamWriter;
+import com.atlassian.dbexporter.node.stax.StaxStreamReader;
+import com.atlassian.dbexporter.node.stax.StaxStreamWriter;
 import net.java.ao.DatabaseProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +27,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 import static com.google.common.base.Preconditions.*;
 
 public final class ActiveObjectsBackup implements Backup
 {
+    private static final Charset CHARSET = Charset.forName("UTF-8");
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -59,7 +61,7 @@ public final class ActiveObjectsBackup implements Backup
         NodeStreamWriter streamWriter = null;
         try
         {
-            streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream), NAMESPACE);
+            streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
             dbExporter.exportData(streamWriter, new DatabaseProviderConnectionProvider(provider));
             streamWriter.flush();
         }
@@ -83,7 +85,7 @@ public final class ActiveObjectsBackup implements Backup
         NodeStreamReader streamReader = null;
         try
         {
-            streamReader = new StaxStreamReader(new InputStreamReader(stream));
+            streamReader = new StaxStreamReader(new InputStreamReader(stream, CHARSET));
             dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(provider));
         }
         finally
