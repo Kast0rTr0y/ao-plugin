@@ -1,0 +1,10 @@
+com.atlassian.activeobjects:activeobjects-spi:1.0-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
+com.atlassian.sal:sal-api:2.1.0:jar:-:provided||{sha1}4e1d34761e29324eb6e9cbdd9b6d56e6bbe3c294|{sha1}c6bdd6a5a0b691df0fa953c23c0222e34a1f7b4a
+com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
+commons-logging:commons-logging:1.1.1:jar:-:compile|org.springframework:spring-beans:jar:2.5.6|{sha1}5043bfebc3db072ed80fbd362e7caf00e885d8ae|{sha1}76672afb562b9e903674ad3a544cdf2092f1faa3
+junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
+net.java.dev.activeobjects:activeobjects:0.9-m13:jar:-:compile||{sha1}dc69fd2319ab9786af7f904e48284143075d0e3f|{sha1}f6ae83d278ed883f938db45080c2e13435340b28
+org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
+org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
+org.springframework:spring-beans:2.5.6:jar:-:compile||{sha1}449ea46b27426eb846611a90b2fb8b4dcf271191|{sha1}24ffcedb04c6c114d841de2b3bc6e75f7bac19ec
+org.springframework:spring-core:2.5.6:jar:-:compile|org.springframework:spring-beans:jar:2.5.6|{sha1}c450bc49099430e13d21548d1e3d1a564b7e35e9|{sha1}4584af961234a191b07b90efbd71c2e717681ed6
