@@ -5,7 +5,7 @@ import net.java.ao.schema.AbstractTableNameConverter;
 
 import static com.google.common.base.Preconditions.*;
 
-public final class ClassNameTableNameConverter extends AbstractTableNameConverter
+final class ClassNameTableNameConverter extends AbstractTableNameConverter
 {
     @Override
     protected String convertName(Class<? extends RawEntity<?>> entity)

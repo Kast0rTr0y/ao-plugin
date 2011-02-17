@@ -42,6 +42,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.jira.configurator.config*,
+                            com.atlassian.sal.api*,
                             com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,

@@ -42,6 +42,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.hibernate,
+                            com.atlassian.sal.api*,
                             com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,

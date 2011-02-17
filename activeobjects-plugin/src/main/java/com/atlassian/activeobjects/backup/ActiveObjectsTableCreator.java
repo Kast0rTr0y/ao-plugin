@@ -86,14 +86,22 @@ final class ActiveObjectsTableCreator implements TableCreator
     {
         final DDLField ddlField = new DDLField();
         ddlField.setName(column.getName());
-        ddlField.setPrimaryKey(column.isPrimaryKey());
         ddlField.setType(TypeManager.getInstance().getType(column.getSqlType()));
+        final Boolean pk = column.isPrimaryKey();
+        if (pk != null)
+        {
+            ddlField.setPrimaryKey(pk);
+        }
+        final Boolean autoIncrement = column.isAutoIncrement();
+        if (autoIncrement != null)
+        {
+            ddlField.setAutoIncrement(autoIncrement);
+        }
         final Integer p = column.getPrecision();
         if (p != null)
         {
             ddlField.setPrecision(p);
         }
-
         return ddlField;
     }
 }

@@ -6,7 +6,7 @@ import net.java.ao.schema.TableNameConverter;
 import static com.atlassian.activeobjects.ao.ConverterUtils.*;
 import static com.google.common.base.Preconditions.*;
 
-public final class UpperCaseTableNameConverter implements TableNameConverter
+final class UpperCaseTableNameConverter implements TableNameConverter
 {
     private final TableNameConverter delegate;
 

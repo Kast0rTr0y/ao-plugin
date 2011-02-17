@@ -40,7 +40,7 @@
                             com.atlassian.activeobjects.spi*;version="${project.version}",
                         </Export-Package>
                         <Import-Package>
-                            com.atlassian.sal.api;version="${sal.version}",
+                            com.atlassian.sal.api*;version="${sal.version}",
                             com.google.common*;version="1.0",
                             javax*;version="0.0.0",
                             javax.naming;version="0.0.0",

@@ -1,4 +1,4 @@
-package com.atlassian.activeobjects.testplugin.model;
+package com.atlassian.activeobjects.test.model;
 
 import net.java.ao.Entity;
 import net.java.ao.ManyToMany;

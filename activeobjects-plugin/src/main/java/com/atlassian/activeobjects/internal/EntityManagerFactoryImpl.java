@@ -11,7 +11,7 @@ import net.java.ao.schema.TableNameConverter;
 
 import javax.sql.DataSource;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.util.ActiveObjectsUtils.*;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory
 {

@@ -27,6 +27,9 @@ import org.osgi.util.tracker.ServiceTracker;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -65,10 +68,21 @@ public class TestIntegrations extends PluginInContainerTestBase
         homeDirectory = getTmpDir(getClass().getName());
         applicationProperties = getMockApplicationProperties();
         pluginSettings = mock(PluginSettings.class);
-        dataSource = mock(DataSource.class);
+        dataSource = mockDataSource();
         applicationDbDir = getTmpDir("application_db");
 
         isSystemDown = new AtomicBoolean(false);
+    }
+
+    private DataSource mockDataSource() throws SQLException
+    {
+        final DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.getMetaData()).thenReturn(metaData);
+        when(metaData.getDriverName()).thenReturn("hsql");
+        return dataSource;
     }
 
     @After

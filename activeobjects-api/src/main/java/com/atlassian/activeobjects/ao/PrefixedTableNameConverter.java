@@ -6,13 +6,13 @@ import net.java.ao.schema.TableNameConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * A {@link TableNameConverter table name converter} that will prepend the given {@link com.atlassian.activeobjects.internal.Prefix} to table names.
  * It uses a {@link TableNameConverter delegate table name converter} for the <em>general</em> conversion strategy.
  */
-public final class PrefixedTableNameConverter implements TableNameConverter
+final class PrefixedTableNameConverter implements TableNameConverter
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

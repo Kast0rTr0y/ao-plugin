@@ -12,13 +12,8 @@
     <dependencies>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
-            <artifactId>activeobjects-plugin</artifactId>
+            <artifactId>activeobjects-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.java.dev.activeobjects</groupId>
-            <artifactId>activeobjects-test</artifactId>
-            <version>${ao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>

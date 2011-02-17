@@ -18,5 +18,10 @@
             <artifactId>google-collections</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>

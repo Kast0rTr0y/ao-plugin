@@ -31,12 +31,14 @@
     </licenses>
 
     <modules>
+        <module>activeobjects-api</module>
         <module>activeobjects-plugin</module>
         <module>activeobjects-spi</module>
         <module>activeobjects-refapp-spi</module>
         <module>activeobjects-confluence-spi</module>
         <module>activeobjects-jira-spi</module>
         <module>activeobjects-test</module>
+        <module>activeobjects-test-model</module>
         <module>activeobjects-test-plugin</module>
     </modules>
 
@@ -105,6 +107,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.atlassian.activeobjects</groupId>
+                <artifactId>activeobjects-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.atlassian.activeobjects</groupId>
                 <artifactId>activeobjects-spi</artifactId>
@@ -235,7 +242,7 @@
 
     <properties>
         <plugin-sdk.version>3.2.3</plugin-sdk.version>
-        <ao.version>0.9-m12</ao.version>
+        <ao.version>0.9-m13</ao.version>
         <sal.version>2.1.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.4.4</atlassian-plugins.version>

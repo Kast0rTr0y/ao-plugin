@@ -1,6 +1,9 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
+import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.dbexporter.DbExporter;
@@ -33,36 +36,38 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ActiveObjectsBackup implements Backup
 {
+    public static final Prefix PREFIX = new SimplePrefix("AO");
+
     private static final Charset CHARSET = Charset.forName("UTF-8");
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final DatabaseProviderFactory databaseProviderFactory;
-    private final DataSourceProvider dataSourceProvider;
+    private final DatabaseProvider databaseProvider;
 
     public ActiveObjectsBackup(DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider)
     {
-        this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
-        this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this(checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType()));
+    }
+
+    ActiveObjectsBackup(DatabaseProvider databaseProvider)
+    {
+        this.databaseProvider = checkNotNull(databaseProvider);
     }
 
     public void save(OutputStream stream)
     {
-        final DatabaseProvider provider = getProvider();
-
         final DbExporter dbExporter = new DbExporter(
                 getProgressMonitor(),
-                new DatabaseInformationExporter(),
-                new TableDefinitionExporter(new ActiveObjectsTableReader(provider)),
-                new DataExporter());
+                new DatabaseInformationExporter(new DatabaseProviderInformationExporter(databaseProvider)),
+                new TableDefinitionExporter(new ActiveObjectsTableReader(databaseProvider, new PrefixedSchemaConfiguration(PREFIX))),
+                new DataExporter(new PrefixTableSelector(PREFIX)));
 
 
         NodeStreamWriter streamWriter = null;
         try
         {
             streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
-            dbExporter.exportData(streamWriter, new DatabaseProviderConnectionProvider(provider));
+            dbExporter.exportData(streamWriter, new DatabaseProviderConnectionProvider(databaseProvider));
             streamWriter.flush();
         }
         finally
@@ -73,30 +78,23 @@ public final class ActiveObjectsBackup implements Backup
 
     public void restore(InputStream stream)
     {
-        final DatabaseProvider provider = getProvider();
-
         final DbImporter dbImporter = new DbImporter(
                 getProgressMonitor(),
                 new DatabaseInformationImporter(),
-                new TableDefinitionImporter(new ActiveObjectsTableCreator(provider)),
-                new DataImporter(new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(provider))));
+                new TableDefinitionImporter(new ActiveObjectsTableCreator(databaseProvider)),
+                new DataImporter(new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(databaseProvider))));
 
 
         NodeStreamReader streamReader = null;
         try
         {
             streamReader = new StaxStreamReader(new InputStreamReader(stream, CHARSET));
-            dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(provider));
+            dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(databaseProvider));
         }
         finally
         {
             closeCloseable(streamReader);
         }
-    }
-
-    private DatabaseProvider getProvider()
-    {
-        return databaseProviderFactory.getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType());
     }
 
     private ProgressMonitor getProgressMonitor()

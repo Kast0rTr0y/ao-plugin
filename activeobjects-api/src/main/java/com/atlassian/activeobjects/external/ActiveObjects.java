@@ -5,7 +5,6 @@ import net.java.ao.DBParam;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import java.io.InputStream;
 import java.util.Map;
 
 /**

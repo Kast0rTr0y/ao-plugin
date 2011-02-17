@@ -10,7 +10,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.DefaultSchemaConfiguration;
+import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
@@ -26,10 +26,12 @@ import static com.google.common.collect.Lists.newArrayList;
 final class ActiveObjectsTableReader implements TableReader
 {
     private final DatabaseProvider provider;
+    private final SchemaConfiguration schemaConfiguration;
 
-    public ActiveObjectsTableReader(DatabaseProvider provider)
+    public ActiveObjectsTableReader(DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
     {
         this.provider = checkNotNull(provider);
+        this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
     public Iterable<Table> read(Context context)
@@ -38,7 +40,7 @@ final class ActiveObjectsTableReader implements TableReader
         final DDLTable[] ddlTables;
         try
         {
-            ddlTables = SchemaReader.readSchema(provider.getConnection(), provider, new DefaultSchemaConfiguration(), true);
+            ddlTables = SchemaReader.readSchema(provider.getConnection(), provider, schemaConfiguration, true);
         }
         catch (SQLException e)
         {
@@ -70,7 +72,7 @@ final class ActiveObjectsTableReader implements TableReader
 
     private Column readColumn(DDLField field)
     {
-        return new Column(field.getName(), field.getType().getType(), field.isPrimaryKey(), field.getPrecision());
+        return new Column(field.getName(), field.getType().getType(), field.isPrimaryKey(), field.isAutoIncrement(), field.getPrecision());
     }
 
     private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys)

@@ -109,6 +109,10 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -157,7 +161,7 @@
         <dependency>
             <groupId>com.atlassian.dbexporter</groupId>
             <artifactId>atlassian-db-exporter</artifactId>
-            <version>0.2.1</version>
+            <version>0.3</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.woodstox</groupId>
@@ -243,6 +247,18 @@
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-core</artifactId>
             <version>${sal.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.activeobjects</groupId>
+            <artifactId>activeobjects-test</artifactId>
+            <version>${ao.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-test-model</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

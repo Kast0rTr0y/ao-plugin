@@ -1,11 +1,9 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.ao.ClassNameTableNameConverter;
+import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
+import com.atlassian.activeobjects.ao.ActiveObjectsTableNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
-import com.atlassian.activeobjects.ao.PrefixedTableNameConverter;
-import com.atlassian.activeobjects.ao.UpperCaseFieldNameConverter;
-import com.atlassian.activeobjects.ao.UpperCaseTableNameConverter;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
@@ -25,7 +23,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.CamelCaseFieldNameConverter;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.TableNameConverter;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -99,8 +96,8 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         super.init(plugin, element);
 
         tableNamePrefix = getTableNamePrefix(element);
-        tableNameConverter = getTableNameConverter(tableNamePrefix);
-        fieldNameConverter = getFieldNameConverter();
+        tableNameConverter = new ActiveObjectsTableNameConverter(tableNamePrefix);
+        fieldNameConverter = new ActiveObjectsFieldNameConverter();
         entityClasses = getEntities(element);
 
         validateEntities(entityClasses, tableNameConverter);
@@ -170,16 +167,6 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         configuration.setSchemaConfiguration(new PrefixedSchemaConfiguration(tableNamePrefix));
         configuration.setEntities(entities);
         return configuration;
-    }
-
-    private TableNameConverter getTableNameConverter(Prefix tableNamePrefix)
-    {
-        return new PrefixedTableNameConverter(tableNamePrefix, new UpperCaseTableNameConverter(new ClassNameTableNameConverter()));
-    }
-
-    private FieldNameConverter getFieldNameConverter()
-    {
-        return new UpperCaseFieldNameConverter(new CamelCaseFieldNameConverter());
     }
 
     private void unregister(ServiceRegistration serviceRegistration)

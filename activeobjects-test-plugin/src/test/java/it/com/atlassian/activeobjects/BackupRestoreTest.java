@@ -10,6 +10,11 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.XPath;
+import org.jaxen.SimpleNamespaceContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,15 +27,31 @@ import java.io.Writer;
 import java.util.Map;
 
 import static com.atlassian.activeobjects.testplugin.BackupTestServlet.*;
+import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static org.junit.Assert.*;
 
 public final class BackupRestoreTest
 {
+    private static final XPath DB_INFO_XPATH;
+    private static final XPath TABLE_XPATH;
+    private static final XPath DATA_XPATH;
+
+    static
+    {
+        final SimpleNamespaceContext context = new SimpleNamespaceContext(ImmutableMap.builder().put("ao", "http://www.atlassian.com/ao").build());
+
+        DB_INFO_XPATH = DocumentHelper.createXPath("/" + RootNode.NAME + "/ao:" + DatabaseInformationNode.NAME);
+        DB_INFO_XPATH.setNamespaceContext(context);
+        TABLE_XPATH = DocumentHelper.createXPath("/" + RootNode.NAME + "/ao:" + TableDefinitionNode.NAME);
+        TABLE_XPATH.setNamespaceContext(context);
+        DATA_XPATH = DocumentHelper.createXPath("/" + RootNode.NAME + "/ao:" + TableDataNode.NAME);
+        DATA_XPATH.setNamespaceContext(context);
+    }
+
     private static final String BASE_URL = System.getProperty("baseurl");
     private static final String AO_TEST = BASE_URL + "/plugins/servlet/ao-test";
 
     private HttpClient client;
-    public static final String EMPTY_BACKUP = "<?xml version='1.0' encoding='UTF-8'?><backup xmlns=\"http://www.atlassian.com/ao\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"/>";
 
     @Test
     public void testBackup() throws Exception
@@ -48,14 +69,20 @@ public final class BackupRestoreTest
         assertEquals(backup, backupAfterRestore);
     }
 
-    private void assertBackupIsEmpty(String backup)
+    private void assertBackupIsEmpty(String backup) throws DocumentException
     {
-        assertEquals(EMPTY_BACKUP, backup);
+        final Document doc = DocumentHelper.parseText(backup);
+        assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
+        assertTrue(TABLE_XPATH.selectNodes(doc).isEmpty());
+        assertTrue(DATA_XPATH.selectNodes(doc).isEmpty());
     }
 
-    private void assertBackupIsNotEmpty(String backup)
+    private void assertBackupIsNotEmpty(String backup) throws DocumentException
     {
-        assertTrue(backup.trim().length() > EMPTY_BACKUP.length());
+        final Document doc = DocumentHelper.parseText(backup);
+        assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
+        assertFalse(TABLE_XPATH.selectNodes(doc).isEmpty());
+        assertFalse(DATA_XPATH.selectNodes(doc).isEmpty());
     }
 
     @Before
@@ -155,7 +182,7 @@ public final class BackupRestoreTest
         {
             char[] buffer = new char[DEFAULT_BUFFER_SIZE];
             long count = 0;
-            int n = 0;
+            int n;
             while (-1 != (n = input.read(buffer)))
             {
                 output.write(buffer, 0, n);

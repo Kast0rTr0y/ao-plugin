@@ -9,12 +9,9 @@ import net.java.ao.RawEntity;
 import net.java.ao.sql.ActiveObjectSqlException;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * <p>Implementation of {@link com.atlassian.activeobjects.external.ActiveObjects} that mainly delegates to the
