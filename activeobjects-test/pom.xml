@@ -12,7 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
-            <artifactId>activeobjects-api</artifactId>
+            <artifactId>activeobjects-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

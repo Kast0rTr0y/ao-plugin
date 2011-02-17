@@ -31,7 +31,7 @@
     </licenses>
 
     <modules>
-        <module>activeobjects-api</module>
+        <module>activeobjects-core</module>
         <module>activeobjects-plugin</module>
         <module>activeobjects-spi</module>
         <module>activeobjects-refapp-spi</module>
@@ -109,7 +109,7 @@
         <dependencies>
             <dependency>
                 <groupId>com.atlassian.activeobjects</groupId>
-                <artifactId>activeobjects-api</artifactId>
+                <artifactId>activeobjects-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

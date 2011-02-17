@@ -18,7 +18,7 @@
             <!-- this is brought by the model -->
             <dependency>
                 <groupId>com.atlassian.activeobjects</groupId>
-                <artifactId>activeobjects-api</artifactId>
+                <artifactId>activeobjects-core</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>
             </dependency>

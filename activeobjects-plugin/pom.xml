@@ -109,7 +109,7 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
-            <artifactId>activeobjects-api</artifactId>
+            <artifactId>activeobjects-core</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
