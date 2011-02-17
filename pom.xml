@@ -76,13 +76,14 @@
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-dependency-tracker-plugin</artifactId>
                     <version>1.1</version>
+                    <!-- TODO, uncomment at some point
                     <executions>
                         <execution>
                             <goals>
                                 <goal>validate</goal>
                             </goals>
                         </execution>
-                    </executions>
+                    </executions-->
                 </plugin>
                 <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
