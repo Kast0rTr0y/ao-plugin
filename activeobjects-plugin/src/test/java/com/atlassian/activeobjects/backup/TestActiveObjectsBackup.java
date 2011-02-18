@@ -4,6 +4,8 @@ import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.test.model.Model;
 import net.java.ao.EntityManager;
 import net.java.ao.test.NameConverters;
+import net.java.ao.test.jdbc.DynamicJdbcConfiguration;
+import net.java.ao.test.jdbc.Jdbc;
 import net.java.ao.test.jdbc.NonTransactional;
 import net.java.ao.test.junit.ActiveObjectsJUnitRunner;
 import org.apache.commons.io.IOUtils;
@@ -20,7 +22,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
-//@Jdbc(MySql.class)
+@Jdbc(DynamicJdbcConfiguration.class)
 @NameConverters(table = BackupActiveObjectsTableNameConverter.class, field = ActiveObjectsFieldNameConverter.class)
 public class TestActiveObjectsBackup
 {

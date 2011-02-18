@@ -20,6 +20,9 @@
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-refapp-plugin</artifactId>
                 <configuration>
+                    <systemPropertyVariables>
+                        <ao.test.database>${ao.test.database}</ao.test.database>
+                    </systemPropertyVariables>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
@@ -98,6 +101,54 @@
                         </pluginArtifact>
                     </pluginArtifacts>
                 </configuration>
+            </plugin>
+            <!-- creates and drops databases before and after tests -->
+            <plugin>
+                <groupId>org.leberrigaud.maven.plugins</groupId>
+                <artifactId>database-maven-plugin</artifactId>
+                <version>0.4.4</version>
+                <configuration>
+                    <skip>${db.skip}</skip>
+                    <database>${ao.test.database}</database>
+                    <name>ao_test</name>
+                    <username>ao_user</username>
+                    <password>ao_password</password>
+                    <rootUsername>${db.username}</rootUsername>
+                    <rootPassword>${db.password}</rootPassword>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>create-db</id>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                        <phase>process-test-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>drop-db</id>
+                        <goals>
+                            <goal>drop</goal>
+                        </goals>
+                        <phase>test</phase>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${mysql.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgres.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.oracle</groupId>
+                        <artifactId>oracle-jdbc14</artifactId>
+                        <version>${oracle.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -262,4 +313,78 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>hsql</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <ao.test.database>hsql</ao.test.database>
+                <db.skip>true</db.skip>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>${hsqldb.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>mysql</id>
+            <properties>
+                <ao.test.database>mysql</ao.test.database>
+                <db.username>root</db.username>
+                <db.password />
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                    <version>${mysql.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>postgres</id>
+            <properties>
+                <ao.test.database>postgres</ao.test.database>
+                <db.username>postgres</db.username>
+                <db.password>postgres</db.password>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>postgresql</groupId>
+                    <artifactId>postgresql</artifactId>
+                    <version>${postgres.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>oracle</id>
+            <properties>
+                <ao.test.database>oracle</ao.test.database>
+                <db.username>sys</db.username>
+                <db.password>oracle</db.password>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>oracle-jdbc14</artifactId>
+                    <version>10.2.0.4</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <properties>
+        <db.skip>false</db.skip>
+        <mysql.version>5.1.13</mysql.version>
+        <postgres.version>8.4-701.jdbc3</postgres.version>
+        <oracle.version>10.2.0.4</oracle.version>
+    </properties>
 </project>
