@@ -1,21 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.atlassian.pom</groupId>
-        <artifactId>atlassian-public-pom</artifactId>
-        <version>28</version>
+        <groupId>com.atlassian.activeobjects</groupId>
+        <artifactId>activeobjects-plugin-parent-pom</artifactId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.atlassian.dbexporter</groupId>
-    <artifactId>atlassian-db-exporter</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <artifactId>activeobjects-dbex</artifactId>
     <name>DB Exporter (and Importer)</name>
-
-    <scm>
-        <connection>scm:svn:https://studio.atlassian.com/svn/DBEX/trunk</connection>
-        <developerConnection>scm:svn:https://studio.atlassian.com/svn/DBEX/trunk</developerConnection>
-        <url>https://studio.atlassian.com/source/browse/DBEX</url>
-    </scm>
 
     <dependencies>
         <dependency>
@@ -72,8 +65,4 @@
             </exclusions>
         </dependency>
     </dependencies>
-
-    <properties>
-        <jdkLevel>1.6</jdkLevel>
-    </properties>
 </project>

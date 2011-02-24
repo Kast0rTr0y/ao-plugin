@@ -34,6 +34,7 @@
         <module>activeobjects-core</module>
         <module>activeobjects-plugin</module>
         <module>activeobjects-spi</module>
+        <module>activeobjects-dbex</module>
         <module>activeobjects-refapp-spi</module>
         <module>activeobjects-confluence-spi</module>
         <module>activeobjects-jira-spi</module>

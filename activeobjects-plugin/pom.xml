@@ -210,9 +210,9 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.dbexporter</groupId>
-            <artifactId>atlassian-db-exporter</artifactId>
-            <version>0.3</version>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-dbex</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.woodstox</groupId>
