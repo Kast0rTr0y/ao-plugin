@@ -1,9 +1,8 @@
-package com.atlassian.activeobjects.backup;
+package com.atlassian.dbexporter.exporter;
 
-import com.atlassian.dbexporter.exporter.DatabaseInformationReader;
+import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.google.common.collect.ImmutableMap;
-import net.java.ao.DatabaseProvider;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -13,13 +12,13 @@ import java.util.Map;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.closeQuietly;
 import static com.google.common.base.Preconditions.*;
 
-final class DatabaseProviderInformationExporter implements DatabaseInformationReader
+public final class ConnectionProviderInformationReader implements DatabaseInformationReader
 {
-    private final DatabaseProvider databaseProvider;
+    private final ConnectionProvider connectionProvider;
 
-    public DatabaseProviderInformationExporter(DatabaseProvider databaseProvider)
+    public ConnectionProviderInformationReader(ConnectionProvider connectionProvider)
     {
-        this.databaseProvider = checkNotNull(databaseProvider);
+        this.connectionProvider = checkNotNull(connectionProvider);
     }
 
     @Override
@@ -30,7 +29,7 @@ final class DatabaseProviderInformationExporter implements DatabaseInformationRe
         {
             final ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
 
-            connection = databaseProvider.getConnection();
+            connection = connectionProvider.getConnection();
             final DatabaseMetaData metaData = connection.getMetaData();
 
             mapBuilder.put("database.name", metaData.getDatabaseProductName());
@@ -41,7 +40,7 @@ final class DatabaseProviderInformationExporter implements DatabaseInformationRe
             mapBuilder.put("driver.name", metaData.getDriverName());
             mapBuilder.put("driver.version", metaData.getDriverVersion());
 
-            return mapBuilder.build();  //To change body of implemented methods use File | Settings | File Templates.
+            return mapBuilder.build();
         }
         catch (SQLException e)
         {

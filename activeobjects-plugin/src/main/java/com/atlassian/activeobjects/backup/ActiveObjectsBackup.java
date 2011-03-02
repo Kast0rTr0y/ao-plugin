@@ -9,6 +9,7 @@ import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.dbexporter.DbExporter;
 import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
 import com.atlassian.dbexporter.exporter.TableDefinitionExporter;
@@ -58,9 +59,11 @@ public final class ActiveObjectsBackup implements Backup
 
     public void save(OutputStream stream)
     {
+        final DatabaseProviderConnectionProvider connectionProvider = new DatabaseProviderConnectionProvider(databaseProvider);
+
         final DbExporter dbExporter = new DbExporter(
                 getProgressMonitor(),
-                new DatabaseInformationExporter(new DatabaseProviderInformationExporter(databaseProvider)),
+                new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
                 new TableDefinitionExporter(new ActiveObjectsTableReader(databaseProvider, new PrefixedSchemaConfiguration(PREFIX))),
                 new DataExporter(new PrefixTableSelector(PREFIX)));
 
@@ -69,7 +72,7 @@ public final class ActiveObjectsBackup implements Backup
         try
         {
             streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
-            dbExporter.exportData(streamWriter, new DatabaseProviderConnectionProvider(databaseProvider));
+            dbExporter.exportData(streamWriter, connectionProvider);
             streamWriter.flush();
         }
         finally
