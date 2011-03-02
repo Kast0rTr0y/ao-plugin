@@ -1,8 +1,8 @@
 package com.atlassian.dbexporter;
 
+import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.Importer;
 import com.atlassian.dbexporter.importer.NoOpImporter;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import org.slf4j.Logger;
@@ -26,23 +26,20 @@ public final class DbImporter
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ProgressMonitor monitor;
     private final List<Importer> importers;
 
-    public DbImporter(final ProgressMonitor monitor, final Importer... importers)
+    public DbImporter(final Importer... importers)
     {
-        this(monitor, newArrayList(checkNotNull(importers)));
+        this(newArrayList(checkNotNull(importers)));
     }
 
-    public DbImporter(final ProgressMonitor monitor, final List<Importer> importers)
+    public DbImporter(final List<Importer> importers)
     {
         checkArgument(!checkNotNull(importers).isEmpty(), "DbImporter must be created with at least one importer!");
-
-        this.monitor = checkNotNull(monitor);
         this.importers = importers;
     }
 
-    public void importData(NodeStreamReader streamReader, ConnectionProvider connectionProvider, Object... configuration) throws DbImportException
+    public void importData(NodeStreamReader streamReader, ImportConfiguration configuration) throws DbImportException
     {
         final NodeParser node = RootNode.get(streamReader);
         logger.debug("Root node is {}", node);
@@ -52,17 +49,17 @@ public final class DbImporter
             throw new DbImportException("Unexpected root node found, " + node);
         }
 
-        final Context context = new Context(connectionProvider, monitor).putAll(newArrayList(configuration));
-
         if (isEndNode(node.getNextNode()))
         {
             return; // empty backup
         }
 
+        final Context context = new Context();
+
         logger.debug("Starting import from node {}", node);
         do
         {
-            getImporter(node).importNode(node, context);
+            getImporter(node).importNode(node, configuration, context);
         }
         while (!(node.getName().equals(RootNode.NAME) && node.isClosed()));
     }

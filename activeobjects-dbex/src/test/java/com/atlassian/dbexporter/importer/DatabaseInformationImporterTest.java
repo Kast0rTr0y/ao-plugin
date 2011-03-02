@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -10,8 +11,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static com.atlassian.dbexporter.ContextUtils.getDatabaseInformation;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatabaseInformationImporterTest
@@ -24,12 +25,18 @@ public class DatabaseInformationImporterTest
     @Mock
     private DatabaseInformationChecker checker;
 
+    @Mock
+    private ImportConfiguration configuration;
+
+    @Mock
+    private ProgressMonitor progressMonitor;
+
     @Test
     @Xml("<database />")
     public void importEmptyInformation()
     {
         final Context context = new Context();
-        importer.doImportNode(nodeParser.getNode(), context);
+        importer.doImportNode(nodeParser.getNode(), configuration, context);
 
         final DatabaseInformation info = getDatabaseInformation(context);
         assertNotNull(info);
@@ -41,7 +48,7 @@ public class DatabaseInformationImporterTest
     public void importMetaInformation()
     {
         final Context context = new Context();
-        importer.doImportNode(nodeParser.getNode(), context);
+        importer.doImportNode(nodeParser.getNode(), configuration, context);
 
         final DatabaseInformation info = getDatabaseInformation(context);
         assertNotNull(info);
@@ -52,6 +59,8 @@ public class DatabaseInformationImporterTest
     @Before
     public void setUp() throws Exception
     {
+        when(configuration.getProgressMonitor()).thenReturn(progressMonitor);
+
         importer = new DatabaseInformationImporter(checker);
     }
 
@@ -59,5 +68,10 @@ public class DatabaseInformationImporterTest
     public void tearDown() throws Exception
     {
         importer = null;
+    }
+
+    private DatabaseInformation getDatabaseInformation(Context context)
+    {
+        return context.get(DatabaseInformation.class);
     }
 }

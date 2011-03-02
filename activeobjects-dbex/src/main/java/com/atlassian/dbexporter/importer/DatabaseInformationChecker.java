@@ -5,5 +5,5 @@ import com.atlassian.dbexporter.DatabaseInformation;
 
 public interface DatabaseInformationChecker
 {
-    void check(DatabaseInformation information, Context context);
+    void check(DatabaseInformation information);
 }

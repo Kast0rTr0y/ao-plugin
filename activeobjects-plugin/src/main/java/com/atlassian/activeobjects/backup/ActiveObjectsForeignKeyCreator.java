@@ -1,6 +1,5 @@
 package com.atlassian.activeobjects.backup;
 
-import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
@@ -13,7 +12,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -26,10 +24,8 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
         this.provider = checkNotNull(provider);
     }
 
-    public void create(Iterable<ForeignKey> foreignKeys, Context context)
+    public void create(Iterable<ForeignKey> foreignKeys, EntityNameProcessor entityNameProcessor)
     {
-        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
-        
         Connection conn = null;
         Statement stmt = null;
         try

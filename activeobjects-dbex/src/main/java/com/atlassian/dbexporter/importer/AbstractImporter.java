@@ -28,7 +28,7 @@ public abstract class AbstractImporter implements Importer
     }
 
     @Override
-    public final void importNode(NodeParser node, Context context)
+    public final void importNode(NodeParser node, ImportConfiguration configuration, Context context)
     {
         checkNotNull(node);
         checkArgument(!node.isClosed(), "Node must not be closed to be imported! " + node);
@@ -39,16 +39,16 @@ public abstract class AbstractImporter implements Importer
 
         for (AroundImporter around : arounds)
         {
-            around.before(node, context);
+            around.before(node, configuration, context);
         }
 
-        doImportNode(node, context);
+        doImportNode(node, configuration, context);
 
         for (ListIterator<AroundImporter> iterator = arounds.listIterator(arounds.size()); iterator.hasPrevious();)
         {
-            iterator.previous().after(node, context);
+            iterator.previous().after(node, configuration, context);
         }
     }
 
-    protected abstract void doImportNode(NodeParser node, Context context);
+    protected abstract void doImportNode(NodeParser node, ImportConfiguration configuration, Context context);
 }

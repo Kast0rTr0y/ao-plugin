@@ -19,9 +19,9 @@ public final class TableDefinitionExporter implements Exporter
     }
 
     @Override
-    public void export(NodeCreator node, Context context)
+    public void export(NodeCreator node, ExportConfiguration configuration, Context context)
     {
-        for (Table table : tableReader.read(context))
+        for (Table table : tableReader.read(configuration.getEntityNameProcessor()))
         {
             export(node, table);
         }

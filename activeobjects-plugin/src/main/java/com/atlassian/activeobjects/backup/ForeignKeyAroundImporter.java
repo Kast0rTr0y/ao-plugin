@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
+import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.google.common.base.Function;
@@ -23,9 +24,9 @@ public final class ForeignKeyAroundImporter extends NoOpAroundImporter
     }
 
     @Override
-    public void after(NodeParser node, Context context)
+    public void after(NodeParser node, ImportConfiguration configuration, Context context)
     {
-        foreignKeyCreator.create(concat(transform(context.getAll(Table.class), getForeignKeysFunction())), context);
+        foreignKeyCreator.create(concat(transform(context.getAll(Table.class), getForeignKeysFunction())), configuration.getEntityNameProcessor());
     }
 
     private Function<Table, Collection<ForeignKey>> getForeignKeysFunction()

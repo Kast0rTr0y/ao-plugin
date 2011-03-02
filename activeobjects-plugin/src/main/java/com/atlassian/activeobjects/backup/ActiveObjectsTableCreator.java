@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
-import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
@@ -18,10 +17,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import static com.atlassian.dbexporter.ContextUtils.getEntityNameProcessor;
-import static com.atlassian.dbexporter.jdbc.JdbcUtils.closeQuietly;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.collect.Lists.*;
 
 final class ActiveObjectsTableCreator implements TableCreator
 {
@@ -32,9 +30,8 @@ final class ActiveObjectsTableCreator implements TableCreator
         this.provider = checkNotNull(provider);
     }
 
-    public void create(Iterable<Table> tables, Context context)
+    public void create(Iterable<Table> tables, EntityNameProcessor entityNameProcessor)
     {
-        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
         Connection conn = null;
         Statement stmt = null;
         try

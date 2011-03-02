@@ -5,5 +5,5 @@ import com.atlassian.dbexporter.node.NodeCreator;
 
 public interface Exporter
 {
-    void export(NodeCreator node, Context context);
+    void export(NodeCreator node, ExportConfiguration configuration, Context context);
 }

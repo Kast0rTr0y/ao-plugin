@@ -1,15 +1,13 @@
 package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.BatchMode;
-import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.atlassian.dbexporter.progress.Update;
+import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.ParseException;
+import com.atlassian.dbexporter.progress.Update;
 import com.google.common.collect.Maps;
 
 import java.math.BigDecimal;
@@ -26,11 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.collect.Lists.*;
 
 public final class DataImporter extends AbstractSingleNodeImporter
 {
@@ -45,20 +42,15 @@ public final class DataImporter extends AbstractSingleNodeImporter
     }
 
     @Override
-    protected void doImportNode(NodeParser node, Context context)
-    {
-        importData(getConnectionProvider(context), node, context);
-    }
-
-    @Override
     protected String getNodeName()
     {
         return TableDataNode.NAME;
     }
 
-    private void importData(ConnectionProvider connectionProvider, final NodeParser node, final Context context)
+    @Override
+    protected void doImportNode(final NodeParser node, final ImportConfiguration configuration, final Context context)
     {
-        withConnection(connectionProvider, new JdbcUtils.JdbcCallable<Void>()
+        withConnection(configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
         {
             public Void call(Connection connection)
             {
@@ -70,7 +62,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                     {
                         for (; TableDataNode.NAME.equals(node.getName()) && !node.isClosed(); node.getNextNode())
                         {
-                            importTable(node, connection, context);
+                            importTable(node, configuration, connection);
                         }
                         connection.commit();
                     }
@@ -88,16 +80,14 @@ public final class DataImporter extends AbstractSingleNodeImporter
         });
     }
 
-    private NodeParser importTable(NodeParser node, Connection connection, Context context) throws ParseException, SQLException
+    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Connection connection) throws ParseException, SQLException
     {
-        final ProgressMonitor monitor = getProgressMonitor(context);
-        final BatchMode batchMode = getBatchMode(context);
-        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
+        final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
 
         long rowNum = 0L;
 
         final String currentTable = entityNameProcessor.tableName(TableDataNode.getName(node));
-        final InserterBuilder builder = new InserterBuilder(currentTable, batchMode);
+        final InserterBuilder builder = new InserterBuilder(currentTable, configuration.getBatchMode());
 
         node = node.getNextNode();
         for (; ColumnDataNode.NAME.equals(node.getName()) && !node.isClosed(); node = node.getNextNode())
@@ -130,7 +120,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         }
         catch (SQLException se)
         {
-            monitor.update(Update.from("Database error at %s:%d (table:row) of the input: %s", currentTable, rowNum, se.getMessage()));
+            configuration.getProgressMonitor().update(Update.from("Database error at %s:%d (table:row) of the input: %s", currentTable, rowNum, se.getMessage()));
             throw se;
         }
         return node;

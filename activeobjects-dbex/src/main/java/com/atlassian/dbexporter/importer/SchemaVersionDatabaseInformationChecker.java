@@ -1,11 +1,7 @@
 package com.atlassian.dbexporter.importer;
 
-import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.DbImportException;
-import com.atlassian.dbexporter.progress.Update;
-
-import static com.atlassian.dbexporter.ContextUtils.getProgressMonitor;
 
 public final class SchemaVersionDatabaseInformationChecker implements DatabaseInformationChecker
 {
@@ -18,10 +14,8 @@ public final class SchemaVersionDatabaseInformationChecker implements DatabaseIn
         this.schemaVersion = schemaVersion;
     }
 
-    public void check(DatabaseInformation information, Context context)
+    public void check(DatabaseInformation information)
     {
-        getProgressMonitor(context).update(new Update("Checking schema version"));
-
         final int readSchemaVersion = information.getInt(SCHEMA_VERSION, -1);
         if (readSchemaVersion > schemaVersion)
         {

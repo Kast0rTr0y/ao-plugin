@@ -4,12 +4,12 @@ import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.Table;
+import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
-import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Iterables.*;
 
@@ -27,9 +27,9 @@ public final class SequenceAroundImporter extends NoOpAroundImporter
     }
 
     @Override
-    public void after(NodeParser node, Context context)
+    public void after(NodeParser node, ImportConfiguration configuration, Context context)
     {
-        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
+        final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
         for (TableColumnPair tableColumnPair : concat(transform(context.getAll(Table.class), new AutoIncrementColumnIterableFunction())))
         {
             final String tableName = entityNameProcessor.tableName(tableColumnPair.table.getName());

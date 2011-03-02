@@ -10,13 +10,13 @@ import com.atlassian.dbexporter.node.NodeParser;
 public class NoOpAroundImporter implements AroundImporter
 {
     @Override
-    public void before(NodeParser node, Context context)
+    public void before(NodeParser node, ImportConfiguration configuration, Context context)
     {
         // do nothing
     }
 
     @Override
-    public void after(NodeParser node, Context context)
+    public void after(NodeParser node, ImportConfiguration configuration, Context context)
     {
         // do nothing
     }

@@ -11,7 +11,8 @@ public final class NoOpImporter extends AbstractImporter
     {
     }
 
-    protected final void doImportNode(NodeParser node, Context context)
+    @Override
+    protected final void doImportNode(NodeParser node, ImportConfiguration configuration, Context context)
     {
         if (node.isClosed())
         {
@@ -25,11 +26,12 @@ public final class NoOpImporter extends AbstractImporter
             node.getNextNode();
             if (node.getName().equals(nodeName) && !node.isClosed())
             {
-                doImportNode(node, context);
+                doImportNode(node, configuration, context);
             }
         }
     }
 
+    @Override
     public final boolean supports(NodeParser node)
     {
         return true;

@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
-import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
@@ -21,7 +20,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
 
@@ -36,7 +34,7 @@ final class ActiveObjectsTableReader implements TableReader
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
-    public Iterable<Table> read(Context context)
+    public Iterable<Table> read(EntityNameProcessor entityNameProcessor)
     {
         final List<Table> tables = newArrayList();
         final DDLTable[] ddlTables;
@@ -51,7 +49,7 @@ final class ActiveObjectsTableReader implements TableReader
 
         for (DDLTable ddlTable : ddlTables)
         {
-            tables.add(readTable(ddlTable, getEntityNameProcessor(context)));
+            tables.add(readTable(ddlTable, entityNameProcessor));
         }
         return tables;
     }

@@ -1,15 +1,14 @@
 package com.atlassian.dbexporter.exporter;
 
-import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.node.NodeCreator;
+import com.atlassian.dbexporter.node.ParseException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.progress.Update;
 import com.atlassian.dbexporter.progress.Warning;
-import com.atlassian.dbexporter.node.NodeCreator;
-import com.atlassian.dbexporter.node.ParseException;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.google.common.base.Preconditions.*;
@@ -37,27 +35,23 @@ public final class DataExporter implements Exporter
     }
 
     @Override
-    public void export(NodeCreator node, Context context)
+    public void export(final NodeCreator node, final ExportConfiguration configuration, final Context context)
     {
-        export(node, getProgressMonitor(context), getConnectionProvider(context), getEntityNameProcessor(context));
-    }
-
-    private void export(final NodeCreator node, final ProgressMonitor progressMonitor, final ConnectionProvider connectionProvider, final EntityNameProcessor entityNameProcessor)
-    {
-        withConnection(connectionProvider, new JdbcUtils.JdbcCallable<Void>()
+        withConnection(configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
         {
             public Void call(Connection connection)
             {
                 try
                 {
                     final Set<String> allTables = getTableNames(connection);
+                    final ProgressMonitor progressMonitor = configuration.getProgressMonitor();
                     final DataExporterMonitor monitor = new DataExporterMonitor(progressMonitor, allTables.size());
                     final ConstraintsChecker constraintsChecker = new ConstraintsChecker(progressMonitor, connection.getMetaData().getDatabaseProductName());
 
                     monitor.start();
                     for (String table : allTables)
                     {
-                        exportTable(table, connection, node, monitor, constraintsChecker, entityNameProcessor);
+                        exportTable(table, connection, node, monitor, constraintsChecker, configuration.getEntityNameProcessor());
                     }
                     node.closeEntity(); // TODO weird ??
 

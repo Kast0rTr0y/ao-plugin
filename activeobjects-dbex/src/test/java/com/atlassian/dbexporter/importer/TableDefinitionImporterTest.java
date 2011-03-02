@@ -2,6 +2,8 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.NoOpEntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.node.NodeParser;
@@ -37,12 +39,15 @@ public class TableDefinitionImporterTest
     @Mock
     private ProgressMonitor monitor;
 
+    @Mock
+    private ImportConfiguration configuration;
+
     @Test
     @Xml(SINGLE_TABLE)
     public void singleTableDefinition() throws Exception
     {
         final NodeParser node = nodeParser.getNode();
-        tableDefinitionImporter.doImportNode(node, context);
+        tableDefinitionImporter.doImportNode(node, configuration, context);
 
         final List<Table> tables = verifyTables();
         assertEquals(1, tables.size());
@@ -55,7 +60,7 @@ public class TableDefinitionImporterTest
     public void multipleTableDefinitions() throws Exception
     {
         final NodeParser node = nodeParser.getNode();
-        tableDefinitionImporter.doImportNode(node.getNextNode(), context);
+        tableDefinitionImporter.doImportNode(node.getNextNode(), configuration, context);
 
         assertTrue(node.isClosed());
 
@@ -72,14 +77,16 @@ public class TableDefinitionImporterTest
     private List<Table> verifyTables()
     {
         final ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
-        verify(tableCreator).create(argument.capture(), Matchers.<Context>any());
+        verify(tableCreator).create(argument.capture(), Matchers.<EntityNameProcessor>any());
         return argument.getValue();
     }
 
     @Before
     public void setUp()
     {
-        context = new Context(monitor);
+        when(configuration.getProgressMonitor()).thenReturn(monitor);
+        when(configuration.getEntityNameProcessor()).thenReturn(new NoOpEntityNameProcessor());
+        context = new Context();
         tableDefinitionImporter = new TableDefinitionImporter(tableCreator);
     }
 

@@ -3,6 +3,7 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.node.NodeParser;
+import com.atlassian.dbexporter.progress.Update;
 
 import java.util.Map;
 
@@ -26,10 +27,13 @@ public final class DatabaseInformationImporter extends AbstractSingleNodeImporte
     }
 
     @Override
-    protected void doImportNode(NodeParser node, Context context)
+    protected void doImportNode(NodeParser node, ImportConfiguration configuration, Context context)
     {
         final DatabaseInformation info = doImportDatabaseInformation(node);
-        infoChecker.check(info, context);
+
+        configuration.getProgressMonitor().update(new Update("Checking schema version"));
+        infoChecker.check(info);
+
         context.put(info);
     }
 
@@ -73,7 +77,7 @@ public final class DatabaseInformationImporter extends AbstractSingleNodeImporte
         {
         }
 
-        public void check(DatabaseInformation information, Context context)
+        public void check(DatabaseInformation information)
         {
             // no-op
         }

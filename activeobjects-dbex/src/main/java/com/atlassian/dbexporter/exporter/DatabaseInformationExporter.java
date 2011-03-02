@@ -30,7 +30,7 @@ public final class DatabaseInformationExporter implements Exporter
     }
 
     @Override
-    public void export(NodeCreator node, Context context)
+    public void export(NodeCreator node, ExportConfiguration configuration, Context context)
     {
         final Map<String, String> properties = databaseInformationReader.get();
         if (!properties.isEmpty())

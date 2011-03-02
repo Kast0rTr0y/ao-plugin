@@ -6,15 +6,19 @@ import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.dbexporter.BatchMode;
+import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.DbExporter;
 import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
+import com.atlassian.dbexporter.exporter.ExportConfiguration;
 import com.atlassian.dbexporter.exporter.TableDefinitionExporter;
 import com.atlassian.dbexporter.importer.DataImporter;
 import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
+import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.TableDefinitionImporter;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
@@ -59,10 +63,10 @@ public final class ActiveObjectsBackup implements Backup
 
     public void save(OutputStream stream)
     {
-        final DatabaseProviderConnectionProvider connectionProvider = new DatabaseProviderConnectionProvider(databaseProvider);
+        final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider();
+        final ExportConfiguration configuration = new ActiveObjectsImportExportConfiguration(connectionProvider, getProgressMonitor());
 
         final DbExporter dbExporter = new DbExporter(
-                getProgressMonitor(),
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
                 new TableDefinitionExporter(new ActiveObjectsTableReader(databaseProvider, new PrefixedSchemaConfiguration(PREFIX))),
                 new DataExporter(new PrefixTableSelector(PREFIX)));
@@ -72,7 +76,7 @@ public final class ActiveObjectsBackup implements Backup
         try
         {
             streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
-            dbExporter.exportData(streamWriter, connectionProvider);
+            dbExporter.exportData(streamWriter, configuration);
             streamWriter.flush();
         }
         finally
@@ -83,8 +87,10 @@ public final class ActiveObjectsBackup implements Backup
 
     public void restore(InputStream stream)
     {
+        final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider();
+        final ImportConfiguration configuration = new ActiveObjectsImportExportConfiguration(connectionProvider, getProgressMonitor());
+
         final DbImporter dbImporter = new DbImporter(
-                getProgressMonitor(),
                 new DatabaseInformationImporter(),
                 new TableDefinitionImporter(new ActiveObjectsTableCreator(databaseProvider)),
                 new DataImporter(
@@ -96,12 +102,17 @@ public final class ActiveObjectsBackup implements Backup
         try
         {
             streamReader = new StaxStreamReader(new InputStreamReader(stream, CHARSET));
-            dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(databaseProvider), new UpperCaseEntityNameProcessor());
+            dbImporter.importData(streamReader, configuration);
         }
         finally
         {
             closeCloseable(streamReader);
         }
+    }
+
+    private DatabaseProviderConnectionProvider getConnectionProvider()
+    {
+        return new DatabaseProviderConnectionProvider(databaseProvider);
     }
 
     private ProgressMonitor getProgressMonitor()
@@ -121,6 +132,43 @@ public final class ActiveObjectsBackup implements Backup
             {
                 // ignore
             }
+        }
+    }
+
+    private static class ActiveObjectsImportExportConfiguration implements ImportConfiguration, ExportConfiguration
+    {
+        private final ConnectionProvider connectionProvider;
+        private final ProgressMonitor progressMonitor;
+        private final EntityNameProcessor entityNameProcessor = new UpperCaseEntityNameProcessor();
+
+        public ActiveObjectsImportExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor)
+        {
+            this.connectionProvider = checkNotNull(connectionProvider);
+            this.progressMonitor = checkNotNull(progressMonitor);
+        }
+
+        @Override
+        public ConnectionProvider getConnectionProvider()
+        {
+            return connectionProvider;
+        }
+
+        @Override
+        public ProgressMonitor getProgressMonitor()
+        {
+            return progressMonitor;
+        }
+
+        @Override
+        public EntityNameProcessor getEntityNameProcessor()
+        {
+            return entityNameProcessor;
+        }
+
+        @Override
+        public BatchMode getBatchMode()
+        {
+            return BatchMode.ON;
         }
     }
 

@@ -5,14 +5,12 @@ import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.atlassian.dbexporter.progress.Update;
 import com.atlassian.dbexporter.node.NodeParser;
+import com.atlassian.dbexporter.progress.Update;
 
 import java.util.Collection;
 import java.util.List;
 
-import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.atlassian.dbexporter.importer.ImporterUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.google.common.base.Preconditions.*;
@@ -28,20 +26,17 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
     }
 
     @Override
-    protected void doImportNode(NodeParser node, Context context)
+    protected void doImportNode(NodeParser node, ImportConfiguration configuration, Context context)
     {
-        final ProgressMonitor monitor = getProgressMonitor(context);
-        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
-
-        monitor.update(Update.from("Creating table definitions..."));
+        configuration.getProgressMonitor().update(Update.from("Creating table definitions..."));
 
         final List<Table> tables = newArrayList();
         while (!node.isClosed() && node.getName().equals(getNodeName()))
         {
-            tables.add(readTable(node, entityNameProcessor));
+            tables.add(readTable(node, configuration.getEntityNameProcessor()));
         }
 
-        tableCreator.create(tables, context);
+        tableCreator.create(tables, configuration.getEntityNameProcessor());
         context.putAll(tables); // add the parsed tables to the context
     }
 
