@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
@@ -17,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import static com.atlassian.dbexporter.ContextUtils.getEntityNameProcessor;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.closeQuietly;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -32,6 +34,7 @@ final class ActiveObjectsTableCreator implements TableCreator
 
     public void create(Iterable<Table> tables, Context context)
     {
+        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
         Connection conn = null;
         Statement stmt = null;
         try
@@ -42,7 +45,7 @@ final class ActiveObjectsTableCreator implements TableCreator
             for (Table table : tables)
             {
                 final DDLAction a = new DDLAction(DDLActionType.CREATE);
-                a.setTable(toDdlTable(table));
+                a.setTable(toDdlTable(table, entityNameProcessor));
                 final String[] sqlStatements = provider.renderAction(a);
                 for (String sql : sqlStatements)
                 {
@@ -68,24 +71,24 @@ final class ActiveObjectsTableCreator implements TableCreator
         }
     }
 
-    private DDLTable toDdlTable(Table table)
+    private DDLTable toDdlTable(Table table, EntityNameProcessor entityNameProcessor)
     {
         final DDLTable ddlTable = new DDLTable();
-        ddlTable.setName(table.getName());
+        ddlTable.setName(entityNameProcessor.tableName(table.getName()));
 
         final List<DDLField> fields = newArrayList();
         for (Column column : table.getColumns())
         {
-            fields.add(toDdlField(column));
+            fields.add(toDdlField(column, entityNameProcessor));
         }
         ddlTable.setFields(fields.toArray(new DDLField[fields.size()]));
         return ddlTable;
     }
 
-    private DDLField toDdlField(Column column)
+    private DDLField toDdlField(Column column, EntityNameProcessor entityNameProcessor)
     {
         final DDLField ddlField = new DDLField();
-        ddlField.setName(column.getName());
+        ddlField.setName(entityNameProcessor.columnName(column.getName()));
         ddlField.setType(TypeManager.getInstance().getType(column.getSqlType()));
         final Boolean pk = column.isPrimaryKey();
         if (pk != null)

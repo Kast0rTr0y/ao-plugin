@@ -3,6 +3,7 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -91,20 +92,22 @@ public final class DataImporter extends AbstractSingleNodeImporter
     {
         final ProgressMonitor monitor = getProgressMonitor(context);
         final BatchMode batchMode = getBatchMode(context);
+        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
 
         long rowNum = 0L;
 
-        final InserterBuilder builder = new InserterBuilder(TableDataNode.getName(node), batchMode);
-        String currentTable = builder.getTable();
+        final String currentTable = entityNameProcessor.tableName(TableDataNode.getName(node));
+        final InserterBuilder builder = new InserterBuilder(currentTable, batchMode);
 
         node = node.getNextNode();
         for (; ColumnDataNode.NAME.equals(node.getName()) && !node.isClosed(); node = node.getNextNode())
         {
-            builder.addColumn(ColumnDataNode.getName(node));
+            final String column = ColumnDataNode.getName(node);
+            builder.addColumn(entityNameProcessor.columnName(column));
             node = node.getNextNode();  // close column node
         }
-        final Inserter inserter = builder.build(connection);
 
+        final Inserter inserter = builder.build(connection);
         try
         {
             try
@@ -170,12 +173,12 @@ public final class DataImporter extends AbstractSingleNodeImporter
         {
 
             final StringBuilder query = new StringBuilder("INSERT INTO ")
-                    .append(table)
+                    .append(quote(connection, table))
                     .append(" (");
 
             for (int i = 0; i < columns.size(); i++)
             {
-                query.append(columns.get(i));
+                query.append(quote(connection, columns.get(i)));
                 if (i < columns.size() - 1)
                 {
                     query.append(", ");

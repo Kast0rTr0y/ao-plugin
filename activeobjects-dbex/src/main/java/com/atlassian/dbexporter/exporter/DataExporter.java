@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.exporter;
 
 import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -38,10 +39,10 @@ public final class DataExporter implements Exporter
     @Override
     public void export(NodeCreator node, Context context)
     {
-        export(node, getProgressMonitor(context), getConnectionProvider(context));
+        export(node, getProgressMonitor(context), getConnectionProvider(context), getEntityNameProcessor(context));
     }
 
-    private void export(final NodeCreator node, final ProgressMonitor progressMonitor, final ConnectionProvider connectionProvider)
+    private void export(final NodeCreator node, final ProgressMonitor progressMonitor, final ConnectionProvider connectionProvider, final EntityNameProcessor entityNameProcessor)
     {
         withConnection(connectionProvider, new JdbcUtils.JdbcCallable<Void>()
         {
@@ -56,7 +57,7 @@ public final class DataExporter implements Exporter
                     monitor.start();
                     for (String table : allTables)
                     {
-                        exportTable(table, connection, node, monitor, constraintsChecker);
+                        exportTable(table, connection, node, monitor, constraintsChecker, entityNameProcessor);
                     }
                     node.closeEntity(); // TODO weird ??
 
@@ -75,8 +76,7 @@ public final class DataExporter implements Exporter
     /** Returns the names of the tables that must be included in the export. */
     private Set<String> getTableNames(Connection connection) throws SQLException
     {
-        Set<String> tables = new HashSet<String>();
-
+        final Set<String> tables = new HashSet<String>();
         ResultSet result = connection.getMetaData().getTables(null, null, "%", new String[]{"TABLE"});
         try
         {
@@ -96,11 +96,11 @@ public final class DataExporter implements Exporter
         }
     }
 
-    private NodeCreator exportTable(String table, Connection connection, NodeCreator node, DataExporterMonitor monitor, ConstraintsChecker constraintsChecker) throws SQLException, ParseException
+    private NodeCreator exportTable(String table, Connection connection, NodeCreator node, DataExporterMonitor monitor, ConstraintsChecker constraintsChecker, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException
     {
         monitor.startTable(table);
 
-        TableDataNode.add(node, table);
+        TableDataNode.add(node, entityNameProcessor.tableName(table));
 
         Statement statement = connection.createStatement();
         ResultSet result = null;
@@ -111,7 +111,7 @@ public final class DataExporter implements Exporter
             final ResultSetMetaData meta = result.getMetaData();
 
             // write column definitions
-            node = writeColumnDefinitions(node, meta);
+            node = writeColumnDefinitions(node, meta, entityNameProcessor);
 
             while (result.next())
             {
@@ -125,13 +125,6 @@ public final class DataExporter implements Exporter
 
         monitor.endTable(table);
         return node.closeEntity();
-    }
-
-    private String quote(Connection connection, String table) throws SQLException
-    {
-        final String quoteString = connection.getMetaData().getIdentifierQuoteString().trim();
-        return new StringBuilder(table.length() + 2 * quoteString.length())
-                .append(quoteString).append(table).append(quoteString).toString();
     }
 
     private NodeCreator exportRow(NodeCreator node, ResultSet result, DataExporterMonitor monitor, ConstraintsChecker constraintsChecker) throws ParseException, SQLException
@@ -180,11 +173,12 @@ public final class DataExporter implements Exporter
         return node.closeEntity();
     }
 
-    private NodeCreator writeColumnDefinitions(NodeCreator node, ResultSetMetaData metaData) throws SQLException, ParseException
+    private NodeCreator writeColumnDefinitions(NodeCreator node, ResultSetMetaData metaData, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException
     {
         for (int i = 1; i <= metaData.getColumnCount(); i++)
         {
-            ColumnDataNode.add(node, metaData.getColumnName(i)).closeEntity();
+            final String columnName = entityNameProcessor.columnName(metaData.getColumnName(i));
+            ColumnDataNode.add(node, columnName).closeEntity();
         }
         return node;
     }

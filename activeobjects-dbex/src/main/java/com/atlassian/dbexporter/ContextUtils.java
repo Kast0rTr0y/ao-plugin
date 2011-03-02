@@ -30,4 +30,25 @@ public final class ContextUtils
     {
         return checkNotNull(context).getRequired(ConnectionProvider.class);
     }
+
+    public static EntityNameProcessor getEntityNameProcessor(Context context)
+    {
+        final EntityNameProcessor processor = checkNotNull(context).get(EntityNameProcessor.class);
+        return processor != null ? processor : new NoOpEntityNameProcessor();
+    }
+
+    private static class NoOpEntityNameProcessor implements EntityNameProcessor
+    {
+        @Override
+        public String tableName(String table)
+        {
+            return table;
+        }
+
+        @Override
+        public String columnName(String column)
+        {
+            return column;
+        }
+    }
 }

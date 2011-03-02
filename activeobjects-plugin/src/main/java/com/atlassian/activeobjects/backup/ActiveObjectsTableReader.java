@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
@@ -20,8 +21,9 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.atlassian.dbexporter.ContextUtils.*;
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.collect.Lists.*;
 
 final class ActiveObjectsTableReader implements TableReader
 {
@@ -49,30 +51,32 @@ final class ActiveObjectsTableReader implements TableReader
 
         for (DDLTable ddlTable : ddlTables)
         {
-            tables.add(readTable(ddlTable));
+            tables.add(readTable(ddlTable, getEntityNameProcessor(context)));
         }
         return tables;
     }
 
-    private Table readTable(DDLTable ddlTable)
+    private Table readTable(DDLTable ddlTable, EntityNameProcessor processor)
     {
-        return new Table(ddlTable.getName(), readColumns(ddlTable.getFields()), readForeignKeys(ddlTable.getForeignKeys()));
+        final String name = processor.tableName(ddlTable.getName());
+        return new Table(name, readColumns(ddlTable.getFields(), processor), readForeignKeys(ddlTable.getForeignKeys()));
     }
 
-    private List<Column> readColumns(DDLField[] fields)
+    private List<Column> readColumns(DDLField[] fields, final EntityNameProcessor processor)
     {
         return Lists.transform(newArrayList(fields), new Function<DDLField, Column>()
         {
             public Column apply(DDLField field)
             {
-                return readColumn(field);
+                return readColumn(field, processor);
             }
         });
     }
 
-    private Column readColumn(DDLField field)
+    private Column readColumn(DDLField field, EntityNameProcessor processor)
     {
-        return new Column(field.getName(), field.getType().getType(), field.isPrimaryKey(), field.isAutoIncrement(), field.getPrecision());
+        final String name = processor.columnName(field.getName());
+        return new Column(name, field.getType().getType(), field.isPrimaryKey(), field.isAutoIncrement(), field.getPrecision());
     }
 
     private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys)

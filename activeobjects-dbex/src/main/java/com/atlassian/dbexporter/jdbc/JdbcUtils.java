@@ -66,9 +66,17 @@ public final class JdbcUtils
     /**
      * Closes the specified {@link java.sql.Statement}, swallowing {@link SQLException}s.
      *
-     * @param statement
+     * @param statements the list of statements to close
      */
-    public static void closeQuietly(Statement statement)
+    public static void closeQuietly(Statement... statements)
+    {
+        for (Statement statement : statements)
+        {
+            closeQuietly(statement);
+        }
+    }
+
+    private static void closeQuietly(Statement statement)
     {
         if (statement != null)
         {
@@ -114,6 +122,21 @@ public final class JdbcUtils
     {
         closeQuietly(resultSet);
         closeQuietly(statement);
+    }
+
+    /**
+     * Quotes the database identifier if needed.
+     *
+     * @param connection the current connection being used
+     * @param identifier the database identifier to quote
+     * @return the quoted database identifier
+     * @throws SQLException if anything wrong happens getting information from the database connection.
+     */
+    public static String quote(Connection connection, String identifier) throws SQLException
+    {
+        final String quoteString = connection.getMetaData().getIdentifierQuoteString().trim();
+        return new StringBuilder(identifier.length() + 2 * quoteString.length())
+                .append(quoteString).append(identifier).append(quoteString).toString();
     }
 
     public static interface JdbcCallable<T>

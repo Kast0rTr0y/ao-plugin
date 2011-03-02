@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -11,7 +12,7 @@ import com.atlassian.dbexporter.node.NodeParser;
 import java.util.Collection;
 import java.util.List;
 
-import static com.atlassian.dbexporter.ContextUtils.getProgressMonitor;
+import static com.atlassian.dbexporter.ContextUtils.*;
 import static com.atlassian.dbexporter.importer.ImporterUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.google.common.base.Preconditions.*;
@@ -30,27 +31,28 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
     protected void doImportNode(NodeParser node, Context context)
     {
         final ProgressMonitor monitor = getProgressMonitor(context);
+        final EntityNameProcessor entityNameProcessor = getEntityNameProcessor(context);
 
         monitor.update(Update.from("Creating table definitions..."));
 
         final List<Table> tables = newArrayList();
         while (!node.isClosed() && node.getName().equals(getNodeName()))
         {
-            tables.add(readTable(node));
+            tables.add(readTable(node, entityNameProcessor));
         }
 
         tableCreator.create(tables, context);
         context.putAll(tables); // add the parsed tables to the context
     }
 
-    private Table readTable(NodeParser node)
+    private Table readTable(NodeParser node, EntityNameProcessor entityNameProcessor)
     {
         checkStartNode(node, TableDefinitionNode.NAME);
 
-        final String tableName = TableDefinitionNode.getName(node);
+        final String tableName = entityNameProcessor.tableName(TableDefinitionNode.getName(node));
         node.getNextNode();
 
-        final List<Column> columns = readColumns(node);
+        final List<Column> columns = readColumns(node, entityNameProcessor);
         final Collection<ForeignKey> foreignKeys = readForeignKeys(node);
 
         checkEndNode(node, TableDefinitionNode.NAME);
@@ -60,21 +62,21 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
         return new Table(tableName, columns, foreignKeys);
     }
 
-    private List<Column> readColumns(NodeParser node)
+    private List<Column> readColumns(NodeParser node, EntityNameProcessor entityNameProcessor)
     {
         final List<Column> columns = newArrayList();
         while (node.getName().equals(ColumnDefinitionNode.NAME))
         {
-            columns.add(readColumn(node));
+            columns.add(readColumn(node, entityNameProcessor));
         }
         return columns;
     }
 
-    private Column readColumn(NodeParser node)
+    private Column readColumn(NodeParser node, EntityNameProcessor entityNameProcessor)
     {
         checkStartNode(node, ColumnDefinitionNode.NAME);
 
-        final String columnName = ColumnDefinitionNode.getName(node);
+        final String columnName = entityNameProcessor.columnName(ColumnDefinitionNode.getName(node));
         final boolean isPk = ColumnDefinitionNode.isPrimaryKey(node);
         final boolean isAi= ColumnDefinitionNode.isAutoIncrement(node);
         final int sqlType = ColumnDefinitionNode.getSqlType(node);
