@@ -8,18 +8,19 @@ import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.dbexporter.DbExporter;
 import com.atlassian.dbexporter.DbImporter;
+import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
 import com.atlassian.dbexporter.exporter.TableDefinitionExporter;
 import com.atlassian.dbexporter.importer.DataImporter;
 import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
 import com.atlassian.dbexporter.importer.TableDefinitionImporter;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.atlassian.dbexporter.progress.Slf4jProgressMonitor;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
 import com.atlassian.dbexporter.node.stax.StaxStreamReader;
 import com.atlassian.dbexporter.node.stax.StaxStreamWriter;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.atlassian.dbexporter.progress.Slf4jProgressMonitor;
 import net.java.ao.DatabaseProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
+import static com.atlassian.activeobjects.ao.ConverterUtils.*;
 import static com.google.common.base.Preconditions.*;
 
 public final class ActiveObjectsBackup implements Backup
@@ -82,14 +84,16 @@ public final class ActiveObjectsBackup implements Backup
                 getProgressMonitor(),
                 new DatabaseInformationImporter(),
                 new TableDefinitionImporter(new ActiveObjectsTableCreator(databaseProvider)),
-                new DataImporter(new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(databaseProvider))));
-
+                new DataImporter(
+                        new SequenceAroundImporter(new ActiveObjectsSequenceUpdater(databaseProvider)),
+                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(databaseProvider))
+                ));
 
         NodeStreamReader streamReader = null;
         try
         {
             streamReader = new StaxStreamReader(new InputStreamReader(stream, CHARSET));
-            dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(databaseProvider));
+            dbImporter.importData(streamReader, new DatabaseProviderConnectionProvider(databaseProvider), new UpperCaseEntityNameProcessor());
         }
         finally
         {
@@ -114,6 +118,21 @@ public final class ActiveObjectsBackup implements Backup
             {
                 // ignore
             }
+        }
+    }
+
+    private static class UpperCaseEntityNameProcessor implements EntityNameProcessor
+    {
+        @Override
+        public String tableName(String tableName)
+        {
+            return toUpperCase(tableName);
+        }
+
+        @Override
+        public String columnName(String columnName)
+        {
+            return toUpperCase(columnName);
         }
     }
 }
