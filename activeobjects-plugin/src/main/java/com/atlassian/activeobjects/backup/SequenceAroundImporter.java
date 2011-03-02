@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.DatabaseInformations;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
@@ -9,7 +10,10 @@ import com.atlassian.dbexporter.importer.NoOpAroundImporter;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Iterables.*;
 
@@ -19,6 +23,8 @@ import static com.google.common.collect.Iterables.*;
  */
 public final class SequenceAroundImporter extends NoOpAroundImporter
 {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final SequenceUpdater sequenceUpdater;
 
     public SequenceAroundImporter(SequenceUpdater sequenceUpdater)
@@ -28,6 +34,24 @@ public final class SequenceAroundImporter extends NoOpAroundImporter
 
     @Override
     public void after(NodeParser node, ImportConfiguration configuration, Context context)
+    {
+        final DatabaseInformations.Database database = database(configuration.getDatabaseInformation());
+        if (shouldRun(database))
+        {
+            doAfter(configuration, context);
+        }
+        else
+        {
+            logger.debug("Sequence importers not running for {}", database);
+        }
+    }
+
+    private boolean shouldRun(DatabaseInformations.Database database)
+    {
+        return database.getType().equals(Database.Type.POSTGRES);
+    }
+
+    private void doAfter(ImportConfiguration configuration, Context context)
     {
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
         for (TableColumnPair tableColumnPair : concat(transform(context.getAll(Table.class), new AutoIncrementColumnIterableFunction())))

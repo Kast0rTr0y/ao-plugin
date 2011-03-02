@@ -5,11 +5,13 @@ import com.atlassian.dbexporter.importer.Importer;
 import com.atlassian.dbexporter.importer.NoOpImporter;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.NodeStreamReader;
+import com.atlassian.dbexporter.progress.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static com.atlassian.dbexporter.DatabaseInformations.database;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
@@ -41,6 +43,8 @@ public final class DbImporter
 
     public void importData(NodeStreamReader streamReader, ImportConfiguration configuration) throws DbImportException
     {
+        configuration.getProgressMonitor().update(Update.from("Importing data into database %s", database(configuration.getDatabaseInformation())));
+
         final NodeParser node = RootNode.get(streamReader);
         logger.debug("Root node is {}", node);
 
