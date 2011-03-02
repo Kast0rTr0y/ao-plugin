@@ -8,9 +8,11 @@ import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.ConnectionProvider;
+import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.DbExporter;
 import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.ImportExportConfiguration;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
@@ -64,7 +66,8 @@ public final class ActiveObjectsBackup implements Backup
     public void save(OutputStream stream)
     {
         final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider();
-        final ExportConfiguration configuration = new ActiveObjectsImportExportConfiguration(connectionProvider, getProgressMonitor());
+        final ProgressMonitor progressMonitor = getProgressMonitor();
+        final ExportConfiguration configuration = new ActiveObjectsExportConfiguration(connectionProvider, progressMonitor);
 
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
@@ -88,7 +91,10 @@ public final class ActiveObjectsBackup implements Backup
     public void restore(InputStream stream)
     {
         final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider();
-        final ImportConfiguration configuration = new ActiveObjectsImportExportConfiguration(connectionProvider, getProgressMonitor());
+        final ProgressMonitor progressMonitor = getProgressMonitor();
+        final DatabaseInformation databaseInformation = getDatabaseInformation(connectionProvider);
+
+        final ImportConfiguration configuration = new ActiveObjectsImportConfiguration(connectionProvider, progressMonitor, databaseInformation);
 
         final DbImporter dbImporter = new DbImporter(
                 new DatabaseInformationImporter(),
@@ -108,6 +114,11 @@ public final class ActiveObjectsBackup implements Backup
         {
             closeCloseable(streamReader);
         }
+    }
+
+    private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider)
+    {
+        return new DatabaseInformation(new ConnectionProviderInformationReader(connectionProvider).get());
     }
 
     private DatabaseProviderConnectionProvider getConnectionProvider()
@@ -135,34 +146,60 @@ public final class ActiveObjectsBackup implements Backup
         }
     }
 
-    private static class ActiveObjectsImportExportConfiguration implements ImportConfiguration, ExportConfiguration
+    private static abstract class ActiveObjectsImportExportConfiguration implements ImportExportConfiguration
     {
         private final ConnectionProvider connectionProvider;
         private final ProgressMonitor progressMonitor;
-        private final EntityNameProcessor entityNameProcessor = new UpperCaseEntityNameProcessor();
+        private final EntityNameProcessor entityNameProcessor;
 
-        public ActiveObjectsImportExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor)
+        ActiveObjectsImportExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor)
         {
             this.connectionProvider = checkNotNull(connectionProvider);
             this.progressMonitor = checkNotNull(progressMonitor);
+            this.entityNameProcessor = new UpperCaseEntityNameProcessor();
         }
 
         @Override
-        public ConnectionProvider getConnectionProvider()
+        public final ConnectionProvider getConnectionProvider()
         {
             return connectionProvider;
         }
 
         @Override
-        public ProgressMonitor getProgressMonitor()
+        public final ProgressMonitor getProgressMonitor()
         {
             return progressMonitor;
         }
 
         @Override
-        public EntityNameProcessor getEntityNameProcessor()
+        public final EntityNameProcessor getEntityNameProcessor()
         {
             return entityNameProcessor;
+        }
+    }
+
+    private static final class ActiveObjectsExportConfiguration extends ActiveObjectsImportExportConfiguration implements ExportConfiguration
+    {
+        public ActiveObjectsExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor)
+        {
+            super(connectionProvider, progressMonitor);
+        }
+    }
+
+    private static final class ActiveObjectsImportConfiguration extends ActiveObjectsImportExportConfiguration implements ImportConfiguration
+    {
+        private final DatabaseInformation databaseInformation;
+
+        ActiveObjectsImportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor, DatabaseInformation databaseInformation)
+        {
+            super(connectionProvider, progressMonitor);
+            this.databaseInformation = checkNotNull(databaseInformation);
+        }
+
+        @Override
+        public DatabaseInformation getDatabaseInformation()
+        {
+            return databaseInformation;
         }
 
         @Override
@@ -172,7 +209,7 @@ public final class ActiveObjectsBackup implements Backup
         }
     }
 
-    private static class UpperCaseEntityNameProcessor implements EntityNameProcessor
+    private static final class UpperCaseEntityNameProcessor implements EntityNameProcessor
     {
         @Override
         public String tableName(String tableName)

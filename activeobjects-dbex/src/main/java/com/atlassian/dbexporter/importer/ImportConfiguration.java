@@ -1,17 +1,18 @@
 package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.BatchMode;
-import com.atlassian.dbexporter.ConnectionProvider;
-import com.atlassian.dbexporter.EntityNameProcessor;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.atlassian.dbexporter.DatabaseInformation;
+import com.atlassian.dbexporter.ImportExportConfiguration;
 
-public interface ImportConfiguration
+public interface ImportConfiguration extends ImportExportConfiguration
 {
-    ConnectionProvider getConnectionProvider();
-
-    ProgressMonitor getProgressMonitor();
+    /**
+     * This is information of the targeted database.
+     *
+     * @return the "complete" database information of database data is being imported into
+     * @see DatabaseInformation
+     */
+    DatabaseInformation getDatabaseInformation();
 
     BatchMode getBatchMode();
-
-    EntityNameProcessor getEntityNameProcessor();
 }

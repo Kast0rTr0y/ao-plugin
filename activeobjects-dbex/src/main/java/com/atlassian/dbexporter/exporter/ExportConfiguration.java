@@ -1,14 +1,7 @@
 package com.atlassian.dbexporter.exporter;
 
-import com.atlassian.dbexporter.ConnectionProvider;
-import com.atlassian.dbexporter.EntityNameProcessor;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.atlassian.dbexporter.ImportExportConfiguration;
 
-public interface ExportConfiguration
+public interface ExportConfiguration extends ImportExportConfiguration
 {
-    ConnectionProvider getConnectionProvider();
-
-    ProgressMonitor getProgressMonitor();
-
-    EntityNameProcessor getEntityNameProcessor();
 }
