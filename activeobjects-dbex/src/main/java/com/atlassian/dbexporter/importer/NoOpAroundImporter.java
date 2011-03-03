@@ -5,7 +5,7 @@ import com.atlassian.dbexporter.node.NodeParser;
 
 /**
  * <p>A no-op around importer, convenient when only overriding one method.</p>
- * <p>The isn't much reason using it for anything else…</p>
+ * <p>The isn't much reason using it for anything else...</p>
  */
 public class NoOpAroundImporter implements AroundImporter
 {
