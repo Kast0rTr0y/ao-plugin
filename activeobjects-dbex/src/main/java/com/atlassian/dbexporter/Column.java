@@ -9,14 +9,16 @@ public final class Column
     private final Boolean primaryKey;
     private final Boolean autoIncrement;
     private final Integer precision;
+    private final Integer scale;
 
-    public Column(String name, int sqlType, Boolean pk, Boolean autoIncrement, Integer precision)
+    public Column(String name, int sqlType, Boolean pk, Boolean autoIncrement, Integer precision, Integer scale)
     {
         this.name = checkNotNull(name);
         this.sqlType = sqlType;
         this.primaryKey = pk;
         this.autoIncrement = autoIncrement;
         this.precision = precision;
+        this.scale = scale;
     }
 
     public String getName()
@@ -42,5 +44,10 @@ public final class Column
     public Integer getPrecision()
     {
         return precision;
+    }
+
+    public Integer getScale()
+    {
+        return scale;
     }
 }

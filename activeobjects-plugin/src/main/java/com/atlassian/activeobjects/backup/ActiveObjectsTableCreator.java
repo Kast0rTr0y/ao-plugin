@@ -15,6 +15,7 @@ import net.java.ao.types.TypeManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
@@ -86,7 +87,7 @@ final class ActiveObjectsTableCreator implements TableCreator
     {
         final DDLField ddlField = new DDLField();
         ddlField.setName(entityNameProcessor.columnName(column.getName()));
-        ddlField.setType(TypeManager.getInstance().getType(column.getSqlType()));
+        ddlField.setType(TypeManager.getInstance().getType(getSqlType(column)));
         final Boolean pk = column.isPrimaryKey();
         if (pk != null)
         {
@@ -102,6 +103,21 @@ final class ActiveObjectsTableCreator implements TableCreator
         {
             ddlField.setPrecision(p);
         }
+
+        final Integer s = column.getScale();
+        if (s != null)
+        {
+            ddlField.setScale(s);
+        }
         return ddlField;
+    }
+
+    private int getSqlType(Column column)
+    {
+        if (column.getSqlType() == Types.NUMERIC && column.getScale() > 0)
+        {
+            return Types.DOUBLE; // Oracle uses numeric for both floating point numbers and fixed numbers
+        }
+        return column.getSqlType();
     }
 }

@@ -317,6 +317,18 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
         }
 
+        private void setBigDecimal(BigDecimal value) throws SQLException
+        {
+            if (value == null)
+            {
+                ps.setNull(col, Types.DOUBLE);
+            }
+            else
+            {
+                ps.setBigDecimal(col, value);
+            }
+        }
+
         public void setValue(NodeParser node) throws SQLException, ParseException
         {
             if (RowDataNode.isString(node))
@@ -330,6 +342,10 @@ public final class DataImporter extends AbstractSingleNodeImporter
             else if (RowDataNode.isInteger(node))
             {
                 setBigInteger(node.getContentAsBigInteger());
+            }
+            else if (RowDataNode.isDouble(node))
+            {
+                setBigDecimal(node.getContentAsBigDecimal());
             }
             else if (RowDataNode.isDate(node))
             {

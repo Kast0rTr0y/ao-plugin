@@ -1,6 +1,7 @@
 package com.atlassian.dbexporter.node;
 
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -140,6 +141,8 @@ public interface NodeParser {
      * content (for instance because {@link NodeParser#isClosed()} is true.
      */
     BigInteger getContentAsBigInteger() throws ParseException, IllegalStateException;
+
+    BigDecimal getContentAsBigDecimal() throws ParseException, IllegalStateException;
 
     /**
      * Similar to {@link NodeParser#getContentAsString()}, but writes the contents

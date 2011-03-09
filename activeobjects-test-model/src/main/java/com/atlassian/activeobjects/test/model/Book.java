@@ -10,6 +10,9 @@ public interface Book extends Entity
 
     void setTitle(String name);
 
+    double getPrice();
+    void setPrice(double price);
+
     @ManyToMany(Authorship.class)
     Author[] getAuthors();
 }

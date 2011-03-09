@@ -8,6 +8,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.Date;
@@ -106,12 +107,19 @@ public final class StaxStreamWriter implements NodeStreamWriter
                         return setContentAsString(date == null ? null : newDateFormat().format(date));
                     }
 
-                    public NodeCreator setContentAsBigInteger(BigInteger bigInteger)
-                            throws ParseException
+                    @Override
+                    public NodeCreator setContentAsBigInteger(BigInteger bigInteger) throws ParseException
                     {
                         return setContentAsString(bigInteger == null ? null : bigInteger.toString());
                     }
 
+                    @Override
+                    public NodeCreator setContentAsBigDecimal(BigDecimal bigDecimal)
+                    {
+                        return setContentAsString(bigDecimal == null ? null : bigDecimal.toString());
+                    }
+
+                    @Override
                     public NodeCreator setContentAsBoolean(Boolean bool)
                             throws ParseException
                     {

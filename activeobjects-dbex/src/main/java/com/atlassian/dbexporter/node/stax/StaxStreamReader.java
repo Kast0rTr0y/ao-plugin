@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -183,6 +184,13 @@ public final class StaxStreamReader implements NodeStreamReader
                     {
                         String value = getContentAsString();
                         return value == null ? null : new BigInteger(value);
+                    }
+
+                    @Override
+                    public BigDecimal getContentAsBigDecimal() throws ParseException
+                    {
+                        String value = getContentAsString();
+                        return value == null ? null : new BigDecimal(value);
                     }
 
                     public void getContent(Writer writer)

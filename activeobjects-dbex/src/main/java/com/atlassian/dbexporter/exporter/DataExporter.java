@@ -10,6 +10,7 @@ import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.progress.Update;
 import com.atlassian.dbexporter.progress.Warning;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -134,10 +135,18 @@ public final class DataExporter implements Exporter
             {
                 case Types.BIGINT:
                 case Types.INTEGER:
-                case Types.NUMERIC:
-                    RowDataNode.append(node, result.getBigDecimal(col));
+                    appendInteger(result, col, node);
                     break;
-
+                case Types.NUMERIC:
+                    if (metaData.getScale(col) > 0) // oracle uses numeric always
+                    {
+                        appendDouble(result, col, node);
+                    }
+                    else
+                    {
+                        appendInteger(result, col, node);
+                    }
+                    break;
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
                     final String value = result.getString(col);
@@ -147,8 +156,11 @@ public final class DataExporter implements Exporter
 
                 case Types.BOOLEAN:
                 case Types.BIT:
-                    boolean bool = result.getBoolean(col);
-                    RowDataNode.append(node, result.wasNull() ? null : bool);
+                    RowDataNode.append(node, result.wasNull() ? null : result.getBoolean(col));
+                    break;
+
+                case Types.DOUBLE:
+                    appendDouble(result, col, node);
                     break;
 
                 case Types.TIMESTAMP:
@@ -165,6 +177,16 @@ public final class DataExporter implements Exporter
 
         monitor.row();
         return node.closeEntity();
+    }
+
+    private static void appendInteger(ResultSet result, int col, NodeCreator node) throws SQLException
+    {
+        RowDataNode.append(node, result.getBigDecimal(col).toBigInteger());
+    }
+
+    private static void appendDouble(ResultSet result, int col, NodeCreator node) throws SQLException
+    {
+        RowDataNode.append(node, BigDecimal.valueOf(result.getDouble(col)));
     }
 
     private NodeCreator writeColumnDefinitions(NodeCreator node, ResultSetMetaData metaData, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException

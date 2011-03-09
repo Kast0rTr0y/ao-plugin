@@ -27,8 +27,13 @@ public final class Model
     private static final String BILL_VENNERS = "Bill Venners";
 
     private static final String JCIP = "Java Concurrency In Practice";
+    private static final double JCIP_PRICE = 37.79;
+
     private static final String EJ2 = "Effective Java (Second Edition)";
+    private static final double EJ2_PRICE = 41.24;
+
     private static final String PIS = "Programming in Scala";
+    private static final double PIS_PRICE = 31.17;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -55,12 +60,12 @@ public final class Model
         resetDatabase();
 
         final Author[] jcip = authors(BRIAN_GOETZ, TIM_PEIERLS, JOSHUA_BLOCH, JOSEPH_BOWBEER, DAVID_HOLMES, DOUG_LEA);
-        book(JCIP, jcip);
+        book(JCIP, JCIP_PRICE, jcip);
 
         final Author[] scala = authors(MARTIN_ODERSKY, LEX_SPOON, BILL_VENNERS);
-        book(PIS, scala);
+        book(PIS, PIS_PRICE, scala);
 
-        book(EJ2, findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
+        book(EJ2, EJ2_PRICE, findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
     }
 
     public void emptyDatabase()
@@ -89,11 +94,12 @@ public final class Model
         return author;
     }
 
-    private Book book(String title, Author... authors)
+    private Book book(String title, double price, Author... authors)
     {
 
         final Book book = ao.create(Book.class);
         book.setTitle(title);
+        book.setPrice(price);
         book.save();
 
         for (Author author : authors)
@@ -168,9 +174,15 @@ public final class Model
 
         checkState(3 == books.size());
 
-        checkState(6 == findBookWithTitle(books, JCIP).getAuthors().length);
-        checkState(1 == findBookWithTitle(books, EJ2).getAuthors().length);
-        checkState(3 == findBookWithTitle(books, PIS).getAuthors().length);
+        checkBook(findBookWithTitle(books, JCIP), JCIP_PRICE, 6);
+        checkBook(findBookWithTitle(books, PIS), PIS_PRICE, 3);
+        checkBook(findBookWithTitle(books, EJ2), EJ2_PRICE, 1);
+    }
+
+    private void checkBook(Book book, double price, int i)
+    {
+        checkState(price == book.getPrice());
+        checkState(i == book.getAuthors().length);
     }
 
     private Book findBookWithTitle(Iterable<Book> books, final String title)

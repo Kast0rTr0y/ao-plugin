@@ -54,15 +54,15 @@ public class TestActiveObjectsBackup
     }
 
     @Test
-    public void testOracleBackup() throws Exception
-    {
-        testBackup(ORACLE);
-    }
-
-    @Test
     public void testPostgresBackup() throws Exception
     {
         testBackup(POSTGRES);
+    }
+
+    @Test
+    public void testOracleBackup() throws Exception
+    {
+        testBackup(ORACLE);
     }
 
     public void testBackup(String xml) throws Exception

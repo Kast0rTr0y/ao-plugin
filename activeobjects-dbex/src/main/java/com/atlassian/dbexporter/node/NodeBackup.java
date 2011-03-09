@@ -1,6 +1,7 @@
 package com.atlassian.dbexporter.node;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 
 import static com.google.common.base.Preconditions.*;
@@ -78,6 +79,7 @@ public final class NodeBackup
         private static final String AUTO_INCREMENT = "autoIncrement";
         private static final String SQL_TYPE = "sqlType";
         private static final String PRECISION = "precision";
+        private static final String SCALE = "scale";
 
         public static NodeCreator add(NodeCreator node)
         {
@@ -133,6 +135,17 @@ public final class NodeBackup
         public static NodeCreator setPrecision(NodeCreator node, Integer precision)
         {
             return precision == null ? node : node.addAttribute(PRECISION, String.valueOf(precision));
+        }
+
+        public static Integer getScale(NodeParser node)
+        {
+            final String stringScale = node.getAttribute(SCALE);
+            return stringScale == null ? null : Integer.valueOf(stringScale);
+        }
+
+        public static NodeCreator setScale(NodeCreator node, Integer scale)
+        {
+            return scale == null ? node : node.addAttribute(SCALE, String.valueOf(scale));
         }
     }
 
@@ -235,6 +248,7 @@ public final class NodeBackup
         private static final String STRING = "string";
         private static final String BOOLEAN = "boolean";
         private static final String INTEGER = "integer";
+        private static final String DOUBLE = "double";
         private static final String DATE = "timestamp";
 
         public static NodeCreator add(NodeCreator node)
@@ -242,9 +256,14 @@ public final class NodeBackup
             return node.addNode(NAME);
         }
 
+        public static NodeCreator append(NodeCreator node, BigInteger value)
+        {
+            return node.addNode(INTEGER).setContentAsBigInteger(value == null ? null : value).closeEntity();
+        }
+
         public static NodeCreator append(NodeCreator node, BigDecimal value)
         {
-            return node.addNode(INTEGER).setContentAsBigInteger(value == null ? null : value.toBigIntegerExact()).closeEntity();
+            return node.addNode(DOUBLE).setContentAsBigDecimal(value == null ? null : value).closeEntity();
         }
 
         public static NodeCreator append(NodeCreator node, String value)
@@ -275,6 +294,11 @@ public final class NodeBackup
         public static boolean isInteger(NodeParser node)
         {
             return INTEGER.equals(node.getName());
+        }
+
+        public static boolean isDouble(NodeParser node)
+        {
+            return DOUBLE.equals(node.getName());
         }
 
         public static boolean isDate(NodeParser node)

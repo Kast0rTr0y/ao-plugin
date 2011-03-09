@@ -76,10 +76,11 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
         final boolean isAi= ColumnDefinitionNode.isAutoIncrement(node);
         final int sqlType = ColumnDefinitionNode.getSqlType(node);
         final Integer precision = ColumnDefinitionNode.getPrecision(node);
+        final Integer scale = ColumnDefinitionNode.getScale(node);
 
         checkEndNode(node.getNextNode(), ColumnDefinitionNode.NAME);
         node.getNextNode(); // get to the next node, that column has been imported!
-        return new Column(columnName, sqlType, isPk, isAi, precision);
+        return new Column(columnName, sqlType, isPk, isAi, precision, scale);
     }
 
     private Collection<ForeignKey> readForeignKeys(NodeParser node)

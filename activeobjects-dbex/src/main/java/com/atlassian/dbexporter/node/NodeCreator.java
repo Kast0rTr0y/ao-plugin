@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.node;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -55,6 +56,8 @@ public interface NodeCreator {
      * @throws ParseException
      */
     NodeCreator setContentAsBigInteger(BigInteger bigInteger) throws ParseException;
+
+    NodeCreator setContentAsBigDecimal(BigDecimal bigDecimal);
 
     /**
      * Sets the content of the current node to be the specified string. This

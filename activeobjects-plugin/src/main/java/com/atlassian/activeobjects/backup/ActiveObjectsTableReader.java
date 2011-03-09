@@ -74,7 +74,7 @@ final class ActiveObjectsTableReader implements TableReader
     private Column readColumn(DDLField field, EntityNameProcessor processor)
     {
         final String name = processor.columnName(field.getName());
-        return new Column(name, field.getType().getType(), field.isPrimaryKey(), field.isAutoIncrement(), field.getPrecision());
+        return new Column(name, field.getType().getType(), field.isPrimaryKey(), field.isAutoIncrement(), field.getPrecision(), field.getScale());
     }
 
     private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys)

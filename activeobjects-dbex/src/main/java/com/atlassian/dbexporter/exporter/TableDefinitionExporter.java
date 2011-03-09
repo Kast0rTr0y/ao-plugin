@@ -53,6 +53,7 @@ public final class TableDefinitionExporter implements Exporter
         ColumnDefinitionNode.setAutoIncrement(node, column.isAutoIncrement());
         ColumnDefinitionNode.setSqlType(node, column.getSqlType());
         ColumnDefinitionNode.setPrecision(node, column.getPrecision());
+        ColumnDefinitionNode.setScale(node, column.getScale());
         node.closeEntity();
     }
 

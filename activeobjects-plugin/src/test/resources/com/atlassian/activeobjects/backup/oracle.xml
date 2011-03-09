@@ -1,1 +1,145 @@
-<?xml version='1.0' encoding='UTF-8'?><backup xmlns="http://www.atlassian.com/ao" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><database><meta key="database.name" value="Oracle"/><meta key="database.version" value="Oracle Database 10g Enterprise Edition Release 10.2.0.1.0 - Production&#xa;With the Partitioning, OLAP and Data Mining options"/><meta key="database.minorVersion" value="2"/><meta key="database.majorVersion" value="10"/><meta key="driver.name" value="Oracle JDBC driver"/><meta key="driver.version" value="10.2.0.4.0"/></database><table name="AO_AUTHOR"><column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="-1"/><column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/></table><table name="AO_AUTHORSHIP"><column name="AUTHORID" primaryKey="false" autoIncrement="false" sqlType="2" precision="-1"/><column name="BOOKID" primaryKey="false" autoIncrement="false" sqlType="2" precision="-1"/><column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="-1"/><foreignKey name="fk_ao_authorship_authorid" fromTable="AO_AUTHORSHIP" fromColumn="AUTHORID" toTable="AO_AUTHOR" toColumn="ID"/><foreignKey name="fk_ao_authorship_bookid" fromTable="AO_AUTHORSHIP" fromColumn="BOOKID" toTable="AO_BOOK" toColumn="ID"/></table><table name="AO_BOOK"><column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="-1"/><column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/></table><data tableName="AO_BOOK"><column name="ID"/><column name="TITLE"/><row><integer>1</integer><string>Java Concurrency In Practice</string></row><row><integer>2</integer><string>Programming in Scala</string></row><row><integer>3</integer><string>Effective Java (Second Edition)</string></row></data><data tableName="AO_AUTHORSHIP"><column name="AUTHORID"/><column name="BOOKID"/><column name="ID"/><row><integer>1</integer><integer>1</integer><integer>1</integer></row><row><integer>2</integer><integer>1</integer><integer>2</integer></row><row><integer>3</integer><integer>1</integer><integer>3</integer></row><row><integer>4</integer><integer>1</integer><integer>4</integer></row><row><integer>5</integer><integer>1</integer><integer>5</integer></row><row><integer>6</integer><integer>1</integer><integer>6</integer></row><row><integer>7</integer><integer>2</integer><integer>7</integer></row><row><integer>8</integer><integer>2</integer><integer>8</integer></row><row><integer>9</integer><integer>2</integer><integer>9</integer></row><row><integer>3</integer><integer>3</integer><integer>10</integer></row></data><data tableName="AO_AUTHOR"><column name="ID"/><column name="NAME"/><row><integer>1</integer><string>Brian Goetz</string></row><row><integer>2</integer><string>Tim Peierls</string></row><row><integer>3</integer><string>Joshua Bloch</string></row><row><integer>4</integer><string>Joseph Bowbeer</string></row><row><integer>5</integer><string>David Holmes</string></row><row><integer>6</integer><string>Doug Lea</string></row><row><integer>7</integer><string>Martin Odersky</string></row><row><integer>8</integer><string>Lex Spoon</string></row><row><integer>9</integer><string>Bill Venners</string></row></data></backup>
+<?xml version='1.0' encoding='UTF-8'?>
+<backup xmlns="http://www.atlassian.com/ao" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <database>
+        <meta key="database.name" value="Oracle"/>
+        <meta key="database.version"
+              value="Oracle Database 10g Enterprise Edition Release 10.2.0.1.0 - Production&#xa;With the Partitioning, OLAP and Data Mining options"/>
+        <meta key="database.minorVersion" value="2"/>
+        <meta key="database.majorVersion" value="10"/>
+        <meta key="driver.name" value="Oracle JDBC driver"/>
+        <meta key="driver.version" value="10.2.0.4.0"/>
+    </database>
+    <table name="AO_AUTHOR">
+        <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="-1" scale="-1"/>
+        <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
+    </table>
+    <table name="AO_AUTHORSHIP">
+        <column name="AUTHORID" primaryKey="false" autoIncrement="false" sqlType="2" precision="-1" scale="-1"/>
+        <column name="BOOKID" primaryKey="false" autoIncrement="false" sqlType="2" precision="-1" scale="-1"/>
+        <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="-1" scale="-1"/>
+        <foreignKey name="fk_ao_authorship_authorid" fromTable="AO_AUTHORSHIP" fromColumn="AUTHORID" toTable="AO_AUTHOR"
+                    toColumn="ID"/>
+        <foreignKey name="fk_ao_authorship_bookid" fromTable="AO_AUTHORSHIP" fromColumn="BOOKID" toTable="AO_BOOK"
+                    toColumn="ID"/>
+    </table>
+    <table name="AO_BOOK">
+        <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="-1" scale="-1"/>
+        <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="32" scale="16"/>
+        <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
+    </table>
+    <data tableName="AO_BOOK">
+        <column name="ID"/>
+        <column name="PRICE"/>
+        <column name="TITLE"/>
+        <row>
+            <integer>1</integer>
+            <double>37.79</double>
+            <string>Java Concurrency In Practice</string>
+        </row>
+        <row>
+            <integer>2</integer>
+            <double>31.17</double>
+            <string>Programming in Scala</string>
+        </row>
+        <row>
+            <integer>3</integer>
+            <double>41.24</double>
+            <string>Effective Java (Second Edition)</string>
+        </row>
+    </data>
+    <data tableName="AO_AUTHORSHIP">
+        <column name="AUTHORID"/>
+        <column name="BOOKID"/>
+        <column name="ID"/>
+        <row>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+        </row>
+        <row>
+            <integer>2</integer>
+            <integer>1</integer>
+            <integer>2</integer>
+        </row>
+        <row>
+            <integer>3</integer>
+            <integer>1</integer>
+            <integer>3</integer>
+        </row>
+        <row>
+            <integer>4</integer>
+            <integer>1</integer>
+            <integer>4</integer>
+        </row>
+        <row>
+            <integer>5</integer>
+            <integer>1</integer>
+            <integer>5</integer>
+        </row>
+        <row>
+            <integer>6</integer>
+            <integer>1</integer>
+            <integer>6</integer>
+        </row>
+        <row>
+            <integer>7</integer>
+            <integer>2</integer>
+            <integer>7</integer>
+        </row>
+        <row>
+            <integer>8</integer>
+            <integer>2</integer>
+            <integer>8</integer>
+        </row>
+        <row>
+            <integer>9</integer>
+            <integer>2</integer>
+            <integer>9</integer>
+        </row>
+        <row>
+            <integer>3</integer>
+            <integer>3</integer>
+            <integer>10</integer>
+        </row>
+    </data>
+    <data tableName="AO_AUTHOR">
+        <column name="ID"/>
+        <column name="NAME"/>
+        <row>
+            <integer>1</integer>
+            <string>Brian Goetz</string>
+        </row>
+        <row>
+            <integer>2</integer>
+            <string>Tim Peierls</string>
+        </row>
+        <row>
+            <integer>3</integer>
+            <string>Joshua Bloch</string>
+        </row>
+        <row>
+            <integer>4</integer>
+            <string>Joseph Bowbeer</string>
+        </row>
+        <row>
+            <integer>5</integer>
+            <string>David Holmes</string>
+        </row>
+        <row>
+            <integer>6</integer>
+            <string>Doug Lea</string>
+        </row>
+        <row>
+            <integer>7</integer>
+            <string>Martin Odersky</string>
+        </row>
+        <row>
+            <integer>8</integer>
+            <string>Lex Spoon</string>
+        </row>
+        <row>
+            <integer>9</integer>
+            <string>Bill Venners</string>
+        </row>
+    </data>
+</backup>
