@@ -54,12 +54,14 @@ public class TestActiveObjectsBackup
     }
 
     @Test
+    @NonTransactional
     public void testPostgresBackup() throws Exception
     {
         testBackup(POSTGRES);
     }
 
     @Test
+    @NonTransactional
     public void testOracleBackup() throws Exception
     {
         testBackup(ORACLE);
