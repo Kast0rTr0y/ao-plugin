@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.test.model.Model;
+import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
 import net.java.ao.test.jdbc.Hsql;
@@ -11,21 +12,25 @@ import net.java.ao.test.jdbc.MySql;
 import net.java.ao.test.jdbc.Oracle;
 import net.java.ao.test.jdbc.Postgres;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
 
 public final class CreateBackup
 {
+    private final static ImmutableMap<String, JdbcConfiguration> JDBC = ImmutableMap.<String, JdbcConfiguration>builder()
+            .put("hsql", new Hsql())
+            .put("mysql", new MySql())
+            .put("postgres", new Postgres())
+            .put("oracle", new Oracle())
+            .build();
+    private static final String CUSTOM = "custom";
+
     public static void main(String[] args) throws Exception
     {
-        final JdbcConfiguration jdbc = new Hsql();
-//        final JdbcConfiguration jdbc = new MySql();
-//        final JdbcConfiguration jdbc = new Postgres();
-//        final JdbcConfiguration jdbc = new Oracle() {
-//            public String getUrl()
-//    {
-//        return "jdbc:oracle:thin:@192.168.0.16:1521:orcl";
-//    }
-//        };
+        final JdbcConfiguration jdbc = selectJdbcDriver();
 
         final EntityManager entityManager = newEntityManager(jdbc);
 
@@ -49,5 +54,73 @@ public final class CreateBackup
                 .fieldNameConverter(new ActiveObjectsFieldNameConverter())
                 .schemaConfiguration(new PrefixedSchemaConfiguration(ActiveObjectsBackup.PREFIX))
                 .build();
+    }
+
+    private static JdbcConfiguration selectJdbcDriver() throws IOException
+    {
+        final String choice = chooseJdbcConfiguration();
+        if (CUSTOM.equalsIgnoreCase(choice))
+        {
+            return customJdbc();
+        }
+        else if (JDBC.containsKey(choice))
+        {
+            return JDBC.get(choice);
+        }
+        else
+        {
+            System.out.println("Please choose a valid JDBC configuration!");
+            return selectJdbcDriver();
+        }
+    }
+
+    private static JdbcConfiguration customJdbc() throws IOException
+    {
+        final String url = prompt("Url:");
+        final String username = prompt("Username:");
+        final String password = prompt("Password:");
+
+        return new JdbcConfiguration()
+        {
+            @Override
+            public String getUrl()
+            {
+                return url;
+            }
+
+            @Override
+            public String getUsername()
+            {
+                return username;
+            }
+
+            @Override
+            public String getPassword()
+            {
+                return password;
+            }
+        };
+    }
+
+    private static String chooseJdbcConfiguration() throws IOException
+    {
+        final StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, JdbcConfiguration> configs : JDBC.entrySet())
+        {
+            final JdbcConfiguration jdbc = configs.getValue();
+            sb.append(configs.getKey()).append(": ")
+                    .append(jdbc.getUrl()).append(" - ")
+                    .append(jdbc.getUsername()).append(" - ")
+                    .append(jdbc.getPassword()).append("\n");
+        }
+        sb.append(CUSTOM).append("\n");
+
+        return prompt("Choose a configuration:\n" + sb);
+    }
+
+    private static String prompt(String s) throws IOException
+    {
+        System.out.println(s);
+        return new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 }
