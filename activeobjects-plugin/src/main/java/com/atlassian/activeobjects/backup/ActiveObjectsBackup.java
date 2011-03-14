@@ -28,6 +28,8 @@ import com.atlassian.dbexporter.node.stax.StaxStreamReader;
 import com.atlassian.dbexporter.node.stax.StaxStreamWriter;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.progress.Slf4jProgressMonitor;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import net.java.ao.DatabaseProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,27 +53,40 @@ public final class ActiveObjectsBackup implements Backup
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final DatabaseProvider databaseProvider;
+    private final Supplier<DatabaseProvider> databaseProviderSupplier;
 
-    public ActiveObjectsBackup(DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider)
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider)
     {
-        this(checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType()));
+        this(new Supplier<DatabaseProvider>()
+        {
+            @Override
+            public DatabaseProvider get()
+            {
+                return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType());
+            }
+        });
     }
 
     ActiveObjectsBackup(DatabaseProvider databaseProvider)
     {
-        this.databaseProvider = checkNotNull(databaseProvider);
+        this(Suppliers.ofInstance(checkNotNull(databaseProvider)));
+    }
+
+    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier)
+    {
+        this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
     }
 
     public void save(OutputStream stream)
     {
-        final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider();
+        final DatabaseProvider provider = databaseProviderSupplier.get();
+        final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider(provider);
         final ProgressMonitor progressMonitor = getProgressMonitor();
         final ExportConfiguration configuration = new ActiveObjectsExportConfiguration(connectionProvider, progressMonitor);
 
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
-                new TableDefinitionExporter(new ActiveObjectsTableReader(databaseProvider, new PrefixedSchemaConfiguration(PREFIX))),
+                new TableDefinitionExporter(new ActiveObjectsTableReader(provider, new PrefixedSchemaConfiguration(PREFIX))),
                 new DataExporter(new PrefixTableSelector(PREFIX)));
 
 
@@ -90,7 +105,9 @@ public final class ActiveObjectsBackup implements Backup
 
     public void restore(InputStream stream)
     {
-        final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider();
+        final DatabaseProvider provider = databaseProviderSupplier.get();
+        final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider(provider);
+
         final ProgressMonitor progressMonitor = getProgressMonitor();
         final DatabaseInformation databaseInformation = getDatabaseInformation(connectionProvider);
 
@@ -98,10 +115,10 @@ public final class ActiveObjectsBackup implements Backup
 
         final DbImporter dbImporter = new DbImporter(
                 new DatabaseInformationImporter(),
-                new TableDefinitionImporter(new ActiveObjectsTableCreator(databaseProvider)),
+                new TableDefinitionImporter(new ActiveObjectsTableCreator(provider)),
                 new DataImporter(
-                        new SequenceAroundImporter(new ActiveObjectsSequenceUpdater(databaseProvider)),
-                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(databaseProvider))
+                        new SequenceAroundImporter(new ActiveObjectsSequenceUpdater(provider)),
+                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(provider))
                 ));
 
         NodeStreamReader streamReader = null;
@@ -121,9 +138,9 @@ public final class ActiveObjectsBackup implements Backup
         return new DatabaseInformation(new ConnectionProviderInformationReader(connectionProvider).get());
     }
 
-    private DatabaseProviderConnectionProvider getConnectionProvider()
+    private static DatabaseProviderConnectionProvider getConnectionProvider(DatabaseProvider provider)
     {
-        return new DatabaseProviderConnectionProvider(databaseProvider);
+        return new DatabaseProviderConnectionProvider(provider);
     }
 
     private ProgressMonitor getProgressMonitor()
