@@ -19,5 +19,10 @@
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.java.dev.activeobjects</groupId>
+            <artifactId>activeobjects-test</artifactId>
+            <version>${ao.version}</version>
+        </dependency>
     </dependencies>
 </project>
