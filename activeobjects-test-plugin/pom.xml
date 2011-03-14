@@ -35,6 +35,12 @@
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-test-model</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.java.dev.activeobjects</groupId>
+                    <artifactId>activeobjects-test</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

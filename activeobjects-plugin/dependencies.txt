@@ -2,10 +2,10 @@ aopalliance:aopalliance:1.0:jar:-:provided|org.springframework:spring-context:ja
 biz.aQute:bndlib:0.0.255:jar:-:provided|com.atlassian.plugins:atlassian-plugins-osgi:jar:2.4.4|{sha1}eae5fb9abb1801896bab29611d24a1b828966c89|{sha1}350b31984b6e8095b94d48305581dabd4665d3b0
 bouncycastle:bcprov-jdk14:138:jar:-:test|com.atlassian.sal:sal-core:jar:2.1.0,com.atlassian.seraph:atlassian-seraph:jar:0.38|{sha1}de366c3243a586eb3c0e2bcde1ed9bb1bfb985ff|{sha1}fa9846369cc0477f553c7d501051267c1d7fa386
 com.atlassian.activeobjects:activeobjects-core:1.0-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
+com.atlassian.activeobjects:activeobjects-dbex:1.0-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
 com.atlassian.activeobjects:activeobjects-spi:1.0-SNAPSHOT:jar:-:provided||SNAPSHOT|SNAPSHOT
 com.atlassian.activeobjects:activeobjects-test:1.0-SNAPSHOT:jar:-:test|com.atlassian.activeobjects:activeobjects-test-model:jar:1.0-SNAPSHOT|SNAPSHOT|SNAPSHOT
 com.atlassian.activeobjects:activeobjects-test-model:1.0-SNAPSHOT:jar:-:test||SNAPSHOT|SNAPSHOT
-com.atlassian.dbexporter:atlassian-db-exporter:0.3:jar:-:compile||{sha1}d575744a54c4b660caa0fe452b46dea42ddf7c38|{sha1}6ffde19b8cf4cff82998706b911148d14ec6654e
 com.atlassian.plugins:atlassian-plugins-core:2.4.4:jar:-:provided|com.atlassian.plugins:atlassian-plugins-osgi:jar:2.4.4|{sha1}de3c512eb39e60047bb6a844da88355a273fad49|{sha1}4f9b5b8930b46f99c80ecdb39b1edc260dad0803
 com.atlassian.plugins:atlassian-plugins-osgi:2.4.4:jar:-:provided||{sha1}58299c175e2bf968d5639217177f4acf01656d58|{sha1}04665a3450bea5e4f44eeee698ed1ed7ffc0abd1
 com.atlassian.plugins:atlassian-plugins-osgi-bridge:2.4.4:jar:-:provided||{sha1}de36cc72407254e4f46a305449d9350986764dc6|{sha1}e7e058f501119ab7a611a75366c620534c579068
@@ -29,8 +29,8 @@ janino:janino:2.5.10:jar:-:test|com.atlassian.plugins.test:atlassian-plugins-tes
 javax.servlet:servlet-api:2.4:jar:-:provided||{sha1}3fc542fe8bb8164e8d3e840fe7403bc0518053c0|{sha1}2d97d4b5f4dce36ac757f41db6415b85855bde8d
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
 log4j:log4j:1.2.15:jar:-:provided|com.atlassian.plugins:atlassian-plugins-osgi:jar:2.4.4|{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
-net.java.dev.activeobjects:activeobjects:0.9-m13:jar:-:compile||{sha1}dc69fd2319ab9786af7f904e48284143075d0e3f|{sha1}f6ae83d278ed883f938db45080c2e13435340b28
-net.java.dev.activeobjects:activeobjects-test:0.9-m13:jar:-:test||{sha1}8e8c1bd8bc98d95320e52fd33f6073455a0bddef|{sha1}907821d87d47c710746ff93bae47d4034238fd80
+net.java.dev.activeobjects:activeobjects:0.9-m17:jar:-:compile||{sha1}81e5383bb6ccc04b4ca6838f1853116ca4a060dd|{sha1}715abb8b20b8bb6104d47f0f0c40b03a2946f35b
+net.java.dev.activeobjects:activeobjects-test:0.9-m17:jar:-:test||{sha1}4958c68a1252aa2860a445c48edfb607feea00de|{sha1}ae583f4a7fe3fd7dfa6202615ea30367be723417
 opensymphony:oscore:2.2.6:jar:-:test|com.atlassian.sal:sal-core:jar:2.1.0,com.atlassian.seraph:atlassian-seraph:jar:0.38|{sha1}9797365cd07d935020d50bccf2abb64b28e7f61d|{sha1}36d4e7921f5fc81bbcee1b619cd761770e69c55f
 opensymphony:osuser:1.0-20060106:jar:-:test|com.atlassian.sal:sal-core:jar:2.1.0,com.atlassian.seraph:atlassian-seraph:jar:0.38|{sha1}5638c03d43aa54c551c3647f6d3f96b6dcdeb4dd|{sha1}ed2c66ecd924493537a20b057ad94f3ed72c2fc6
 opensymphony:propertyset:1.3-21Nov03:jar:-:test|com.atlassian.sal:sal-core:jar:2.1.0,com.atlassian.seraph:atlassian-seraph:jar:0.38|{sha1}32f4c621ec0c300e3f616fdd231cf06dfecfd481|{sha1}ba7d6b57e8f72c6f72db202aff888f5dbf87f330
