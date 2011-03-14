@@ -147,7 +147,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
         {
             return obj != null
                     && obj instanceof LazyActiveObjectConfiguration
-                    && getDelegate().equals(((LazyActiveObjectConfiguration) obj).getDelegate());
+                    && bundle.getBundleId() == ((LazyActiveObjectConfiguration) obj).bundle.getBundleId();
         }
 
         ActiveObjectsConfiguration getDelegate()
