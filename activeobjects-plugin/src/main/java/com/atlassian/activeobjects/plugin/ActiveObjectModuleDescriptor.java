@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
-import static com.atlassian.activeobjects.ao.ConverterUtils.toUpperCase;
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.atlassian.activeobjects.ao.ConverterUtils.*;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * <p>The module descriptor for active objects.</p>
@@ -330,7 +330,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
         public DataSourceType getDataSourceType()
         {
-            return dataSourceTypeResolver.getDataSourceType(pluginKey);
+            return dataSourceTypeResolver.getDataSourceType(getTableNamePrefix());
         }
 
         public Prefix getTableNamePrefix()

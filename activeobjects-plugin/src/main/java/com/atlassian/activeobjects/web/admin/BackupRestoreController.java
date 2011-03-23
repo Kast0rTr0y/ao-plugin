@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * The controller to backup and restore ActiveObjects plugins

@@ -5,7 +5,7 @@ import net.java.ao.SchemaConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A {@link SchemaConfiguration schema configuration} that will allow table starting with a given {@link com.atlassian.activeobjects.internal.Prefix prefix}

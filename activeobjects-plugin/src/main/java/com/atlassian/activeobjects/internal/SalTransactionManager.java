@@ -3,7 +3,7 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * Implementation of the {@link com.atlassian.activeobjects.internal.TransactionManager}

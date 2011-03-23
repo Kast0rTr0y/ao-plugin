@@ -11,7 +11,7 @@ import net.java.ao.schema.TableNameConverter;
 
 import javax.sql.DataSource;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.*;
+import static com.google.common.base.Preconditions.*;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory
 {

@@ -5,7 +5,7 @@ import org.osgi.framework.BundleContext;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.osgi.context.BundleContextAware;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * A factory bean to expose the current OSGi bundle in a spring context

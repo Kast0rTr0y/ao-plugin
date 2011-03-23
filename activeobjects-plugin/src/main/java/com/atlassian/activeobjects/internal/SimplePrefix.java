@@ -2,7 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import java.util.Locale;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class SimplePrefix implements Prefix
 {

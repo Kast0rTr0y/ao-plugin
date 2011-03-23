@@ -1,8 +1,8 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * Creates a new instance of ActiveObjects given a dataSourceProvider

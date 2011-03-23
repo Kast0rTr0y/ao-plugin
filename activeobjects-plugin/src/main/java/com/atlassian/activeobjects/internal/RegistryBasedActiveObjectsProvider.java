@@ -1,11 +1,11 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class RegistryBasedActiveObjectsProvider implements ActiveObjectsProvider
 {

@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Locale;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class JdbcDriverDatabaseProviderFactory implements DatabaseProviderFactory
 {
@@ -137,7 +137,6 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
         }
 
         // apparently useless, I know, but the compiler complains if not there
-
         public abstract DatabaseProvider getDatabaseProvider(DataSource dataSource);
     }
 

@@ -8,10 +8,9 @@ import net.java.ao.DBParam;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import java.io.InputStream;
 import java.util.Map;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link com.atlassian.activeobjects.internal.ActiveObjectsProvider}</p>

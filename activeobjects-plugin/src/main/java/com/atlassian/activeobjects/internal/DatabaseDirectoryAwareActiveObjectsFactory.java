@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractActiveObjectsFactory
 {
