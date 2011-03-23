@@ -20,16 +20,17 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DataSourceTypeResolverImplTest
 {
-    private static final PluginKey PLUGIN_KEY = new PluginKey("bla");
+    private static final Prefix PLUGIN_KEY = new SimplePrefix("bla");
 
     private DataSourceTypeResolver dataSourceTypeResolver;
+
     @Mock
     private PluginSettings pluginSettings;
 
     @Before
     public void setUp() throws Exception
     {
-        dataSourceTypeResolver = new DataSourceTypeResolverImpl(getMockPluginSettingsFactory(), DataSourceType.APPLICATION);
+        dataSourceTypeResolver = new DataSourceTypeResolverImpl(getMockPluginSettingsFactory(), new ActiveObjectsSettingKeys(), DataSourceType.APPLICATION);
     }
 
     @After

@@ -13,14 +13,12 @@
             <constructor-arg index="2">
                 <bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
                     <constructor-arg index="0" ref="pluginSettingsFactory"/>
-                    <constructor-arg index="1" value="APPLICATION"/>
+                    <constructor-arg index="1" ref="settingKeys"/>
+                    <constructor-arg index="2" value="APPLICATION"/>
                 </bean>
             </constructor-arg>
             <constructor-arg index="3">
                 <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
-            </constructor-arg>
-            <constructor-arg index="4">
-                <bean class="net.java.ao.schema.CamelCaseTableNameConverter"/>
             </constructor-arg>
         </bean>
     </osgi:service>
@@ -96,9 +94,12 @@
                 <constructor-arg index="0">
                     <osgi:reference interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
                 </constructor-arg>
+                <constructor-arg index="1" ref="settingKeys"/>
             </bean>
         </constructor-arg>
     </bean>
+
+    <bean id="settingKeys" class="com.atlassian.activeobjects.internal.ActiveObjectsSettingKeys"/>
 
     <bean id="databaseProviderFactory" class="com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory">
         <constructor-arg>

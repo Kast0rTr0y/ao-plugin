@@ -5,33 +5,32 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * Sole implementation of {@link com.atlassian.activeobjects.internal.DataSourceTypeResolver},
  * configuration of data source type is 'simply' stored as a
  * {@link com.atlassian.sal.api.pluginsettings.PluginSettings plugin setting}.
- * @see #getSettingKey(PluginKey)
  */
 public final class DataSourceTypeResolverImpl implements DataSourceTypeResolver
 {
-    private static final String PLUGIN_SETTING_KEY_PREFIX = "com.atlassian.activeobjects";
-    private static final String DATA_SOURCE_TYPE_KEY = "dataSourceType";
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final PluginSettings pluginSettings;
     private final DataSourceType defaultDataSourceType;
+    private final ActiveObjectsSettingKeys settingKeys;
 
-    public DataSourceTypeResolverImpl(PluginSettingsFactory pluginSettingsFactory, DataSourceType defaultDataSourceType)
+    public DataSourceTypeResolverImpl(PluginSettingsFactory pluginSettingsFactory, ActiveObjectsSettingKeys settingKeys, DataSourceType defaultDataSourceType)
     {
-        this.pluginSettings = checkNotNull(pluginSettingsFactory).createGlobalSettings(); // TODO: is this a good idea?
+        checkNotNull(pluginSettingsFactory);
+        this.pluginSettings = checkNotNull(pluginSettingsFactory.createGlobalSettings());
+        this.settingKeys = checkNotNull(settingKeys);
         this.defaultDataSourceType = checkNotNull(defaultDataSourceType);
     }
 
-    public DataSourceType getDataSourceType(PluginKey pluginKey)
+    public DataSourceType getDataSourceType(Prefix prefix)
     {
-        final String setting = getSetting(pluginKey);
+        final String setting = getSetting(prefix);
         if (setting != null)
         {
             try
@@ -41,7 +40,7 @@ public final class DataSourceTypeResolverImpl implements DataSourceTypeResolver
             catch (IllegalArgumentException e)
             {
                 // if an incorrect value is stored, then we fall back on the default, not without a warning in the logs
-                logger.warn("Active objects data source type setting <" + setting + "> for plugin <" + pluginKey + "> " +
+                logger.warn("Active objects data source type setting <" + setting + "> for key <" + getSettingKey(prefix) + "> " +
                         "could not be resolved to a valid " + DataSourceType.class.getName() + ". Using default value" +
                         " <" + defaultDataSourceType + ">.");
                 return defaultDataSourceType;
@@ -53,13 +52,13 @@ public final class DataSourceTypeResolverImpl implements DataSourceTypeResolver
         }
     }
 
-    private String getSetting(PluginKey pluginKey)
+    private String getSetting(Prefix prefix)
     {
-        return (String) pluginSettings.get(getSettingKey(pluginKey));
+        return (String) pluginSettings.get(getSettingKey(prefix));
     }
 
-    private String getSettingKey(PluginKey pluginKey)
+    private String getSettingKey(Prefix prefix)
     {
-        return PLUGIN_SETTING_KEY_PREFIX + ":" + pluginKey.toString() + ":" + DATA_SOURCE_TYPE_KEY;
+        return settingKeys.getDataSourceTypeKey(prefix);
     }
 }

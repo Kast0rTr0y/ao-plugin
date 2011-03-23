@@ -10,9 +10,10 @@ public interface DataSourceTypeResolver
     /**
      * Will return a configured {@link com.atlassian.activeobjects.internal.DataSourceType} for
      * the given plugin key
-     * @param pluginKey the plugin key for which to lookup the data source type
+     *
+     * @param prefix
      * @return a <em>non-{@code null}</em> DataSourceType, if none is 'configured' then a default
-     * shoud be provided.
+     *         shoud be provided.
      */
-    DataSourceType getDataSourceType(PluginKey pluginKey);
+    DataSourceType getDataSourceType(Prefix prefix);
 }

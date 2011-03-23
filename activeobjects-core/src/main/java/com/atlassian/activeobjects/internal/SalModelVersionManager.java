@@ -3,8 +3,6 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -12,17 +10,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.google.common.base.Preconditions.*;
 
+/**
+ * A model version manager that uses SAL's {@link PluginSettings} to store the actual current version.
+ * @see PluginSettingsFactory
+ * @see PluginSettings
+ */
 public final class SalModelVersionManager implements ModelVersionManager
 {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String AO_MODEL_VERSION = "#";
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final PluginSettingsFactory pluginSettingsFactory;
 
-    public SalModelVersionManager(PluginSettingsFactory pluginSettingsFactory)
+    private final PluginSettingsFactory pluginSettingsFactory;
+    private final ActiveObjectsSettingKeys settingKeys;
+
+    public SalModelVersionManager(PluginSettingsFactory pluginSettingsFactory, ActiveObjectsSettingKeys settingKeys)
     {
         this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
+        this.settingKeys = checkNotNull(settingKeys);
     }
 
     @Override
@@ -32,7 +35,7 @@ public final class SalModelVersionManager implements ModelVersionManager
         read.lock();
         try
         {
-            return ModelVersion.valueOf((String) getPluginSettings().get(getKey(tableNamePrefix)));
+            return ModelVersion.valueOf((String) getPluginSettings().get(settingKeys.getModelVersionKey(tableNamePrefix)));
         }
         finally
         {
@@ -47,7 +50,7 @@ public final class SalModelVersionManager implements ModelVersionManager
         write.lock();
         try
         {
-            getPluginSettings().put(getKey(tableNamePrefix), version.toString());
+            getPluginSettings().put(settingKeys.getModelVersionKey(tableNamePrefix), version.toString());
         }
         finally
         {
@@ -58,12 +61,5 @@ public final class SalModelVersionManager implements ModelVersionManager
     private PluginSettings getPluginSettings()
     {
         return pluginSettingsFactory.createGlobalSettings();
-    }
-
-    private String getKey(Prefix tableNamePrefix)
-    {
-        final String key = tableNamePrefix.prepend(AO_MODEL_VERSION);
-        logger.debug("Plugin settings key is {}", key);
-        return key;
     }
 }
