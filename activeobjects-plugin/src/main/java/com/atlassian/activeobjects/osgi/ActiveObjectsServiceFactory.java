@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.PluginKey;
@@ -17,6 +18,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Set;
 
 import static com.atlassian.activeobjects.util.ActiveObjectsUtils.checkNotNull;
@@ -137,6 +139,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
         }
 
         @Override
+        public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
+        {
+            return getDelegate().getUpgradeTasks();
+        }
+
+        @Override
         public int hashCode()
         {
             return getDelegate().hashCode();
@@ -149,7 +157,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
                     && obj instanceof LazyActiveObjectConfiguration
                     && bundle.getBundleId() == ((LazyActiveObjectConfiguration) obj).bundle.getBundleId();
         }
-
+        
         ActiveObjectsConfiguration getDelegate()
         {
             return getConfiguration(bundle);

@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.config;
 
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
@@ -8,11 +9,10 @@ import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.TableNameConverter;
 
+import java.util.List;
 import java.util.Set;
 
-/**
- * <p>This represents the configuration of active objects for a given module descriptor.</p>
- */
+/** <p>This represents the configuration of active objects for a given module descriptor.</p> */
 public interface ActiveObjectsConfiguration
 {
     /**
@@ -63,4 +63,11 @@ public interface ActiveObjectsConfiguration
      * @return a set of entity classes.
      */
     Set<Class<? extends RawEntity<?>>> getEntities();
+
+    /**
+     * Gets the upgrade tasks associated with Active Objects
+     *
+     * @return the upgrade tasks
+     */
+    List<ActiveObjectsUpgradeTask> getUpgradeTasks();
 }

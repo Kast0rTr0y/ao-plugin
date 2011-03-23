@@ -22,6 +22,7 @@ import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.osgi.util.tracker.ServiceTracker;
 
 import javax.sql.DataSource;
@@ -41,7 +42,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.*;
 
 /**
@@ -299,7 +300,7 @@ public class TestIntegrations extends PluginInContainerTestBase
 
     private void setDataSourceType(DataSourceType type)
     {
-        when(pluginSettings.get(anyString())).thenReturn(type.name());
+        when(pluginSettings.get(startsWith("com.atlassian.activeobjects"))).thenReturn(type.name());
         if (DataSourceType.APPLICATION.equals(type))
         {
             final jdbcDataSource hsqlDs = new jdbcDataSource();

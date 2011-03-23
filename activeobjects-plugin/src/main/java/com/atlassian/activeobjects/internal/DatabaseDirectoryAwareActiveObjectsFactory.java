@@ -24,9 +24,9 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private final ApplicationProperties applicationProperties;
     private final ActiveObjectsPluginConfiguration dbConfiguration;
 
-    public DatabaseDirectoryAwareActiveObjectsFactory(ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration)
+    public DatabaseDirectoryAwareActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration)
     {
-        super(DataSourceType.HSQLDB);
+        super(DataSourceType.HSQLDB, aoUpgradeManager);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.dbConfiguration = checkNotNull(dbConfiguration);
     }

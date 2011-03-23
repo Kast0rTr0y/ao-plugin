@@ -22,9 +22,9 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
 
-    public DataSourceProviderActiveObjectsFactory(EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
+    public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
     {
-        super(DataSourceType.APPLICATION);
+        super(DataSourceType.APPLICATION, aoUpgradeManager);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);

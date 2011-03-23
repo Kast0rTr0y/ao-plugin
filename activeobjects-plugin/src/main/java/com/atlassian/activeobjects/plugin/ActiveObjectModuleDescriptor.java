@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.ActiveObjectsTableNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.internal.PluginKey;
@@ -12,6 +13,7 @@ import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
+import com.atlassian.plugin.AutowireCapablePlugin;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.plugin.PluginParseException;
@@ -20,6 +22,7 @@ import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.plugin.util.validation.ValidationPattern;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
@@ -70,6 +73,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     /** The service registration for the active objects configuration, defined by this plugin. */
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
     private ServiceRegistration tableNameConverterServiceRegistration;
+    private List<ActiveObjectsUpgradeTask> upgradeTasks;
 
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver,
@@ -99,8 +103,55 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         tableNameConverter = new ActiveObjectsTableNameConverter(tableNamePrefix);
         fieldNameConverter = new ActiveObjectsFieldNameConverter();
         entityClasses = getEntities(element);
+        upgradeTasks = getUpgradeTasks(element);
 
         validateEntities(entityClasses, tableNameConverter);
+    }
+
+    private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element)
+    {
+        final List<Element> upgradeTask = getSubElements(element, "upgradeTask");
+
+        final List<String> upgradeTaskClasses = Lists.transform(upgradeTask, new Function<Element, String>()
+        {
+            public String apply(Element utElement)
+            {
+                final String upgradeTaskClass = utElement.getText().trim();
+                logger.debug("Found upgrade task class <{}>", upgradeTaskClass);
+                return upgradeTaskClass;
+            }
+        });
+
+        final List<Class<ActiveObjectsUpgradeTask>> classes = Lists.transform(upgradeTaskClasses, new Function<String, Class<ActiveObjectsUpgradeTask>>()
+        {
+            @Override
+            public Class<ActiveObjectsUpgradeTask> apply(String upgradeTaskClass)
+            {
+                return getUpgradeTaskClass(upgradeTaskClass);
+            }
+        });
+
+        final AutowireCapablePlugin plugin = (AutowireCapablePlugin) getPlugin();
+        return Lists.transform(classes, new Function<Class<ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>()
+        {
+            @Override
+            public ActiveObjectsUpgradeTask apply(Class<ActiveObjectsUpgradeTask> upgradeTaskClass)
+            {
+                return plugin.autowire(upgradeTaskClass);
+            }
+        });
+    }
+
+    private Class<ActiveObjectsUpgradeTask> getUpgradeTaskClass(String upgradeTask)
+    {
+        try
+        {
+            return getPlugin().loadClass(upgradeTask, getClass());
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new ActiveObjectsPluginException(e);
+        }
     }
 
     void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, TableNameConverter tableNameConverter)
@@ -166,6 +217,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         configuration.setFieldNameConverter(fieldNameConverter);
         configuration.setSchemaConfiguration(new PrefixedSchemaConfiguration(tableNamePrefix));
         configuration.setEntities(entities);
+        configuration.setUpgradeTasks(upgradeTasks);
         return configuration;
     }
 
@@ -263,6 +315,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         private FieldNameConverter fieldNameConverter;
         private SchemaConfiguration schemaConfiguration;
         private Set<Class<? extends RawEntity<?>>> entities;
+        private List<ActiveObjectsUpgradeTask> upgradeTasks;
 
         public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
         {
@@ -328,6 +381,16 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         public void setEntities(Set<Class<? extends RawEntity<?>>> entities)
         {
             this.entities = entities;
+        }
+
+        public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
+        {
+            return upgradeTasks;
+        }
+
+        public void setUpgradeTasks(List<ActiveObjectsUpgradeTask> upgradeTasks)
+        {
+            this.upgradeTasks = upgradeTasks;
         }
 
         @Override

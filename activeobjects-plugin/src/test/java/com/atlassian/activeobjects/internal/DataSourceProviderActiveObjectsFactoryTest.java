@@ -31,6 +31,9 @@ public class DataSourceProviderActiveObjectsFactoryTest
     private ActiveObjectsFactory activeObjectsFactory;
 
     @Mock
+    private ActiveObjectUpgradeManager upgradeManager;
+
+    @Mock
     private DataSourceProvider dataSourceProvider;
 
     @Mock
@@ -45,7 +48,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Before
     public void setUp()
     {
-        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(entityManagerFactory, dataSourceProvider, transactionTemplate);
+        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate);
     }
 
     @After
