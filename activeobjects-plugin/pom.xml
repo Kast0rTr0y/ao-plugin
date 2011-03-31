@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
@@ -13,6 +14,13 @@
     <description>An OSGi bundle that provides a service that allows plugins to persist objects using the ActiveObjects
         framework
     </description>
+
+    <properties>
+        <db.skip>false</db.skip>
+        <mysql.version>5.1.13</mysql.version>
+        <postgres.version>8.4-701.jdbc3</postgres.version>
+        <oracle.version>10.2.0.4</oracle.version>
+    </properties>
 
     <build>
         <plugins>
@@ -337,7 +345,7 @@
             <properties>
                 <ao.test.database>mysql</ao.test.database>
                 <db.username>root</db.username>
-                <db.password />
+                <db.password/>
             </properties>
             <dependencies>
                 <dependency>
@@ -379,12 +387,60 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <!-- This is the release profile that maven will activate for us when releasing -->
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <attach>false</attach>
+                        </configuration>
+                    </plugin>
+                    <!-- we use the assembly plugin here, because of a not so common configuration -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>2.2</version>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/src.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sources</id>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>com.atlassian.activeobjects</groupId>
+                    <artifactId>activeobjects-core</artifactId>
+                    <version>${project.version}</version>
+                    <classifier>sources</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>com.atlassian.activeobjects</groupId>
+                    <artifactId>activeobjects-dbex</artifactId>
+                    <version>${project.version}</version>
+                    <classifier>sources</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>net.java.dev.activeobjects</groupId>
+                    <artifactId>activeobjects</artifactId>
+                    <version>${ao.version}</version>
+                    <classifier>sources</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
-
-    <properties>
-        <db.skip>false</db.skip>
-        <mysql.version>5.1.13</mysql.version>
-        <postgres.version>8.4-701.jdbc3</postgres.version>
-        <oracle.version>10.2.0.4</oracle.version>
-    </properties>
 </project>
