@@ -37,10 +37,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
-                        <Export-Package>
-                            com.atlassian.activeobjects.spi*;version="${project.version}",
-                        </Export-Package>
                         <Import-Package>
+                            com.atlassian.activeobjects.spi*,
                             com.atlassian.jira.configurator.config*,
                             com.atlassian.sal.api*,
                             com.google.common*,
@@ -67,6 +65,7 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
