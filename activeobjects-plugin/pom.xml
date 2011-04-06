@@ -428,7 +428,19 @@
                     <version>${ao.version}</version>
                     <classifier>sources</classifier>
                 </dependency>
+
+                <!-- using hsql for the release -->
+                <dependency>
+                    <groupId>hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>${hsqldb.version}</version>
+                </dependency>
             </dependencies>
+
+            <properties>
+                <ao.test.database>hsql</ao.test.database>
+                <db.skip>true</db.skip>
+            </properties>
         </profile>
     </profiles>
 </project>
