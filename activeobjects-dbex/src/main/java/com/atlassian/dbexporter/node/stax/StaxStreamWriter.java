@@ -3,6 +3,7 @@ package com.atlassian.dbexporter.node.stax;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
 import com.atlassian.dbexporter.node.ParseException;
+import javanet.staxutils.IndentingXMLStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -40,7 +41,7 @@ public final class StaxStreamWriter implements NodeStreamWriter
 
     public StaxStreamWriter(XMLStreamWriter writer, Charset charset, String nameSpaceUri)
     {
-        this.writer = checkNotNull(writer);
+        this.writer = new IndentingXMLStreamWriter(checkNotNull(writer));
         this.charset = checkNotNull(charset);
         this.nameSpaceUri = checkNotNull(nameSpaceUri);
     }

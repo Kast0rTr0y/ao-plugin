@@ -162,7 +162,6 @@ final class StaxUtils
 
     private static XMLInputFactory newXmlInputFactory(String name)
     {
-//        return XMLInputFactory.newFactory(name, XMLInputFactory.class.getClassLoader());
         return XMLInputFactory.newFactory(name, StaxUtils.class.getClassLoader());
     }
 
@@ -187,7 +186,6 @@ final class StaxUtils
 
     private static XMLOutputFactory newXmlOutputFactory(String name)
     {
-//        return XMLOutputFactory.newFactory(name, XMLOutputFactory.class.getClassLoader());
         return XMLOutputFactory.newFactory(name, StaxUtils.class.getClassLoader());
     }
 }

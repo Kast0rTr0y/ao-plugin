@@ -2,6 +2,7 @@ com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dca
 hsqldb:hsqldb:1.8.0.7:jar:-:test||{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
 log4j:log4j:1.2.15:jar:-:test||{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
+net.java.dev.stax-utils:stax-utils:20060502:jar:-:compile||{sha1}66fad5029732305ab7863c140eafd9de4972dd34|{sha1}0c12c708a62e2c8abef1832cbdcbd7213ec85411
 org.codehaus.woodstox:stax2-api:3.1.0:jar:-:test|org.codehaus.woodstox:woodstox-core-asl:jar:4.1.0|{sha1}e2bc096b64420aeeb7f2ee1554322701bf2b31e6|{sha1}e86fd4a17c54107dcf7386677ba5de7da4f4807b
 org.codehaus.woodstox:woodstox-core-asl:4.1.0:jar:-:test||{sha1}095ec20544f31bce1ea58ab3f876171afb7c0745|{sha1}9b072fb61cb221206cd8b53da2e8c91740baa6eb
 org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
