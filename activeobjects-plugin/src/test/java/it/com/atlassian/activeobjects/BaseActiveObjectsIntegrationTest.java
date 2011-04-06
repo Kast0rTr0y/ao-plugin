@@ -46,9 +46,7 @@ import org.junit.runner.RunWith;
                 "com.atlassian.activeobjects.spring*",
                 "com.atlassian.activeobjects.test*",
                 "com.atlassian.activeobjects.tx*",
-                "com.atlassian.activeobjects.util*",
-                "com.atlassian.activeobjects.web*",
-                "com.atlassian.plugin.web.springmvc*"
+                "com.atlassian.activeobjects.util*"
         },
         versions = {
                 @PackageVersion(value = "com.atlassian.activeobjects*", version = "100")

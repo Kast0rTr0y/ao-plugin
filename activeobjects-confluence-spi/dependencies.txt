@@ -122,7 +122,7 @@ org.slf4j:jul-to-slf4j:1.5.8:jar:-:provided|com.atlassian.confluence:confluence:
 org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
 org.slf4j:slf4j-log4j12:1.5.8:jar:-:test||{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084
 org.springframework:spring-aop:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}024239e9884e5ca3ba6015edeceb1849c827a31f|{sha1}b86e0fea3146eecf20ca53abd76c561404b4c371
-org.springframework:spring-beans:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}bb8c708326c5e75ba8e1460dd578273670bdce1a|{sha1}2efe08de49849786f66dfba98506f7b4674e7977
+org.springframework:spring-beans:2.5.6:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}449ea46b27426eb846611a90b2fb8b4dcf271191|{sha1}24ffcedb04c6c114d841de2b3bc6e75f7bac19ec
 org.springframework:spring-context:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}2a970102ddebbd40b9dbc5e3abea3131110486d8|{sha1}a0b07e5d157e063081344c1f2da10d9f31ad462d
 org.springframework:spring-core:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}c165bab1feab6feeb51ad38872338f72f9c069b8|{sha1}d2503399a71dab5dd1fa830ab7015afa07acd955
 org.springframework:spring-dao:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}23e31fc7fa5d152c1d70cf9110d58e5ff5931e3d|{sha1}569dd88a123930884c529c38fae813fe629bc8f2
