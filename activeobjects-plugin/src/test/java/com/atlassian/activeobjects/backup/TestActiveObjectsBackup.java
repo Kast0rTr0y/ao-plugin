@@ -99,14 +99,8 @@ public class TestActiveObjectsBackup
         aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8));
     }
 
-    private String strip(String xmlBackup)
-    {
-        return xmlBackup.replaceAll("\n", "");
-    }
-
     private void assertDataPresent()
     {
-//        model.migrateEntities();
         model.checkAuthors();
         model.checkBooks();
     }

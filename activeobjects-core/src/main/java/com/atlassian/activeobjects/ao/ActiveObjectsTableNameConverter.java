@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.ao;
 
 import com.atlassian.activeobjects.internal.Prefix;
 import net.java.ao.RawEntity;
+import net.java.ao.schema.Case;
 import net.java.ao.schema.TableAnnotationTableNameConverter;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.UnderscoreTableNameConverter;
@@ -9,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.*;
-import static net.java.ao.schema.UnderscoreTableNameConverter.*;
 
 /**
  * <p>This is the table name converter used by the Active Objects plugin. It works according to the following:
