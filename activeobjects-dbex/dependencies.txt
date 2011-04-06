@@ -1,9 +1,9 @@
 com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
 hsqldb:hsqldb:1.8.0.7:jar:-:test||{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
-junit:junit:4.8.2:jar:-:test||{sha1}c94f54227b08100974c36170dcb53329435fe5ad|{sha1}c9c2d21b75368533f8a5ec1fefa2633989e80294
-log4j:log4j:1.2.16:jar:-:test||{sha1}7999a63bfccbc7c247a9aea10d83d4272bd492c6|{sha1}88efb1b8d3d993fe339e9e2b201c75eed57d4c65
+junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
+log4j:log4j:1.2.15:jar:-:test||{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
 org.codehaus.woodstox:stax2-api:3.1.0:jar:-:test|org.codehaus.woodstox:woodstox-core-asl:jar:4.1.0|{sha1}e2bc096b64420aeeb7f2ee1554322701bf2b31e6|{sha1}e86fd4a17c54107dcf7386677ba5de7da4f4807b
 org.codehaus.woodstox:woodstox-core-asl:4.1.0:jar:-:test||{sha1}095ec20544f31bce1ea58ab3f876171afb7c0745|{sha1}9b072fb61cb221206cd8b53da2e8c91740baa6eb
-org.mockito:mockito-all:1.8.5:jar:-:test||{sha1}a927d8ae3b8d22eb745a74f94e59ce3882f2b524|{sha1}a65f9ab0dab3f36de1d25708a93a820593acae0f
-org.slf4j:slf4j-api:1.6.1:jar:-:provided||{sha1}6f3b8a24bf970f17289b234284c94f43eb42f0e4|{sha1}bd86aca3b3779fa5aa5e4442a5db2ebf4035365c
-org.slf4j:slf4j-log4j12:1.6.1:jar:-:test||{sha1}bd245d6746cdd4e6203e976e21d597a46f115802|{sha1}90507dc880d3b625b897e014301185e7b3f4fb64
+org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
+org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
+org.slf4j:slf4j-log4j12:1.5.8:jar:-:test||{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084

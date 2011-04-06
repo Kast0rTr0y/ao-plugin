@@ -46,7 +46,7 @@ com.atlassian.trackback:atlassian-trackback:0.11:jar:-:provided|com.atlassian.ji
 com.atlassian.util.concurrent:atlassian-util-concurrent:0.0.9:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}0c7a9dd8872c086e379950769b2f16790065c0e5|{sha1}010888ddbf4683a0d80b412844ceb66a5bd603f5
 com.atlassian.velocity:atlassian-velocity:0.8:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}7d2a6d255d44ab9435ba1169b5c9e5b74d3c576e|{sha1}44ab2fcc66aad0a31d0fa5d9a7c114e2acf458b3
 com.atlassian.webwork1:atlassian-webwork1:1.1:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}0ee1aee4f407881e02fdd52358ba0e4e86fd8a1c|{sha1}91dd5c3c2dc4de422cf084f0559f6f7e61de424f
-com.google.collections:google-collections:1.0:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
+com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
 com.octo.captcha:jcaptcha-all:1.0-RC6:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}e5b45faa7b839d0bed26c3ca0e3ec6b15ea0dacc|{sha1}6176733c00e9ebd9ddf2f058225cb932d9b3757f
 com.yahoo:yuicompressor:2.4.2:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}361885590a30bb9663a4aa528e2c1b72a8579fa1|{sha1}93297abd05c4b8578e354b3f2453953fcfb6a590
 commons-attributes:commons-attributes-api:2.1:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,com.atlassian.crowd:crowd-integration-client:jar:2.0.4,org.codehaus.xfire:xfire-java5:jar:1.2.6,org.codehaus.xfire:xfire-annotations:jar:1.2.6|{sha1}bd9c2942a1d3e7ed4dd142953bc6c1309697fab0|{sha1}8bbf837cff6ae0b8a80065484ec1e0c5a37181e2
@@ -100,7 +100,7 @@ jta:jta:1.0.1:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}5
 jtidy:jtidy:r8-20050104:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}b9981583e29a66b92add3c0922544f6289ff06b4|{sha1}6f33cbe96dd51ab7e2942c9c70e0e94c7a4e3ece
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
 jzlib:jzlib:1.0.5:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}d950b77062bac936ca3978693f8a246fe13b059f|{sha1}d762dcd8cd89aa2d0f159a6efc42eab0b664d617
-log4j:log4j:1.2.15:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
+log4j:log4j:1.2.15:jar:-:test||{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
 mockobjects:alt-jdk1.3:0.07:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}e0ccaefe30138936590d45d7fe4deb740c5065b8|{sha1}64108a82ba3bec89ccf9b0aa36a2bfa46f9bec6c
 mockobjects:mockobjects-alt-jdk1.3-j2ee1.3:0.09:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,com.atlassian.mail:atlassian-mail:jar:1.16|{sha1}5755dbace4f5ba43aac0309bf85a7ee8a144b192|{sha1}292b283ecc1346fe34896eeb4018bdc7c1970811
 mysql:mysql-connector-java:5.1.10:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}b83574124f1a00d6f70d56ba64aa52b8e1588e6d|{sha1}888501615d2cba4b3cf52c117fdc4bd06dd56509
@@ -134,8 +134,8 @@ org.ofbiz:ofbcore-jira-service:2.1.6:jar:-:provided|com.atlassian.jira:atlassian
 org.ofbiz:ofbcore-jira-share:2.1.6:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}3c6b99e35a383ae603e506597e52c9ebe90b750d|{sha1}51a30a8c63d9baf032d1a087df040c8f879ec37e
 org.slf4j:jcl-over-slf4j:1.5.8:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}ab78d75b7ae41770779502cc81ee4bf9c8fac6aa|{sha1}5297efcbd827285a2f39ed621d61cb8c66dbf5b8
 org.slf4j:jul-to-slf4j:1.5.8:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}f852f8a1a93e4965f0cc873e75546146d0ca62fd|{sha1}c2f80cdde6dd17dfcff00947ca080ee74b546af1
-org.slf4j:slf4j-api:1.5.8:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
-org.slf4j:slf4j-log4j12:1.5.8:jar:-:test|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084
+org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
+org.slf4j:slf4j-log4j12:1.5.8:jar:-:test||{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084
 org.springframework:spring:2.0:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,com.octo.captcha:jcaptcha-all:jar:1.0-RC6|{sha1}caae7ad0758a7fc35d6f45f990c49fa2030bbb09|{sha1}8a25bfe62853b451f77814759a110853f7ce371f
 org.tuckey:urlrewrite:2.5.2:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2|{sha1}aeb2a11a1e18adc10f9e2f03f56c76c86147b09b|{sha1}65976ea39152cefbf13123e56a5e4da4ce52ffa0
 org.twdata.pkgscanner:package-scanner:0.8.0:jar:-:provided|com.atlassian.jira:atlassian-jira:jar:4.1.2,com.atlassian.plugins:atlassian-plugins-osgi:jar:2.4.4|{sha1}48b4e84c41453f066b9d37957da34a4ece7ce2eb|{sha1}76b975926ff9351bdabf960c5db9b7148f769c5d

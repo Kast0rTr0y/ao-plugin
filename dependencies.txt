@@ -1,2 +1,6 @@
+com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
+log4j:log4j:1.2.15:jar:-:test||{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
 org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
+org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
+org.slf4j:slf4j-log4j12:1.5.8:jar:-:test||{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084

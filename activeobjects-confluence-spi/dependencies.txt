@@ -47,7 +47,7 @@ com.atlassian.util.concurrent:atlassian-util-concurrent:0.0.12:jar:-:provided|co
 com.atlassian.velocity:atlassian-velocity:0.7:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}a7a119c1cde375363c85fec5bac1d868d59a64e9|{sha1}1f950e3a596ed5271802bdf92236883f50cb0b9a
 com.atlassian.xwork:atlassian-xwork-10:1.10:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}9be00f40b383a3037e9e5bceb389a44b524575e4|{sha1}06ab1c1a9da1f697aa3351d69799311435d988c7
 com.atlassian.xwork:atlassian-xwork-core:1.10:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}0b094abf7b5451d82a86d2b42c9acfffb2876226|{sha1}5e630ad820a66417943c8dfc752583c3c248b9d1
-com.google.collections:google-collections:1.0:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2,com.atlassian.event:atlassian-event:jar:2.0.3|{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
+com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
 com.ibm.icu:icu4j:3.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2,com.atlassian.bonnie:atlassian-bonnie:jar:3.4.1|{sha1}54c81360fae4c3300b2ee648b894f4f7c4eb618e|{sha1}e61cd86a8ce48716009d6c2e27c66cb334286986
 com.octo.captcha:jcaptcha-all:1.0-RC6:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}e5b45faa7b839d0bed26c3ca0e3ec6b15ea0dacc|{sha1}6176733c00e9ebd9ddf2f058225cb932d9b3757f
 com.thoughtworks.xstream:xstream:1.1.1:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}e7b8033bdb443c9193279b3a02121a62537385ee|{sha1}8e5ded5d8016f9f3aba7a3f77f2a951df8d2dcb2
@@ -78,7 +78,7 @@ jfree:jcommon:1.0.0:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m
 jfree:jfreechart:1.0.0:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}7776a5e3f555643720415a47e022daac9cca32b1|{sha1}3a6bb6ad03e1ca61b8be7e96ac548bfee59a36ec
 joda-time:joda-time:1.6:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}5a18504e34c5cbe9259d6fd0123ccf6f16115a41|{sha1}b10bf4bb1fe8be2a1d7a7292c20c9cfb2a551f04
 junit:junit:4.8.1:jar:-:test||{sha1}f2975548f836416306ef1dee748d956f04733915|{sha1}86660f9d61b8550c40850922c9053b37e486c48c
-log4j:log4j:1.2.15:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
+log4j:log4j:1.2.15:jar:-:test||{sha1}f0a0d2e29ed910808c33135a3a5a51bba6358f7b|{sha1}1483490805e8f86c21240958629905e733d079eb
 mockobjects:alt-jdk1.3:0.07:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2,com.atlassian.core:atlassian-core:jar:4.5.5|{sha1}e0ccaefe30138936590d45d7fe4deb740c5065b8|{sha1}64108a82ba3bec89ccf9b0aa36a2bfa46f9bec6c
 mockobjects:mockobjects-alt-jdk1.3-j2ee1.3:0.09:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2,com.atlassian.mail:atlassian-mail:jar:1.16|{sha1}5755dbace4f5ba43aac0309bf85a7ee8a144b192|{sha1}292b283ecc1346fe34896eeb4018bdc7c1970811
 net.java.dev.stax-utils:stax-utils:20040917:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2,org.codehaus.xfire:xfire-aegis:jar:1.2.6|{sha1}c027f388675ff67f1c46eeb7d37fcb8ab568192a|{sha1}2403f368a05f76a53b0865031c07a35325df820c
@@ -119,8 +119,8 @@ org.hibernate:jtidy:r8-20060801:jar:-:provided|com.atlassian.confluence:confluen
 org.mockito:mockito-all:1.8.4:jar:-:test||{sha1}5c97d8b6e715ed941aeb93d6fc401ab3eb18a566|{sha1}a140d5bc4c602005a02d3433e149e878d9ffb5bb
 org.quartz-scheduler:quartz:1.8.0:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}20dd7415702585ee0b46ea63bcaee7541af70992|{sha1}dabe0f6123c200945ce7325e193a9fd9ad3f9f2f
 org.slf4j:jul-to-slf4j:1.5.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}f852f8a1a93e4965f0cc873e75546146d0ca62fd|{sha1}c2f80cdde6dd17dfcff00947ca080ee74b546af1
-org.slf4j:slf4j-api:1.5.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
-org.slf4j:slf4j-log4j12:1.5.8:jar:-:test|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084
+org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
+org.slf4j:slf4j-log4j12:1.5.8:jar:-:test||{sha1}da00a151c4db31b5be23e5f2b9f528735fddc384|{sha1}9f4c6ad50d3d826dc220b138a4e8f1b594dbb084
 org.springframework:spring-aop:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}024239e9884e5ca3ba6015edeceb1849c827a31f|{sha1}b86e0fea3146eecf20ca53abd76c561404b4c371
 org.springframework:spring-beans:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}bb8c708326c5e75ba8e1460dd578273670bdce1a|{sha1}2efe08de49849786f66dfba98506f7b4674e7977
 org.springframework:spring-context:2.0.8:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}2a970102ddebbd40b9dbc5e3abea3131110486d8|{sha1}a0b07e5d157e063081344c1f2da10d9f31ad462d
