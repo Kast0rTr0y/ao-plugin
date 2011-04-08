@@ -2,6 +2,8 @@ package com.atlassian.activeobjects.testplugin;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.Backup;
+import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
+import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
 
 import javax.servlet.ServletException;
@@ -15,7 +17,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
 import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.newArrayList;
 
 public class BackupTestServlet extends HttpServlet
 {
@@ -43,7 +44,7 @@ public class BackupTestServlet extends HttpServlet
         resp.setContentType("application/json");
         final OutputStream os = resp.getOutputStream();
 
-        backup.save(os);
+        backup.save(os, NullBackupProgressMonitor.INSTANCE);
 
         os.flush();
         os.close();
@@ -52,7 +53,7 @@ public class BackupTestServlet extends HttpServlet
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
-        backup.restore(newInputStream(req.getParameter(BACKUP)));
+        backup.restore(newInputStream(req.getParameter(BACKUP)), NullRestoreProgressMonitor.INSTANCE);
     }
 
     private InputStream newInputStream(String backupString)

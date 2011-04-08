@@ -3,12 +3,13 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.node.NodeParser;
-import com.atlassian.dbexporter.progress.Update;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 
 import java.util.Map;
 
 import static com.atlassian.dbexporter.importer.ImporterUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
+import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Maps.*;
 
@@ -29,12 +30,14 @@ public final class DatabaseInformationImporter extends AbstractSingleNodeImporte
     @Override
     protected void doImportNode(NodeParser node, ImportConfiguration configuration, Context context)
     {
+        final ProgressMonitor monitor = configuration.getProgressMonitor();
+        monitor.begin(Task.DATABASE_INFORMATION);
+
         final DatabaseInformation info = doImportDatabaseInformation(node);
-
-        configuration.getProgressMonitor().update(new Update("Checking schema version"));
         infoChecker.check(info);
-
         context.put(info);
+
+        monitor.end(Task.DATABASE_INFORMATION);
     }
 
     private DatabaseInformation doImportDatabaseInformation(NodeParser node)

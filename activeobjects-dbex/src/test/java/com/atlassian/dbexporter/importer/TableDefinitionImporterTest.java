@@ -77,7 +77,7 @@ public class TableDefinitionImporterTest
     private List<Table> verifyTables()
     {
         final ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
-        verify(tableCreator).create(argument.capture(), Matchers.<EntityNameProcessor>any());
+        verify(tableCreator).create(argument.capture(), Matchers.<EntityNameProcessor>any(), Matchers.<ProgressMonitor>any());
         return argument.getValue();
     }
 

@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
+import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
@@ -38,7 +39,7 @@ public final class CreateBackup
         model.createData();
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ActiveObjectsBackup(entityManager.getProvider()).save(stream);
+        new ActiveObjectsBackup(entityManager.getProvider()).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }

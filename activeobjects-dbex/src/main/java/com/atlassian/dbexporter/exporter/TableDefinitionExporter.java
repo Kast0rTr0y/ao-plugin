@@ -5,9 +5,11 @@ import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.node.NodeCreator;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 
 import static com.atlassian.dbexporter.node.NodeBackup.*;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
+import static com.google.common.base.Preconditions.*;
 
 public final class TableDefinitionExporter implements Exporter
 {
@@ -21,10 +23,17 @@ public final class TableDefinitionExporter implements Exporter
     @Override
     public void export(NodeCreator node, ExportConfiguration configuration, Context context)
     {
+        final ProgressMonitor monitor = configuration.getProgressMonitor();
+        monitor.begin(Task.TABLE_DEFINITION);
+
+        int tableCount = 0;
         for (Table table : tableReader.read(configuration.getEntityNameProcessor()))
         {
             export(node, table);
+            tableCount++;
         }
+        monitor.end(Task.TABLE_DEFINITION);
+        monitor.totalNumberOfTables(tableCount);
     }
 
     private void export(NodeCreator node, Table table)

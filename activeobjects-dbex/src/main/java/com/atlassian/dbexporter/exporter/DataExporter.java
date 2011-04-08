@@ -7,8 +7,6 @@ import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.node.ParseException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.atlassian.dbexporter.progress.Update;
-import com.atlassian.dbexporter.progress.Warning;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -18,13 +16,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
+import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Maps.*;
 
 public final class DataExporter implements Exporter
 {
@@ -38,6 +35,8 @@ public final class DataExporter implements Exporter
     @Override
     public void export(final NodeCreator node, final ExportConfiguration configuration, final Context context)
     {
+        final ProgressMonitor monitor = configuration.getProgressMonitor();
+        monitor.begin(Task.TABLES_DATA);
         withConnection(configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
         {
             public Void call(Connection connection)
@@ -45,19 +44,11 @@ public final class DataExporter implements Exporter
                 try
                 {
                     final Set<String> allTables = getTableNames(connection);
-                    final ProgressMonitor progressMonitor = configuration.getProgressMonitor();
-                    final DataExporterMonitor monitor = new DataExporterMonitor(progressMonitor, allTables.size());
-                    final ConstraintsChecker constraintsChecker = new ConstraintsChecker(progressMonitor, connection.getMetaData().getDatabaseProductName());
-
-                    monitor.start();
                     for (String table : allTables)
                     {
-                        exportTable(table, connection, node, monitor, constraintsChecker, configuration.getEntityNameProcessor());
+                        exportTable(table, connection, node, monitor, configuration.getEntityNameProcessor());
                     }
-                    node.closeEntity(); // TODO weird ??
-
-                    monitor.end();
-                    constraintsChecker.check();
+                    node.closeEntity();
                 }
                 catch (SQLException e)
                 {
@@ -66,9 +57,14 @@ public final class DataExporter implements Exporter
                 return null;
             }
         });
+        monitor.end(Task.TABLES_DATA);
     }
 
-    /** Returns the names of the tables that must be included in the export. */
+    /**
+     * Returns the names of the tables that must be included in the export.
+     *
+     * @param connection the sql connection
+     */
     private Set<String> getTableNames(Connection connection) throws SQLException
     {
         final Set<String> tables = new HashSet<String>();
@@ -91,10 +87,9 @@ public final class DataExporter implements Exporter
         }
     }
 
-    private NodeCreator exportTable(String table, Connection connection, NodeCreator node, DataExporterMonitor monitor, ConstraintsChecker constraintsChecker, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException
+    private NodeCreator exportTable(String table, Connection connection, NodeCreator node, ProgressMonitor monitor, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException
     {
-        monitor.startTable(table);
-
+        monitor.begin(Task.TABLE_DATA, entityNameProcessor.tableName(table));
         TableDataNode.add(node, entityNameProcessor.tableName(table));
 
         Statement statement = connection.createStatement();
@@ -110,7 +105,7 @@ public final class DataExporter implements Exporter
 
             while (result.next())
             {
-                node = exportRow(node, result, monitor, constraintsChecker);
+                node = exportRow(node, result, monitor);
             }
         }
         finally
@@ -118,12 +113,13 @@ public final class DataExporter implements Exporter
             closeQuietly(result, statement);
         }
 
-        monitor.endTable(table);
+        monitor.end(Task.TABLE_DATA, entityNameProcessor.tableName(table));
         return node.closeEntity();
     }
 
-    private NodeCreator exportRow(NodeCreator node, ResultSet result, DataExporterMonitor monitor, ConstraintsChecker constraintsChecker) throws ParseException, SQLException
+    private NodeCreator exportRow(NodeCreator node, ResultSet result, ProgressMonitor monitor) throws ParseException, SQLException
     {
+        monitor.begin(Task.TABLE_ROW);
         final ResultSetMetaData metaData = result.getMetaData();
         final int columns = metaData.getColumnCount();
 
@@ -149,9 +145,7 @@ public final class DataExporter implements Exporter
                     break;
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
-                    final String value = result.getString(col);
-                    constraintsChecker.checkVarchar(value, metaData.getColumnDisplaySize(col), metaData.getTableName(col), metaData.getColumnName(col), result.getRow());
-                    RowDataNode.append(node, value);
+                    RowDataNode.append(node, result.getString(col));
                     break;
 
                 case Types.BOOLEAN:
@@ -175,7 +169,7 @@ public final class DataExporter implements Exporter
             }
         }
 
-        monitor.row();
+        monitor.end(Task.TABLE_ROW);
         return node.closeEntity();
     }
 
@@ -197,83 +191,5 @@ public final class DataExporter implements Exporter
             ColumnDataNode.add(node, columnName).closeEntity();
         }
         return node;
-    }
-
-    private static final class DataExporterMonitor
-    {
-        private final ProgressMonitor monitor;
-        private final int totalTables;
-
-        private String currentTable = "<none>";
-        private final Map<String, Integer> exportedRows;
-
-        public DataExporterMonitor(ProgressMonitor monitor, int totalTables)
-        {
-            this.monitor = checkNotNull(monitor);
-            this.totalTables = totalTables;
-            this.exportedRows = newHashMap();
-        }
-
-        public void start()
-        {
-            monitor.update(Update.from("Starting export of data for %s tables", totalTables));
-        }
-
-        public void end()
-        {
-            monitor.update(Update.from("Exported data for %s tables", totalTables));
-        }
-
-        public void startTable(String tableName)
-        {
-            monitor.update(Update.from("Starting data export for table %s", tableName));
-            exportedRows.put(tableName, 0);
-            currentTable = tableName;
-        }
-
-        public void endTable(String tableName)
-        {
-            monitor.update(Update.from("Exported %s rows for table %s", exportedRows.get(tableName), tableName));
-        }
-
-        public void row()
-        {
-            exportedRows.put(currentTable, exportedRows.get(currentTable) + 1);
-        }
-    }
-
-    private static final class ConstraintsChecker
-    {
-        private final ProgressMonitor monitor;
-        private final String databaseProductName;
-        private long constraintViolations = 0L;
-
-        public ConstraintsChecker(ProgressMonitor monitor, String databaseProductName)
-        {
-            this.monitor = checkNotNull(monitor);
-            this.databaseProductName = checkNotNull(databaseProductName);
-        }
-
-        public void checkVarchar(String value, double columnDisplaySize, String tableName, String columnName, int row)
-        {
-            if (value != null && value.length() > columnDisplaySize)
-            {
-                monitor.update(Update.from(
-                        "Warning: %s:%d (table:row), value for column %s (%d chars) exceeds max length (%d chars).",
-                        tableName, row, columnName, value.length(), columnDisplaySize));
-                constraintViolations++;
-            }
-        }
-
-        public void check()
-        {
-            if (constraintViolations > 0L)
-            {
-                monitor.update(Warning.from("Warning: %d database " +
-                        "records had constraint violations. This backup may not " +
-                        "work if you migrate to a database product other than %s.",
-                        constraintViolations, databaseProductName));
-            }
-        }
     }
 }

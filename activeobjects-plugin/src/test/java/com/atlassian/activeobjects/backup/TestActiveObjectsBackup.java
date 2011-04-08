@@ -1,6 +1,8 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
+import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
+import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
 import net.java.ao.EntityManager;
 import net.java.ao.test.NameConverters;
@@ -83,7 +85,7 @@ public class TestActiveObjectsBackup
     private String save()
     {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        aoBackup.save(os);
+        aoBackup.save(os, NullBackupProgressMonitor.INSTANCE);
         try
         {
             return os.toString(UTF_8);
@@ -96,7 +98,7 @@ public class TestActiveObjectsBackup
 
     private void restore(String xmlBackup) throws IOException
     {
-        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8));
+        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE);
     }
 
     private void assertDataPresent()

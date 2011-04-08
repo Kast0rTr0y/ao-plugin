@@ -36,11 +36,16 @@ public final class DbExporter
 
     public void exportData(NodeStreamWriter streamWriter, ExportConfiguration configuration)
     {
+        final ProgressMonitor monitor = configuration.getProgressMonitor();
+        monitor.begin();
+
         final NodeCreator node = RootNode.add(streamWriter);
         final Context context = new Context();
         for (Exporter exporter : exporters)
         {
             exporter.export(node, configuration, context);
         }
+
+        monitor.end();
     }
 }

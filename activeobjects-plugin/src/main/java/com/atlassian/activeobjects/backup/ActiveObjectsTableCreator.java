@@ -5,6 +5,7 @@ import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
@@ -31,7 +32,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         this.provider = checkNotNull(provider);
     }
 
-    public void create(Iterable<Table> tables, EntityNameProcessor entityNameProcessor)
+    public void create(Iterable<Table> tables, EntityNameProcessor entityNameProcessor, ProgressMonitor monitor)
     {
         Connection conn = null;
         Statement stmt = null;
@@ -42,20 +43,9 @@ final class ActiveObjectsTableCreator implements TableCreator
 
             for (Table table : tables)
             {
-                final DDLAction a = new DDLAction(DDLActionType.CREATE);
-                a.setTable(toDdlTable(table, entityNameProcessor));
-                final String[] sqlStatements = provider.renderAction(a);
-                for (String sql : sqlStatements)
-                {
-                    try
-                    {
-                        stmt.executeUpdate(sql);
-                    }
-                    catch (SQLException e)
-                    {
-                        throw new SqlRuntimeException(e);
-                    }
-                }
+                monitor.begin(ProgressMonitor.Task.TABLE_CREATION, entityNameProcessor.tableName(table.getName()));
+                create(stmt, table, entityNameProcessor);
+                monitor.end(ProgressMonitor.Task.TABLE_CREATION, entityNameProcessor.tableName(table.getName()));
             }
         }
         catch (SQLException e)
@@ -66,6 +56,24 @@ final class ActiveObjectsTableCreator implements TableCreator
         {
             closeQuietly(stmt);
             closeQuietly(conn);
+        }
+    }
+
+    private void create(Statement stmt, Table table, EntityNameProcessor entityNameProcessor)
+    {
+        final DDLAction a = new DDLAction(DDLActionType.CREATE);
+        a.setTable(toDdlTable(table, entityNameProcessor));
+        final String[] sqlStatements = provider.renderAction(a);
+        for (String sql : sqlStatements)
+        {
+            try
+            {
+                stmt.executeUpdate(sql);
+            }
+            catch (SQLException e)
+            {
+                throw new SqlRuntimeException(e);
+            }
         }
     }
 

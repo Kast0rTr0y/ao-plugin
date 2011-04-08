@@ -7,7 +7,7 @@ import com.atlassian.dbexporter.jdbc.JdbcUtils;
 import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.ParseException;
-import com.atlassian.dbexporter.progress.Update;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.google.common.collect.Maps;
 
 import java.math.BigDecimal;
@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
+import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
 
@@ -50,6 +51,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
     @Override
     protected void doImportNode(final NodeParser node, final ImportConfiguration configuration, final Context context)
     {
+        final ProgressMonitor monitor = configuration.getProgressMonitor();
+        monitor.begin(Task.TABLES_DATA);
         withConnection(configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
         {
             public Void call(Connection connection)
@@ -78,15 +81,20 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 return null;
             }
         });
+        monitor.end(Task.TABLES_DATA);
     }
 
     private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Connection connection) throws ParseException, SQLException
     {
+        final ProgressMonitor monitor = configuration.getProgressMonitor();
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
 
         long rowNum = 0L;
 
         final String currentTable = entityNameProcessor.tableName(TableDataNode.getName(node));
+
+        monitor.begin(Task.TABLE_DATA, currentTable);
+
         final InserterBuilder builder = new InserterBuilder(currentTable, configuration.getBatchMode());
 
         node = node.getNextNode();
@@ -100,29 +108,24 @@ public final class DataImporter extends AbstractSingleNodeImporter
         final Inserter inserter = builder.build(connection);
         try
         {
-            try
+            for (; RowDataNode.NAME.equals(node.getName()) && !node.isClosed(); node = node.getNextNode())
             {
-                for (; RowDataNode.NAME.equals(node.getName()) && !node.isClosed(); node = node.getNextNode())
+                node = node.getNextNode();  // read the first field node
+                for (; !node.isClosed(); node = node.getNextNode())
                 {
-                    node = node.getNextNode();  // read the first field node
-                    for (; !node.isClosed(); node = node.getNextNode())
-                    {
-                        inserter.setValue(node);
-                    }
-                    inserter.execute();
-                    rowNum++;
+                    inserter.setValue(node);
                 }
-            }
-            finally
-            {
-                inserter.close();
+                inserter.execute();
+                rowNum++;
             }
         }
-        catch (SQLException se)
+        finally
         {
-            configuration.getProgressMonitor().update(Update.from("Database error at %s:%d (table:row) of the input: %s", currentTable, rowNum, se.getMessage()));
-            throw se;
+            inserter.close();
         }
+
+        monitor.end(Task.TABLE_DATA, currentTable);
+
         return node;
     }
 
@@ -198,7 +201,13 @@ public final class DataImporter extends AbstractSingleNodeImporter
                     new ImmediateInserter(getTable(), columns, ps, maxColumnSizes);
         }
 
-        /** Get the column size for all columns in the table -- only the sizes for String columns will be used */
+        /**
+         * Get the column size for all columns in the table -- only the sizes for String columns will be used
+         * @param connection
+         * @param columns
+         * @return
+         * @throws java.sql.SQLException
+         */
         private List<Integer> calculateColumnSizes(Connection connection, List<String> columns) throws SQLException
         {
             Map<String, Integer> columnSizeMap = Maps.newHashMap();
@@ -278,19 +287,11 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 {
                     String oldValue = value;
                     value = oldValue.substring(0, maxSize);
-                    String message = "Truncating value of column " + getTableName() + "." + getColumnName(col) +
-                            " from '" + oldValue + "' to '" + value + "' because its length of "
-                            + oldValue.length() + " is greater than the maximum allowed length for this column of " + maxSize + ".";
-//                        logger.warning(message);
-//                        monitor.(new Update(message)); TODO
+
+                    // TODO warning or something
                 }
                 ps.setString(col, value);
             }
-        }
-
-        private String getColumnName(int col)
-        {
-            return columnNames.get(col - 1);
         }
 
         private void setDate(Date value) throws SQLException

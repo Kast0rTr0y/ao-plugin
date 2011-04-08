@@ -5,7 +5,9 @@ import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.spi.Backup;
+import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.RestoreProgressMonitor;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.DatabaseInformation;
@@ -27,12 +29,9 @@ import com.atlassian.dbexporter.node.NodeStreamWriter;
 import com.atlassian.dbexporter.node.stax.StaxStreamReader;
 import com.atlassian.dbexporter.node.stax.StaxStreamWriter;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.atlassian.dbexporter.progress.Slf4jProgressMonitor;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import net.java.ao.DatabaseProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -52,7 +51,6 @@ public final class ActiveObjectsBackup implements Backup
     private static final Charset CHARSET = Charset.forName("UTF-8");
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Supplier<DatabaseProvider> databaseProviderSupplier;
 
     public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider)
@@ -77,12 +75,11 @@ public final class ActiveObjectsBackup implements Backup
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
     }
 
-    public void save(OutputStream stream)
+    public void save(OutputStream stream, BackupProgressMonitor monitor)
     {
         final DatabaseProvider provider = databaseProviderSupplier.get();
         final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider(provider);
-        final ProgressMonitor progressMonitor = getProgressMonitor();
-        final ExportConfiguration configuration = new ActiveObjectsExportConfiguration(connectionProvider, progressMonitor);
+        final ExportConfiguration configuration = new ActiveObjectsExportConfiguration(connectionProvider, getProgressMonitor(monitor));
 
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
@@ -103,15 +100,14 @@ public final class ActiveObjectsBackup implements Backup
         }
     }
 
-    public void restore(InputStream stream)
+    public void restore(InputStream stream, RestoreProgressMonitor monitor)
     {
         final DatabaseProvider provider = databaseProviderSupplier.get();
         final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider(provider);
 
-        final ProgressMonitor progressMonitor = getProgressMonitor();
         final DatabaseInformation databaseInformation = getDatabaseInformation(connectionProvider);
 
-        final ImportConfiguration configuration = new ActiveObjectsImportConfiguration(connectionProvider, progressMonitor, databaseInformation);
+        final ImportConfiguration configuration = new ActiveObjectsImportConfiguration(connectionProvider, getProgressMonitor(monitor), databaseInformation);
 
         final DbImporter dbImporter = new DbImporter(
                 new DatabaseInformationImporter(),
@@ -143,9 +139,14 @@ public final class ActiveObjectsBackup implements Backup
         return new DatabaseProviderConnectionProvider(provider);
     }
 
-    private ProgressMonitor getProgressMonitor()
+    private ProgressMonitor getProgressMonitor(BackupProgressMonitor backupProgressMonitor)
     {
-        return new Slf4jProgressMonitor(logger);
+        return new ActiveObjectsBackupProgressMonitor(backupProgressMonitor);
+    }
+
+    private ProgressMonitor getProgressMonitor(RestoreProgressMonitor restoreProgressMonitor)
+    {
+        return new ActiveObjectsRestoreProgressMonitor(restoreProgressMonitor);
     }
 
     private static void closeCloseable(Closeable streamWriter)
