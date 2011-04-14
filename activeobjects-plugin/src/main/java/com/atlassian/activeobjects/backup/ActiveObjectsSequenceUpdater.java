@@ -1,6 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import net.java.ao.DatabaseProvider;
 
 import java.sql.Connection;
@@ -31,15 +31,15 @@ final class ActiveObjectsSequenceUpdater implements SequenceUpdater
             connection = provider.getConnection();
             maxStmt = connection.createStatement();
 
-            final ResultSet res = maxStmt.executeQuery(maxSql(connection, tableName, columnName));
-            final int max = res.next() ? res.getInt(1) : 1;
+            final ResultSet res = executeQuery(maxStmt, maxSql(connection, tableName, columnName));
 
+            final int max = getIntFromResultSet(res);
             alterSeqStmt = connection.createStatement();
-            alterSeqStmt.executeUpdate(alterSequenceSql(connection, tableName, columnName, max + 1));
+            executeUpdate(alterSeqStmt, alterSequenceSql(connection, tableName, columnName, max + 1));
         }
         catch (SQLException e)
         {
-            throw new SqlRuntimeException(e);
+            throw new ImportExportSqlException(e);
         }
         finally
         {
@@ -48,7 +48,7 @@ final class ActiveObjectsSequenceUpdater implements SequenceUpdater
         }
     }
 
-    private String alterSequenceSql(Connection connection, String tableName, String columnName, int val) throws SQLException
+    private String alterSequenceSql(Connection connection, String tableName, String columnName, int val)
     {
         return "ALTER SEQUENCE " + quote(connection, sequenceName(tableName, columnName)) + " RESTART WITH " + val;
     }
@@ -58,8 +58,44 @@ final class ActiveObjectsSequenceUpdater implements SequenceUpdater
         return tableName + "_" + columnName + "_" + "seq";
     }
 
-    private String maxSql(Connection connection, String tableName, String columnName) throws SQLException
+    private String maxSql(Connection connection, String tableName, String columnName)
     {
         return "SELECT MAX(" + quote(connection, columnName) + ") FROM " + quote(connection, tableName);
+    }
+
+    private static int getIntFromResultSet(ResultSet res)
+    {
+        try
+        {
+            return res.next() ? res.getInt(1) : 1;
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Error getting int value from result set.", e);
+        }
+    }
+
+    private static ResultSet executeQuery(Statement s, String sql)
+    {
+        try
+        {
+            return s.executeQuery(sql);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Error executing query for SQL statement '" + sql + "'", e);
+        }
+    }
+
+    private static void executeUpdate(Statement s, String sql)
+    {
+        try
+        {
+            s.executeUpdate(sql);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Error executing update for SQL statement '" + sql + "'", e);
+        }
     }
 }

@@ -2,9 +2,10 @@ package com.atlassian.dbexporter;
 
 import com.atlassian.dbexporter.exporter.ExportConfiguration;
 import com.atlassian.dbexporter.exporter.Exporter;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 
 import java.util.List;
 
@@ -34,6 +35,15 @@ public final class DbExporter
         this.exporters = exporters;
     }
 
+    /**
+     * Imports the XML document read from the stream
+     *
+     * @param streamWriter the stream to write the XML to
+     * @param configuration the export configuration
+     * @throws ImportExportException or one of its sub-types if an unexpected exception happens during the import.
+     * Note that {@link ImportExportSqlException} is the main sub-type of exception likely to be thrown whenever an
+     * underlying {@link java.sql.SQLException} is thrown within one of the specific {@link Exporter}.
+     */
     public void exportData(NodeStreamWriter streamWriter, ExportConfiguration configuration)
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import static com.atlassian.dbexporter.importer.ImporterUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
+import static com.atlassian.dbexporter.node.NodeBackup.DatabaseInformationNode.*;
 import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Maps.*;
@@ -61,7 +62,7 @@ public final class DatabaseInformationImporter extends AbstractSingleNodeImporte
     private void doImportMeta(NodeParser node, Map<String, String> meta)
     {
         checkStartNode(node, DatabaseInformationNode.META);
-        meta.put(DatabaseInformationNode.getMetaKey(node), DatabaseInformationNode.getMetaValue(node));
+        meta.put(getMetaKey(node), getMetaValue(node));
         checkEndNode(node.getNextNode(), DatabaseInformationNode.META);
         node.getNextNode(); // go to next node
     }

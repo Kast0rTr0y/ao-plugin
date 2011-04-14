@@ -2,10 +2,10 @@ package com.atlassian.dbexporter.exporter;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.ImportExportException;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
 import com.atlassian.dbexporter.node.NodeCreator;
-import com.atlassian.dbexporter.node.ParseException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 
 import java.math.BigDecimal;
@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,19 +42,11 @@ public final class DataExporter implements Exporter
         {
             public Void call(Connection connection)
             {
-                try
+                for (String table : getTableNames(connection))
                 {
-                    final Set<String> allTables = getTableNames(connection);
-                    for (String table : allTables)
-                    {
-                        exportTable(table, connection, node, monitor, configuration.getEntityNameProcessor());
-                    }
-                    node.closeEntity();
+                    exportTable(table, connection, node, monitor, configuration.getEntityNameProcessor());
                 }
-                catch (SQLException e)
-                {
-                    throw new SqlRuntimeException(e);
-                }
+                node.closeEntity();
                 return null;
             }
         });
@@ -64,21 +57,25 @@ public final class DataExporter implements Exporter
      * Returns the names of the tables that must be included in the export.
      *
      * @param connection the sql connection
+     * @return the table names
      */
-    private Set<String> getTableNames(Connection connection) throws SQLException
+    private Set<String> getTableNames(Connection connection)
     {
         final Set<String> tables = new HashSet<String>();
-        ResultSet result = connection.getMetaData().getTables(null, null, "%", new String[]{"TABLE"});
+        ResultSet result = getTablesResultSet(connection);
         try
         {
-            while (result.next())
+            String tableName;
+            do
             {
-                final String tableName = result.getString("TABLE_NAME");
+                tableName = tableName(result);
                 if (tableSelector.accept(tableName))
                 {
                     tables.add(tableName);
                 }
             }
+            while (tableName != null);
+
             return tables;
         }
         finally
@@ -87,23 +84,21 @@ public final class DataExporter implements Exporter
         }
     }
 
-    private NodeCreator exportTable(String table, Connection connection, NodeCreator node, ProgressMonitor monitor, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException
+    private NodeCreator exportTable(String table, Connection connection, NodeCreator node, ProgressMonitor monitor, EntityNameProcessor entityNameProcessor)
     {
         monitor.begin(Task.TABLE_DATA, entityNameProcessor.tableName(table));
         TableDataNode.add(node, entityNameProcessor.tableName(table));
 
-        Statement statement = connection.createStatement();
+        final Statement statement = createStatement(connection);
         ResultSet result = null;
         try
         {
-            statement.setFetchSize(100);
-            result = statement.executeQuery("SELECT * FROM " + quote(connection, table));
-            final ResultSetMetaData meta = result.getMetaData();
+            result = executeQueryWithFetchSize(statement, "SELECT * FROM " + quote(connection, table), 100);
+            final ResultSetMetaData meta = resultSetMetaData(result);
 
             // write column definitions
             node = writeColumnDefinitions(node, meta, entityNameProcessor);
-
-            while (result.next())
+            while (next(result))
             {
                 node = exportRow(node, result, monitor);
             }
@@ -117,24 +112,23 @@ public final class DataExporter implements Exporter
         return node.closeEntity();
     }
 
-    private NodeCreator exportRow(NodeCreator node, ResultSet result, ProgressMonitor monitor) throws ParseException, SQLException
+    private NodeCreator exportRow(NodeCreator node, ResultSet result, ProgressMonitor monitor)
     {
         monitor.begin(Task.TABLE_ROW);
-        final ResultSetMetaData metaData = result.getMetaData();
-        final int columns = metaData.getColumnCount();
+        final ResultSetMetaData metaData = resultSetMetaData(result);
 
         RowDataNode.add(node);
 
-        for (int col = 1; col <= columns; col++)
+        for (int col = 1; col <= columnCount(metaData); col++)
         {
-            switch (metaData.getColumnType(col))
+            switch (columnType(metaData, col))
             {
                 case Types.BIGINT:
                 case Types.INTEGER:
                     appendInteger(result, col, node);
                     break;
                 case Types.NUMERIC:
-                    if (metaData.getScale(col) > 0) // oracle uses numeric always
+                    if (scale(metaData, col) > 0) // oracle uses numeric always
                     {
                         appendDouble(result, col, node);
                     }
@@ -145,12 +139,12 @@ public final class DataExporter implements Exporter
                     break;
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
-                    RowDataNode.append(node, result.getString(col));
+                    RowDataNode.append(node, getString(result, col));
                     break;
 
                 case Types.BOOLEAN:
                 case Types.BIT:
-                    RowDataNode.append(node, result.wasNull() ? null : result.getBoolean(col));
+                    RowDataNode.append(node, wasNull(result) ? null : getBoolean(result, col));
                     break;
 
                 case Types.DOUBLE:
@@ -158,14 +152,16 @@ public final class DataExporter implements Exporter
                     break;
 
                 case Types.TIMESTAMP:
-                    RowDataNode.append(node, result.getTimestamp(col));
+                    RowDataNode.append(node, getTimestamp(result, col));
                     break;
 
                 default:
-                    throw new SQLException(String.format(
+                    throw new ImportExportException(String.format(
                             "Cannot encode value for unsupported column type: \"%s\" (%d) of column %s.%s",
-                            metaData.getColumnTypeName(col), metaData.getColumnType(col),
-                            metaData.getTableName(col), metaData.getColumnName(col)));
+                            columnTypeName(metaData, col),
+                            columnType(metaData, col),
+                            tableName(metaData, col),
+                            columnName(metaData, col)));
             }
         }
 
@@ -173,23 +169,228 @@ public final class DataExporter implements Exporter
         return node.closeEntity();
     }
 
-    private static void appendInteger(ResultSet result, int col, NodeCreator node) throws SQLException
+    private static void appendInteger(ResultSet result, int col, NodeCreator node)
     {
-        RowDataNode.append(node, result.getBigDecimal(col).toBigInteger());
+        RowDataNode.append(node, getBigDecimal(result, col).toBigInteger());
     }
 
-    private static void appendDouble(ResultSet result, int col, NodeCreator node) throws SQLException
+    private static void appendDouble(ResultSet result, int col, NodeCreator node)
     {
-        RowDataNode.append(node, BigDecimal.valueOf(result.getDouble(col)));
+        RowDataNode.append(node, BigDecimal.valueOf(getDouble(result, col)));
     }
 
-    private NodeCreator writeColumnDefinitions(NodeCreator node, ResultSetMetaData metaData, EntityNameProcessor entityNameProcessor) throws SQLException, ParseException
+    private NodeCreator writeColumnDefinitions(NodeCreator node, ResultSetMetaData metaData, EntityNameProcessor entityNameProcessor)
     {
-        for (int i = 1; i <= metaData.getColumnCount(); i++)
+        for (int i = 1; i <= columnCount(metaData); i++)
         {
-            final String columnName = entityNameProcessor.columnName(metaData.getColumnName(i));
+            final String columnName = entityNameProcessor.columnName(columnName(metaData, i));
             ColumnDataNode.add(node, columnName).closeEntity();
         }
         return node;
+    }
+
+    private static ResultSetMetaData resultSetMetaData(ResultSet result)
+    {
+        try
+        {
+            return result.getMetaData();
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get result set metadata", e);
+        }
+    }
+
+    private static String tableName(ResultSet rs)
+    {
+        try
+        {
+            return next(rs) ? rs.getString("TABLE_NAME") : null;
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get table name from result set", e);
+        }
+    }
+
+    private static int scale(ResultSetMetaData metaData, int col)
+    {
+        try
+        {
+            return metaData.getScale(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get scale for col #" + col + " from result set meta data", e);
+        }
+    }
+
+    private static int columnCount(ResultSetMetaData metaData)
+    {
+        try
+        {
+            return metaData.getColumnCount();
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get column count from result set metadata", e);
+        }
+    }
+
+    private static int columnType(ResultSetMetaData metaData, int col)
+    {
+        try
+        {
+            return metaData.getColumnType(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get column type for col #" + col + " from result set meta data", e);
+        }
+    }
+
+    private static String columnTypeName(ResultSetMetaData metaData, int col)
+    {
+        try
+        {
+            return metaData.getColumnTypeName(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get column type name for col #" + col + " from result set meta data", e);
+        }
+    }
+
+    private static String columnName(ResultSetMetaData metaData, int i)
+    {
+        try
+        {
+            return metaData.getColumnName(i);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get column #" + i + " name from result set meta data", e);
+        }
+    }
+
+    private static String tableName(ResultSetMetaData metaData, int col)
+    {
+        try
+        {
+            return metaData.getTableName(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get table name for col #" + col + " from result set meta data", e);
+        }
+    }
+
+    private static String getString(ResultSet result, int col)
+    {
+        try
+        {
+            return result.getString(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get string value for col #" + col, e);
+        }
+    }
+
+    private static boolean getBoolean(ResultSet result, int col)
+    {
+        try
+        {
+            return result.getBoolean(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get boolean value for col #" + col, e);
+        }
+    }
+
+    private static BigDecimal getBigDecimal(ResultSet result, int col)
+    {
+        try
+        {
+            return result.getBigDecimal(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get big decimal value for col #" + col, e);
+        }
+    }
+
+    private static double getDouble(ResultSet result, int col)
+    {
+        try
+        {
+            return result.getDouble(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get double value for col #" + col, e);
+        }
+    }
+
+    private static Timestamp getTimestamp(ResultSet result, int col)
+    {
+        try
+        {
+            return result.getTimestamp(col);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get timestamp value for col #" + col, e);
+        }
+    }
+
+    private static boolean wasNull(ResultSet result)
+    {
+        try
+        {
+            return result.wasNull();
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not figure out whether value was NULL", e);
+        }
+    }
+
+    private static boolean next(ResultSet result)
+    {
+        try
+        {
+            return result.next();
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get next for result set", e);
+        }
+    }
+
+    private static ResultSet getTablesResultSet(Connection connection)
+    {
+        try
+        {
+            return metadata(connection).getTables(null, null, "%", new String[]{"TABLE"});
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not read tables in data exporter", e);
+        }
+    }
+
+    private static ResultSet executeQueryWithFetchSize(Statement statement, String sql, int fetchSize)
+    {
+        try
+        {
+            statement.setFetchSize(fetchSize);
+            return statement.executeQuery(sql);
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not execute query '" + sql + "' with fetch size " + fetchSize, e);
+        }
     }
 }

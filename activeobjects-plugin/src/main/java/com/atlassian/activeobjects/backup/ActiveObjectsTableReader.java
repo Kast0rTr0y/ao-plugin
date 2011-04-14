@@ -5,7 +5,7 @@ import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -16,6 +16,7 @@ import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -40,11 +41,11 @@ final class ActiveObjectsTableReader implements TableReader
         final DDLTable[] ddlTables;
         try
         {
-            ddlTables = SchemaReader.readSchema(provider.getConnection(), provider, schemaConfiguration, true);
+            ddlTables = SchemaReader.readSchema(getConnection(), provider, schemaConfiguration, true);
         }
         catch (SQLException e)
         {
-            throw new SqlRuntimeException(e);
+            throw new ImportExportSqlException("An error occurred reading schema information from database", e);
         }
 
         for (DDLTable ddlTable : ddlTables)
@@ -52,6 +53,18 @@ final class ActiveObjectsTableReader implements TableReader
             tables.add(readTable(ddlTable, entityNameProcessor));
         }
         return tables;
+    }
+
+    private Connection getConnection()
+    {
+        try
+        {
+            return provider.getConnection();
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get connection from provider", e);
+        }
     }
 
     private Table readTable(DDLTable ddlTable, EntityNameProcessor processor)

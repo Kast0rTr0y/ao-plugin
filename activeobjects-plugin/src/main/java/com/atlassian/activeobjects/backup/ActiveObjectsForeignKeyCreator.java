@@ -2,7 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
@@ -46,14 +46,15 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
                     }
                     catch (SQLException e)
                     {
-                        throw new SqlRuntimeException(e);
+                        throw new ImportExportSqlException(
+                                "Error creating foreign key constraint, using SQL statement '" + sql + "'", e);
                     }
                 }
             }
         }
         catch (SQLException e)
         {
-            throw new SqlRuntimeException(e);
+            throw new ImportExportSqlException(e);
         }
         finally
         {

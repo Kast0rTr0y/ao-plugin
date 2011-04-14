@@ -33,7 +33,7 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
         monitor.begin(Task.TABLE_DEFINITION);
 
         final List<Table> tables = newArrayList();
-        while (!node.isClosed() && node.getName().equals(getNodeName()))
+        while (isNodeNotClosed(node, getNodeName()))
         {
             tables.add(readTable(node, configuration.getEntityNameProcessor()));
         }

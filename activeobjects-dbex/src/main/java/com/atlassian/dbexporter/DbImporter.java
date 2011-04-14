@@ -3,6 +3,7 @@ package com.atlassian.dbexporter;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.Importer;
 import com.atlassian.dbexporter.importer.NoOpImporter;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static com.atlassian.dbexporter.DatabaseInformations.database;
+import static com.atlassian.dbexporter.importer.ImporterUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
@@ -41,7 +43,17 @@ public final class DbImporter
         this.importers = importers;
     }
 
-    public void importData(NodeStreamReader streamReader, ImportConfiguration configuration) throws DbImportException
+    /**
+     * Imports the XML document read from the stream
+     *
+     * @param streamReader the XML stream reader
+     * @param configuration the import configuration
+     * @throws IllegalStateException if the backup XML stream is not formatted as expected.
+     * @throws ImportExportException or one of its sub-types if an unexpected exception happens during the import.
+     * Note that {@link ImportExportSqlException} is the main sub-type of exception likely to be thrown whenever an
+     * underlying {@link java.sql.SQLException} is thrown within one of the specific {@link Importer}.
+     */
+    public void importData(NodeStreamReader streamReader, ImportConfiguration configuration)
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         final DatabaseInformations.Database database = database(configuration.getDatabaseInformation());
@@ -51,15 +63,8 @@ public final class DbImporter
         final NodeParser node = RootNode.get(streamReader);
         logger.debug("Root node is {}", node);
 
-        if (!isStartNode(node))
-        {
-            throw new DbImportException("Unexpected root node found, " + node);
-        }
-
-        if (isEndNode(node.getNextNode()))
-        {
-            return; // empty backup
-        }
+        checkStartNode(node, RootNode.NAME);
+        node.getNextNode();//  starting with the first node
 
         final Context context = new Context();
 
@@ -71,23 +76,6 @@ public final class DbImporter
         while (!(node.getName().equals(RootNode.NAME) && node.isClosed()));
 
         monitor.end(database);
-    }
-
-    private boolean isStartNode(NodeParser node)
-    {
-        return isRootNode(node, false);
-    }
-
-    private boolean isEndNode(NodeParser node)
-    {
-        return isRootNode(node, true);
-    }
-
-    private boolean isRootNode(NodeParser node, boolean closed)
-    {
-        return node != null
-                && node.getName().equals(RootNode.NAME)
-                && node.isClosed() == closed;
     }
 
     private Importer getImporter(NodeParser node)

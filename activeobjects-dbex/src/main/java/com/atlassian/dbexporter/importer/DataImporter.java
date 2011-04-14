@@ -3,11 +3,13 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.jdbc.RowImportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.ParseException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 import java.math.BigDecimal;
@@ -24,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static com.atlassian.dbexporter.importer.ImporterUtils.isNodeNotClosed;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
@@ -60,9 +63,9 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 try
                 {
                     final boolean autoCommit = connection.getAutoCommit();
-                    connection.setAutoCommit(false);
                     try
                     {
+                        connection.setAutoCommit(false);
                         for (; TableDataNode.NAME.equals(node.getName()) && !node.isClosed(); node.getNextNode())
                         {
                             importTable(node, configuration, connection);
@@ -76,7 +79,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 }
                 catch (SQLException e)
                 {
-                    throw new SqlRuntimeException(e);
+                    throw new ImportExportSqlException(e);
                 }
                 return null;
             }
@@ -84,12 +87,10 @@ public final class DataImporter extends AbstractSingleNodeImporter
         monitor.end(Task.TABLES_DATA);
     }
 
-    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Connection connection) throws ParseException, SQLException
+    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Connection connection)
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
-
-        long rowNum = 0L;
 
         final String currentTable = entityNameProcessor.tableName(TableDataNode.getName(node));
 
@@ -98,7 +99,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         final InserterBuilder builder = new InserterBuilder(currentTable, configuration.getBatchMode());
 
         node = node.getNextNode();
-        for (; ColumnDataNode.NAME.equals(node.getName()) && !node.isClosed(); node = node.getNextNode())
+        for (; isNodeNotClosed(node, ColumnDataNode.NAME); node = node.getNextNode())
         {
             final String column = ColumnDataNode.getName(node);
             builder.addColumn(entityNameProcessor.columnName(column));
@@ -106,9 +107,11 @@ public final class DataImporter extends AbstractSingleNodeImporter
         }
 
         final Inserter inserter = builder.build(connection);
+
+        long rowNum = 0L;
         try
         {
-            for (; RowDataNode.NAME.equals(node.getName()) && !node.isClosed(); node = node.getNextNode())
+            for (; isNodeNotClosed(node, RowDataNode.NAME); node = node.getNextNode())
             {
                 node = node.getNextNode();  // read the first field node
                 for (; !node.isClosed(); node = node.getNextNode())
@@ -118,6 +121,10 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 inserter.execute();
                 rowNum++;
             }
+        }
+        catch (SQLException e)
+        {
+            throw new RowImportSqlException(e, currentTable, rowNum);
         }
         finally
         {
@@ -135,12 +142,13 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         void execute() throws SQLException;
 
-        void close() throws SQLException;
+        void close();
     }
 
 
     private static class InserterBuilder
     {
+        public static final int UNLIMITED_COLUMN_SIZE = -1;
         private final String table;
         private final BatchMode batch;
         private final List<String> columns;
@@ -162,9 +170,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
             columns.add(column);
         }
 
-        public Inserter build(Connection connection) throws SQLException
+        public Inserter build(Connection connection)
         {
-
             final StringBuilder query = new StringBuilder("INSERT INTO ")
                     .append(quote(connection, table))
                     .append(" (");
@@ -188,9 +195,9 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 }
             }
             query.append(")");
-            List<Integer> maxColumnSizes = calculateColumnSizes(connection, columns);
 
-            final PreparedStatement ps = connection.prepareStatement(query.toString());
+            final List<Integer> maxColumnSizes = calculateColumnSizes(connection, columns);
+            final PreparedStatement ps = preparedStatement(connection, query.toString());
             return newInserter(maxColumnSizes, ps);
         }
 
@@ -203,35 +210,30 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         /**
          * Get the column size for all columns in the table -- only the sizes for String columns will be used
+         *
          * @param connection
          * @param columns
          * @return
-         * @throws java.sql.SQLException
          */
-        private List<Integer> calculateColumnSizes(Connection connection, List<String> columns) throws SQLException
+        private List<Integer> calculateColumnSizes(Connection connection, List<String> columns)
         {
             Map<String, Integer> columnSizeMap = Maps.newHashMap();
             ResultSet rs = null;
             try
             {
-                rs = connection.getMetaData().getColumns(null, null, table, null);
-                while (rs.next())
+                rs = getColumnsResultSet(connection);
+                ColumnNameAndSize columnNameAndSize = getColumnNameAndSize(rs);
+                while (columnNameAndSize != ColumnNameAndSize.NULL)
                 {
-                    String columnName = rs.getString("COLUMN_NAME");
-                    int columnSize = rs.getInt("COLUMN_SIZE");
-                    columnSizeMap.put(columnName, columnSize);
+                    columnSizeMap.put(columnNameAndSize.name, columnNameAndSize.size);
+                    columnNameAndSize = getColumnNameAndSize(rs);
                 }
-                final List<Integer> sizes = newArrayList();
-                sizes.add(0); // dummy, column indices start at 1
+
+                final List<Integer> sizes = newArrayList(0);
                 for (String column : columns)
                 {
-                    Integer size = columnSizeMap.get(column);
-                    if (size == null)
-                    {
-                        // if we don't have a size, assume no limit
-                        size = -1;
-                    }
-                    sizes.add(size);
+                    final Integer size = columnSizeMap.get(column);
+                    sizes.add(size != null ? size : UNLIMITED_COLUMN_SIZE);
                 }
                 return sizes;
             }
@@ -239,6 +241,59 @@ public final class DataImporter extends AbstractSingleNodeImporter
             {
                 closeQuietly(rs);
             }
+        }
+
+        private ColumnNameAndSize getColumnNameAndSize(ResultSet rs)
+        {
+            try
+            {
+                if (rs.next())
+                {
+                    final String name = rs.getString("COLUMN_NAME");
+                    final int size = rs.getInt("COLUMN_SIZE");
+                    return new ColumnNameAndSize(name, size);
+                }
+                else
+                {
+                    return ColumnNameAndSize.NULL;
+                }
+            }
+            catch (SQLException e)
+            {
+                throw new ImportExportSqlException(e);
+            }
+        }
+
+        private ResultSet getColumnsResultSet(Connection connection)
+        {
+            try
+            {
+                return metadata(connection).getColumns(null, null, table, null);
+            }
+            catch (SQLException e)
+            {
+                throw new ImportExportSqlException(e);
+            }
+        }
+    }
+
+    private static class ColumnNameAndSize
+    {
+        private static ColumnNameAndSize NULL = new ColumnNameAndSize();
+
+        public final String name;
+        public final int size;
+
+        private ColumnNameAndSize()
+        {
+            this.name = null;
+            this.size = -1;
+        }
+
+        public ColumnNameAndSize(String name, int size)
+        {
+            this.name = checkNotNull(name);
+            this.size = size;
         }
     }
 
@@ -366,11 +421,6 @@ public final class DataImporter extends AbstractSingleNodeImporter
         }
 
         protected abstract void executePS() throws SQLException;
-
-        public String getTableName()
-        {
-            return tableName;
-        }
     }
 
     private static class ImmediateInserter extends BaseInserter
@@ -385,7 +435,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
             ps.execute();
         }
 
-        public void close() throws SQLException
+        public void close()
         {
             closeQuietly(ps);
         }
@@ -412,22 +462,29 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
         }
 
-        private void flush() throws SQLException
+        private void flush()
         {
-            for (int result : ps.executeBatch())
+            try
             {
-                if (result == Statement.EXECUTE_FAILED)
+                for (int result : ps.executeBatch())
                 {
-                    throw new SQLException("SQL batch insert failed.");
+                    if (result == Statement.EXECUTE_FAILED)
+                    {
+                        throw new SQLException("SQL batch insert failed.");
+                    }
                 }
+                ps.getConnection().commit();
             }
-            ps.getConnection().commit();
+            catch (SQLException e)
+            {
+                throw new ImportExportSqlException(e);
+            }
         }
 
-        public void close() throws SQLException
+        public void close()
         {
             flush();
-            JdbcUtils.closeQuietly(ps);
+            closeQuietly(ps);
         }
     }
 }

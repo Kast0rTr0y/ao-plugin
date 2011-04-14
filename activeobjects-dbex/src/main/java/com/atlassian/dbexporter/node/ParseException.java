@@ -1,23 +1,26 @@
 package com.atlassian.dbexporter.node;
 
-/**
- * @author Erik van Zijst
- */
-public class ParseException extends RuntimeException {
+import com.atlassian.dbexporter.ImportExportException;
 
-    public ParseException() {
+public final class ParseException extends ImportExportException
+{
+    public ParseException()
+    {
+        super();
     }
 
-    public ParseException(String s) {
-        super(s);
+    public ParseException(String message)
+    {
+        super(message);
     }
 
-    public ParseException(String s, Throwable throwable) {
-        super(s);
-        initCause(throwable);
+    public ParseException(String message, Throwable cause)
+    {
+        super(message, cause);
     }
 
-    public ParseException(Throwable throwable) {
-        initCause(throwable);
+    public ParseException(Throwable cause)
+    {
+        super(cause);
     }
 }

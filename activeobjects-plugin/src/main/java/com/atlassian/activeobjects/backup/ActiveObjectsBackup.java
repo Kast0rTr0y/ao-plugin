@@ -15,6 +15,7 @@ import com.atlassian.dbexporter.DbExporter;
 import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportConfiguration;
+import com.atlassian.dbexporter.ImportExportException;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
@@ -24,6 +25,7 @@ import com.atlassian.dbexporter.importer.DataImporter;
 import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.TableDefinitionImporter;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
 import com.atlassian.dbexporter.node.stax.StaxStreamReader;
@@ -75,6 +77,14 @@ public final class ActiveObjectsBackup implements Backup
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
     }
 
+    /**
+     * Saves the backup to an output stream.
+     *
+     * @param stream the stream to write the backup to
+     * @param monitor the progress monitor for the current backup
+     * @throws ImportExportException or one of its sub-types if any error happens during the backup.
+     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportSqlException}.
+     */
     public void save(OutputStream stream, BackupProgressMonitor monitor)
     {
         final DatabaseProvider provider = databaseProviderSupplier.get();
@@ -100,6 +110,14 @@ public final class ActiveObjectsBackup implements Backup
         }
     }
 
+    /**
+     * Restores the backup coming from the given input stream.
+     *
+     * @param stream the stream of data previously backed up by the plugin.
+     * @param monitor the progress monitor for the current restore
+     * @throws ImportExportException or one of its sub-types if any error happens during the backup.
+     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportSqlException}.
+     */
     public void restore(InputStream stream, RestoreProgressMonitor monitor)
     {
         final DatabaseProvider provider = databaseProviderSupplier.get();

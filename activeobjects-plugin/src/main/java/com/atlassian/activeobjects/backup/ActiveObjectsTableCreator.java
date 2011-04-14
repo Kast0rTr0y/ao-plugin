@@ -4,7 +4,7 @@ import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
-import com.atlassian.dbexporter.jdbc.SqlRuntimeException;
+import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;
@@ -50,7 +50,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         }
         catch (SQLException e)
         {
-            throw new SqlRuntimeException(e);
+            throw new ImportExportSqlException(e);
         }
         finally
         {
@@ -72,7 +72,7 @@ final class ActiveObjectsTableCreator implements TableCreator
             }
             catch (SQLException e)
             {
-                throw new SqlRuntimeException(e);
+                throw new ImportExportSqlException(e);
             }
         }
     }
