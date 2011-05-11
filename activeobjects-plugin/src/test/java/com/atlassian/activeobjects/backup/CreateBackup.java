@@ -12,6 +12,7 @@ import net.java.ao.test.jdbc.JdbcConfiguration;
 import net.java.ao.test.jdbc.MySql;
 import net.java.ao.test.jdbc.Oracle;
 import net.java.ao.test.jdbc.Postgres;
+import net.java.ao.test.jdbc.SqlServer;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +27,7 @@ public final class CreateBackup
             .put("mysql", new MySql())
             .put("postgres", new Postgres())
             .put("oracle", new Oracle())
+            .put("sqlserver", new SqlServer())
             .build();
     private static final String CUSTOM = "custom";
 
@@ -78,8 +80,8 @@ public final class CreateBackup
     private static JdbcConfiguration customJdbc() throws IOException
     {
         final String url = prompt("Url:");
-        final String username = prompt("Username:");
-        final String password = prompt("Password:");
+        final String username = prompt("Username:", "ao_user");
+        final String password = prompt("Password:", "ao_password");
 
         return new JdbcConfiguration()
         {
@@ -116,12 +118,23 @@ public final class CreateBackup
         }
         sb.append(CUSTOM).append("\n");
 
-        return prompt("Choose a configuration:\n" + sb);
+        return prompt("Choose a configuration:\n" + sb, JDBC.keySet().iterator().next());
     }
 
-    private static String prompt(String s) throws IOException
+    private static String prompt(String message) throws IOException
     {
-        System.out.println(s);
-        return new BufferedReader(new InputStreamReader(System.in)).readLine();
+        return prompt(message, null);
+    }
+
+    private static String prompt(String message, String defaultValue) throws IOException
+    {
+        System.out.println(isNotEmpty(defaultValue) ? message + "[" + defaultValue + "]" : message);
+        final String value = new BufferedReader(new InputStreamReader(System.in)).readLine();
+        return isNotEmpty(value) ? value : defaultValue;
+    }
+
+    private static boolean isNotEmpty(String s)
+    {
+        return s != null && !s.equals("");
     }
 }

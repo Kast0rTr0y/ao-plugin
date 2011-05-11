@@ -148,6 +148,7 @@ public final class DataExporter implements Exporter
                     break;
 
                 case Types.DOUBLE:
+                case Types.DECIMAL:
                     appendDouble(result, col, node);
                     break;
 

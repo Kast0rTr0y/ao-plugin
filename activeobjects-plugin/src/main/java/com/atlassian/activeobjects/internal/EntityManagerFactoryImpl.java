@@ -5,7 +5,6 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.EntityManager;
 import net.java.ao.EntityManagerConfiguration;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.event.EventManagerImpl;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.TableNameConverter;
 
@@ -30,7 +29,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory
                         configuration.getFieldNameConverter(),
                         configuration.getSchemaConfiguration());
 
-        return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType), entityManagerConfiguration, new EventManagerImpl());
+        return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType), entityManagerConfiguration);
     }
 
     private static class DataSourceEntityManagerConfiguration implements EntityManagerConfiguration

@@ -32,6 +32,7 @@ public class TestActiveObjectsBackup
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
     private static final String ORACLE = "/com/atlassian/activeobjects/backup/oracle.xml";
     private static final String POSTGRES = "/com/atlassian/activeobjects/backup/postgres.xml";
+    private static final String SQLSERVER = "/com/atlassian/activeobjects/backup/sqlserver.xml";
 
     private static final String UTF_8 = "UTF-8";
 
@@ -67,6 +68,13 @@ public class TestActiveObjectsBackup
     public void testOracleBackup() throws Exception
     {
         testBackup(ORACLE);
+    }
+
+    @Test
+    @NonTransactional
+    public void testSqlServerBackup() throws Exception
+    {
+        testBackup(SQLSERVER);
     }
 
     public void testBackup(String xml) throws Exception
