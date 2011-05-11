@@ -19,12 +19,10 @@ public class ImportExportException extends RuntimeException
     public ImportExportException(String message, Throwable cause)
     {
         super(message, cause);
-        initCause(cause);
     }
 
     public ImportExportException(Throwable cause)
     {
         super(cause);
-        initCause(cause);
     }
 }
