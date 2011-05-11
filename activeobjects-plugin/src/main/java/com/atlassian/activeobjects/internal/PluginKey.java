@@ -10,8 +10,6 @@ import static com.google.common.base.Preconditions.*;
  * <p>Represents a key used throughout the ActiveObjects plugin to store information
  * about configuration etc. against each plugin using an {@link com.atlassian.activeobjects.external.ActiveObjects}
  * service.</p>
- * In that respect the {@link #toString()} method is important here and should <strong>NOT</strong> be changed lightly, as it can
- * be used for keys in the database for example.</p>
  * <p>So are {@link #equals(Object)} and {@link #hashCode()} as this class can be used and IS used as
  * key in Maps and other such collections.</p>
  */
@@ -30,10 +28,15 @@ public final class PluginKey
         return new PluginKey(bundle.getSymbolicName());
     }
 
+    public String asString()
+    {
+        return bundleSymbolicName;
+    }
+
     @Override
     public String toString()
     {
-        return bundleSymbolicName;
+        return asString();
     }
 
     @Override

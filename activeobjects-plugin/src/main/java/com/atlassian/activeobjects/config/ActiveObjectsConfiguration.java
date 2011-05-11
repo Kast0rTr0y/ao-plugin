@@ -60,7 +60,7 @@ public interface ActiveObjectsConfiguration
     /**
      * The set of 'configured' entitites for the active objects configuration.
      *
-     * @return a set of entity classes.
+     * @return a set of entity classes, empty of no entities have been defined.
      */
     Set<Class<? extends RawEntity<?>>> getEntities();
 

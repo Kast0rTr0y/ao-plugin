@@ -85,16 +85,6 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     }
 
     @Override
-    protected final void provideValidationRules(ValidationPattern pattern)
-    {
-        // make sure we validate the default
-        super.provideValidationRules(pattern);
-
-        // custom rules
-        // ..
-    }
-
-    @Override
     public void init(Plugin plugin, Element element) throws PluginParseException
     {
         super.init(plugin, element);
@@ -112,21 +102,13 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     {
         final List<Element> upgradeTask = getSubElements(element, "upgradeTask");
 
-        final List<String> upgradeTaskClasses = Lists.transform(upgradeTask, new Function<Element, String>()
+        final List<Class<ActiveObjectsUpgradeTask>> classes = Lists.transform(upgradeTask, new Function<Element, Class<ActiveObjectsUpgradeTask>>()
         {
-            public String apply(Element utElement)
+            @Override
+            public Class<ActiveObjectsUpgradeTask> apply(Element utElement)
             {
                 final String upgradeTaskClass = utElement.getText().trim();
                 logger.debug("Found upgrade task class <{}>", upgradeTaskClass);
-                return upgradeTaskClass;
-            }
-        });
-
-        final List<Class<ActiveObjectsUpgradeTask>> classes = Lists.transform(upgradeTaskClasses, new Function<String, Class<ActiveObjectsUpgradeTask>>()
-        {
-            @Override
-            public Class<ActiveObjectsUpgradeTask> apply(String upgradeTaskClass)
-            {
                 return getUpgradeTaskClass(upgradeTaskClass);
             }
         });

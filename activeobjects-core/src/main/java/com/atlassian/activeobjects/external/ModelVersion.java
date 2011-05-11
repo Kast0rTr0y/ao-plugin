@@ -15,6 +15,21 @@ public final class ModelVersion implements Comparable<ModelVersion>
         return version - mv.version;
     }
 
+    public boolean isOlderThan(ModelVersion mv)
+    {
+        return compareTo(mv) < 0;
+    }
+
+    public boolean isNewerThan(ModelVersion mv)
+    {
+        return compareTo(mv) > 0;
+    }
+
+    public boolean isSame(ModelVersion mv)
+    {
+        return compareTo(mv) == 0;
+    }
+
     @Override
     public String toString()
     {

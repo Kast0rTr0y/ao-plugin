@@ -5,9 +5,7 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.*;
 
 public final class ActiveObjectUpgradeManagerImpl implements ActiveObjectUpgradeManager
 {
@@ -36,14 +34,33 @@ public final class ActiveObjectUpgradeManagerImpl implements ActiveObjectUpgrade
 
         logger.info("Starting upgrade of data model, current version is {}", currentModelVersion);
 
-        for (final ActiveObjectsUpgradeTask task : sort(upgradeTasks))
+        for (final ActiveObjectsUpgradeTask task : sortAndVerify(upgradeTasks))
         {
-            if (currentModelVersion.compareTo(task.getModelVersion()) < 0)
+            if (currentModelVersion.isOlderThan(task.getModelVersion()))
             {
                 currentModelVersion = upgrade(tableNamePrefix, task, ao.get(), currentModelVersion);
             }
         }
         logger.info("Finished upgrading, model is up to date at version {}", currentModelVersion);
+    }
+
+    private List<ActiveObjectsUpgradeTask> sortAndVerify(List<ActiveObjectsUpgradeTask> upgradeTasks)
+    {
+        return verify(sort(upgradeTasks));
+    }
+
+    List<ActiveObjectsUpgradeTask> verify(List<ActiveObjectsUpgradeTask> sorted)
+    {
+        ModelVersion mv = null;
+        for (ActiveObjectsUpgradeTask task : sorted)
+        {
+            if (mv != null && mv.isSame(task.getModelVersion()))
+            {
+                throw new IllegalStateException("There are more than one upgrade tasks with model version " + mv);
+            }
+            mv = task.getModelVersion();
+        }
+        return sorted;
     }
 
     private List<ActiveObjectsUpgradeTask> sort(List<ActiveObjectsUpgradeTask> upgradeTasks)
@@ -60,6 +77,7 @@ public final class ActiveObjectUpgradeManagerImpl implements ActiveObjectUpgrade
             @Override
             public ModelVersion doInTransaction()
             {
+                logger.debug("Upgrading data model with task {}, current version of model is {}", task.getClass().getName(), currentModelVersion);
                 task.upgrade(currentModelVersion, activeObjects);
 
                 final ModelVersion updatedVersion = task.getModelVersion();

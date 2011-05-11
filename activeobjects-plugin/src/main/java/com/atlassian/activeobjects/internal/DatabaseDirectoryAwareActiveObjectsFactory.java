@@ -56,7 +56,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
 
     private File getDatabaseDirectory(File databasesDirectory, PluginKey pluginKey)
     {
-        final File dbDir = new File(databasesDirectory, pluginKey.toString());
+        final File dbDir = new File(databasesDirectory, pluginKey.asString());
         if (!dbDir.exists() && !dbDir.mkdir())
         {
             throw new ActiveObjectsPluginException("Could not create database directory for plugin <" + pluginKey + "> at  <" + dbDir.getAbsolutePath() + ">");

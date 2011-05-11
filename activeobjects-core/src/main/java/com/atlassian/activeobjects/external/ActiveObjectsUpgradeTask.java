@@ -14,7 +14,9 @@ public interface ActiveObjectsUpgradeTask
     ModelVersion getModelVersion();
 
     /**
-     * Upgrades the database model of this Active Objects plugin to the {@link #getModelVersion() given version}.
+     * <p>Upgrades the database model of this Active Objects plugin to the {@link #getModelVersion() given version}.</p>
+     * <p>If any exception is thrown during the upgrade then sub-sequent upgrades won't run and this upgrade task will
+     * be re-tried next time.</p>
      *
      * @param currentVersion the current version of the model currently in the database.
      * @param ao a configured instance of the Active Objects, which is not associated with any entity (yet).
