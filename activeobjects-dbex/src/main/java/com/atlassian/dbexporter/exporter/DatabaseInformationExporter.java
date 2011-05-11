@@ -1,6 +1,7 @@
 package com.atlassian.dbexporter.exporter;
 
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 
@@ -41,6 +42,7 @@ public final class DatabaseInformationExporter implements Exporter
         {
             export(node, properties);
         }
+        context.put(new DatabaseInformation(properties));
         monitor.end(Task.DATABASE_INFORMATION);
     }
 

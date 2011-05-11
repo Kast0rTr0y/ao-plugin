@@ -432,8 +432,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         protected void executePS() throws SQLException
         {
-            ps.execute();
-        }
+                ps.execute();
+            }
 
         public void close()
         {

@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.exporter;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.node.NodeCreator;
@@ -27,13 +28,18 @@ public final class TableDefinitionExporter implements Exporter
         monitor.begin(Task.TABLE_DEFINITION);
 
         int tableCount = 0;
-        for (Table table : tableReader.read(configuration.getEntityNameProcessor()))
+        for (Table table : tableReader.read(getDatabaseInformation(context), configuration.getEntityNameProcessor()))
         {
             export(node, table);
             tableCount++;
         }
         monitor.end(Task.TABLE_DEFINITION);
         monitor.totalNumberOfTables(tableCount);
+    }
+
+    private DatabaseInformation getDatabaseInformation(Context context)
+    {
+        return checkNotNull(context.get(DatabaseInformation.class));
     }
 
     private void export(NodeCreator node, Table table)
