@@ -1,15 +1,10 @@
 package com.atlassian.activeobjects.jira;
 
-import com.atlassian.jira.configurator.config.DatabaseType;
+import org.ofbiz.core.entity.jdbc.dbtype.DatabaseType;
 
-/**
- * Extracts the type of database JIRA is currently configured to use.
- */
+import java.sql.Connection;
+
 public interface JiraDatabaseTypeExtractor
 {
-    /**
-     * Gets the current database type.
-     * @return the type of the database currently in use, {@code null} if it could not be resolved.
-     */
-    DatabaseType getDatabaseType();
+    public DatabaseType getDatabaseType(Connection connection);
 }

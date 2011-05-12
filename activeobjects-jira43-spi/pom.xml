@@ -8,29 +8,13 @@
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
-    <artifactId>activeobjects-jira-spi</artifactId>
+    <artifactId>activeobjects-jira43-spi</artifactId>
     <packaging>bundle</packaging>
 
-    <name>ActiveObjects Plugin - JIRA SPI implementation</name>
-    <description>This is the JIRA implementation of the SPI for JIRA 4.4 and later.</description>
+    <name>ActiveObjects Plugin - JIRA 4.3.x SPI implementation</name>
+    <description>This is the JIRA implementation of the SPI for JIRA 4.3.x.</description>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>atlassian-plugin.xml</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>atlassian-plugin.xml</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
@@ -38,8 +22,10 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
+                        <Export-Package>
+                            com.atlassian.activeobjects.spi*;version="${project.version}",
+                        </Export-Package>
                         <Import-Package>
-                            com.atlassian.activeobjects.spi*,
                             com.atlassian.jira.ofbiz*,
                             com.atlassian.sal.api*,
                             com.google.common*,
@@ -66,13 +52,11 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.jira</groupId>
-            <artifactId>atlassian-jira</artifactId>
-            <version>4.3</version>
-            <scope>provided</scope>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-jira-spi</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
-@Jdbc(DynamicJdbcConfiguration.class)
+@Jdbc(DynamicJdbcConfiguration.class)   
 @NameConverters(table = BackupActiveObjectsTableNameConverter.class, field = ActiveObjectsFieldNameConverter.class)
 public class TestActiveObjectsBackup
 {

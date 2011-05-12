@@ -2,9 +2,11 @@ package com.atlassian.activeobjects.jira;
 
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.jira.ofbiz.OfBizConnectionFactory;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
-import org.ofbiz.core.entity.ConnectionFactory;
-import org.ofbiz.core.entity.GenericEntityException;
+import org.ofbiz.core.entity.jdbc.dbtype.DatabaseTypeFactory;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -12,24 +14,29 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Suppliers.*;
 
 public final class JiraDataSourceProvider extends AbstractDataSourceProvider
 {
-    private static final Map<com.atlassian.jira.configurator.config.DatabaseType, DatabaseType> DB_TYPE_TO_DB_TYPE = ImmutableMap.<com.atlassian.jira.configurator.config.DatabaseType, DatabaseType>builder()
-            .put(com.atlassian.jira.configurator.config.DatabaseType.HSQL, DatabaseType.HSQL)
-            .put(com.atlassian.jira.configurator.config.DatabaseType.MY_SQL, DatabaseType.MYSQL)
-            .put(com.atlassian.jira.configurator.config.DatabaseType.ORACLE, DatabaseType.ORACLE)
-            .put(com.atlassian.jira.configurator.config.DatabaseType.POSTGRES, DatabaseType.POSTGRESQL)
-            .put(com.atlassian.jira.configurator.config.DatabaseType.SQL_SERVER, DatabaseType.MS_SQL)
+    private static final Map<org.ofbiz.core.entity.jdbc.dbtype.DatabaseType, DatabaseType> DB_TYPE_TO_DB_TYPE = ImmutableMap.<org.ofbiz.core.entity.jdbc.dbtype.DatabaseType, DatabaseType>builder()
+            .put(DatabaseTypeFactory.DB2, DatabaseType.DB2)
+            .put(DatabaseTypeFactory.HSQL, DatabaseType.HSQL)
+            .put(DatabaseTypeFactory.MSSQL, DatabaseType.MS_SQL)
+            .put(DatabaseTypeFactory.MYSQL, DatabaseType.MYSQL)
+            .put(DatabaseTypeFactory.ORACLE_10G, DatabaseType.ORACLE)
+            .put(DatabaseTypeFactory.ORACLE_8I, DatabaseType.ORACLE)
+            .put(DatabaseTypeFactory.POSTGRES, DatabaseType.POSTGRESQL)
+            .put(DatabaseTypeFactory.POSTGRES_7_2, DatabaseType.POSTGRESQL)
+            .put(DatabaseTypeFactory.POSTGRES_7_3, DatabaseType.POSTGRESQL)
             .build();
 
     private final DataSource ds;
     private final JiraDatabaseTypeExtractor databaseTypeExtractor;
 
-    public JiraDataSourceProvider(JiraDatabaseTypeExtractor databaseTypeExtractor)
+    public JiraDataSourceProvider(OfBizConnectionFactory connectionFactory, JiraDatabaseTypeExtractor databaseTypeExtractor)
     {
-        this.ds = new OfBizDataSource("defaultDS");
+        this.ds = new OfBizDataSource(checkNotNull(connectionFactory));
         this.databaseTypeExtractor = checkNotNull(databaseTypeExtractor);
     }
 
@@ -41,29 +48,36 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
     @Override
     public DatabaseType getDatabaseType()
     {
-        final DatabaseType databaseType = DB_TYPE_TO_DB_TYPE.get(databaseTypeExtractor.getDatabaseType());
-        return databaseType != null ? databaseType : super.getDatabaseType();
+        return memoize(new Supplier<DatabaseType>()
+        {
+            @Override
+            public DatabaseType get()
+            {
+                try
+                {
+                    final DatabaseType type = DB_TYPE_TO_DB_TYPE.get(databaseTypeExtractor.getDatabaseType(ds.getConnection()));
+                    return type != null ? type : DatabaseType.UNKNOWN;
+                }
+                catch (SQLException e)
+                {
+                    throw new IllegalStateException("Could not get database type", e);
+                }
+            }
+        }).get();
     }
 
     private static class OfBizDataSource extends AbstractDataSource
     {
-        private final String helperName;
+        private final OfBizConnectionFactory connectionFactory;
 
-        public OfBizDataSource(String helperName)
+        public OfBizDataSource(OfBizConnectionFactory connectionFactory)
         {
-            this.helperName = helperName;
+            this.connectionFactory = checkNotNull(connectionFactory);
         }
 
         public Connection getConnection() throws SQLException
         {
-            try
-            {
-                return ConnectionFactory.getConnection(helperName);
-            }
-            catch (GenericEntityException e)
-            {
-                throw new SQLException(e.getMessage());
-            }
+            return connectionFactory.getConnection();
         }
 
         public Connection getConnection(String username, String password) throws SQLException
@@ -74,33 +88,25 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
 
     private static abstract class AbstractDataSource implements DataSource
     {
-        /**
-         * Returns 0, indicating to use the default system timeout.
-         */
+        /** Returns 0, indicating to use the default system timeout. */
         public int getLoginTimeout() throws SQLException
         {
             return 0;
         }
 
-        /**
-         * Setting a login timeout is not supported.
-         */
+        /** Setting a login timeout is not supported. */
         public void setLoginTimeout(int timeout) throws SQLException
         {
             throw new UnsupportedOperationException("setLoginTimeout");
         }
 
-        /**
-         * LogWriter methods are not supported.
-         */
+        /** LogWriter methods are not supported. */
         public PrintWriter getLogWriter()
         {
             throw new UnsupportedOperationException("getLogWriter");
         }
 
-        /**
-         * LogWriter methods are not supported.
-         */
+        /** LogWriter methods are not supported. */
         public void setLogWriter(PrintWriter pw) throws SQLException
         {
             throw new UnsupportedOperationException("setLogWriter");
