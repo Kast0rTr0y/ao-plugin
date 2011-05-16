@@ -13,6 +13,12 @@ public interface Book extends Entity
     double getPrice();
     void setPrice(double price);
 
+    /**
+     * Whether this has been read by the user.
+     */
+    boolean isRead();
+    void setRead(boolean read);
+
     @ManyToMany(Authorship.class)
     Author[] getAuthors();
 }

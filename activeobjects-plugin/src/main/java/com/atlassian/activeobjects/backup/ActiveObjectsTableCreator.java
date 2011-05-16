@@ -12,6 +12,8 @@ import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.TypeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,6 +27,10 @@ import static com.google.common.collect.Lists.*;
 
 final class ActiveObjectsTableCreator implements TableCreator
 {
+    private static final int MAX_MYSQL_SCALE = 30;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final DatabaseProvider provider;
 
     public ActiveObjectsTableCreator(DatabaseProvider provider)
@@ -112,7 +118,7 @@ final class ActiveObjectsTableCreator implements TableCreator
             ddlField.setPrecision(p);
         }
 
-        final Integer s = column.getScale();
+        final Integer s = getScale(column);
         if (s != null)
         {
             ddlField.setScale(s);
@@ -122,10 +128,37 @@ final class ActiveObjectsTableCreator implements TableCreator
 
     private int getSqlType(Column column)
     {
-        if (column.getSqlType() == Types.NUMERIC && column.getScale() > 0)
+        if (column.getSqlType() == Types.NUMERIC && column.getScale() != null && column.getScale() > 0)
         {
             return Types.DOUBLE; // Oracle uses numeric for both floating point numbers and fixed numbers
         }
+        if (Types.BIT == column.getSqlType() && column.getPrecision() != null && column.getPrecision() == 1)
+        {
+            return Types.BOOLEAN; // MySQL uses TINYINT(1) for BOOLEAN which gets exported as BIT for some reason
+        }
         return column.getSqlType();
+    }
+
+    private Integer getScale(Column column)
+    {
+        Integer scale = column.getScale();
+        if (scale == null)
+        {
+            return null;
+        }
+
+        final Integer precision = column.getPrecision();
+        if (precision != null && scale > precision)
+        {
+            logger.warn("Scale is greater than precision (" + scale + " > " + precision + "), which is not allowed in most databases, setting scale with same value as precision");
+            scale = precision;
+        }
+
+        if (scale > MAX_MYSQL_SCALE)
+        {
+            logger.warn("Scale is set to a value greater than 30 (" + scale + "), which is not compatible with MySQL 5, setting actual value to 30.");
+            return MAX_MYSQL_SCALE;
+        }
+        return scale;
     }
 }
