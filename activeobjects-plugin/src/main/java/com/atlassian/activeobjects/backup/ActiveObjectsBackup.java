@@ -131,7 +131,8 @@ public final class ActiveObjectsBackup implements Backup
                 new DatabaseInformationImporter(),
                 new TableDefinitionImporter(new ActiveObjectsTableCreator(provider)),
                 new DataImporter(
-                        new SequenceAroundImporter(new ActiveObjectsSequenceUpdater(provider)),
+                        new PostgresSequencesAroundImporter(provider),
+                        new OracleSequencesAroundImporter(provider),
                         new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(provider))
                 ));
 
