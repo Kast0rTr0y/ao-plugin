@@ -53,17 +53,38 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
             @Override
             public DatabaseType get()
             {
+                Connection connection = null;
                 try
                 {
-                    final DatabaseType type = DB_TYPE_TO_DB_TYPE.get(databaseTypeExtractor.getDatabaseType(ds.getConnection()));
+                    connection = ds.getConnection();
+                    final DatabaseType type = DB_TYPE_TO_DB_TYPE.get(databaseTypeExtractor.getDatabaseType(connection));
                     return type != null ? type : DatabaseType.UNKNOWN;
                 }
                 catch (SQLException e)
                 {
                     throw new IllegalStateException("Could not get database type", e);
                 }
+                finally
+                {
+                    closeQuietly(connection);
+                }
             }
         }).get();
+    }
+
+    private static void closeQuietly(Connection connection)
+    {
+        if (connection != null)
+        {
+            try
+            {
+                connection.close();
+            }
+            catch (SQLException e)
+            {
+                throw new IllegalStateException("There was an exception closing a database connection", e);
+            }
+        }
     }
 
     private static class OfBizDataSource extends AbstractDataSource
