@@ -113,9 +113,6 @@
                     <password>ao_password</password>
                     <rootUsername>${db.username}</rootUsername>
                     <rootPassword>${db.password}</rootPassword>
-                    <properties>
-                        <internal_logon>sysdba</internal_logon>
-                    </properties>
                 </configuration>
                 <executions>
                     <execution>
