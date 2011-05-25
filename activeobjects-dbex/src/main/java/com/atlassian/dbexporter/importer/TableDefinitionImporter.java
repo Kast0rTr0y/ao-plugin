@@ -7,11 +7,13 @@ import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.google.common.collect.Lists;
 
 import java.util.Collection;
 import java.util.List;
 
 import static com.atlassian.dbexporter.importer.ImporterUtils.*;
+import static com.atlassian.dbexporter.importer.TableDefinitionImporter.DatabaseCleanerAroundImporter.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
@@ -21,8 +23,9 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
 {
     private final TableCreator tableCreator;
 
-    public TableDefinitionImporter(TableCreator tableCreator)
+    public TableDefinitionImporter(TableCreator tableCreator, final DatabaseCleaner databaseCleaner)
     {
+        super(Lists.<AroundImporter>newArrayList(newCleaner(databaseCleaner)));
         this.tableCreator = checkNotNull(tableCreator);
     }
 
@@ -78,7 +81,7 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
 
         final String columnName = entityNameProcessor.columnName(ColumnDefinitionNode.getName(node));
         final boolean isPk = ColumnDefinitionNode.isPrimaryKey(node);
-        final boolean isAi= ColumnDefinitionNode.isAutoIncrement(node);
+        final boolean isAi = ColumnDefinitionNode.isAutoIncrement(node);
         final int sqlType = ColumnDefinitionNode.getSqlType(node);
         final Integer precision = ColumnDefinitionNode.getPrecision(node);
         final Integer scale = ColumnDefinitionNode.getScale(node);
@@ -117,5 +120,26 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
     protected String getNodeName()
     {
         return TableDefinitionNode.NAME;
+    }
+
+    static final class DatabaseCleanerAroundImporter extends NoOpAroundImporter
+    {
+        private final DatabaseCleaner databaseCleaner;
+
+        private DatabaseCleanerAroundImporter(DatabaseCleaner databaseCleaner)
+        {
+            this.databaseCleaner = checkNotNull(databaseCleaner);
+        }
+
+        @Override
+        public void before(NodeParser node, ImportConfiguration configuration, Context context)
+        {
+            databaseCleaner.cleanup(configuration.getCleanupMode());
+        }
+
+        static DatabaseCleanerAroundImporter newCleaner(DatabaseCleaner cleaner)
+        {
+            return new DatabaseCleanerAroundImporter(cleaner);
+        }
     }
 }

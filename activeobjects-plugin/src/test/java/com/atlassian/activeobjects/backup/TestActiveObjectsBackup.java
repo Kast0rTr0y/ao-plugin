@@ -26,7 +26,7 @@ import java.io.UnsupportedEncodingException;
 @RunWith(ActiveObjectsJUnitRunner.class)
 @Jdbc(DynamicJdbcConfiguration.class)
 @NameConverters(table = BackupActiveObjectsTableNameConverter.class, field = ActiveObjectsFieldNameConverter.class)
-public class TestActiveObjectsBackup
+public final class TestActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
@@ -77,11 +77,12 @@ public class TestActiveObjectsBackup
         testBackup(SQLSERVER);
     }
 
-    public void testBackup(String xml) throws Exception
+    public final void testBackup(String xml) throws Exception
     {
         final String xmlBackup = read(xml);
 
         restore(xmlBackup);
+        restore(xmlBackup); // if we don't clean up correctly doing an second restore in a row will fail
 
         assertDataPresent();
 

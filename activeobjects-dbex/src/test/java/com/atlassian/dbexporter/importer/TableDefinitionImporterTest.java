@@ -37,6 +37,9 @@ public class TableDefinitionImporterTest
     private TableCreator tableCreator;
 
     @Mock
+    private DatabaseCleaner databaseCleaner;
+
+    @Mock
     private ProgressMonitor monitor;
 
     @Mock
@@ -87,7 +90,7 @@ public class TableDefinitionImporterTest
         when(configuration.getProgressMonitor()).thenReturn(monitor);
         when(configuration.getEntityNameProcessor()).thenReturn(new NoOpEntityNameProcessor());
         context = new Context();
-        tableDefinitionImporter = new TableDefinitionImporter(tableCreator);
+        tableDefinitionImporter = new TableDefinitionImporter(tableCreator, databaseCleaner);
     }
 
     @After

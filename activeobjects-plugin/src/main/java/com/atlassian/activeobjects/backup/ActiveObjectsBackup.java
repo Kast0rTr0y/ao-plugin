@@ -9,6 +9,7 @@ import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.RestoreProgressMonitor;
 import com.atlassian.dbexporter.BatchMode;
+import com.atlassian.dbexporter.CleanupMode;
 import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.DbExporter;
@@ -34,6 +35,7 @@ import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.SchemaConfiguration;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -93,7 +95,7 @@ public final class ActiveObjectsBackup implements Backup
 
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
-                new TableDefinitionExporter(new ActiveObjectsTableReader(provider, new PrefixedSchemaConfiguration(PREFIX))),
+                new TableDefinitionExporter(new ActiveObjectsTableReader(provider, schemaConfiguration())),
                 new DataExporter(new PrefixTableSelector(PREFIX)));
 
 
@@ -108,6 +110,11 @@ public final class ActiveObjectsBackup implements Backup
         {
             closeCloseable(streamWriter);
         }
+    }
+
+    private SchemaConfiguration schemaConfiguration()
+    {
+        return new PrefixedSchemaConfiguration(PREFIX);
     }
 
     /**
@@ -129,7 +136,7 @@ public final class ActiveObjectsBackup implements Backup
 
         final DbImporter dbImporter = new DbImporter(
                 new DatabaseInformationImporter(),
-                new TableDefinitionImporter(new ActiveObjectsTableCreator(provider)),
+                new TableDefinitionImporter(new ActiveObjectsTableCreator(provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration())),
                 new DataImporter(
                         new PostgresSequencesAroundImporter(provider),
                         new OracleSequencesAroundImporter(provider),
@@ -237,6 +244,12 @@ public final class ActiveObjectsBackup implements Backup
         public DatabaseInformation getDatabaseInformation()
         {
             return databaseInformation;
+        }
+
+        @Override
+        public CleanupMode getCleanupMode()
+        {
+            return CleanupMode.CLEAN;
         }
 
         @Override
