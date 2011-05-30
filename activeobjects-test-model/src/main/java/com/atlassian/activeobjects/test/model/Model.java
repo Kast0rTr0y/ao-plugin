@@ -28,14 +28,17 @@ public final class Model
 
     private static final String JCIP = "Java Concurrency In Practice";
     private static final double JCIP_PRICE = 37.79;
+    private static final long JCIP_ISBN = 9780321349606L;
     private static final boolean JCIP_READ = true;
 
     private static final String EJ2 = "Effective Java (Second Edition)";
     private static final double EJ2_PRICE = 41.24;
+    private static final long EJ2_ISBN = 9780321356680L;
     private static final boolean EJ2_READ = false;
 
     private static final String PIS = "Programming in Scala";
     private static final double PIS_PRICE = 31.17;
+    private static final long PIS_ISBN = 9780981531601L;
     private static final boolean PIS_READ = true;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -63,12 +66,12 @@ public final class Model
         resetDatabase();
 
         final Author[] jcip = authors(BRIAN_GOETZ, TIM_PEIERLS, JOSHUA_BLOCH, JOSEPH_BOWBEER, DAVID_HOLMES, DOUG_LEA);
-        book(JCIP, JCIP_PRICE, JCIP_READ, jcip);
+        book(JCIP, JCIP_PRICE, JCIP_ISBN, JCIP_READ, jcip);
 
         final Author[] scala = authors(MARTIN_ODERSKY, LEX_SPOON, BILL_VENNERS);
-        book(PIS, PIS_PRICE, PIS_READ, scala);
+        book(PIS, PIS_PRICE, PIS_ISBN, PIS_READ, scala);
 
-        book(EJ2, EJ2_PRICE, EJ2_READ, findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
+        book(EJ2, EJ2_PRICE, EJ2_ISBN, EJ2_READ, findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
     }
 
     public void emptyDatabase()
@@ -97,12 +100,13 @@ public final class Model
         return author;
     }
 
-    private Book book(String title, double price, boolean read, Author... authors)
+    private Book book(String title, double price, long isbn, boolean read, Author... authors)
     {
 
         final Book book = ao.create(Book.class);
         book.setTitle(title);
         book.setPrice(price);
+        book.setIsbn(isbn);
         book.setRead(read);
         book.save();
 
@@ -178,14 +182,15 @@ public final class Model
 
         checkState(3 == books.size());
 
-        checkBook(findBookWithTitle(books, JCIP), JCIP_PRICE, JCIP_READ, 6);
-        checkBook(findBookWithTitle(books, PIS), PIS_PRICE, PIS_READ, 3);
-        checkBook(findBookWithTitle(books, EJ2), EJ2_PRICE, EJ2_READ, 1);
+        checkBook(findBookWithTitle(books, JCIP), JCIP_PRICE, JCIP_ISBN, JCIP_READ, 6);
+        checkBook(findBookWithTitle(books, PIS), PIS_PRICE, PIS_ISBN, PIS_READ, 3);
+        checkBook(findBookWithTitle(books, EJ2), EJ2_PRICE, EJ2_ISBN, EJ2_READ, 1);
     }
 
-    private void checkBook(Book book, double price, boolean read, int i)
+    private void checkBook(Book book, double price, long isbn, boolean read, int i)
     {
         checkState(price == book.getPrice());
+        checkState(isbn == book.getIsbn());
         checkState(read == book.isRead());
         checkState(i == book.getAuthors().length);
     }

@@ -27,7 +27,9 @@ import static com.google.common.collect.Lists.*;
 
 final class ActiveObjectsTableCreator implements TableCreator
 {
+    private static final int DEFAULT_PRECISION = -1;
     private static final int MAX_MYSQL_SCALE = 30;
+    private static final int ORACLE_NUMERIC_BIGINT_PRECISION = 20;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -112,7 +114,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         {
             ddlField.setAutoIncrement(autoIncrement);
         }
-        final Integer p = column.getPrecision();
+        final Integer p = getPrecision(column);
         if (p != null)
         {
             ddlField.setPrecision(p);
@@ -128,15 +130,30 @@ final class ActiveObjectsTableCreator implements TableCreator
 
     private int getSqlType(Column column)
     {
-        if (column.getSqlType() == Types.NUMERIC && column.getScale() != null && column.getScale() > 0)
+        if (isOracleNumericForDouble(column))
         {
-            return Types.DOUBLE; // Oracle uses numeric for both floating point numbers and fixed numbers
+            return Types.DOUBLE;
         }
-        if (Types.BIT == column.getSqlType() && column.getPrecision() != null && column.getPrecision() == 1)
+
+        if (isOracleNumericForBigInt(column))
         {
-            return Types.BOOLEAN; // MySQL uses TINYINT(1) for BOOLEAN which gets exported as BIT for some reason
+            return Types.BIGINT;
+        }
+
+        if (isMySqlBoolean(column))
+        {
+            return Types.BOOLEAN;
         }
         return column.getSqlType();
+    }
+
+    private Integer getPrecision(Column column)
+    {
+        if (isOracleNumericForBigInt(column))
+        {
+            return DEFAULT_PRECISION;
+        }
+        return column.getPrecision();
     }
 
     private Integer getScale(Column column)
@@ -160,5 +177,20 @@ final class ActiveObjectsTableCreator implements TableCreator
             return MAX_MYSQL_SCALE;
         }
         return scale;
+    }
+
+    private static boolean isOracleNumericForBigInt(Column column)
+    {
+        return column.getSqlType() == Types.NUMERIC && column.getPrecision() == ORACLE_NUMERIC_BIGINT_PRECISION;
+    }
+
+    private static boolean isOracleNumericForDouble(Column column)
+    {
+        return column.getSqlType() == Types.NUMERIC && column.getScale() != null && column.getScale() > 0;
+    }
+
+    private static boolean isMySqlBoolean(Column column)
+    {
+        return Types.BIT == column.getSqlType() && column.getPrecision() != null && column.getPrecision() == 1;
     }
 }

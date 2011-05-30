@@ -119,6 +119,11 @@ final class ActiveObjectsTableReader implements TableReader
 
     private int getPrecision(DatabaseInformation info, DDLField field)
     {
+        if (isBigInt(field))
+        {
+            return DEFAULT_PRECISION;
+        }
+
         if (isHsqlDouble(info, field)
                 || isDefaultPostgresPrecisionForDouble(info, field)
                 || isDefaultMySqlPrecisionForDouble(info, field))
@@ -126,6 +131,11 @@ final class ActiveObjectsTableReader implements TableReader
             return DEFAULT_PRECISION;
         }
         return field.getPrecision();
+    }
+
+    private boolean isBigInt(DDLField field)
+    {
+        return field.getType().getType() == Types.BIGINT;
     }
 
     private boolean isHsqlDouble(DatabaseInformation info, DDLField field)

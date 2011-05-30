@@ -5,7 +5,7 @@ import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
 import net.java.ao.EntityManager;
-import net.java.ao.test.NameConverters;
+import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.DynamicJdbcConfiguration;
 import net.java.ao.test.jdbc.Jdbc;
 import net.java.ao.test.jdbc.NonTransactional;
@@ -67,6 +67,11 @@ public final class TestActiveObjectsBackup
     @NonTransactional
     public void testOracleBackup() throws Exception
     {
+        System.out.println("int - min"  + String.valueOf(Integer.MIN_VALUE).length());
+        System.out.println("int - max"  + String.valueOf(Integer.MAX_VALUE).length());
+        System.out.println("long - min"  + String.valueOf(Long.MIN_VALUE).length());
+        System.out.println("long - max"  + String.valueOf(Long.MAX_VALUE).length());
+
         testBackup(ORACLE);
     }
 

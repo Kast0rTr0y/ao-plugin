@@ -21,29 +21,34 @@
   </table>
   <table name="AO_BOOK">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="10" scale="-1"/>
+    <column name="ISBN" primaryKey="false" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
     <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="8" precision="-1" scale="-1"/>
-    <column name="READ" primaryKey="false" autoIncrement="false" sqlType="16" precision="1" scale="-1"/>
+    <column name="READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1" scale="-1"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
   <data tableName="AO_BOOK">
     <column name="ID"/>
+    <column name="ISBN"/>
     <column name="PRICE"/>
     <column name="READ"/>
     <column name="TITLE"/>
     <row>
       <integer>1</integer>
+      <integer>9780321349606</integer>
       <double>37.79</double>
       <boolean>true</boolean>
       <string>Java Concurrency In Practice</string>
     </row>
     <row>
       <integer>2</integer>
+      <integer>9780981531601</integer>
       <double>31.17</double>
       <boolean>true</boolean>
       <string>Programming in Scala</string>
     </row>
     <row>
       <integer>3</integer>
+      <integer>9780321356680</integer>
       <double>41.24</double>
       <boolean>false</boolean>
       <string>Effective Java (Second Edition)</string>
