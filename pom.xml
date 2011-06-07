@@ -184,7 +184,6 @@
             </dependency>
 
             <dependency>
-                <!-- this gets bundled -->
                 <groupId>hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
                 <version>${hsqldb.version}</version>

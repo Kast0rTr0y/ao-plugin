@@ -30,6 +30,26 @@
             </resource>
         </resources>
         <plugins>
+            <!-- not using the standard way of bundling deps because of the hsqlServlet class breaking everything -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-hsqldb</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>activeobjects-spi,hsqldb</includeArtifactIds>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <excludes>hsqlServlet.class,META-INF/*</excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -38,22 +58,19 @@
                         <Bundle-SymbolicName>com.atlassian.activeobjects.refapp.spi</Bundle-SymbolicName>
                         <Export-Package>
                             com.atlassian.activeobjects.spi*;version="${project.version}",
+                            org.hsqldb*;version="${hsqldb.version}",
                         </Export-Package>
                         <Import-Package>
                             com.atlassian.sal.api*;version="${sal.version}",
                             com.google.common*;version="1.0",
                             javax*;version="0.0.0",
                             javax.naming;version="0.0.0",
-                            org.hsqldb*;version="1.8",
                             org.slf4j*,
                             *;resolution:=optional,
                         </Import-Package>
                         <Private-Package>
                             com.atlassian.activeobjects.refapp*,
                         </Private-Package>
-                        <Embed-Dependency>!clover.*;scope=compile|runtime;inline=true</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                        <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                 </configuration>
@@ -75,7 +92,6 @@
         <dependency>
             <groupId>hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

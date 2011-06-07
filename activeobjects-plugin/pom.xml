@@ -64,11 +64,11 @@
                             org.apache.lucene.*;version="2.0";resolution:=optional,
                             org.apache.velocity*;version="1.6.1",
                             org.dom4j*,
+                            org.hsqldb;version="1.8.0";resolution:=optional,
                             org.logicalcobwebs.proxool;version="0.9";resolution:=optional,
                             org.osgi.framework;version="1.4",
                             org.osgi.util.tracker;version="1.3",
                             org.slf4j;version="1.5",
-                            org.hsqldb*;version="1.8",
                             org.springframework.beans*;version="${spring.library.version}",
                             org.springframework.osgi*;version="${spring.osgi.version}",
                             snaq.db;resolution:=optional;version="4.9",
@@ -86,7 +86,6 @@
                             net.java.ao.db;version="${ao.version}",
                             net.java.ao.event;version="${ao.version}",
                             net.java.ao.schema;version="${ao.version}",
-                            org.hsqldb*;version="1.8.0.7",
                         </Export-Package>
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
@@ -228,9 +227,9 @@
         </dependency>
 
         <dependency>
-            <!-- this gets bundled -->
             <groupId>hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -263,13 +262,6 @@
                 <ao.test.database>hsql</ao.test.database>
                 <db.skip>true</db.skip>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>hsqldb</groupId>
-                    <artifactId>hsqldb</artifactId>
-                    <version>${hsqldb.version}</version>
-                </dependency>
-            </dependencies>
         </profile>
         <profile>
             <id>mysql</id>
@@ -393,6 +385,7 @@
                     <groupId>hsqldb</groupId>
                     <artifactId>hsqldb</artifactId>
                     <version>${hsqldb.version}</version>
+                    <scope>provided</scope>
                 </dependency>
             </dependencies>
 

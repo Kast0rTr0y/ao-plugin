@@ -31,7 +31,8 @@ import org.junit.runner.RunWith;
                 "com.google.common*",
                 "it.com.atlassian.activeobjects",
                 "javax.servlet*",
-                "org.dom4j*"
+                "org.dom4j*",
+                "org.hsqldb"
         },
         excludes = {
                 "com.atlassian.activeobjects",
