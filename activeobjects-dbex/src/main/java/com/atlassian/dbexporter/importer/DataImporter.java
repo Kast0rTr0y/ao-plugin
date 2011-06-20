@@ -9,7 +9,6 @@ import com.atlassian.dbexporter.jdbc.RowImportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.ParseException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 import java.math.BigDecimal;
@@ -26,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.atlassian.dbexporter.importer.ImporterUtils.isNodeNotClosed;
+import static com.atlassian.dbexporter.importer.ImporterUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
@@ -35,14 +34,17 @@ import static com.google.common.collect.Lists.*;
 
 public final class DataImporter extends AbstractSingleNodeImporter
 {
-    public DataImporter(List<AroundImporter> arounds)
+    private final AroundTableImporter aroundTable;
+
+    public DataImporter(AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
     {
         super(arounds);
+        this.aroundTable = checkNotNull(aroundTableImporter);
     }
 
-    public DataImporter(AroundImporter... arounds)
+    public DataImporter(AroundTableImporter aroundTableImporter, AroundImporter... arounds)
     {
-        this(newArrayList(checkNotNull(arounds)));
+        this(aroundTableImporter, newArrayList(checkNotNull(arounds)));
     }
 
     @Override
@@ -111,6 +113,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
         long rowNum = 0L;
         try
         {
+            aroundTable.before(configuration, currentTable, connection);
+
             for (; isNodeNotClosed(node, RowDataNode.NAME); node = node.getNextNode())
             {
                 node = node.getNextNode();  // read the first field node
@@ -129,6 +133,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         finally
         {
             inserter.close();
+            aroundTable.after(configuration, currentTable, connection);
         }
 
         monitor.end(Task.TABLE_DATA, currentTable);
@@ -432,8 +437,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         protected void executePS() throws SQLException
         {
-                ps.execute();
-            }
+            ps.execute();
+        }
 
         public void close()
         {
@@ -486,5 +491,12 @@ public final class DataImporter extends AbstractSingleNodeImporter
             flush();
             closeQuietly(ps);
         }
+    }
+
+    public static interface AroundTableImporter
+    {
+        void before(ImportConfiguration configuration, String table, Connection connection);
+
+        void after(ImportConfiguration configuration, String table, Connection connection);
     }
 }

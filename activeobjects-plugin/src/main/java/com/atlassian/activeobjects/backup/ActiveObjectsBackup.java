@@ -25,6 +25,7 @@ import com.atlassian.dbexporter.exporter.TableDefinitionExporter;
 import com.atlassian.dbexporter.importer.DataImporter;
 import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
+import com.atlassian.dbexporter.importer.SqlServerAroundTableImporter;
 import com.atlassian.dbexporter.importer.TableDefinitionImporter;
 import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeStreamReader;
@@ -138,6 +139,7 @@ public final class ActiveObjectsBackup implements Backup
                 new DatabaseInformationImporter(),
                 new TableDefinitionImporter(new ActiveObjectsTableCreator(provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration())),
                 new DataImporter(
+                        new SqlServerAroundTableImporter(),
                         new PostgresSequencesAroundImporter(provider),
                         new OracleSequencesAroundImporter(provider),
                         new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(provider))

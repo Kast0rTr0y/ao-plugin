@@ -97,7 +97,7 @@ public final class DatabaseInformations
 
         private boolean isMsSql(String dbName)
         {
-            return false;
+            return startsWithIgnoreCase(dbName, "Microsoft");
         }
 
         private boolean startsWithIgnoreCase(String s, String start)
