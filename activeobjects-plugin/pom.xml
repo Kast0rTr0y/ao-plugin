@@ -19,6 +19,7 @@
         <mysql.version>5.1.13</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <oracle.version>10.2.0.4</oracle.version>
+        <jtds.version>1.2.4</jtds.version>
     </properties>
 
     <build>
@@ -145,6 +146,11 @@
                         <groupId>com.oracle</groupId>
                         <artifactId>oracle-jdbc14</artifactId>
                         <version>${oracle.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.jtds</groupId>
+                        <artifactId>jtds</artifactId>
+                        <version>${jtds.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -333,7 +339,7 @@
                 <dependency>
                     <groupId>net.sourceforge.jtds</groupId>
                     <artifactId>jtds</artifactId>
-                    <version>1.2.4</version>
+                    <version>${jtds.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
