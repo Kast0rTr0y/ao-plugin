@@ -29,6 +29,7 @@ public final class CreateBackup
             .put("oracle", new Oracle())
             .put("sqlserver", new SqlServer())
             .build();
+
     private static final String CUSTOM = "custom";
 
     public static void main(String[] args) throws Exception

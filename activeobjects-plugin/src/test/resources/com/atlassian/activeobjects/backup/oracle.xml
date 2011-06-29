@@ -22,6 +22,7 @@
   <table name="AO_BOOK">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="11" scale="-1"/>
     <column name="ISBN" primaryKey="false" autoIncrement="false" sqlType="2" precision="20" scale="-1"/>
+    <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="2" precision="11" scale="-1"/>
     <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="32" scale="16"/>
     <column name="READ" primaryKey="false" autoIncrement="false" sqlType="2" precision="1" scale="-1"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
@@ -29,12 +30,14 @@
   <data tableName="AO_BOOK">
     <column name="ID"/>
     <column name="ISBN"/>
+    <column name="NUMBER_OF_PAGES"/>
     <column name="PRICE"/>
     <column name="READ"/>
     <column name="TITLE"/>
     <row>
       <integer>1</integer>
       <integer>9780321349606</integer>
+      <integer>403</integer>
       <double>37.79</double>
       <integer>1</integer>
       <string>Java Concurrency In Practice</string>
@@ -42,6 +45,7 @@
     <row>
       <integer>2</integer>
       <integer>9780981531601</integer>
+      <integer xsi:nil="true"/>
       <double>31.17</double>
       <integer>1</integer>
       <string>Programming in Scala</string>
@@ -49,6 +53,7 @@
     <row>
       <integer>3</integer>
       <integer>9780321356680</integer>
+      <integer xsi:nil="true"/>
       <double>41.24</double>
       <integer>0</integer>
       <string>Effective Java (Second Edition)</string>

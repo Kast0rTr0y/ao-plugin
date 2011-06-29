@@ -139,12 +139,14 @@ public final class DataExporter implements Exporter
                     break;
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
-                    RowDataNode.append(node, getString(result, col));
+                    final String s = getString(result, col);
+                    RowDataNode.append(node, wasNull(result) ? null : s);
                     break;
 
                 case Types.BOOLEAN:
                 case Types.BIT:
-                    RowDataNode.append(node, wasNull(result) ? null : getBoolean(result, col));
+                    final boolean b = getBoolean(result, col);
+                    RowDataNode.append(node, wasNull(result) ? null : b);
                     break;
 
                 case Types.DOUBLE:
@@ -153,7 +155,8 @@ public final class DataExporter implements Exporter
                     break;
 
                 case Types.TIMESTAMP:
-                    RowDataNode.append(node, getTimestamp(result, col));
+                    final Timestamp t = getTimestamp(result, col);
+                    RowDataNode.append(node, wasNull(result) ? null : t);
                     break;
 
                 default:
@@ -172,12 +175,14 @@ public final class DataExporter implements Exporter
 
     private static void appendInteger(ResultSet result, int col, NodeCreator node)
     {
-        RowDataNode.append(node, getBigDecimal(result, col).toBigInteger());
+        final BigDecimal bd = getBigDecimal(result, col);
+        RowDataNode.append(node, wasNull(result) ? null : bd.toBigInteger());
     }
 
     private static void appendDouble(ResultSet result, int col, NodeCreator node)
     {
-        RowDataNode.append(node, BigDecimal.valueOf(getDouble(result, col)));
+        final double d = getDouble(result, col);
+        RowDataNode.append(node, wasNull(result) ? null : BigDecimal.valueOf(d));
     }
 
     private NodeCreator writeColumnDefinitions(NodeCreator node, ResultSetMetaData metaData, EntityNameProcessor entityNameProcessor)

@@ -2,7 +2,6 @@ package com.atlassian.activeobjects.test.model;
 
 import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
-import net.java.ao.OneToMany;
 
 public interface Book extends Entity
 {
@@ -20,6 +19,9 @@ public interface Book extends Entity
      */
     boolean isRead();
     void setRead(boolean read);
+    
+    Integer getNumberOfPages();
+    void setNumberOfPages(Integer pages);
 
     @ManyToMany(Authorship.class)
     Author[] getAuthors();
