@@ -39,7 +39,6 @@
         <module>activeobjects-confluence-spi</module>
         <module>activeobjects-jira-spi</module>
         <module>activeobjects-jira43-spi</module>
-        <module>activeobjects-fecru-spi</module>
         <module>activeobjects-test</module>
         <module>activeobjects-test-model</module>
         <module>activeobjects-test-plugin</module>
