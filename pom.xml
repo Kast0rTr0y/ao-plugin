@@ -8,7 +8,7 @@
 
     <groupId>com.atlassian.activeobjects</groupId>
     <artifactId>activeobjects-plugin-parent-pom</artifactId>
-    <version>0.16-SNAPSHOT</version>
+    <version>0.15.1</version>
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
@@ -16,9 +16,9 @@
     <description>Integrates ActiveObjects as a plugin into the Atlassian product suite.</description>
 
     <scm>
-        <connection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</connection>
-        <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</developerConnection>
-        <url>https://studio.atlassian.com/source/browse/AO/trunk</url>
+        <connection>scm:svn:https://studio.atlassian.com/svn/AO/tags/activeobjects-plugin-parent-pom-0.15.1</connection>
+        <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/tags/activeobjects-plugin-parent-pom-0.15.1</developerConnection>
+        <url>https://studio.atlassian.com/source/browse/AO/tags/activeobjects-plugin-parent-pom-0.15.1</url>
     </scm>
 
     <licenses>
