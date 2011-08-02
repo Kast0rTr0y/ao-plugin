@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
+import net.java.ao.DefaultPolymorphicTypeMapper;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
@@ -37,6 +38,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
     {
         try
         {
+            entityManager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(entities));
             entityManager.migrate(entities);
         }
         catch (SQLException e)
