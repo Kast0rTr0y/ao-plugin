@@ -2,7 +2,9 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.builder.DelegatingDisposableDataSource;
+import net.java.ao.Disposable;
+import net.java.ao.DisposableDataSource;
+import net.java.ao.builder.DelegatingDisposableDataSourceHandler;
 import net.java.ao.db.ClientDerbyDatabaseProvider;
 import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
 import net.java.ao.db.HSQLDatabaseProvider;
@@ -12,7 +14,6 @@ import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.Locale;
 
 import static com.google.common.base.Preconditions.*;
@@ -81,7 +82,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                         return new EmbeddedDerbyDatabaseProvider(getDisposableDataSource(dataSource), "a-fake-uri"); // TODO handle the URI issue
                     }
                 },
-        ORACLE(DatabaseType.ORACLE,"oracle")
+        ORACLE(DatabaseType.ORACLE, "oracle")
                 {
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource)
                     {
@@ -140,24 +141,14 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
         public abstract DatabaseProvider getDatabaseProvider(DataSource dataSource);
     }
 
-    private static DelegatingDisposableDataSource getDisposableDataSource(final DataSource dataSource)
+    private static DisposableDataSource getDisposableDataSource(final DataSource dataSource)
     {
-        return new DelegatingDisposableDataSource(dataSource)
+        return DelegatingDisposableDataSourceHandler.newInstance(dataSource, new Disposable()
         {
+            @Override
             public void dispose()
             {
-                // do nothing
             }
-
-            public <T> T unwrap(Class<T> tClass) throws SQLException
-            {
-                throw new UnsupportedOperationException("unwrap");
-            }
-
-            public boolean isWrapperFor(Class<?> aClass) throws SQLException
-            {
-                throw new UnsupportedOperationException("isWrapperFor");
-            }
-        };
+        });
     }
 }
