@@ -20,6 +20,7 @@
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <oracle.version>10.2.0.4</oracle.version>
         <jtds.version>1.2.4</jtds.version>
+        <ao.spi.compatibility.version>0.15</ao.spi.compatibility.version>
     </properties>
 
     <build>
@@ -34,7 +35,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
-                            com.atlassian.activeobjects.spi;version="${project.version}",
+                            com.atlassian.activeobjects.spi;version="${ao.spi.compatibility.version}",
                             com.atlassian.sal.api;version="2.0",
                             com.atlassian.sal.api.auth;version="2.0",
                             com.atlassian.sal.api.message;version="2.0",
