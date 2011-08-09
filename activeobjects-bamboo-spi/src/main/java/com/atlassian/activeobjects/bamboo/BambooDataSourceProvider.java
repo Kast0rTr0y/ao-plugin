@@ -19,7 +19,9 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -80,7 +82,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
             final Session session = sessionFactory.getSession();
             try
             {
-                return new UncloseableConnection(session.connection());
+                return ConnectionHandler.newInstance(session.connection());
             }
             catch (HibernateException e)
             {
@@ -109,6 +111,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
         /**
          * Returns 0, indicating to use the default system timeout.
          */
+        @Override
         public int getLoginTimeout() throws SQLException
         {
             return 0;
@@ -117,6 +120,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
         /**
          * Setting a login timeout is not supported.
          */
+        @Override
         public void setLoginTimeout(int timeout) throws SQLException
         {
             throw new UnsupportedOperationException("setLoginTimeout");
@@ -125,6 +129,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
         /**
          * LogWriter methods are not supported.
          */
+        @Override
         public PrintWriter getLogWriter()
         {
             throw new UnsupportedOperationException("getLogWriter");
@@ -133,9 +138,16 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
         /**
          * LogWriter methods are not supported.
          */
+        @Override
         public void setLogWriter(PrintWriter pw) throws SQLException
         {
             throw new UnsupportedOperationException("setLogWriter");
+        }
+
+        // @Override Java 7 only
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException
+        {
+            throw new SQLFeatureNotSupportedException();
         }
     }
 }
