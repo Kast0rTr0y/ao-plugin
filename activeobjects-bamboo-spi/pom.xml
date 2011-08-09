@@ -15,7 +15,7 @@
   <description>This is the Bamboo implementation of the SPI.</description>
 
   <properties>
-    <bamboo.version>3.1</bamboo.version>
+    <bamboo.version>3.2</bamboo.version>
   </properties>
 
     <build>
