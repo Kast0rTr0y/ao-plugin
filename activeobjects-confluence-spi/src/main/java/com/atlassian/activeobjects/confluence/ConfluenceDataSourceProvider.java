@@ -19,9 +19,11 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvider
 {
@@ -75,12 +77,13 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
             this.sessionFactory = sessionFactory;
         }
 
+        @Override
         public Connection getConnection() throws SQLException
         {
             final Session session = sessionFactory.getSession();
             try
             {
-                return new UncloseableConnection(session.connection());
+                return ConnectionHandler.newInstance(session.connection());
             }
             catch (HibernateException e)
             {
@@ -88,16 +91,19 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
             }
         }
 
+        @Override
         public Connection getConnection(String username, String password) throws SQLException
         {
             throw new IllegalStateException("Not allowed to get a connection for non default username/password");
         }
 
+        @Override
         public <T> T unwrap(Class<T> tClass) throws SQLException
         {
             return null;
         }
 
+        @Override
         public boolean isWrapperFor(Class<?> aClass) throws SQLException
         {
             return false;
@@ -109,6 +115,7 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
         /**
          * Returns 0, indicating to use the default system timeout.
          */
+        @Override
         public int getLoginTimeout() throws SQLException
         {
             return 0;
@@ -117,6 +124,7 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
         /**
          * Setting a login timeout is not supported.
          */
+        @Override
         public void setLoginTimeout(int timeout) throws SQLException
         {
             throw new UnsupportedOperationException("setLoginTimeout");
@@ -125,6 +133,7 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
         /**
          * LogWriter methods are not supported.
          */
+        @Override
         public PrintWriter getLogWriter()
         {
             throw new UnsupportedOperationException("getLogWriter");
@@ -133,9 +142,16 @@ public final class ConfluenceDataSourceProvider extends AbstractDataSourceProvid
         /**
          * LogWriter methods are not supported.
          */
+        @Override
         public void setLogWriter(PrintWriter pw) throws SQLException
         {
             throw new UnsupportedOperationException("setLogWriter");
+        }
+
+        // @Override Java 7 only
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException
+        {
+            throw new SQLFeatureNotSupportedException();
         }
     }
 }

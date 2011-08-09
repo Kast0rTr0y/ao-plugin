@@ -1,24 +1,21 @@
 package com.atlassian.dbexporter.node.stax;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
+
 public final class XmlFactoryException extends RuntimeException
 {
-    private final Throwable first;
-    private final Throwable second;
+    private final List<Throwable> throwables;
 
-    public XmlFactoryException(String s, Throwable first, Throwable second)
+    public XmlFactoryException(String s, Throwable... throwables)
     {
-        super(s, second);
-        this.first = first;
-        this.second = second;
+        super(s, throwables[throwables.length - 1]);
+        this.throwables = ImmutableList.of(throwables);
     }
 
-    public Throwable getFirst()
+    public List<Throwable> getThrowables()
     {
-        return first;
-    }
-
-    public Throwable getSecond()
-    {
-        return second;
+        return throwables;
     }
 }

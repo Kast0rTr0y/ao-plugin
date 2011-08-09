@@ -26,14 +26,14 @@ public final class JdbcUtils
         try
         {
             connection = provider.getConnection();
-            return callable.call(new DelegatingConnection(connection)
+            return callable.call(ConnectionHandler.newInstance(connection, new ConnectionHandler.Closeable()
             {
                 @Override
                 public void close() throws SQLException
                 {
                     // do nothing
                 }
-            });
+            }));
         }
         catch (SQLException e)
         {

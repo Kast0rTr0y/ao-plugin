@@ -10,6 +10,8 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -57,7 +59,7 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         return new ActiveObjectsDataSource(dataSource);
     }
 
-    private static class ActiveObjectsDataSource implements DataSource
+    public static class ActiveObjectsDataSource implements DataSource
     {
         private final DataSource dataSource;
 
@@ -66,11 +68,13 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
             this.dataSource = dataSource;
         }
 
+        @Override
         public Connection getConnection() throws SQLException
         {
             return dataSource.getConnection();
         }
 
+        @Override
         public Connection getConnection(String username, String password) throws SQLException
         {
             throw new IllegalStateException("Not allowed to get a connection for non default username/password");
@@ -79,6 +83,7 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         /**
          * Returns 0, indicating to use the default system timeout.
          */
+        @Override
         public int getLoginTimeout() throws SQLException
         {
             return 0;
@@ -87,6 +92,7 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         /**
          * Setting a login timeout is not supported.
          */
+        @Override
         public void setLoginTimeout(int timeout) throws SQLException
         {
             throw new UnsupportedOperationException("setLoginTimeout");
@@ -95,6 +101,7 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         /**
          * LogWriter methods are not supported.
          */
+        @Override
         public PrintWriter getLogWriter()
         {
             throw new UnsupportedOperationException("getLogWriter");
@@ -103,19 +110,28 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         /**
          * LogWriter methods are not supported.
          */
+        @Override
         public void setLogWriter(PrintWriter pw) throws SQLException
         {
             throw new UnsupportedOperationException("setLogWriter");
         }
 
+        @Override
         public <T> T unwrap(Class<T> tClass) throws SQLException
         {
             throw new UnsupportedOperationException("unwrap");
         }
 
+        @Override
         public boolean isWrapperFor(Class<?> aClass) throws SQLException
         {
             throw new UnsupportedOperationException("isWrapperFor");
+        }
+
+        // @Override Java 7 only
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException
+        {
+            throw new SQLFeatureNotSupportedException();
         }
     }
 }

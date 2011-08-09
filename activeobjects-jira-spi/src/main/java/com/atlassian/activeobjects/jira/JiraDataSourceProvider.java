@@ -12,7 +12,9 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Suppliers.*;
@@ -109,38 +111,58 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
 
     private static abstract class AbstractDataSource implements DataSource
     {
-        /** Returns 0, indicating to use the default system timeout. */
+        /**
+         * Returns 0, indicating to use the default system timeout.
+         */
+        @Override
         public int getLoginTimeout() throws SQLException
         {
             return 0;
         }
 
-        /** Setting a login timeout is not supported. */
+        /**
+         * Setting a login timeout is not supported.
+         */
+        @Override
         public void setLoginTimeout(int timeout) throws SQLException
         {
             throw new UnsupportedOperationException("setLoginTimeout");
         }
 
-        /** LogWriter methods are not supported. */
+        /**
+         * LogWriter methods are not supported.
+         */
+        @Override
         public PrintWriter getLogWriter()
         {
             throw new UnsupportedOperationException("getLogWriter");
         }
 
-        /** LogWriter methods are not supported. */
+        /**
+         * LogWriter methods are not supported.
+         */
+        @Override
         public void setLogWriter(PrintWriter pw) throws SQLException
         {
             throw new UnsupportedOperationException("setLogWriter");
         }
 
+        @Override
         public <T> T unwrap(Class<T> tClass) throws SQLException
         {
             throw new UnsupportedOperationException("unwrap");
         }
 
+        @Override
         public boolean isWrapperFor(Class<?> aClass) throws SQLException
         {
             throw new UnsupportedOperationException("isWrapperFor");
+        }
+
+        // @Override Java 7 only
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException
+        {
+            throw new SQLFeatureNotSupportedException();
         }
     }
 }

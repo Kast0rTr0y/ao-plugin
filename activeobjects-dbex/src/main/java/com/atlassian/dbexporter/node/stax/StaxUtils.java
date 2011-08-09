@@ -1,13 +1,15 @@
 package com.atlassian.dbexporter.node.stax;
 
-import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
 
 final class StaxUtils
@@ -143,49 +145,48 @@ final class StaxUtils
 
     static XMLInputFactory newXmlInputFactory()
     {
-        try
-        {
-            return newXmlInputFactory(WOODSTOX_INPUT_FACTORY);
-        }
-        catch (FactoryConfigurationError outer)
-        {
-            try
-            {
-                return newXmlInputFactory(DEFAULT_INPUT_FACTORY);
-            }
-            catch (FactoryConfigurationError inner)
-            {
-                throw new XmlFactoryException("Could not load input factory", outer, inner);
-            }
-        }
-    }
-
-    private static XMLInputFactory newXmlInputFactory(String name)
-    {
-        return XMLInputFactory.newFactory(name, StaxUtils.class.getClassLoader());
+        return newInstance(XMLInputFactory.class, WOODSTOX_INPUT_FACTORY, DEFAULT_INPUT_FACTORY);
     }
 
     static XMLOutputFactory newXmlOutputFactory()
     {
-        try
-        {
-            return newXmlOutputFactory(WOODSTOX_OUTPUT_FACTORY);
-        }
-        catch (FactoryConfigurationError outer)
+        return newInstance(XMLOutputFactory.class, WOODSTOX_OUTPUT_FACTORY, DEFAULT_OUTPUT_FACTORY);
+    }
+
+    private static <T> T newInstance(Class<T> type, String... classNames)
+    {
+        final List<XmlFactoryException> exceptions = newArrayList();
+        for (String className : classNames)
         {
             try
             {
-                return newXmlOutputFactory(DEFAULT_OUTPUT_FACTORY);
+                return newInstance(type, className);
             }
-            catch (FactoryConfigurationError inner)
+            catch (XmlFactoryException e)
             {
-                throw new XmlFactoryException("Could not load output factory", outer, inner);
+                exceptions.add(e);
             }
         }
+        throw new XmlFactoryException("Could not instantiate any of " + Arrays.toString(classNames), exceptions.toArray(new Throwable[exceptions.size()]));
     }
 
-    private static XMLOutputFactory newXmlOutputFactory(String name)
+    private static <T> T newInstance(Class<T> type, String className)
     {
-        return XMLOutputFactory.newFactory(name, StaxUtils.class.getClassLoader());
+        try
+        {
+            return type.cast(StaxUtils.class.getClassLoader().loadClass(className).newInstance());
+        }
+        catch (InstantiationException e)
+        {
+            throw new XmlFactoryException("Could not instantiate " + className, e);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new XmlFactoryException("Could not instantiate " + className, e);
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new XmlFactoryException("Could not find class " + className, e);
+        }
     }
 }
