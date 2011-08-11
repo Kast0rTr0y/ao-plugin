@@ -37,10 +37,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>com.atlassian.activeobjects.confluence.spi</Bundle-SymbolicName>
-                        <Export-Package>
-                            com.atlassian.activeobjects.spi*;version="${project.version}",
-                        </Export-Package>
                         <Import-Package>
+                            com.atlassian.activeobjects.spi*,
                             com.atlassian.hibernate,
                             com.atlassian.sal.api*,
                             com.google.common*,
@@ -48,10 +46,10 @@
                             javax.naming;resolution:=optional,
                             javax.sql,
                             net.sf.hibernate*,
-                            org.slf4j*,
+                            org.slf4j*
                         </Import-Package>
                         <Private-Package>
-                            com.atlassian.activeobjects.confluence*,
+                            com.atlassian.activeobjects.confluence*
                         </Private-Package>
                         <Embed-Dependency>!clover.*;scope=compile|runtime;inline=true</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
@@ -68,6 +66,7 @@
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
             <version>${project.version}</version>
+			<scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.confluence</groupId>
