@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.test.TestActiveObjects;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import net.java.ao.EntityManager;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Collections2.transform;
+import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.collect.Lists.*;
 
 public final class Model
@@ -105,10 +107,9 @@ public final class Model
 
     private Book book(String title, double price, long isbn, boolean read, Integer pages, Author... authors)
     {
-        final Book book = ao.create(Book.class);
+        final Book book = ao.create(Book.class, ImmutableMap.<String, Object>of("ISBN", isbn));
         book.setTitle(title);
         book.setPrice(price);
-        book.setIsbn(isbn);
         book.setRead(read);
         book.setNumberOfPages(pages);
         book.save();

@@ -67,11 +67,6 @@ public final class TestActiveObjectsBackup
     @NonTransactional
     public void testOracleBackup() throws Exception
     {
-        System.out.println("int - min"  + String.valueOf(Integer.MIN_VALUE).length());
-        System.out.println("int - max"  + String.valueOf(Integer.MAX_VALUE).length());
-        System.out.println("long - min"  + String.valueOf(Long.MIN_VALUE).length());
-        System.out.println("long - max"  + String.valueOf(Long.MAX_VALUE).length());
-
         testBackup(ORACLE);
     }
 

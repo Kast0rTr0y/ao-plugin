@@ -70,7 +70,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                         connection.setAutoCommit(false);
                         for (; TableDataNode.NAME.equals(node.getName()) && !node.isClosed(); node.getNextNode())
                         {
-                            importTable(node, configuration, connection);
+                            importTable(node, configuration, context, connection);
                         }
                         connection.commit();
                     }
@@ -89,7 +89,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         monitor.end(Task.TABLES_DATA);
     }
 
-    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Connection connection)
+    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Context context, Connection connection)
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
@@ -113,7 +113,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         long rowNum = 0L;
         try
         {
-            aroundTable.before(configuration, currentTable, connection);
+            aroundTable.before(configuration, context, currentTable, connection);
 
             for (; isNodeNotClosed(node, RowDataNode.NAME); node = node.getNextNode())
             {
@@ -133,7 +133,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         finally
         {
             inserter.close();
-            aroundTable.after(configuration, currentTable, connection);
+            aroundTable.after(configuration, context, currentTable, connection);
         }
 
         monitor.end(Task.TABLE_DATA, currentTable);
@@ -495,8 +495,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
     public static interface AroundTableImporter
     {
-        void before(ImportConfiguration configuration, String table, Connection connection);
+        void before(ImportConfiguration configuration, Context context, String table, Connection connection);
 
-        void after(ImportConfiguration configuration, String table, Connection connection);
+        void after(ImportConfiguration configuration, Context context, String table, Connection connection);
     }
 }
