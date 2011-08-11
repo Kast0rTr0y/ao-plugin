@@ -42,8 +42,10 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>com.atlassian.activeobjects.bamboo.spi</Bundle-SymbolicName>
+                        <Export-Package>
+                            com.atlassian.activeobjects.spi*;version="${project.version}",
+                        </Export-Package>
                         <Import-Package>
-                            com.atlassian.activeobjects.spi*,
                             com.atlassian.bamboo*,
                             com.atlassian.hibernate,
                             com.google.common*,
@@ -69,7 +71,7 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
-            <scope>provided</scope>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.bamboo</groupId>
