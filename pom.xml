@@ -78,7 +78,7 @@
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-dependency-tracker-plugin</artifactId>
-                    <version>1.1</version>
+                    <version>1.2.3</version>
                     <!-- TODO, uncomment at some point
                     <executions>
                         <execution>
