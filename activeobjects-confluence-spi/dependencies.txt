@@ -65,7 +65,6 @@ commons-logging:commons-logging:1.1.1:jar:-:provided|com.atlassian.confluence:co
 concurrent:concurrent:1.3.4:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2,com.octo.captcha:jcaptcha-all:jar:1.0-RC6|{sha1}1cf394c2a388199db550cda311174a4c6a7d117c|{sha1}e5bd86eb0c203d94e827ae6d666ff94ffc6b1a9e
 dom4j:dom4j:1.4-full:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}69e7812ed2309b4c3713d3961260cb9458ddd5a1|{sha1}bbd16a3f6475c720d97fc8d2ea6fba257f77c651
 exml:exml:7.1:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}3406fc09cf8cabe4582398472d514474031a861c|{sha1}7d4b05d601348fc1fdc0574d36590afc35b15e5d
-glue:glue:5.0b2:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}983bcef4d946e18ca0631e4dcf1a805e9d929950|{sha1}0f52b7c06de6df3fcffed2cb653836da2f4dc0ce
 hibernate:hibernate:2.1.8-atlassian:jar:-:provided||{sha1}d534407c34aa6307a16cac6b465a3cc2682a0165|{sha1}c620ea88500158d5c16ec0d9b3443ad804960d8d
 hsqldb:hsqldb:1.8.0.7:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
 javax.activation:activation:1.0.2:jar:-:provided|com.atlassian.confluence:confluence:jar:3.4-m2-r2|{sha1}a2a2e2e89d143d24ddba9a76e5c36603969db30f|{sha1}29b3f71eebf7fc15165ef99bf8f03b3adb31cbc0

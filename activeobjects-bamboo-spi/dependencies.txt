@@ -6,7 +6,7 @@ backport-util-concurrent:backport-util-concurrent:2.1:jar:-:provided|com.atlassi
 biz.aQute:bndlib:0.0.255:jar:-:provided|com.atlassian.bamboo:atlassian-bamboo-api:jar:3.2,com.atlassian.plugins:atlassian-plugins-osgi:jar:2.6.5|{sha1}eae5fb9abb1801896bab29611d24a1b828966c89|{sha1}350b31984b6e8095b94d48305581dabd4665d3b0
 cglib:cglib-nodep:2.1_3:jar:-:provided|com.atlassian.bamboo:atlassian-bamboo-api:jar:3.2,com.atlassian.plugins:atlassian-plugins-core:jar:2.8.0,com.atlassian.multitenant:multitenant-core:jar:1.0-m14|{sha1}58d3be5953547c0019e5704d6ed4ffda3b0c7c66|{sha1}737c7c6e7e2272673d0b202683d0be615f162650
 com.amazonaws:aws-java-sdk:1.1.5:jar:-:provided|com.atlassian.bamboo:atlassian-bamboo-api:jar:3.2,com.atlassian.aws:atlassian-aws:jar:0.30|{sha1}adc387d2cb084af3d24d94ce6538390cfc74a3f8|{sha1}1aec53995d02616c67437044ee02d255c0b82993
-com.atlassian.activeobjects:activeobjects-spi:0.16-SNAPSHOT:jar:-:provided||SNAPSHOT|SNAPSHOT
+com.atlassian.activeobjects:activeobjects-spi:0.16-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
 com.atlassian.annotations:atlassian-annotations:0.4:jar:-:provided|com.atlassian.bamboo:atlassian-bamboo-api:jar:3.2|{sha1}6194cb92917f6cd0107a3d4778c0fa80f3f7d227|{sha1}4281113e70048c2084848c9f4a14995ae3b6ab44
 com.atlassian.applinks:applinks-api:3.5.6:jar:-:provided|com.atlassian.bamboo:atlassian-bamboo-api:jar:3.2|{sha1}095371147918d2ec987d4c945417ef1214bd8ed1|{sha1}e57472349cc745f57c5a0b13f301cd0c9bb9b093
 com.atlassian.applinks:applinks-host:3.5.6:jar:-:provided|com.atlassian.bamboo:atlassian-bamboo-api:jar:3.2|{sha1}c75150296d76dc40a22b2c20b94430116b49ef52|{sha1}563b3b7ea23b09f0e0cec516aeeacd154daf7dab
