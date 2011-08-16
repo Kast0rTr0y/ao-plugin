@@ -20,7 +20,7 @@
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <oracle.version>10.2.0.4</oracle.version>
         <jtds.version>1.2.4</jtds.version>
-        <ao.spi.compatibility.version>0.15</ao.spi.compatibility.version>
+        <ao.spi.compatibility.version>0.16</ao.spi.compatibility.version>
     </properties>
 
     <build>
@@ -48,6 +48,7 @@
                             com.atlassian.plugin.osgi.bridge.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.factory;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.predicate;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.web;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.webresource;version="${atlassian-plugins.version}",
                             com.google.common*;version="1.0",

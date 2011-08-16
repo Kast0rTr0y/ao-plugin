@@ -71,10 +71,13 @@ public final class BackupRestoreTest
 
     private void assertBackupIsEmpty(String backup) throws DocumentException
     {
-        final Document doc = DocumentHelper.parseText(backup);
-        assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
-        assertTrue(TABLE_XPATH.selectNodes(doc).isEmpty());
-        assertTrue(DATA_XPATH.selectNodes(doc).isEmpty());
+        if (backup.length() > 0)
+        {
+            final Document doc = DocumentHelper.parseText(backup);
+            assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
+            assertTrue(TABLE_XPATH.selectNodes(doc).isEmpty());
+            assertTrue(DATA_XPATH.selectNodes(doc).isEmpty());
+        }
     }
 
     private void assertBackupIsNotEmpty(String backup) throws DocumentException
@@ -150,7 +153,9 @@ public final class BackupRestoreTest
         return ImmutableMap.of(s, o);
     }
 
-    /** A partial copy of IOUtils from commons-io */
+    /**
+     * A partial copy of IOUtils from commons-io
+     */
     private static class IOUtils
     {
         private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;

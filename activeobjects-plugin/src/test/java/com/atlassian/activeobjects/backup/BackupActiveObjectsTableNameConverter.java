@@ -6,9 +6,11 @@ import com.atlassian.activeobjects.internal.SimplePrefix;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.TableNameConverter;
 
+import static com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor.AO_TABLE_PREFIX;
+
 public final class BackupActiveObjectsTableNameConverter implements TableNameConverter
 {
-    public static final Prefix PREFIX = new SimplePrefix("AO");
+    public static final Prefix PREFIX = new SimplePrefix(AO_TABLE_PREFIX);
 
     private final TableNameConverter tableNameConverter;
 

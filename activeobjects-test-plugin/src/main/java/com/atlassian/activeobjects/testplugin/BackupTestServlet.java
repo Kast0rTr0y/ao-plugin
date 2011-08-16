@@ -4,7 +4,12 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
+import com.atlassian.activeobjects.spi.OnBackupError;
+import com.atlassian.activeobjects.spi.PluginExport;
+import com.atlassian.activeobjects.spi.PluginImport;
+import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.activeobjects.test.model.Model;
+import com.google.common.collect.Lists;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,7 +23,7 @@ import java.io.UnsupportedEncodingException;
 
 import static com.google.common.base.Preconditions.*;
 
-public class BackupTestServlet extends HttpServlet
+public final class BackupTestServlet extends HttpServlet
 {
     public static final String CREATE = "create";
     public static final String BACKUP = "backup";
@@ -41,19 +46,86 @@ public class BackupTestServlet extends HttpServlet
             new Model(ao).createData();
         }
 
-        resp.setContentType("application/json");
+        resp.setContentType("application/xml");
         final OutputStream os = resp.getOutputStream();
 
-        backup.save(os, NullBackupProgressMonitor.INSTANCE);
+        backup.save(new PluginExport()
+        {
+            @Override
+            public OutputStream getOutputStream(PluginInformation info)
+            {
+                checkState(info.isAvailable());
+                checkState(info.getPluginKey().equals("com.atlassian.activeobjects" + "." + "activeobjects-test-plugin"));
+                checkState(info.getPluginName().equals("ActiveObjects Plugin - Test Plugin"));
+
+                return os;
+            }
+
+            @Override
+            public OnBackupError error(PluginInformation information, Throwable t)
+            {
+                return OnBackupError.FAIL;
+            }
+        }, NullBackupProgressMonitor.INSTANCE);
 
         os.flush();
         os.close();
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+    protected void doPost(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
-        backup.restore(newInputStream(req.getParameter(BACKUP)), NullRestoreProgressMonitor.INSTANCE);
+        backup.restore(Lists.<PluginImport>newArrayList(new PluginImport()
+        {
+            @Override
+            public PluginInformation getPluginInformation()
+            {
+                return new PluginInformation()
+                {
+                    @Override
+                    public boolean isAvailable()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public String getPluginName()
+                    {
+                        return null;
+                    }
+
+                    @Override
+                    public String getPluginKey()
+                    {
+                        return null;
+                    }
+
+                    @Override
+                    public String getPluginVersion()
+                    {
+                        return null;
+                    }
+
+                    @Override
+                    public String getHash()
+                    {
+                        return "0F732C";
+                    }
+                };
+            }
+
+            @Override
+            public InputStream getInputStream()
+            {
+                return newInputStream(req.getParameter(BACKUP));
+            }
+
+            @Override
+            public OnBackupError error(PluginInformation information, Throwable t)
+            {
+                return OnBackupError.FAIL;
+            }
+        }), NullRestoreProgressMonitor.INSTANCE);
     }
 
     private InputStream newInputStream(String backupString)

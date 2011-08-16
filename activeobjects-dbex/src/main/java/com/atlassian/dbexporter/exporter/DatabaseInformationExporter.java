@@ -4,17 +4,20 @@ import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.google.common.collect.Maps;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.*;
 
 public final class DatabaseInformationExporter implements Exporter
 {
-    private final DatabaseInformationReader databaseInformationReader;
+    private final List<DatabaseInformationReader> informationReaders;
 
     public DatabaseInformationExporter()
     {
@@ -27,9 +30,9 @@ public final class DatabaseInformationExporter implements Exporter
         });
     }
 
-    public DatabaseInformationExporter(DatabaseInformationReader databaseInformationReader)
+    public DatabaseInformationExporter(DatabaseInformationReader... informationReaders)
     {
-        this.databaseInformationReader = checkNotNull(databaseInformationReader);
+        this.informationReaders = newArrayList(checkNotNull(informationReaders));
     }
 
     @Override
@@ -37,13 +40,23 @@ public final class DatabaseInformationExporter implements Exporter
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         monitor.begin(Task.DATABASE_INFORMATION);
-        final Map<String, String> properties = databaseInformationReader.get();
+        final Map<String, String> properties = allProperties();
         if (!properties.isEmpty())
         {
             export(node, properties);
         }
         context.put(new DatabaseInformation(properties));
         monitor.end(Task.DATABASE_INFORMATION);
+    }
+
+    private Map<String, String> allProperties()
+    {
+        final Map<String, String> props = Maps.newTreeMap();
+        for (DatabaseInformationReader informationReader : informationReaders)
+        {
+            props.putAll(informationReader.get());
+        }
+        return props;
     }
 
     private void export(NodeCreator node, Map<String, String> properties)

@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
+import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.activeobjects.test.model.Model;
 import net.java.ao.EntityManager;
 import net.java.ao.test.converters.NameConverters;
@@ -26,7 +27,7 @@ import java.io.UnsupportedEncodingException;
 @RunWith(ActiveObjectsJUnitRunner.class)
 @Jdbc(DynamicJdbcConfiguration.class)
 @NameConverters(table = BackupActiveObjectsTableNameConverter.class, field = ActiveObjectsFieldNameConverter.class)
-public final class TestActiveObjectsBackup
+public final class TestPrefixedActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
@@ -39,7 +40,7 @@ public final class TestActiveObjectsBackup
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private EntityManager entityManager;
-    private ActiveObjectsBackup aoBackup;
+    private PrefixedActiveObjectsBackup aoBackup;
     private Model model;
 
     @Test
@@ -94,7 +95,8 @@ public final class TestActiveObjectsBackup
     private String save()
     {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        aoBackup.save(os, NullBackupProgressMonitor.INSTANCE);
+        aoBackup.save(os, NullBackupProgressMonitor.INSTANCE, CreateBackup.PLUGIN_INFO);
+
         try
         {
             return os.toString(UTF_8);
@@ -107,7 +109,7 @@ public final class TestActiveObjectsBackup
 
     private void restore(String xmlBackup) throws IOException
     {
-        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE);
+        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE, new PluginInformationChecker());
     }
 
     private void assertDataPresent()
@@ -119,7 +121,7 @@ public final class TestActiveObjectsBackup
     @Before
     public void setUp()
     {
-        aoBackup = new ActiveObjectsBackup(entityManager.getProvider());
+        aoBackup = new PrefixedActiveObjectsBackup(entityManager.getProvider(), CreateBackup.SCHEMA_CONFIGURATION_FACTORY, CreateBackup.BACKUP_PREFIX);
         model = new Model(entityManager);
         model.emptyDatabase();
     }

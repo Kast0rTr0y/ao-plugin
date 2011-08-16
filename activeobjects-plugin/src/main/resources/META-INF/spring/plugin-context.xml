@@ -38,9 +38,27 @@
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
-    <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
+    <bean id="aoBackup" class="com.atlassian.activeobjects.backup.BackupImpl">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.PrefixedSchemaConfigurationFactory"/>
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.ActiveObjectsHashesReader">
+                <constructor-arg>
+                    <bean class="com.atlassian.activeobjects.backup.ActiveObjectsTableNamesReader"/>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.ActiveObjectsBackupFactoryImpl"/>
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.PluginInformationFactory">
+                <constructor-arg ref="pluginAccessor"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="aoPluginConfiguration"
