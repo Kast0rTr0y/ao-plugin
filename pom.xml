@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.pom</groupId>
@@ -8,7 +9,7 @@
 
     <groupId>com.atlassian.activeobjects</groupId>
     <artifactId>activeobjects-plugin-parent-pom</artifactId>
-    <version>0.16-SNAPSHOT</version>
+    <version>0.15.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
@@ -16,9 +17,9 @@
     <description>Integrates ActiveObjects as a plugin into the Atlassian product suite.</description>
 
     <scm>
-        <connection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</connection>
-        <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/trunk</developerConnection>
-        <url>https://studio.atlassian.com/source/browse/AO/trunk</url>
+        <connection>scm:svn:https://studio.atlassian.com/svn/AO/branches/activeobjects-plugin-0.15.x</connection>
+        <developerConnection>scm:svn:https://studio.atlassian.com/svn/AO/branches/activeobjects-plugin-0.15.x</developerConnection>
+        <url>https://studio.atlassian.com/source/browse/AO/branches/activeobjects-plugin-0.15.x</url>
     </scm>
 
     <licenses>
@@ -97,6 +98,14 @@
                         <productVersion>2.7.1</productVersion>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.2.1</version>
+                    <configuration>
+                        <tagNameFormat>activeobjects-plugin-@{project.version}</tagNameFormat>
                     </configuration>
                 </plugin>
             </plugins>
