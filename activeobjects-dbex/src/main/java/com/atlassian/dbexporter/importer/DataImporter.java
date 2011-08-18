@@ -3,6 +3,7 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.ImportExportException;
 import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
 import com.atlassian.dbexporter.jdbc.RowImportSqlException;
@@ -256,7 +257,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 {
                     final String name = rs.getString("COLUMN_NAME");
                     final int size = rs.getInt("COLUMN_SIZE");
-                    return new ColumnNameAndSize(name, size);
+                    final int type = rs.getInt("DATA_TYPE");
+                    return new ColumnNameAndSize(name, type == Types.CLOB ? UNLIMITED_COLUMN_SIZE : size);
                 }
                 else
                 {
@@ -292,13 +294,13 @@ public final class DataImporter extends AbstractSingleNodeImporter
         private ColumnNameAndSize()
         {
             this.name = null;
-            this.size = -1;
+            this.size = InserterBuilder.UNLIMITED_COLUMN_SIZE;
         }
 
         public ColumnNameAndSize(String name, int size)
         {
             this.name = checkNotNull(name);
-            this.size = size;
+            this.size = size <= 0 ? InserterBuilder.UNLIMITED_COLUMN_SIZE : size;
         }
     }
 
@@ -345,10 +347,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 int maxSize = maxColumnSize.get(col);
                 if (maxSize != -1 && value.length() > maxSize)
                 {
-                    String oldValue = value;
-                    value = oldValue.substring(0, maxSize);
-
-                    // TODO warning or something
+                    throw new ImportExportException("Could not import data in table '" + tableName + "' column #" + col + ", value is too big for column which size limit is " + maxSize + ", value is:\n" + value + "\n");
                 }
                 ps.setString(col, value);
             }

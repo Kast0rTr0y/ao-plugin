@@ -41,7 +41,9 @@ public class BackupTestServlet extends HttpServlet
             new Model(ao).createData();
         }
 
-        resp.setContentType("application/json");
+        resp.setContentType("application/xml");
+        resp.setCharacterEncoding("UTF-8");
+
         final OutputStream os = resp.getOutputStream();
 
         backup.save(os, NullBackupProgressMonitor.INSTANCE);
