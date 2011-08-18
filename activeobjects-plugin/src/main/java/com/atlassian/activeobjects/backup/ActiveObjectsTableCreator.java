@@ -80,7 +80,7 @@ final class ActiveObjectsTableCreator implements TableCreator
             }
             catch (SQLException e)
             {
-                throw new ImportExportSqlException(e);
+                throw new ImportExportSqlException("The following sql caused an error:\n" + sql + "\n---\n", e);
             }
         }
     }

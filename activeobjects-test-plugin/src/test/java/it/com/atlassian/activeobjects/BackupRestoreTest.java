@@ -129,6 +129,7 @@ public final class BackupRestoreTest
     private HttpMethod newPostMethod(String path, Map<String, Object> parameters)
     {
         final PostMethod method = new PostMethod(path);
+        method.setRequestHeader("Content-Type", PostMethod.FORM_URL_ENCODED_CONTENT_TYPE + ";charset=UTF-8");
         method.setRequestBody(toNameValuePairArray(parameters));
         return method;
     }
@@ -169,7 +170,7 @@ public final class BackupRestoreTest
 
         public static void copy(InputStream input, Writer output) throws IOException
         {
-            InputStreamReader in = new InputStreamReader(input);
+            InputStreamReader in = new InputStreamReader(input, "UTF-8");
             copy(in, output);
         }
 

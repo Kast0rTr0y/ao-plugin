@@ -9,6 +9,7 @@ import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 
 import java.math.BigDecimal;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -157,6 +158,11 @@ public final class DataExporter implements Exporter
                 case Types.TIMESTAMP:
                     final Timestamp t = getTimestamp(result, col);
                     RowDataNode.append(node, wasNull(result) ? null : t);
+                    break;
+                
+                case Types.CLOB:
+                    final String c = getClobAsString(result, col);
+                    RowDataNode.append(node, wasNull(result) ? null : c);
                     break;
 
                 default:
@@ -348,6 +354,19 @@ public final class DataExporter implements Exporter
         catch (SQLException e)
         {
             throw new ImportExportSqlException("Could not get timestamp value for col #" + col, e);
+        }
+    }
+
+    private static String getClobAsString(ResultSet result, int col)
+    {
+        try
+        {
+            final Clob clob = result.getClob(col);
+            return clob == null ? null : clob.getSubString(1L, (int) clob.length());
+        }
+        catch (SQLException e)
+        {
+            throw new ImportExportSqlException("Could not get clob value for col #" + col, e);
         }
     }
 

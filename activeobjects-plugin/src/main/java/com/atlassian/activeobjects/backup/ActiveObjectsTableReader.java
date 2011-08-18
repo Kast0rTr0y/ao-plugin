@@ -35,6 +35,7 @@ final class ActiveObjectsTableReader implements TableReader
     public static final int DEFAULT_MYSQL_DOUBLE_SCALE = 31;
     public static final int DEFAULT_POSTGRES_PRECISION = 17;
     public static final int DEFAULT_POSTGRES_SCALE = 17;
+    public static final int POSTGRES_PRECISION_FOR_TEXT = 2147483647;
 
     private final DatabaseProvider provider;
     private final SchemaConfiguration schemaConfiguration;
@@ -100,8 +101,18 @@ final class ActiveObjectsTableReader implements TableReader
     {
         final String name = processor.columnName(field.getName());
         return
-                new Column(name, field.getType().getType(), field.isPrimaryKey(), field.isAutoIncrement(),
+                new Column(name, getType(info, field), field.isPrimaryKey(), field.isAutoIncrement(),
                         getPrecision(info, field), getScale(info, field));
+    }
+
+    private int getType(DatabaseInformation info, DDLField field)
+    {
+        if (isPostgresVarcharForText(info, field))
+        {
+            return Types.CLOB;
+        }
+
+        return field.getType().getType();
     }
 
     private int getScale(DatabaseInformation info, DDLField field)
@@ -119,14 +130,13 @@ final class ActiveObjectsTableReader implements TableReader
 
     private int getPrecision(DatabaseInformation info, DDLField field)
     {
-        if (isBigInt(field))
-        {
-            return DEFAULT_PRECISION;
-        }
-
-        if (isHsqlDouble(info, field)
+        if (isBigInt(field)
+                || isLongVarchar(field)
+                || isHsqlDouble(info, field)
+                || isSqlServerClob(info, field)
                 || isDefaultPostgresPrecisionForDouble(info, field)
-                || isDefaultMySqlPrecisionForDouble(info, field))
+                || isDefaultMySqlPrecisionForDouble(info, field)
+                || isPostgresVarcharForText(info, field))
         {
             return DEFAULT_PRECISION;
         }
@@ -142,6 +152,17 @@ final class ActiveObjectsTableReader implements TableReader
     {
         return isDatabase(info, Database.Type.HSQL)
                 && isFieldOfType(field, Types.DOUBLE);
+    }
+
+    private boolean isSqlServerClob(DatabaseInformation info, DDLField field)
+    {
+        return isDatabase(info, Database.Type.MSSQL)
+                && isFieldOfType(field, Types.CLOB);
+    }
+
+    private boolean isLongVarchar(DDLField field)
+    {
+        return isFieldOfType(field, Types.LONGVARCHAR);
     }
 
     private boolean isDefaultPostgresPrecisionForDouble(DatabaseInformation info, DDLField field)
@@ -163,6 +184,13 @@ final class ActiveObjectsTableReader implements TableReader
                 && isFieldOfType(field, Types.DOUBLE)
                 && field.getPrecision() == DEFAULT_MYSQL_DOUBLE_PRECISION
                 && field.getScale() == DEFAULT_MYSQL_DOUBLE_SCALE;
+    }
+
+    private boolean isPostgresVarcharForText(DatabaseInformation info, DDLField field)
+    {
+        return isDatabase(info, Database.Type.POSTGRES)
+                && isFieldOfType(field, Types.VARCHAR)
+                && field.getPrecision() == POSTGRES_PRECISION_FOR_TEXT;
     }
 
     private boolean isFieldOfType(DDLField field, int aDouble)
