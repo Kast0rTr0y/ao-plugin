@@ -456,16 +456,6 @@
                     <artifactId>activeobjects</artifactId>
                     <version>${ao.version}</version>
                     <classifier>sources</classifier>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-core</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-queries</artifactId>
-                        </exclusion>
-                    </exclusions>
                 </dependency>
 
                 <!-- using hsql for the release -->
