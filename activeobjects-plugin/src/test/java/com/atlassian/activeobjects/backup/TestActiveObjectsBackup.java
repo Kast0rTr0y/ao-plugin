@@ -3,7 +3,6 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
-import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.activeobjects.test.model.Model;
 import net.java.ao.EntityManager;
 import net.java.ao.test.converters.NameConverters;
@@ -27,7 +26,7 @@ import java.io.UnsupportedEncodingException;
 @RunWith(ActiveObjectsJUnitRunner.class)
 @Jdbc(DynamicJdbcConfiguration.class)
 @NameConverters(table = BackupActiveObjectsTableNameConverter.class, field = ActiveObjectsFieldNameConverter.class)
-public final class TestPrefixedActiveObjectsBackup
+public final class TestActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";

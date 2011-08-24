@@ -1,12 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <backup xmlns="http://www.atlassian.com/ao" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <database>
+    <meta key="database.majorVersion" value="10"/>
+    <meta key="database.minorVersion" value="2"/>
     <meta key="database.name" value="Oracle"/>
     <meta key="database.version" value="Oracle Database 10g Enterprise Edition Release 10.2.0.1.0 - Production&#xa;With the Partitioning, OLAP and Data Mining options"/>
-    <meta key="database.minorVersion" value="2"/>
-    <meta key="database.majorVersion" value="10"/>
     <meta key="driver.name" value="Oracle JDBC driver"/>
     <meta key="driver.version" value="10.2.0.4.0"/>
+    <meta key="plugin.ao.hash" value="some0hash"/>
+    <meta key="plugin.key" value="some-plugin-key"/>
+    <meta key="plugin.name" value="some plugin"/>
+    <meta key="plugin.version" value="some.version"/>
   </database>
   <table name="AO_AUTHOR">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="11" scale="-1"/>
@@ -24,6 +28,7 @@
     <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="2" precision="20" scale="-1"/>
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="2" precision="11" scale="-1"/>
     <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="32" scale="16"/>
+    <column name="PUBLISHED" primaryKey="false" autoIncrement="false" sqlType="93" precision="-1" scale="6"/>
     <column name="READ" primaryKey="false" autoIncrement="false" sqlType="2" precision="1" scale="-1"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
@@ -32,6 +37,7 @@
     <column name="ISBN"/>
     <column name="NUMBER_OF_PAGES"/>
     <column name="PRICE"/>
+    <column name="PUBLISHED"/>
     <column name="READ"/>
     <column name="TITLE"/>
     <row>
@@ -82,6 +88,7 @@ This book covers:
       <integer>9780321349606</integer>
       <integer>403</integer>
       <double>37.79</double>
+      <timestamp>2006-05-19T00:00:00.000Z</timestamp>
       <integer>1</integer>
       <string>Java Concurrency In Practice</string>
     </row>
@@ -94,6 +101,7 @@ Artima is very pleased to publish the first book on Scala, written by the design
       <integer>9780981531601</integer>
       <integer xsi:nil="true"/>
       <double>31.17</double>
+      <timestamp>2011-01-04T00:00:00.000Z</timestamp>
       <integer>1</integer>
       <string>Programming in Scala</string>
     </row>
@@ -115,6 +123,7 @@ Simply put, Effective Java™, Second Edition, presents the most practical, auth
       <integer>9780321356680</integer>
       <integer xsi:nil="true"/>
       <double>41.24</double>
+      <timestamp>2008-05-28T00:00:00.000Z</timestamp>
       <integer>0</integer>
       <string>Effective Java (Second Edition)</string>
     </row>
@@ -123,11 +132,6 @@ Simply put, Effective Java™, Second Edition, presents the most practical, auth
     <column name="AUTHOR_ID"/>
     <column name="BOOK_ID"/>
     <column name="ID"/>
-    <row>
-      <integer>1</integer>
-      <integer>9780321349606</integer>
-      <integer>1</integer>
-    </row>
     <row>
       <integer>2</integer>
       <integer>9780321349606</integer>
@@ -173,14 +177,15 @@ Simply put, Effective Java™, Second Edition, presents the most practical, auth
       <integer>9780321356680</integer>
       <integer>10</integer>
     </row>
+    <row>
+      <integer>1</integer>
+      <integer>9780321349606</integer>
+      <integer>1</integer>
+    </row>
   </data>
   <data tableName="AO_AUTHOR">
     <column name="ID"/>
     <column name="NAME"/>
-    <row>
-      <integer>1</integer>
-      <string>Brian Goetz</string>
-    </row>
     <row>
       <integer>2</integer>
       <string>Tim Peierls</string>
@@ -212,6 +217,10 @@ Simply put, Effective Java™, Second Edition, presents the most practical, auth
     <row>
       <integer>9</integer>
       <string>Bill Venners</string>
+    </row>
+    <row>
+      <integer>1</integer>
+      <string>Brian Goetz</string>
     </row>
   </data>
 </backup>

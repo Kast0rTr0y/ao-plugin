@@ -16,6 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Collections2.transform;
@@ -23,6 +27,8 @@ import static com.google.common.collect.Lists.*;
 
 public final class Model
 {
+    private static final String DATE_FORMAT = "MMM d, yyyy";
+
     private static final String BRIAN_GOETZ = "Brian Goetz";
     private static final String TIM_PEIERLS = "Tim Peierls";
     private static final String JOSHUA_BLOCH = "Joshua Bloch";
@@ -31,10 +37,11 @@ public final class Model
     private static final String DAVID_HOLMES = "David Holmes";
     private static final String MARTIN_ODERSKY = "Martin Odersky";
     private static final String LEX_SPOON = "Lex Spoon";
-    private static final String BILL_VENNERS = "Bill Venners";
 
+    private static final String BILL_VENNERS = "Bill Venners";
     private static final String JCIP = "Java Concurrency In Practice";
     private static final double JCIP_PRICE = 37.79;
+    private static final Date JCIP_PUBLISHED = toDate("May 19, 2006");
     private static final long JCIP_ISBN = 9780321349606L;
     private static final boolean JCIP_READ = true;
     private static final Integer JCIP_PAGES = 403;
@@ -43,6 +50,7 @@ public final class Model
 
     private static final String EJ2 = "Effective Java (Second Edition)";
     private static final double EJ2_PRICE = 41.24;
+    private static final Date EJ2_PUBLISHED = toDate("May 28, 2008");
     private static final long EJ2_ISBN = 9780321356680L;
     private static final boolean EJ2_READ = false;
     private static final Integer EJ2_PAGES = null;
@@ -51,6 +59,7 @@ public final class Model
 
     private static final String PIS = "Programming in Scala";
     private static final double PIS_PRICE = 31.17;
+    private static final Date PIS_PUBLISHED = toDate("Jan 4, 2011");
     private static final long PIS_ISBN = 9780981531601L;
     private static final boolean PIS_READ = true;
     private static final Integer PIS_PAGES = null;
@@ -82,12 +91,12 @@ public final class Model
         resetDatabase();
 
         final Author[] jcip = authors(BRIAN_GOETZ, TIM_PEIERLS, JOSHUA_BLOCH, JOSEPH_BOWBEER, DAVID_HOLMES, DOUG_LEA);
-        book(JCIP, JCIP_PRICE, JCIP_ISBN, JCIP_READ, JCIP_PAGES, JCIP_ABSTRACT.get(),jcip);
+        book(JCIP, JCIP_PRICE, JCIP_ISBN, JCIP_PUBLISHED, JCIP_READ, JCIP_PAGES, JCIP_ABSTRACT.get(), jcip);
 
         final Author[] scala = authors(MARTIN_ODERSKY, LEX_SPOON, BILL_VENNERS);
-        book(PIS, PIS_PRICE, PIS_ISBN, PIS_READ, PIS_PAGES, PIS_ABSTRACT.get(), scala);
+        book(PIS, PIS_PRICE, PIS_ISBN, PIS_PUBLISHED, PIS_READ, PIS_PAGES, PIS_ABSTRACT.get(), scala);
 
-        book(EJ2, EJ2_PRICE, EJ2_ISBN, EJ2_READ, EJ2_PAGES, EJ2_ABSTRACT.get(), findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
+        book(EJ2, EJ2_PRICE, EJ2_ISBN, EJ2_PUBLISHED, EJ2_READ, EJ2_PAGES, EJ2_ABSTRACT.get(), findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
     }
 
     public void emptyDatabase()
@@ -116,7 +125,7 @@ public final class Model
         return author;
     }
 
-    private Book book(String title, double price, long isbn, boolean read, Integer pages,
+    private Book book(String title, double price, long isbn, Date published, boolean read, Integer pages,
                       String bookAbstract, Author... authors)
     {
         final Book book = ao.create(Book.class, ImmutableMap.<String, Object>of("ISBN", isbn));
@@ -125,6 +134,7 @@ public final class Model
         book.setPrice(price);
         book.setRead(read);
         book.setNumberOfPages(pages);
+        book.setPublished(published);
         book.save();
 
         for (Author author : authors)
@@ -199,15 +209,16 @@ public final class Model
 
         checkState(3 == books.size());
 
-        checkBook(findBookWithTitle(books, JCIP), JCIP_ABSTRACT.get(), JCIP_PRICE, JCIP_ISBN, JCIP_READ, JCIP_PAGES, 6);
-        checkBook(findBookWithTitle(books, PIS), PIS_ABSTRACT.get(), PIS_PRICE, PIS_ISBN, PIS_READ, PIS_PAGES, 3);
-        checkBook(findBookWithTitle(books, EJ2), EJ2_ABSTRACT.get(), EJ2_PRICE, EJ2_ISBN, EJ2_READ, EJ2_PAGES, 1);
+        checkBook(findBookWithTitle(books, JCIP), JCIP_ABSTRACT.get(), JCIP_PRICE, JCIP_ISBN, JCIP_PUBLISHED, JCIP_READ, JCIP_PAGES, 6);
+        checkBook(findBookWithTitle(books, PIS), PIS_ABSTRACT.get(), PIS_PRICE, PIS_ISBN, PIS_PUBLISHED, PIS_READ, PIS_PAGES, 3);
+        checkBook(findBookWithTitle(books, EJ2), EJ2_ABSTRACT.get(), EJ2_PRICE, EJ2_ISBN, EJ2_PUBLISHED, EJ2_READ, EJ2_PAGES, 1);
     }
 
-    private void checkBook(Book book, String bookAbstract, double price, long isbn, boolean read, Integer pages, int i)
+    private void checkBook(Book book, String bookAbstract, double price, long isbn, Date published, boolean read, Integer pages, int i)
     {
         checkState(bookAbstract.equals(book.getAbstract()), "\n----Expected:----\n%s\n----Actual:----\n%s\n------------\n", bookAbstract, book.getAbstract());
         checkState(price == book.getPrice());
+        checkState(published.getTime() == book.getPublished().getTime());
         checkState(isbn == book.getIsbn());
         checkState(read == book.isRead());
         checkState((pages == null && book.getNumberOfPages() == null) || (pages != null && pages.equals(book.getNumberOfPages())));
@@ -267,6 +278,20 @@ public final class Model
             {
                 IOUtils.closeQuietly(is);
             }
+        }
+    }
+
+    private static Date toDate(String date)
+    {
+        try
+        {
+            final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return sdf.parse(date);
+        }
+        catch (ParseException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 }
