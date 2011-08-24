@@ -12,7 +12,9 @@ import java.lang.reflect.Proxy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-/** The proxy that takes care of wrapping annotated methods within a transaction. */
+/**
+ * The proxy that takes care of wrapping annotated methods within a transaction.
+ */
 public final class TransactionalProxy implements InvocationHandler
 {
     private static final Class<? extends Annotation> ANNOTATION_CLASS = Transactional.class;
@@ -30,29 +32,51 @@ public final class TransactionalProxy implements InvocationHandler
     {
         if (isAnnotated(method))
         {
-            return ao.executeInTransaction(new TransactionCallback<Object>()
-            {
-                public Object doInTransaction()
-                {
-                    try
-                    {
-                        return method.invoke(obj, args);
-                    }
-                    catch (IllegalAccessException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                    catch (InvocationTargetException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            return invokeInTransaction(method, args);
         }
         else
         {
-            return method.invoke(obj, args);
+            return invoke(method, args);
         }
+    }
+
+    private Object invokeInTransaction(final Method method, final Object[] args) throws Throwable
+    {
+        try
+        {
+            return executeInTransaction(method, args);
+        }
+        catch (TransactionalException e)
+        {
+            throw e.getThrowable();
+        }
+    }
+
+    private Object executeInTransaction(final Method method, final Object[] args)
+    {
+        return ao.executeInTransaction(new TransactionCallback<Object>()
+        {
+            public Object doInTransaction()
+            {
+                try
+                {
+                    return invoke(method, args);
+                }
+                catch (IllegalAccessException e)
+                {
+                    throw new TransactionalException(e);
+                }
+                catch (InvocationTargetException e)
+                {
+                    throw new TransactionalException(e);
+                }
+            }
+        });
+    }
+
+    private Object invoke(Method method, Object[] args) throws IllegalAccessException, InvocationTargetException
+    {
+        return method.invoke(obj, args);
     }
 
     /**
@@ -114,5 +138,26 @@ public final class TransactionalProxy implements InvocationHandler
     private static boolean isAnnotationPresent(AnnotatedElement e)
     {
         return e.isAnnotationPresent(ANNOTATION_CLASS);
+    }
+
+    private static final class TransactionalException extends RuntimeException
+    {
+        public TransactionalException(Throwable cause)
+        {
+            super(cause);
+        }
+
+        public Throwable getThrowable()
+        {
+            final Throwable cause = getCause();
+            if (cause instanceof InvocationTargetException)
+            {
+                return cause.getCause();
+            }
+            else
+            {
+                return cause;
+            }
+        }
     }
 }
