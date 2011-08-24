@@ -7,6 +7,7 @@ import net.java.ao.schema.PrimaryKey;
 import net.java.ao.schema.SQLType;
 
 import java.sql.Types;
+import java.util.Date;
 
 public interface Book extends RawEntity<Long>
 {
@@ -36,6 +37,10 @@ public interface Book extends RawEntity<Long>
     boolean isRead();
 
     void setRead(boolean read);
+
+    Date getPublished();
+
+    void setPublished(Date date);
 
     Integer getNumberOfPages();
 
