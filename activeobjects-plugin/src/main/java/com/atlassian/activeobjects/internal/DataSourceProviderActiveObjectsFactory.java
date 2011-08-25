@@ -46,7 +46,7 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();
-        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), configuration), new SalTransactionManager(transactionTemplate));
+        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema(), configuration), new SalTransactionManager(transactionTemplate));
     }
 
     private DataSource getDataSource()

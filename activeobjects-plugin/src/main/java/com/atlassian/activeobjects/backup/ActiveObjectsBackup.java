@@ -65,7 +65,7 @@ public final class ActiveObjectsBackup implements Backup
             @Override
             public DatabaseProvider get()
             {
-                return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType());
+                return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
             }
         });
     }
@@ -97,7 +97,7 @@ public final class ActiveObjectsBackup implements Backup
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
                 new TableDefinitionExporter(new ActiveObjectsTableReader(provider, schemaConfiguration())),
-                new DataExporter(new PrefixTableSelector(PREFIX)));
+                new DataExporter(provider.getSchema(), new PrefixTableSelector(PREFIX)));
 
 
         NodeStreamWriter streamWriter = null;
@@ -139,6 +139,7 @@ public final class ActiveObjectsBackup implements Backup
                 new DatabaseInformationImporter(),
                 new TableDefinitionImporter(new ActiveObjectsTableCreator(provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration())),
                 new DataImporter(
+                        provider.getSchema(),
                         new SqlServerAroundTableImporter(),
                         new PostgresSequencesAroundImporter(provider),
                         new OracleSequencesAroundImporter(provider),

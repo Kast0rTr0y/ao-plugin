@@ -11,8 +11,15 @@ public abstract class AbstractDataSourceProvider implements DataSourceProvider
      *
      * @return {@link com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN}
      */
+    @Override
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.UNKNOWN;
+    }
+
+    @Override
+    public String getSchema()
+    {
+        return null; // use the default schema configured for the user
     }
 }

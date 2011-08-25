@@ -1,16 +1,16 @@
 package com.atlassian.activeobjects.refapp;
 
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 
 import javax.sql.DataSource;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  *
  */
-public class RefappDataSourceProvider implements DataSourceProvider
+public class RefappDataSourceProvider extends AbstractDataSourceProvider
 {
     private final DataSource dataSource;
 

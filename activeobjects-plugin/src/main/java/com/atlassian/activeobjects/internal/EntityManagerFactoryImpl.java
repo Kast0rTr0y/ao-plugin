@@ -21,7 +21,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
     }
 
-    public EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, ActiveObjectsConfiguration configuration)
+    public EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, String schema, ActiveObjectsConfiguration configuration)
     {
         final DataSourceEntityManagerConfiguration entityManagerConfiguration =
                 new DataSourceEntityManagerConfiguration(
@@ -29,7 +29,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory
                         configuration.getFieldNameConverter(),
                         configuration.getSchemaConfiguration());
 
-        return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType), entityManagerConfiguration);
+        return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType, schema), entityManagerConfiguration);
     }
 
     private static class DataSourceEntityManagerConfiguration implements EntityManagerConfiguration

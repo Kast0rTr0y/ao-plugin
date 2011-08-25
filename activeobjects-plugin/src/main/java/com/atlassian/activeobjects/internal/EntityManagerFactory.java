@@ -19,5 +19,5 @@ interface EntityManagerFactory
      * @param configuration the configuration for this active objects instance
      * @return a new entity manager
      */
-    EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, ActiveObjectsConfiguration configuration);
+    EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, String schema, ActiveObjectsConfiguration configuration);
 }

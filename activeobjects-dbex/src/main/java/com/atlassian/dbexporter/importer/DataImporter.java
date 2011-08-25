@@ -35,17 +35,19 @@ import static com.google.common.collect.Lists.*;
 
 public final class DataImporter extends AbstractSingleNodeImporter
 {
+    private final String schema;
     private final AroundTableImporter aroundTable;
 
-    public DataImporter(AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
+    public DataImporter(String schema, AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
     {
         super(arounds);
+        this.schema = schema;
         this.aroundTable = checkNotNull(aroundTableImporter);
     }
 
-    public DataImporter(AroundTableImporter aroundTableImporter, AroundImporter... arounds)
+    public DataImporter(String schema, AroundTableImporter aroundTableImporter, AroundImporter... arounds)
     {
-        this(aroundTableImporter, newArrayList(checkNotNull(arounds)));
+        this(schema, aroundTableImporter, newArrayList(checkNotNull(arounds)));
     }
 
     @Override
@@ -99,7 +101,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         monitor.begin(Task.TABLE_DATA, currentTable);
 
-        final InserterBuilder builder = new InserterBuilder(currentTable, configuration.getBatchMode());
+        final InserterBuilder builder = new InserterBuilder(schema, currentTable, configuration.getBatchMode());
 
         node = node.getNextNode();
         for (; isNodeNotClosed(node, ColumnDataNode.NAME); node = node.getNextNode())
@@ -155,12 +157,14 @@ public final class DataImporter extends AbstractSingleNodeImporter
     private static class InserterBuilder
     {
         public static final int UNLIMITED_COLUMN_SIZE = -1;
+        private final String schema;
         private final String table;
         private final BatchMode batch;
         private final List<String> columns;
 
-        public InserterBuilder(String table, BatchMode batch)
+        public InserterBuilder(String schema, String table, BatchMode batch)
         {
+            this.schema = schema;
             this.table = table;
             this.batch = batch;
             columns = new ArrayList<String>();
@@ -179,7 +183,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         public Inserter build(Connection connection)
         {
             final StringBuilder query = new StringBuilder("INSERT INTO ")
-                    .append(quote(connection, table))
+                    .append(tableName(connection))
                     .append(" (");
 
             for (int i = 0; i < columns.size(); i++)
@@ -205,6 +209,12 @@ public final class DataImporter extends AbstractSingleNodeImporter
             final List<Integer> maxColumnSizes = calculateColumnSizes(connection, columns);
             final PreparedStatement ps = preparedStatement(connection, query.toString());
             return newInserter(maxColumnSizes, ps);
+        }
+
+        private String tableName(Connection connection)
+        {
+            final String quoted = quote(connection, table);
+            return schema != null ? schema + "." + quoted : quoted;
         }
 
         private Inserter newInserter(List<Integer> maxColumnSizes, PreparedStatement ps)

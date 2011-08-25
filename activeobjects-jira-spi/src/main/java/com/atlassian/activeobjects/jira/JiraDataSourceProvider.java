@@ -3,7 +3,6 @@ package com.atlassian.activeobjects.jira;
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.jira.ofbiz.OfBizConnectionFactory;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import org.ofbiz.core.entity.jdbc.dbtype.DatabaseTypeFactory;
@@ -33,13 +32,15 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
             .put(DatabaseTypeFactory.POSTGRES_7_3, DatabaseType.POSTGRESQL)
             .build();
 
-    private final DataSource ds;
+    private final OfBizConnectionFactory connectionFactory;
     private final JiraDatabaseTypeExtractor databaseTypeExtractor;
+    private final DataSource ds;
 
     public JiraDataSourceProvider(OfBizConnectionFactory connectionFactory, JiraDatabaseTypeExtractor databaseTypeExtractor)
     {
-        this.ds = new OfBizDataSource(checkNotNull(connectionFactory));
+        this.connectionFactory = checkNotNull(connectionFactory);
         this.databaseTypeExtractor = checkNotNull(databaseTypeExtractor);
+        this.ds = new OfBizDataSource(connectionFactory);
     }
 
     public DataSource getDataSource()
@@ -72,6 +73,12 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
                 }
             }
         }).get();
+    }
+
+    @Override
+    public String getSchema()
+    {
+        return connectionFactory.getDatasourceInfo().getSchemaName();
     }
 
     private static void closeQuietly(Connection connection)
