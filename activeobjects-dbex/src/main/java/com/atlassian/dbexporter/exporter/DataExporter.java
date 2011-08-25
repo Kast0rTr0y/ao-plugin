@@ -27,10 +27,12 @@ import static com.google.common.base.Preconditions.*;
 
 public final class DataExporter implements Exporter
 {
+    private final String schema;
     private final TableSelector tableSelector;
 
-    public DataExporter(TableSelector tableSelector)
+    public DataExporter(String schema, TableSelector tableSelector)
     {
+        this.schema = schema; // maybe null
         this.tableSelector = checkNotNull(tableSelector);
     }
 
@@ -94,7 +96,7 @@ public final class DataExporter implements Exporter
         ResultSet result = null;
         try
         {
-            result = executeQueryWithFetchSize(statement, "SELECT * FROM " + quote(connection, table), 100);
+            result = executeQueryWithFetchSize(statement, "SELECT * FROM " + tableName(table, connection), 100);
             final ResultSetMetaData meta = resultSetMetaData(result);
 
             // write column definitions
@@ -111,6 +113,12 @@ public final class DataExporter implements Exporter
 
         monitor.end(Task.TABLE_DATA, entityNameProcessor.tableName(table));
         return node.closeEntity();
+    }
+
+    private String tableName(String table, Connection connection)
+    {
+        final String quoted = quote(connection, table);
+        return schema != null ? schema + "." + quoted : quoted;
     }
 
     private NodeCreator exportRow(NodeCreator node, ResultSet result, ProgressMonitor monitor)
@@ -394,11 +402,11 @@ public final class DataExporter implements Exporter
         }
     }
 
-    private static ResultSet getTablesResultSet(Connection connection)
+    private ResultSet getTablesResultSet(Connection connection)
     {
         try
         {
-            return metadata(connection).getTables(null, null, "%", new String[]{"TABLE"});
+            return metadata(connection).getTables(null, schema, "%", new String[]{"TABLE"});
         }
         catch (SQLException e)
         {

@@ -27,13 +27,13 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
         this.driverNameExtractor = checkNotNull(driverNameExtractor);
     }
 
-    public DatabaseProvider getDatabaseProvider(DataSource dataSource, DatabaseType databaseType)
+    public DatabaseProvider getDatabaseProvider(DataSource dataSource, DatabaseType databaseType, String schema)
     {
         for (DatabaseProviderFactoryEnum dbProviderFactory : DatabaseProviderFactoryEnum.values())
         {
             if (dbProviderFactory.accept(databaseType))
             {
-                return dbProviderFactory.getDatabaseProvider(dataSource);
+                return dbProviderFactory.getDatabaseProvider(dataSource, schema);
             }
         }
 
@@ -43,7 +43,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
         {
             if (dbProviderFactory.accept(driverName))
             {
-                return dbProviderFactory.getDatabaseProvider(dataSource);
+                return dbProviderFactory.getDatabaseProvider(dataSource, schema);
             }
         }
         throw new DatabaseProviderNotFoundException(driverName);
@@ -63,58 +63,66 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
     {
         MYSQL(DatabaseType.MYSQL, "mysql")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
                         return new MySQLDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
         DERBY_NETWORK(DatabaseType.DERBY_NETWORK, "derby")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
                         return new ClientDerbyDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
         DERBY_EMBEDDED(DatabaseType.DERBY_EMBEDDED, "derby")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
                         return new EmbeddedDerbyDatabaseProvider(getDisposableDataSource(dataSource), "a-fake-uri"); // TODO handle the URI issue
                     }
                 },
         ORACLE(DatabaseType.ORACLE, "oracle")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
                         return new OracleDatabaseProvider(getDisposableDataSource(dataSource));
                     }
                 },
         POSTGRESQL(DatabaseType.POSTGRESQL, "postgres")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new PostgreSQLDatabaseProvider(getDisposableDataSource(dataSource));
+                        return new PostgreSQLDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 },
         MSSQL(DatabaseType.MS_SQL, "sqlserver")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource));
+                        return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 },
         MSSQL_JTDS(DatabaseType.MS_SQL, "jtds")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource));
+                        return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 },
         HSQLDB(DatabaseType.HSQL, "hsql")
                 {
-                    public DatabaseProvider getDatabaseProvider(DataSource dataSource)
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new HSQLDatabaseProvider(getDisposableDataSource(dataSource));
+                        return new HSQLDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 };
 
@@ -138,7 +146,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
         }
 
         // apparently useless, I know, but the compiler complains if not there
-        public abstract DatabaseProvider getDatabaseProvider(DataSource dataSource);
+        public abstract DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema);
     }
 
     private static DisposableDataSource getDisposableDataSource(final DataSource dataSource)

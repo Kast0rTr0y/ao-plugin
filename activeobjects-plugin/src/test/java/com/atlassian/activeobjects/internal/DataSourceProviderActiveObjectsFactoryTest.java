@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,11 +83,11 @@ public class DataSourceProviderActiveObjectsFactoryTest
         final EntityManager entityManager = mock(EntityManager.class);
 
         when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
-        when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyConfiguration())).thenReturn(entityManager);
+        when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
 
         assertNotNull(activeObjectsFactory.create(configuration));
-        verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyConfiguration());
+        verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
     }
 
     private static DataSource anyDataSource()

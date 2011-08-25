@@ -47,16 +47,17 @@ public class EntityManagerFactoryImplTest
     @Test
     public void testGetEntityManager() throws Exception
     {
+        final String schema = null;
         final DataSource dataSource = mock(DataSource.class);
         final DatabaseType databaseType = DatabaseType.UNKNOWN;
         final DatabaseProvider databaseProvider = mock(DatabaseProvider.class);
 
         final ActiveObjectsConfiguration configuration = getMockConfiguration();
 
-        when(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType)).thenReturn(databaseProvider);
-        assertNotNull(entityManagerFactory.getEntityManager(dataSource, databaseType, configuration));
+        when(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType, schema)).thenReturn(databaseProvider);
+        assertNotNull(entityManagerFactory.getEntityManager(dataSource, databaseType, schema, configuration));
 
-        verify(databaseProviderFactory).getDatabaseProvider(dataSource, databaseType);
+        verify(databaseProviderFactory).getDatabaseProvider(dataSource, databaseType, schema);
     }
 
     private ActiveObjectsConfiguration getMockConfiguration()

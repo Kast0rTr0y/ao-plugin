@@ -10,5 +10,5 @@ import javax.sql.DataSource;
  */
 public interface DatabaseProviderFactory
 {
-    DatabaseProvider getDatabaseProvider(DataSource dataSource, DatabaseType databaseType);
+    DatabaseProvider getDatabaseProvider(DataSource dataSource, DatabaseType databaseType, String schema);
 }

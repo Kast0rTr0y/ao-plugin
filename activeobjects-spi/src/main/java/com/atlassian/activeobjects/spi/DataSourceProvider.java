@@ -22,4 +22,12 @@ public interface DataSourceProvider
      * @see com.atlassian.activeobjects.spi.DatabaseType
      */
     DatabaseType getDatabaseType();
+
+    /**
+     * <p>The name of the schema used with this database.</p>
+     * <p>This is especially import for SQL Server, PostgresQL and HSQLDB</p>
+     *
+     * @return the name of the schema to use, {@code null} if no schema is required.
+     */
+    String getSchema();
 }

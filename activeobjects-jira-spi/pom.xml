@@ -46,6 +46,7 @@
                             javax.naming;resolution:=optional,
                             javax.sql,
                             org.ofbiz.core.entity.jdbc.dbtype,
+                            org.ofbiz.core.entity.config,
                             org.slf4j*,
                         </Import-Package>
                         <Private-Package>

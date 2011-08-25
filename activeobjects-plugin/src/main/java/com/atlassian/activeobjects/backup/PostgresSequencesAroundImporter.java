@@ -84,9 +84,16 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
         }
     }
 
-    private static String max(Connection connection, String tableName, String columnName)
+    private String max(Connection connection, String tableName, String columnName)
     {
-        return "SELECT MAX(" + quote(connection, columnName) + ") FROM " + quote(connection, tableName);
+        return "SELECT MAX(" + quote(connection, columnName) + ") FROM " + tableName(connection, tableName);
+    }
+
+    private String tableName(Connection connection, String tableName)
+    {
+        final String schema = provider.getSchema();
+        final String quoted = quote(connection, tableName);
+        return schema != null ? schema + "." + quoted : quoted;
     }
 
     private static String alterSequence(Connection connection, String tableName, String columnName, int val)

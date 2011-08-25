@@ -58,7 +58,7 @@ public class JdbcDriverDatabaseProviderFactoryTest
     {
         try
         {
-            databaseProviderFactory.getDatabaseProvider(getMockDataSource(SOME_UNKOWN_DRIVER), DatabaseType.UNKNOWN);
+            databaseProviderFactory.getDatabaseProvider(getMockDataSource(SOME_UNKOWN_DRIVER), DatabaseType.UNKNOWN, null);
             fail("Should have thrown " + DatabaseProviderNotFoundException.class.getName());
         }
         catch (DatabaseProviderNotFoundException e)
@@ -162,7 +162,7 @@ public class JdbcDriverDatabaseProviderFactoryTest
     {
         final DataSource dataSource = getMockDataSource(driver);
 
-        final DatabaseProvider provider = databaseProviderFactory.getDatabaseProvider(dataSource, databaseType);
+        final DatabaseProvider provider = databaseProviderFactory.getDatabaseProvider(dataSource, databaseType, null);
         assertNotNull(provider);
         assertEquals(providerClass, provider.getClass());
     }

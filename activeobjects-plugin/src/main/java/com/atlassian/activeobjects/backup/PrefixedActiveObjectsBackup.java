@@ -76,7 +76,7 @@ final class PrefixedActiveObjectsBackup implements ActiveObjectsBackup
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider), new PluginInformationReader(pluginInfo)),
                 new TableDefinitionExporter(new ActiveObjectsTableReader(databaseProvider, schemaConfigurationFactory.getSchemaConfiguration(prefix))),
-                new DataExporter(new PrefixTableSelector(prefix)));
+                new DataExporter(databaseProvider.getSchema(), new PrefixTableSelector(prefix)));
 
         NodeStreamWriter streamWriter = null;
         try
@@ -112,6 +112,7 @@ final class PrefixedActiveObjectsBackup implements ActiveObjectsBackup
                 new DatabaseInformationImporter(pluginInformationChecker),
                 new TableDefinitionImporter(new ActiveObjectsTableCreator(databaseProvider), new ActiveObjectsDatabaseCleaner(databaseProvider, schemaConfigurationFactory.getSchemaConfiguration(prefix))),
                 new DataImporter(
+                        databaseProvider.getSchema(),
                         new SqlServerAroundTableImporter(),
                         new PostgresSequencesAroundImporter(databaseProvider),
                         new OracleSequencesAroundImporter(databaseProvider),

@@ -168,7 +168,7 @@ public final class BackupImpl implements Backup
             @Override
             public DatabaseProvider get()
             {
-                return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType());
+                return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
             }
         };
     }
