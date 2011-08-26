@@ -1,8 +1,8 @@
 package com.atlassian.dbexporter.node.stax;
 
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
-import com.atlassian.dbexporter.node.ParseException;
 import javanet.staxutils.IndentingXMLStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -25,6 +25,8 @@ import static com.google.common.base.Preconditions.*;
 public final class StaxStreamWriter implements NodeStreamWriter
 {
     private static final String XMLSCHEMA_URI = "http://www.w3.org/2001/XMLSchema-instance";
+
+    private final ImportExportErrorService errorService;
     private final XMLStreamWriter writer;
     private final String nameSpaceUri;
     private final Charset charset;
@@ -34,19 +36,15 @@ public final class StaxStreamWriter implements NodeStreamWriter
      * Creates a new StAX document with the default namespace set to the specified
      * uri.
      */
-    public StaxStreamWriter(Writer output, Charset charset, String namespaceUri) throws ParseException
+    public StaxStreamWriter(ImportExportErrorService errorService, Writer output, Charset charset, String nameSpaceUri)
     {
-        this(createXmlStreamWriter(output), charset, namespaceUri);
-    }
-
-    public StaxStreamWriter(XMLStreamWriter writer, Charset charset, String nameSpaceUri)
-    {
-        this.writer = new IndentingXMLStreamWriter(checkNotNull(writer));
+        this.errorService = checkNotNull(errorService);
+        this.writer = new IndentingXMLStreamWriter(checkNotNull(createXmlStreamWriter(output)));
         this.charset = checkNotNull(charset);
         this.nameSpaceUri = checkNotNull(nameSpaceUri);
     }
 
-    private static XMLStreamWriter createXmlStreamWriter(Writer writer) throws ParseException
+    private XMLStreamWriter createXmlStreamWriter(Writer writer)
     {
         try
         {
@@ -54,11 +52,11 @@ public final class StaxStreamWriter implements NodeStreamWriter
         }
         catch (XMLStreamException xe)
         {
-            throw new ParseException(xe);
+            throw errorService.newParseException(xe);
         }
     }
 
-    public NodeCreator addRootNode(String name) throws ParseException, IllegalStateException
+    public NodeCreator addRootNode(String name)
     {
         if (rootExists)
         {
@@ -75,7 +73,7 @@ public final class StaxStreamWriter implements NodeStreamWriter
                 {
                     private long depth = 0L;
 
-                    public NodeCreator addNode(String name) throws ParseException
+                    public NodeCreator addNode(String name)
                     {
                         try
                         {
@@ -85,11 +83,11 @@ public final class StaxStreamWriter implements NodeStreamWriter
                         }
                         catch (XMLStreamException e)
                         {
-                            throw new ParseException(e);
+                            throw errorService.newParseException(e);
                         }
                     }
 
-                    public NodeCreator closeEntity() throws ParseException
+                    public NodeCreator closeEntity()
                     {
                         try
                         {
@@ -98,18 +96,17 @@ public final class StaxStreamWriter implements NodeStreamWriter
                         }
                         catch (XMLStreamException e)
                         {
-                            throw new ParseException(e);
+                            throw errorService.newParseException(e);
                         }
                     }
 
-                    public NodeCreator setContentAsDate(Date date) throws
-                            ParseException
+                    public NodeCreator setContentAsDate(Date date)
                     {
                         return setContentAsString(date == null ? null : newDateFormat().format(date));
                     }
 
                     @Override
-                    public NodeCreator setContentAsBigInteger(BigInteger bigInteger) throws ParseException
+                    public NodeCreator setContentAsBigInteger(BigInteger bigInteger)
                     {
                         return setContentAsString(bigInteger == null ? null : bigInteger.toString());
                     }
@@ -122,12 +119,11 @@ public final class StaxStreamWriter implements NodeStreamWriter
 
                     @Override
                     public NodeCreator setContentAsBoolean(Boolean bool)
-                            throws ParseException
                     {
                         return setContentAsString(bool == null ? null : Boolean.toString(bool));
                     }
 
-                    public NodeCreator setContentAsString(String value) throws ParseException
+                    public NodeCreator setContentAsString(String value)
                     {
                         try
                         {
@@ -143,7 +139,7 @@ public final class StaxStreamWriter implements NodeStreamWriter
                         }
                         catch (XMLStreamException e)
                         {
-                            throw new ParseException(e);
+                            throw errorService.newParseException(e);
                         }
                     }
 
@@ -152,7 +148,7 @@ public final class StaxStreamWriter implements NodeStreamWriter
                         throw new AssertionError("Not implemented");
                     }
 
-                    public NodeCreator addAttribute(String key, String value) throws ParseException
+                    public NodeCreator addAttribute(String key, String value)
                     {
                         try
                         {
@@ -161,7 +157,7 @@ public final class StaxStreamWriter implements NodeStreamWriter
                         }
                         catch (XMLStreamException e)
                         {
-                            throw new ParseException(e);
+                            throw errorService.newParseException(e);
                         }
                     }
                 };
@@ -172,12 +168,12 @@ public final class StaxStreamWriter implements NodeStreamWriter
             }
             catch (XMLStreamException e)
             {
-                throw new ParseException("Unable to create the root node.", e);
+                throw errorService.newParseException("Unable to create the root node.", e);
             }
         }
     }
 
-    public void flush() throws ParseException
+    public void flush()
     {
         try
         {
@@ -185,11 +181,11 @@ public final class StaxStreamWriter implements NodeStreamWriter
         }
         catch (XMLStreamException e)
         {
-            throw new ParseException(e);
+            throw errorService.newParseException(e);
         }
     }
 
-    public void close() throws ParseException
+    public void close()
     {
         try
         {
@@ -197,7 +193,7 @@ public final class StaxStreamWriter implements NodeStreamWriter
         }
         catch (XMLStreamException e)
         {
-            throw new ParseException(e);
+            throw errorService.newParseException(e);
         }
     }
 }

@@ -4,6 +4,7 @@ import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -23,9 +24,9 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
 {
     private final TableCreator tableCreator;
 
-    public TableDefinitionImporter(TableCreator tableCreator, final DatabaseCleaner databaseCleaner)
+    public TableDefinitionImporter(ImportExportErrorService errorService, TableCreator tableCreator, final DatabaseCleaner databaseCleaner)
     {
-        super(Lists.<AroundImporter>newArrayList(newCleaner(databaseCleaner)));
+        super(errorService, Lists.<AroundImporter>newArrayList(newCleaner(databaseCleaner)));
         this.tableCreator = checkNotNull(tableCreator);
     }
 

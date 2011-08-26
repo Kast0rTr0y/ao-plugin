@@ -1,7 +1,7 @@
 package com.atlassian.dbexporter.exporter;
 
 import com.atlassian.dbexporter.ConnectionProvider;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.google.common.collect.ImmutableMap;
 
 import java.sql.Connection;
@@ -14,10 +14,12 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ConnectionProviderInformationReader implements DatabaseInformationReader
 {
+    private final ImportExportErrorService errorService;
     private final ConnectionProvider connectionProvider;
 
-    public ConnectionProviderInformationReader(ConnectionProvider connectionProvider)
+    public ConnectionProviderInformationReader(ImportExportErrorService errorService, ConnectionProvider connectionProvider)
     {
+        this.errorService = checkNotNull(errorService);
         this.connectionProvider = checkNotNull(connectionProvider);
     }
 
@@ -30,7 +32,7 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
             final ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
 
             connection = getConnection();
-            final DatabaseMetaData metaData = metadata(connection);
+            final DatabaseMetaData metaData = metadata(errorService, connection);
 
             mapBuilder.put("database.name", getDatabaseName(metaData));
             mapBuilder.put("database.version", getDatabaseVersion(metaData));
@@ -56,11 +58,11 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get connection from provider", e);
+            throw errorService.newImportExportSqlException(null, "Could not get connection from provider", e);
         }
     }
 
-    private static String getDatabaseName(DatabaseMetaData metaData)
+    private String getDatabaseName(DatabaseMetaData metaData)
     {
         try
         {
@@ -68,11 +70,11 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get database product name from metadata", e);
+            throw errorService.newImportExportSqlException(null, "Could not get database product name from metadata", e);
         }
     }
 
-    private static String getDatabaseVersion(DatabaseMetaData metaData)
+    private String getDatabaseVersion(DatabaseMetaData metaData)
     {
         try
         {
@@ -80,11 +82,11 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get database product version from metadata", e);
+            throw errorService.newImportExportSqlException(null, "Could not get database product version from metadata", e);
         }
     }
 
-    private static String getDatabaseMinorVersion(DatabaseMetaData metaData)
+    private String getDatabaseMinorVersion(DatabaseMetaData metaData)
     {
         try
         {
@@ -92,11 +94,11 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get database minor version from metadata", e);
+            throw errorService.newImportExportSqlException(null, "Could not get database minor version from metadata", e);
         }
     }
 
-    private static String getDatabaseMajorVersion(DatabaseMetaData metaData)
+    private String getDatabaseMajorVersion(DatabaseMetaData metaData)
     {
         try
         {
@@ -104,11 +106,11 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get database major version from metadata", e);
+            throw errorService.newImportExportSqlException(null, "Could not get database major version from metadata", e);
         }
     }
 
-    private static String getDriverName(DatabaseMetaData metaData)
+    private String getDriverName(DatabaseMetaData metaData)
     {
         try
         {
@@ -116,11 +118,11 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get driver name from metadata", e);
+            throw errorService.newImportExportSqlException(null, "Could not get driver name from metadata", e);
         }
     }
 
-    private static String getDriverVersion(DatabaseMetaData metaData)
+    private String getDriverVersion(DatabaseMetaData metaData)
     {
         try
         {
@@ -128,7 +130,7 @@ public final class ConnectionProviderInformationReader implements DatabaseInform
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get driver version from metadata", e);
+            throw errorService.newImportExportSqlException(null, "Could not get driver version from metadata", e);
         }
     }
 }

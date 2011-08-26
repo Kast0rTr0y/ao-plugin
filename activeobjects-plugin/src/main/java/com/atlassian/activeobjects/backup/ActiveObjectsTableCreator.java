@@ -2,9 +2,9 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;
@@ -33,10 +33,12 @@ final class ActiveObjectsTableCreator implements TableCreator
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
 
-    public ActiveObjectsTableCreator(DatabaseProvider provider)
+    public ActiveObjectsTableCreator(ImportExportErrorService errorService, DatabaseProvider provider)
     {
+        this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
     }
 
@@ -58,7 +60,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {
@@ -80,7 +82,7 @@ final class ActiveObjectsTableCreator implements TableCreator
             }
             catch (SQLException e)
             {
-                throw new ImportExportSqlException("The following sql caused an error:\n" + sql + "\n---\n", e);
+                throw errorService.newImportExportSqlException(table.getName(), "The following sql caused an error:\n" + sql + "\n---\n", e);
             }
         }
     }

@@ -1,14 +1,19 @@
 package com.atlassian.dbexporter.importer;
 
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.node.stax.StaxStreamReader;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 import java.io.StringReader;
+import java.lang.reflect.Field;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.*;
 
 /**
@@ -47,7 +52,7 @@ public final class NodeParserRule implements MethodRule
             @Override
             public void evaluate() throws Throwable
             {
-                before(frameworkMethod);
+                before(frameworkMethod, o);
                 try
                 {
                     statement.evaluate();
@@ -60,15 +65,53 @@ public final class NodeParserRule implements MethodRule
         };
     }
 
-    private void before(FrameworkMethod method)
+    private void before(FrameworkMethod method, Object o)
     {
         final Xml xml = method.getAnnotation(Xml.class);
         if (xml != null)
         {
-            streamReader = new StaxStreamReader(new StringReader(xml.value()));
+            streamReader = new StaxStreamReader(findErrorService(method.getMethod().getDeclaringClass(), o), new StringReader(xml.value()));
             node = streamReader.getRootNode();
             assertFalse(node.isClosed());
         }
+    }
+
+    private ImportExportErrorService findErrorService(Class aClass, Object o)
+    {
+        try
+        {
+            return getValue(ImportExportErrorService.class, o, findFieldOfType(aClass, ImportExportErrorService.class));
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T> T getValue(Class<T> type, Object o, Field f) throws IllegalAccessException
+    {
+        final boolean accessible = f.isAccessible();
+        try
+        {
+            f.setAccessible(true);
+            return type.cast(f.get(o));
+        }
+        finally
+        {
+            f.setAccessible(accessible);
+        }
+    }
+
+    private Field findFieldOfType(Class aClass, final Class<ImportExportErrorService> type)
+    {
+        return Iterables.find(newArrayList(aClass.getDeclaredFields()), new Predicate<Field>()
+        {
+            @Override
+            public boolean apply(Field f)
+            {
+                return type.isAssignableFrom(f.getType());
+            }
+        });
     }
 
     private void after()

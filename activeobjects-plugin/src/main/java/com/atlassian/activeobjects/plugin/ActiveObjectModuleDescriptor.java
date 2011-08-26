@@ -52,25 +52,32 @@ import static com.google.common.base.Preconditions.*;
  */
 public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
 {
+    public static final String AO_TABLE_PREFIX = "AO";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final int MAX_NUMBER_OF_ENTITIES = 50;
     private static final int MAX_LENGTH_ENTITY_NAME = 30;
 
-    /** Easy registration of service */
+    /**
+     * Easy registration of service
+     */
     private final OsgiServiceUtils osgiUtils;
 
     private final Digester digester;
 
     private final DataSourceTypeResolver dataSourceTypeResolver;
 
+    private String hash;
     private Prefix tableNamePrefix;
     private TableNameConverter tableNameConverter;
     private FieldNameConverter fieldNameConverter;
 
     private Set<Class<? extends RawEntity<?>>> entityClasses;
 
-    /** The service registration for the active objects configuration, defined by this plugin. */
+    /**
+     * The service registration for the active objects configuration, defined by this plugin.
+     */
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
     private ServiceRegistration tableNameConverterServiceRegistration;
     private List<ActiveObjectsUpgradeTask> upgradeTasks;
@@ -96,6 +103,11 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         upgradeTasks = getUpgradeTasks(element);
 
         validateEntities(entityClasses, tableNameConverter);
+    }
+
+    public String getHash()
+    {
+        return hash;
     }
 
     private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element)
@@ -220,7 +232,8 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private Prefix getTableNamePrefix(Element element)
     {
-        return new SimplePrefix(toUpperCase("ao_" + digester.digest(getNameSpace(element), 6)), "_");
+        hash = digester.digest(getNameSpace(element), 6);
+        return new SimplePrefix(toUpperCase(AO_TABLE_PREFIX + "_" + hash), "_");
     }
 
     /**

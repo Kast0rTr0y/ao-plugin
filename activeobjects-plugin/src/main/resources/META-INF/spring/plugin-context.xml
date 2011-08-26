@@ -41,6 +41,18 @@
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg>
+            <bean class="com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl">
+                <constructor-arg>
+                    <bean class="com.atlassian.activeobjects.backup.ActiveObjectsHashesReader"/>
+                </constructor-arg>
+                <constructor-arg>
+                    <bean class="com.atlassian.activeobjects.backup.PluginInformationFactory">
+                        <constructor-arg ref="pluginAccessor"/>
+                    </bean>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="aoPluginConfiguration"

@@ -1,8 +1,8 @@
 package com.atlassian.dbexporter.node.stax;
 
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.NodeStreamReader;
-import com.atlassian.dbexporter.node.ParseException;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -25,14 +25,16 @@ public final class StaxStreamReader implements NodeStreamReader
 {
     private static final String XMLSCHEMA_URI = "http://www.w3.org/2001/XMLSchema-instance";
 
+    private final ImportExportErrorService errorService;
     private final XMLStreamReader reader;
 
-    public StaxStreamReader(Reader input) throws ParseException
+    public StaxStreamReader(ImportExportErrorService errorService, Reader input)
     {
+        this.errorService = checkNotNull(errorService);
         this.reader = createXmlStreamReader(checkNotNull(input));
     }
 
-    private static XMLStreamReader createXmlStreamReader(Reader reader)
+    private XMLStreamReader createXmlStreamReader(Reader reader)
     {
         try
         {
@@ -40,11 +42,11 @@ public final class StaxStreamReader implements NodeStreamReader
         }
         catch (XMLStreamException e)
         {
-            throw new ParseException(e);
+            throw errorService.newParseException(e);
         }
     }
 
-    public NodeParser getRootNode() throws ParseException
+    public NodeParser getRootNode()
     {
         if (reader.getEventType() != XMLStreamConstants.START_DOCUMENT)
         {
@@ -58,17 +60,17 @@ public final class StaxStreamReader implements NodeStreamReader
 
                 return new NodeParser()
                 {
-                    public String getAttribute(String key) throws ParseException
+                    public String getAttribute(String key)
                     {
                         return getAttribute(key, null, false);
                     }
 
-                    public String getRequiredAttribute(String key) throws ParseException
+                    public String getRequiredAttribute(String key)
                     {
                         return getAttribute(key, null, true);
                     }
 
-                    private String getAttribute(String key, String namespaceUri, boolean required) throws ParseException
+                    private String getAttribute(String key, String namespaceUri, boolean required)
                     {
                         requireStartElement();
                         for (int i = 0; i < reader.getAttributeCount(); i++)
@@ -81,7 +83,7 @@ public final class StaxStreamReader implements NodeStreamReader
                         }
                         if (required)
                         {
-                            throw new ParseException(String.format("Required attribute %s not found in node %s", key, getName()));
+                            throw errorService.newParseException(String.format("Required attribute %s not found in node %s", key, getName()));
                         }
                         else
                         {
@@ -99,7 +101,7 @@ public final class StaxStreamReader implements NodeStreamReader
                         return reader.getEventType() == XMLStreamConstants.END_ELEMENT || reader.getEventType() == XMLStreamConstants.END_DOCUMENT;
                     }
 
-                    private int nextTagOrEndOfDocument() throws ParseException
+                    private int nextTagOrEndOfDocument()
                     {
                         try
                         {
@@ -117,7 +119,7 @@ public final class StaxStreamReader implements NodeStreamReader
                                     eventType != XMLStreamConstants.END_ELEMENT &&
                                     eventType != XMLStreamConstants.END_DOCUMENT)
                             {
-                                throw new ParseException(
+                                throw errorService.newParseException(
                                         "Unable to find start or end tag, or end of document. Location: " +
                                                 reader.getLocation());
                             }
@@ -125,11 +127,11 @@ public final class StaxStreamReader implements NodeStreamReader
                         }
                         catch (XMLStreamException e)
                         {
-                            throw new ParseException(e);
+                            throw errorService.newParseException(e);
                         }
                     }
 
-                    public NodeParser getNextNode() throws ParseException
+                    public NodeParser getNextNode()
                     {
                         int event = nextTagOrEndOfDocument();
 
@@ -140,7 +142,7 @@ public final class StaxStreamReader implements NodeStreamReader
                                 null : this;
                     }
 
-                    public String getContentAsString() throws IllegalStateException, ParseException
+                    public String getContentAsString()
                     {
                         requireStartElement();
                         try
@@ -157,17 +159,17 @@ public final class StaxStreamReader implements NodeStreamReader
                         }
                         catch (XMLStreamException e)
                         {
-                            throw new ParseException(e);
+                            throw errorService.newParseException(e);
                         }
                     }
 
-                    public Boolean getContentAsBoolean() throws ParseException
+                    public Boolean getContentAsBoolean()
                     {
                         String value = getContentAsString();
                         return value == null ? null : Boolean.parseBoolean(value);
                     }
 
-                    public Date getContentAsDate() throws ParseException
+                    public Date getContentAsDate()
                     {
                         String value = getContentAsString();
                         try
@@ -176,18 +178,18 @@ public final class StaxStreamReader implements NodeStreamReader
                         }
                         catch (java.text.ParseException pe)
                         {
-                            throw new ParseException(pe);
+                            throw errorService.newParseException(pe);
                         }
                     }
 
-                    public BigInteger getContentAsBigInteger() throws ParseException
+                    public BigInteger getContentAsBigInteger()
                     {
                         String value = getContentAsString();
                         return value == null ? null : new BigInteger(value);
                     }
 
                     @Override
-                    public BigDecimal getContentAsBigDecimal() throws ParseException
+                    public BigDecimal getContentAsBigDecimal()
                     {
                         String value = getContentAsString();
                         return value == null ? null : new BigDecimal(value);
@@ -235,12 +237,12 @@ public final class StaxStreamReader implements NodeStreamReader
             }
             catch (XMLStreamException e)
             {
-                throw new ParseException(e);
+                throw errorService.newParseException(e);
             }
         }
     }
 
-    public void close() throws ParseException
+    public void close()
     {
         try
         {
@@ -248,7 +250,7 @@ public final class StaxStreamReader implements NodeStreamReader
         }
         catch (XMLStreamException e)
         {
-            throw new ParseException(e);
+            throw errorService.newParseException(e);
         }
     }
 }

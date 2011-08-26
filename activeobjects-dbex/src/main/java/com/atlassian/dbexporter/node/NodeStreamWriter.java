@@ -12,9 +12,9 @@ public interface NodeStreamWriter extends Closeable
      *
      * @throws IllegalStateException when this method is called more than once.
      */
-    NodeCreator addRootNode(String name) throws ParseException, IllegalStateException;
+    NodeCreator addRootNode(String name) throws IllegalStateException;
 
-    void flush() throws ParseException;
+    void flush();
 
-    void close() throws ParseException;
+    void close();
 }

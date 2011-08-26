@@ -2,10 +2,10 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformations;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
 import net.java.ao.DatabaseProvider;
 
@@ -16,16 +16,18 @@ import java.sql.Statement;
 import java.util.Collection;
 
 import static com.atlassian.activeobjects.backup.SequenceUtils.*;
-import static com.atlassian.dbexporter.DatabaseInformations.database;
+import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class OracleSequencesAroundImporter extends NoOpAroundImporter
 {
+    private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
 
-    public OracleSequencesAroundImporter(DatabaseProvider provider)
+    public OracleSequencesAroundImporter(ImportExportErrorService errorService, DatabaseProvider provider)
     {
+        this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
     }
 
@@ -74,12 +76,12 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
             connection = provider.getConnection();
             for (Table table : tables)
             {
-                executeUpdate(connection, "ALTER TABLE " + quote(connection, table.getName()) + " DISABLE ALL TRIGGERS");
+                executeUpdate(errorService, table.getName(), connection, "ALTER TABLE " + quote(errorService, table.getName(), connection, table.getName()) + " DISABLE ALL TRIGGERS");
             }
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {
@@ -100,7 +102,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {
@@ -110,7 +112,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
 
     private void dropSequence(Connection connection, TableColumnPair tcp)
     {
-        executeUpdate(connection, "DROP SEQUENCE " + sequenceName(tcp));
+        executeUpdate(errorService, tcp.table.getName(), connection, "DROP SEQUENCE " + sequenceName(tcp));
     }
 
     private void createAllSequences(Collection<Table> tables)
@@ -126,7 +128,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {
@@ -137,18 +139,19 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
     private void createSequence(Connection connection, TableColumnPair tcp)
     {
         Statement maxStmt = null;
+        final String tableName = tcp.table.getName();
         try
         {
             maxStmt = connection.createStatement();
-            final ResultSet res = executeQuery(maxStmt, "SELECT MAX(" + quote(connection, tcp.column.getName()) + ")" +
-                    " FROM " + quote(connection, tcp.table.getName()));
-            final int max = getIntFromResultSet(res);
-            executeUpdate(connection, "CREATE SEQUENCE " + sequenceName(tcp)
+            final ResultSet res = executeQuery(errorService, tableName, maxStmt, "SELECT MAX(" + quote(errorService, tableName, connection, tcp.column.getName()) + ")" +
+                    " FROM " + quote(errorService, tableName, connection, tableName));
+            final int max = getIntFromResultSet(errorService, tableName, res);
+            executeUpdate(errorService, tableName, connection, "CREATE SEQUENCE " + sequenceName(tcp)
                     + " INCREMENT BY 1 START WITH " + (max + 1) + " NOMAXVALUE MINVALUE " + (max + 1));
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(tableName, "", e);
         }
         finally
         {
@@ -164,12 +167,12 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
             connection = provider.getConnection();
             for (Table table : tables)
             {
-                executeUpdate(connection, "ALTER TABLE " + quote(connection, table.getName()) + " ENABLE ALL TRIGGERS");
+                executeUpdate(errorService, table.getName(), connection, "ALTER TABLE " + quote(errorService, table.getName(), connection, table.getName()) + " ENABLE ALL TRIGGERS");
             }
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {

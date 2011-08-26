@@ -3,7 +3,6 @@ package com.atlassian.dbexporter;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.Importer;
 import com.atlassian.dbexporter.importer.NoOpImporter;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -30,15 +29,17 @@ public final class DbImporter
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final ImportExportErrorService errorService;
     private final List<Importer> importers;
 
-    public DbImporter(final Importer... importers)
+    public DbImporter(ImportExportErrorService errorService, final Importer... importers)
     {
-        this(newArrayList(checkNotNull(importers)));
+        this(errorService, newArrayList(checkNotNull(importers)));
     }
 
-    public DbImporter(final List<Importer> importers)
+    public DbImporter(ImportExportErrorService errorService, final List<Importer> importers)
     {
+        this.errorService = checkNotNull(errorService);
         checkArgument(!checkNotNull(importers).isEmpty(), "DbImporter must be created with at least one importer!");
         this.importers = importers;
     }
@@ -50,8 +51,6 @@ public final class DbImporter
      * @param configuration the import configuration
      * @throws IllegalStateException if the backup XML stream is not formatted as expected.
      * @throws ImportExportException or one of its sub-types if an unexpected exception happens during the import.
-     * Note that {@link ImportExportSqlException} is the main sub-type of exception likely to be thrown whenever an
-     * underlying {@link java.sql.SQLException} is thrown within one of the specific {@link Importer}.
      */
     public void importData(NodeStreamReader streamReader, ImportConfiguration configuration)
     {
@@ -88,7 +87,8 @@ public final class DbImporter
                 return importer;
             }
         }
-        logger.debug("Didn't find any importer for node {}, using {}", node, NoOpImporter.INSTANCE);
-        return NoOpImporter.INSTANCE;
+        final NoOpImporter noOpImporter = new NoOpImporter(errorService);
+        logger.debug("Didn't find any importer for node {}, using {}", node, noOpImporter);
+        return noOpImporter;
     }
 }

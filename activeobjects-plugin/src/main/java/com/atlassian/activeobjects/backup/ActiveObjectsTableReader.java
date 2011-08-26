@@ -4,9 +4,9 @@ import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -37,11 +37,13 @@ final class ActiveObjectsTableReader implements TableReader
     public static final int DEFAULT_POSTGRES_SCALE = 17;
     public static final int POSTGRES_PRECISION_FOR_TEXT = 2147483647;
 
+    private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
     private final SchemaConfiguration schemaConfiguration;
 
-    public ActiveObjectsTableReader(DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
+    public ActiveObjectsTableReader(ImportExportErrorService errorService, DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
     {
+        this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
@@ -57,7 +59,7 @@ final class ActiveObjectsTableReader implements TableReader
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("An error occurred reading schema information from database", e);
+            throw errorService.newImportExportSqlException(null, "An error occurred reading schema information from database", e);
         }
 
         for (DDLTable ddlTable : ddlTables)
@@ -75,7 +77,7 @@ final class ActiveObjectsTableReader implements TableReader
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not get connection from provider", e);
+            throw errorService.newImportExportSqlException(null, "Could not get connection from provider", e);
         }
     }
 
