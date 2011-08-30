@@ -9,13 +9,6 @@
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-    <!-- generic stuff useful in all Spring MVC plugins -->
-    <!-- These appear to not be used at all by Active Objects. Candidates for removal? -->
-    <osgi:reference id="i18nResolver" interface="com.atlassian.sal.api.message.I18nResolver" cardinality="0..1"/>
-    <osgi:reference id="userManager" interface="com.atlassian.sal.api.user.UserManager" cardinality="0..1"/>
-    <osgi:reference id="loginUriProvider" interface="com.atlassian.sal.api.auth.LoginUriProvider" cardinality="0..1"/>
-    <osgi:reference id="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager" cardinality="0..1"/>
-    <osgi:reference id="webInterfaceManager" interface="com.atlassian.plugin.web.WebInterfaceManager" cardinality="0..1"/>
 
     <!-- stuff for the AO plugin itself. services not used during a Restore, are optional.  -->
     <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" cardinality="0..1"/>
