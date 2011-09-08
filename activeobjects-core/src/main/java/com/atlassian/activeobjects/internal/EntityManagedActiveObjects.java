@@ -7,7 +7,6 @@ import net.java.ao.DefaultPolymorphicTypeMapper;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
-import net.java.ao.sql.ActiveObjectSqlException;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -43,7 +42,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -75,7 +74,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -87,7 +86,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -99,7 +98,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -111,7 +110,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -123,7 +122,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -135,7 +134,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -147,7 +146,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -159,7 +158,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -171,7 +170,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -183,7 +182,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
@@ -195,7 +194,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
         catch (SQLException e)
         {
-            throw new ActiveObjectSqlException(e);
+            throw new ActiveObjectsSqlException(e);
         }
     }
 
