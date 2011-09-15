@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.node.NodeParser;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 
@@ -18,13 +19,14 @@ public final class DatabaseInformationImporter extends AbstractSingleNodeImporte
 {
     private DatabaseInformationChecker infoChecker;
 
-    public DatabaseInformationImporter()
+    public DatabaseInformationImporter(ImportExportErrorService errorService)
     {
-        this(NoOpDatabaseInformationChecker.INSTANCE);
+        this(errorService, NoOpDatabaseInformationChecker.INSTANCE);
     }
 
-    public DatabaseInformationImporter(DatabaseInformationChecker infoChecker)
+    public DatabaseInformationImporter(ImportExportErrorService errorService, DatabaseInformationChecker infoChecker)
     {
+        super(errorService);
         this.infoChecker = checkNotNull(infoChecker);
     }
 

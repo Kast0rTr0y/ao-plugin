@@ -3,6 +3,7 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.NoOpEntityNameProcessor;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
@@ -32,6 +33,9 @@ public class TableDefinitionImporterTest
     private TableDefinitionImporter tableDefinitionImporter;
 
     private Context context;
+
+    @Mock
+    private ImportExportErrorService errorService;
 
     @Mock
     private TableCreator tableCreator;
@@ -90,7 +94,7 @@ public class TableDefinitionImporterTest
         when(configuration.getProgressMonitor()).thenReturn(monitor);
         when(configuration.getEntityNameProcessor()).thenReturn(new NoOpEntityNameProcessor());
         context = new Context();
-        tableDefinitionImporter = new TableDefinitionImporter(tableCreator, databaseCleaner);
+        tableDefinitionImporter = new TableDefinitionImporter(errorService, tableCreator, databaseCleaner);
     }
 
     @After

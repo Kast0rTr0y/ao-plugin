@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
+import com.atlassian.plugin.PluginAccessor;
 import net.java.ao.EntityManager;
 import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.DynamicJdbcConfiguration;
@@ -22,6 +23,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+
+import static org.mockito.Mockito.mock;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
 @Jdbc(DynamicJdbcConfiguration.class)
@@ -119,7 +122,7 @@ public final class TestActiveObjectsBackup
     @Before
     public void setUp()
     {
-        aoBackup = new ActiveObjectsBackup(entityManager.getProvider());
+        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), new ImportExportErrorServiceImpl(new ActiveObjectsHashesReader(), new PluginInformationFactory(mock(PluginAccessor.class))));
         model = new Model(entityManager);
         model.emptyDatabase();
     }

@@ -17,14 +17,14 @@ public interface NodeStreamReader extends Closeable
      * @return the root node of the graph.
      * @throws IllegalStateException when the root node has already been
      * returned.
-     * @throws ParseException when the document could not be parsed.
+     * @throws com.atlassian.dbexporter.ImportExportException when the document could not be parsed.
      */
-    NodeParser getRootNode() throws ParseException, IllegalStateException;
+    NodeParser getRootNode() throws IllegalStateException;
 
     /**
      * Closes all resources of the underlying document.
      *
-     * @throws ParseException
+     * @throws com.atlassian.dbexporter.ImportExportException
      */
-    void close() throws ParseException;
+    void close();
 }

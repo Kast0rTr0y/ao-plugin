@@ -1,14 +1,14 @@
 package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.node.NodeParser;
 
 public final class NoOpImporter extends AbstractImporter
 {
-    public static final NoOpImporter INSTANCE = new NoOpImporter();
-
-    private NoOpImporter()
+    public NoOpImporter(ImportExportErrorService errorService)
     {
+        super(errorService);
     }
 
     @Override

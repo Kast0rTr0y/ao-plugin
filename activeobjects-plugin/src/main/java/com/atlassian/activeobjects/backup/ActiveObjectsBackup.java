@@ -16,6 +16,7 @@ import com.atlassian.dbexporter.DbExporter;
 import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportConfiguration;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.ImportExportException;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
@@ -27,7 +28,6 @@ import com.atlassian.dbexporter.importer.DatabaseInformationImporter;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.SqlServerAroundTableImporter;
 import com.atlassian.dbexporter.importer.TableDefinitionImporter;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeStreamReader;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
 import com.atlassian.dbexporter.node.stax.StaxStreamReader;
@@ -56,9 +56,10 @@ public final class ActiveObjectsBackup implements Backup
     private static final Charset CHARSET = Charset.forName("UTF-8");
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
+    private final ImportExportErrorService errorService;
     private final Supplier<DatabaseProvider> databaseProviderSupplier;
 
-    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider)
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, ImportExportErrorService errorService)
     {
         this(new Supplier<DatabaseProvider>()
         {
@@ -67,16 +68,17 @@ public final class ActiveObjectsBackup implements Backup
             {
                 return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
             }
-        });
+        }, errorService);
     }
 
-    ActiveObjectsBackup(DatabaseProvider databaseProvider)
+    ActiveObjectsBackup(DatabaseProvider databaseProvider, ImportExportErrorService errorService)
     {
-        this(Suppliers.ofInstance(checkNotNull(databaseProvider)));
+        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), errorService);
     }
 
-    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier)
+    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, ImportExportErrorService errorService)
     {
+        this.errorService = checkNotNull(errorService);
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
     }
 
@@ -86,7 +88,7 @@ public final class ActiveObjectsBackup implements Backup
      * @param stream the stream to write the backup to
      * @param monitor the progress monitor for the current backup
      * @throws ImportExportException or one of its sub-types if any error happens during the backup.
-     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportSqlException}.
+     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportException}.
      */
     public void save(OutputStream stream, BackupProgressMonitor monitor)
     {
@@ -95,15 +97,15 @@ public final class ActiveObjectsBackup implements Backup
         final ExportConfiguration configuration = new ActiveObjectsExportConfiguration(connectionProvider, getProgressMonitor(monitor));
 
         final DbExporter dbExporter = new DbExporter(
-                new DatabaseInformationExporter(new ConnectionProviderInformationReader(connectionProvider)),
-                new TableDefinitionExporter(new ActiveObjectsTableReader(provider, schemaConfiguration())),
-                new DataExporter(provider.getSchema(), new PrefixTableSelector(PREFIX)));
+                new DatabaseInformationExporter(new ConnectionProviderInformationReader(errorService, connectionProvider)),
+                new TableDefinitionExporter(new ActiveObjectsTableReader(errorService, provider, schemaConfiguration())),
+                new DataExporter(errorService, provider.getSchema(), new PrefixTableSelector(PREFIX)));
 
 
         NodeStreamWriter streamWriter = null;
         try
         {
-            streamWriter = new StaxStreamWriter(new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
+            streamWriter = new StaxStreamWriter(errorService, new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
             dbExporter.exportData(streamWriter, configuration);
             streamWriter.flush();
         }
@@ -124,7 +126,7 @@ public final class ActiveObjectsBackup implements Backup
      * @param stream the stream of data previously backed up by the plugin.
      * @param monitor the progress monitor for the current restore
      * @throws ImportExportException or one of its sub-types if any error happens during the backup.
-     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportSqlException}.
+     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportException}.
      */
     public void restore(InputStream stream, RestoreProgressMonitor monitor)
     {
@@ -135,21 +137,21 @@ public final class ActiveObjectsBackup implements Backup
 
         final ImportConfiguration configuration = new ActiveObjectsImportConfiguration(connectionProvider, getProgressMonitor(monitor), databaseInformation);
 
-        final DbImporter dbImporter = new DbImporter(
-                new DatabaseInformationImporter(),
-                new TableDefinitionImporter(new ActiveObjectsTableCreator(provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration())),
-                new DataImporter(
+        final DbImporter dbImporter = new DbImporter(errorService,
+                new DatabaseInformationImporter(errorService),
+                new TableDefinitionImporter(errorService, new ActiveObjectsTableCreator(errorService, provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration(), errorService)),
+                new DataImporter(errorService,
                         provider.getSchema(),
-                        new SqlServerAroundTableImporter(),
-                        new PostgresSequencesAroundImporter(provider),
-                        new OracleSequencesAroundImporter(provider),
-                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(provider))
+                        new SqlServerAroundTableImporter(errorService),
+                        new PostgresSequencesAroundImporter(errorService, provider),
+                        new OracleSequencesAroundImporter(errorService, provider),
+                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(errorService, provider))
                 ));
 
         NodeStreamReader streamReader = null;
         try
         {
-            streamReader = new StaxStreamReader(new InputStreamReader(stream, CHARSET));
+            streamReader = new StaxStreamReader(errorService, new InputStreamReader(stream, CHARSET));
             dbImporter.importData(streamReader, configuration);
         }
         finally
@@ -160,7 +162,7 @@ public final class ActiveObjectsBackup implements Backup
 
     private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider)
     {
-        return new DatabaseInformation(new ConnectionProviderInformationReader(connectionProvider).get());
+        return new DatabaseInformation(new ConnectionProviderInformationReader(errorService, connectionProvider).get());
     }
 
     private static DatabaseProviderConnectionProvider getConnectionProvider(DatabaseProvider provider)

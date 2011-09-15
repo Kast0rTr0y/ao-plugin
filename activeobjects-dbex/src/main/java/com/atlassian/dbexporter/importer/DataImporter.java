@@ -3,12 +3,9 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
-import com.atlassian.dbexporter.ImportExportException;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
-import com.atlassian.dbexporter.jdbc.RowImportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
-import com.atlassian.dbexporter.node.ParseException;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.google.common.collect.Maps;
 
@@ -38,16 +35,16 @@ public final class DataImporter extends AbstractSingleNodeImporter
     private final String schema;
     private final AroundTableImporter aroundTable;
 
-    public DataImporter(String schema, AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
+    public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
     {
-        super(arounds);
+        super(errorService, arounds);
         this.schema = schema;
         this.aroundTable = checkNotNull(aroundTableImporter);
     }
 
-    public DataImporter(String schema, AroundTableImporter aroundTableImporter, AroundImporter... arounds)
+    public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, AroundImporter... arounds)
     {
-        this(schema, aroundTableImporter, newArrayList(checkNotNull(arounds)));
+        this(errorService, schema, aroundTableImporter, newArrayList(checkNotNull(arounds)));
     }
 
     @Override
@@ -61,7 +58,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         monitor.begin(Task.TABLES_DATA);
-        withConnection(configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
+        withConnection(errorService, configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
         {
             public Void call(Connection connection)
             {
@@ -84,7 +81,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 }
                 catch (SQLException e)
                 {
-                    throw new ImportExportSqlException(e);
+                    throw errorService.newImportExportSqlException(null, "", e);
                 }
                 return null;
             }
@@ -101,7 +98,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         monitor.begin(Task.TABLE_DATA, currentTable);
 
-        final InserterBuilder builder = new InserterBuilder(schema, currentTable, configuration.getBatchMode());
+        final InserterBuilder builder = new InserterBuilder(errorService, schema, currentTable, configuration.getBatchMode());
 
         node = node.getNextNode();
         for (; isNodeNotClosed(node, ColumnDataNode.NAME); node = node.getNextNode())
@@ -131,7 +128,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         }
         catch (SQLException e)
         {
-            throw new RowImportSqlException(e, currentTable, rowNum);
+            throw errorService.newRowImportSqlException(currentTable, rowNum, e);
         }
         finally
         {
@@ -146,7 +143,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
     private static interface Inserter
     {
-        void setValue(NodeParser node) throws SQLException, ParseException;
+        void setValue(NodeParser node) throws SQLException;
 
         void execute() throws SQLException;
 
@@ -157,13 +154,16 @@ public final class DataImporter extends AbstractSingleNodeImporter
     private static class InserterBuilder
     {
         public static final int UNLIMITED_COLUMN_SIZE = -1;
+
+        private final ImportExportErrorService errorService;
         private final String schema;
         private final String table;
         private final BatchMode batch;
         private final List<String> columns;
 
-        public InserterBuilder(String schema, String table, BatchMode batch)
+        public InserterBuilder(ImportExportErrorService errorService, String schema, String table, BatchMode batch)
         {
+            this.errorService = checkNotNull(errorService);
             this.schema = schema;
             this.table = table;
             this.batch = batch;
@@ -188,7 +188,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
             for (int i = 0; i < columns.size(); i++)
             {
-                query.append(quote(connection, columns.get(i)));
+                query.append(quote(errorService, table, connection, columns.get(i)));
                 if (i < columns.size() - 1)
                 {
                     query.append(", ");
@@ -207,25 +207,27 @@ public final class DataImporter extends AbstractSingleNodeImporter
             query.append(")");
 
             final List<Integer> maxColumnSizes = calculateColumnSizes(connection, columns);
-            final PreparedStatement ps = preparedStatement(connection, query.toString());
+            final PreparedStatement ps = preparedStatement(errorService, table, connection, query.toString());
             return newInserter(maxColumnSizes, ps);
         }
 
         private String tableName(Connection connection)
         {
-            final String quoted = quote(connection, table);
+            final String quoted = quote(errorService, table, connection, table);
             return schema != null ? schema + "." + quoted : quoted;
         }
 
         private Inserter newInserter(List<Integer> maxColumnSizes, PreparedStatement ps)
         {
             return batch.equals(BatchMode.ON) ?
-                    new BatchInserter(getTable(), columns, ps, maxColumnSizes) :
-                    new ImmediateInserter(getTable(), columns, ps, maxColumnSizes);
+                    new BatchInserter(errorService, getTable(), columns, ps, maxColumnSizes) :
+                    new ImmediateInserter(errorService, getTable(), columns, ps, maxColumnSizes);
         }
 
         /**
          * Get the column size for all columns in the table -- only the sizes for String columns will be used
+         *
+         *
          *
          * @param connection
          * @param columns
@@ -277,7 +279,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
             catch (SQLException e)
             {
-                throw new ImportExportSqlException(e);
+                throw errorService.newImportExportSqlException(table, "", e);
             }
         }
 
@@ -285,11 +287,11 @@ public final class DataImporter extends AbstractSingleNodeImporter
         {
             try
             {
-                return metadata(connection).getColumns(null, null, table, null);
+                return metadata(errorService, connection).getColumns(null, null, table, null);
             }
             catch (SQLException e)
             {
-                throw new ImportExportSqlException(e);
+                throw errorService.newImportExportSqlException(table, "", e);
             }
         }
     }
@@ -316,8 +318,10 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
     private static abstract class BaseInserter implements Inserter
     {
+        protected final ImportExportErrorService errorService;
+        protected final String tableName;
+
         private int col;
-        private final String tableName;
         // this list is zero based
         private final List<String> columnNames;
         protected final PreparedStatement ps;
@@ -325,8 +329,9 @@ public final class DataImporter extends AbstractSingleNodeImporter
         // e.g. HSQL doesn't provide sizes
         private final List<Integer> maxColumnSize;
 
-        public BaseInserter(String tableName, List<String> columnNames, PreparedStatement ps, List<Integer> maxColumnSize)
+        public BaseInserter(ImportExportErrorService errorService, String tableName, List<String> columnNames, PreparedStatement ps, List<Integer> maxColumnSize)
         {
+            this.errorService = checkNotNull(errorService);
             this.tableName = tableName;
             this.columnNames = columnNames;
             this.ps = ps;
@@ -357,7 +362,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 int maxSize = maxColumnSize.get(col);
                 if (maxSize != -1 && value.length() > maxSize)
                 {
-                    throw new ImportExportException("Could not import data in table '" + tableName + "' column #" + col + ", value is too big for column which size limit is " + maxSize + ", value is:\n" + value + "\n");
+                    throw errorService.newImportExportException(tableName, "Could not import data in table '" + tableName + "' column #" + col + ", value is too big for column which size limit is " + maxSize + ", value is:\n" + value + "\n");
                 }
                 ps.setString(col, value);
             }
@@ -399,7 +404,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
         }
 
-        public void setValue(NodeParser node) throws SQLException, ParseException
+        public void setValue(NodeParser node) throws SQLException
         {
             if (RowDataNode.isString(node))
             {
@@ -439,9 +444,9 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
     private static class ImmediateInserter extends BaseInserter
     {
-        private ImmediateInserter(String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize)
+        private ImmediateInserter(ImportExportErrorService errorService, String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize)
         {
-            super(table, columns, ps, maxColumnSize);
+            super(errorService, table, columns, ps, maxColumnSize);
         }
 
         protected void executePS() throws SQLException
@@ -460,9 +465,9 @@ public final class DataImporter extends AbstractSingleNodeImporter
         private final int batchSize;
         private int batch;
 
-        private BatchInserter(String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize)
+        private BatchInserter(ImportExportErrorService errorService, String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize)
         {
-            super(table, columns, ps, maxColumnSize);
+            super(errorService, table, columns, ps, maxColumnSize);
             batchSize = 5000;
             batch = 0;
         }
@@ -491,7 +496,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
             catch (SQLException e)
             {
-                throw new ImportExportSqlException(e);
+                throw errorService.newImportExportSqlException(tableName, "", e);
             }
         }
 

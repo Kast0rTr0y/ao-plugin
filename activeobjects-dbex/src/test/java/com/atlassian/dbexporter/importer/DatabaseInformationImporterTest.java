@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformation;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +31,9 @@ public class DatabaseInformationImporterTest
 
     @Mock
     private ProgressMonitor progressMonitor;
+
+    @Mock
+    private ImportExportErrorService errorService;
 
     @Test
     @Xml("<database />")
@@ -61,7 +65,7 @@ public class DatabaseInformationImporterTest
     {
         when(configuration.getProgressMonitor()).thenReturn(progressMonitor);
 
-        importer = new DatabaseInformationImporter(checker);
+        importer = new DatabaseInformationImporter(errorService, checker);
     }
 
     @After

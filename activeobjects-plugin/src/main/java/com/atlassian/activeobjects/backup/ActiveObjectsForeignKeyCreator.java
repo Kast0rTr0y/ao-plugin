@@ -2,7 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
@@ -17,10 +17,12 @@ import static com.google.common.base.Preconditions.*;
 
 final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
 {
+    private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
 
-    public ActiveObjectsForeignKeyCreator(DatabaseProvider provider)
+    public ActiveObjectsForeignKeyCreator(ImportExportErrorService errorService, DatabaseProvider provider)
     {
+        this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
     }
 
@@ -46,7 +48,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
                     }
                     catch (SQLException e)
                     {
-                        throw new ImportExportSqlException(
+                        throw errorService.newImportExportSqlException(a.getTable().getName(),
                                 "Error creating foreign key constraint, using SQL statement '" + sql + "'", e);
                     }
                 }
@@ -54,7 +56,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {

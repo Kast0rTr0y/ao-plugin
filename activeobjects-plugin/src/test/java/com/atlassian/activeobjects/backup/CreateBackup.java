@@ -4,6 +4,8 @@ import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
+import com.atlassian.dbexporter.ImportExportErrorService;
+import com.atlassian.plugin.PluginAccessor;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
@@ -20,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
+import static org.mockito.Mockito.*;
+
 public final class CreateBackup
 {
     private final static ImmutableMap<String, JdbcConfiguration> JDBC = ImmutableMap.<String, JdbcConfiguration>builder()
@@ -34,6 +38,8 @@ public final class CreateBackup
 
     public static void main(String[] args) throws Exception
     {
+        final ImportExportErrorService errorService = new ImportExportErrorServiceImpl(new ActiveObjectsHashesReader(), new PluginInformationFactory(mock(PluginAccessor.class)));
+
         final JdbcConfiguration jdbc = selectJdbcDriver();
 
         final EntityManager entityManager = newEntityManager(jdbc);
@@ -42,7 +48,7 @@ public final class CreateBackup
         model.createData();
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ActiveObjectsBackup(entityManager.getProvider()).save(stream, NullBackupProgressMonitor.INSTANCE);
+        new ActiveObjectsBackup(entityManager.getProvider(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }

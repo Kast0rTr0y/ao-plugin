@@ -1,8 +1,8 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.CleanupMode;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.importer.DatabaseCleaner;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.ddl.DDLAction;
@@ -22,11 +22,13 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
     private final SchemaConfiguration schemaConfiguration;
 
-    public ActiveObjectsDatabaseCleaner(DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
+    public ActiveObjectsDatabaseCleaner(DatabaseProvider provider, SchemaConfiguration schemaConfiguration, ImportExportErrorService errorService)
     {
+        this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
@@ -68,14 +70,14 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
                     }
                     catch (SQLException e)
                     {
-                        onSqlException(sql, e);
+                        onSqlException(a.getTable().getName(), sql, e);
                     }
                 }
             }
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {
@@ -84,7 +86,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
         }
     }
 
-    private void onSqlException(String sql, SQLException e)
+    private void onSqlException(String table, String sql, SQLException e)
     {
         if (sql.startsWith("DROP") && e.getMessage().contains("does not exist"))
         {
@@ -94,6 +96,6 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
             }
             return;
         }
-        throw new ImportExportSqlException(e);
+        throw errorService.newImportExportSqlException(table,"",e);
     }
 }

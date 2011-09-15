@@ -13,49 +13,46 @@ import java.util.Date;
  * tedious. This interface also provides type conversion instead of just strings.
  * This interface only provides write access to a streaming node graph.
  *
- * @see NodeParser  counterpart of this interface that provides read access to
- * streaming node graphs.
- * @see NodeStreamWriter
  * @author Erik van Zijst
+ * @see NodeParser  counterpart of this interface that provides read access to
+ *      streaming node graphs.
+ * @see NodeStreamWriter
  */
-public interface NodeCreator {
+public interface NodeCreator
+{
 
     /**
      * Creates a new child node under the current node.
      *
-     * @param name  the name of the new child node.
-     * @return  a reference to the new node. Continue with this reference.
-     * @throws ParseException
+     * @param name the name of the new child node.
+     * @return a reference to the new node. Continue with this reference.
      */
-    NodeCreator addNode(String name) throws ParseException;
+    NodeCreator addNode(String name);
 
     /**
      * Closes the current node and returns a reference to the parent node.
      *
-     * @return  a reference to the parent node. Continue with this reference.
-     * @throws ParseException
+     * @return a reference to the parent node. Continue with this reference.
      */
-    NodeCreator closeEntity() throws ParseException;
+    NodeCreator closeEntity();
 
     /**
      * Similar to {@link NodeCreator#setContentAsString(String)}, but sets the
      * content to the specified {@link java.util.Date} instance.
      *
      * @param date
-     * @return  a reference to the current node.
-     * @throws ParseException
+     * @return a reference to the current node.
      */
-    NodeCreator setContentAsDate(Date date) throws ParseException;
+    NodeCreator setContentAsDate(Date date);
 
     /**
      * Similar to {@link NodeCreator#setContentAsString(String)}, but sets the
      * content to the specified {@link java.math.BigInteger} instance.
      *
      * @param bigInteger
-     * @return  a reference to the current node.
-     * @throws ParseException
+     * @return a reference to the current node.
      */
-    NodeCreator setContentAsBigInteger(BigInteger bigInteger) throws ParseException;
+    NodeCreator setContentAsBigInteger(BigInteger bigInteger);
 
     NodeCreator setContentAsBigDecimal(BigDecimal bigDecimal);
 
@@ -69,21 +66,19 @@ public interface NodeCreator {
      * <code>&lt;node xsi:nil="true"/&gt;</code> in XML, while an empty
      * string produces <code>&lt;node&gt;&lt;/node&gt;</code>).
      *
-     * @param string    the content for the current node.
-     * @return  a reference to the current node.
-     * @throws ParseException
+     * @param string the content for the current node.
+     * @return a reference to the current node.
      */
-    NodeCreator setContentAsString(String string) throws ParseException;
+    NodeCreator setContentAsString(String string);
 
     /**
      * Similar to {@link NodeCreator#setContentAsString(String)}, but sets the
      * content to the specified {@link Boolean} instance.
      *
      * @param bool
-     * @return  a reference to the current node.
-     * @throws ParseException
+     * @return a reference to the current node.
      */
-    NodeCreator setContentAsBoolean(Boolean bool) throws ParseException;
+    NodeCreator setContentAsBoolean(Boolean bool);
 
     /**
      * Similar to {@link NodeCreator#setContentAsString(String)}, but passes the
@@ -91,18 +86,16 @@ public interface NodeCreator {
      * to encode large chunks of content in a memory-efficient way.
      *
      * @param data
-     * @return  a reference to the current node.
+     * @return a reference to the current node.
      * @throws java.io.IOException
-     * @throws ParseException
      */
-    NodeCreator setContent(Reader data) throws IOException, ParseException;
+    NodeCreator setContent(Reader data) throws IOException;
 
     /**
      * Adds an attribute to the current node.
      *
      * @param key
      * @param value
-     * @throws ParseException
      */
-    NodeCreator addAttribute(String key, String value) throws ParseException;
+    NodeCreator addAttribute(String key, String value);
 }

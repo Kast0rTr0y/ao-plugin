@@ -2,10 +2,10 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
-import com.atlassian.dbexporter.jdbc.ImportExportSqlException;
 import com.atlassian.dbexporter.node.NodeParser;
 import net.java.ao.DatabaseProvider;
 
@@ -25,10 +25,12 @@ import static com.google.common.base.Preconditions.*;
  */
 public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
 {
+    private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
 
-    public PostgresSequencesAroundImporter(DatabaseProvider provider)
+    public PostgresSequencesAroundImporter(ImportExportErrorService errorService, DatabaseProvider provider)
     {
+        this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
     }
 
@@ -67,15 +69,15 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
             connection = provider.getConnection();
             maxStmt = connection.createStatement();
 
-            final ResultSet res = executeQuery(maxStmt, max(connection, tableName, columnName));
+            final ResultSet res = executeQuery(errorService, tableName, maxStmt, max(connection, tableName, columnName));
 
-            final int max = getIntFromResultSet(res);
+            final int max = getIntFromResultSet(errorService, tableName, res);
             alterSeqStmt = connection.createStatement();
-            executeUpdate(alterSeqStmt, alterSequence(connection, tableName, columnName, max + 1));
+            executeUpdate(errorService, tableName, alterSeqStmt, alterSequence(connection, tableName, columnName, max + 1));
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(tableName, "", e);
         }
         finally
         {
@@ -86,19 +88,19 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
 
     private String max(Connection connection, String tableName, String columnName)
     {
-        return "SELECT MAX(" + quote(connection, columnName) + ") FROM " + tableName(connection, tableName);
+        return "SELECT MAX(" + quote(errorService, tableName, connection, columnName) + ") FROM " + tableName(connection, tableName);
     }
 
     private String tableName(Connection connection, String tableName)
     {
         final String schema = provider.getSchema();
-        final String quoted = quote(connection, tableName);
+        final String quoted = quote(errorService, tableName, connection, tableName);
         return schema != null ? schema + "." + quoted : quoted;
     }
 
-    private static String alterSequence(Connection connection, String tableName, String columnName, int val)
+    private String alterSequence(Connection connection, String tableName, String columnName, int val)
     {
-        return "ALTER SEQUENCE " + quote(connection, sequenceName(tableName, columnName)) + " RESTART WITH " + val;
+        return "ALTER SEQUENCE " + quote(errorService, tableName, connection, sequenceName(tableName, columnName)) + " RESTART WITH " + val;
     }
 
     private static String sequenceName(String tableName, String columnName)

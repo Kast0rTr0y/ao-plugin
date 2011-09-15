@@ -7,10 +7,6 @@ package com.atlassian.dbexporter;
  */
 public class ImportExportException extends RuntimeException
 {
-    public ImportExportException()
-    {
-    }
-
     public ImportExportException(String message)
     {
         super(message);

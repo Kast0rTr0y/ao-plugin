@@ -3,7 +3,7 @@ package com.atlassian.dbexporter.importer;
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.DatabaseInformations;
-import com.atlassian.dbexporter.ImportExportException;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -12,11 +12,19 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static com.atlassian.dbexporter.DatabaseInformations.database;
+import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
+import static com.google.common.base.Preconditions.*;
 
 public final class SqlServerAroundTableImporter implements DataImporter.AroundTableImporter
 {
+    private final ImportExportErrorService errorService;
+
+    public SqlServerAroundTableImporter(ImportExportErrorService errorService)
+    {
+        this.errorService = checkNotNull(errorService);
+    }
+
     @Override
     public void before(ImportConfiguration configuration, Context context, String table, Connection connection)
     {
@@ -72,11 +80,11 @@ public final class SqlServerAroundTableImporter implements DataImporter.AroundTa
         try
         {
             s = connection.createStatement();
-            s.execute(setIdentityInsertSql(quote(connection, table), onOff));
+            s.execute(setIdentityInsertSql(quote(errorService, table, connection, table), onOff));
         }
         catch (SQLException e)
         {
-            throw new ImportExportException(e);
+            throw errorService.newImportExportSqlException(table, "", e);
         }
         finally
         {

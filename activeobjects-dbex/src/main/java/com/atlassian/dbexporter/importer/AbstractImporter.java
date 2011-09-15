@@ -1,7 +1,9 @@
 package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.node.NodeParser;
+import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,15 +17,17 @@ public abstract class AbstractImporter implements Importer
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    protected final ImportExportErrorService errorService;
     private List<AroundImporter> arounds;
 
-    protected AbstractImporter()
+    protected AbstractImporter(ImportExportErrorService errorService)
     {
-        this(Collections.<AroundImporter>emptyList());
+        this(errorService, Collections.<AroundImporter>emptyList());
     }
 
-    protected AbstractImporter(List<AroundImporter> arounds)
+    protected AbstractImporter(ImportExportErrorService errorService, List<AroundImporter> arounds)
     {
+        this.errorService = checkNotNull(errorService);
         this.arounds = checkNotNull(arounds);
     }
 
@@ -44,7 +48,7 @@ public abstract class AbstractImporter implements Importer
 
         doImportNode(node, configuration, context);
 
-        for (ListIterator<AroundImporter> iterator = arounds.listIterator(arounds.size()); iterator.hasPrevious();)
+        for (ListIterator<AroundImporter> iterator = arounds.listIterator(arounds.size()); iterator.hasPrevious(); )
         {
             iterator.previous().after(node, configuration, context);
         }

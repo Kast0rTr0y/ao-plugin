@@ -1,6 +1,7 @@
 package com.atlassian.dbexporter.jdbc;
 
 import com.atlassian.dbexporter.ConnectionProvider;
+import com.atlassian.dbexporter.ImportExportErrorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ public final class JdbcUtils
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcUtils.class);
 
-    public static <T> T withConnection(ConnectionProvider provider, JdbcCallable<T> callable)
+    public static <T> T withConnection(ImportExportErrorService errorService, ConnectionProvider provider, JdbcCallable<T> callable)
     {
         Connection connection = null;
         try
@@ -37,7 +38,7 @@ public final class JdbcUtils
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
         finally
         {
@@ -129,31 +130,32 @@ public final class JdbcUtils
     /**
      * Quotes the database identifier if needed.
      *
+     * @param errorService
+     * @param table
      * @param connection the current connection being used
-     * @param identifier the database identifier to quote
-     * @return the quoted database identifier
-     * @throws ImportExportSqlException if anything wrong happens getting information from the database connection.
+     * @param identifier the database identifier to quote   @return the quoted database identifier
+     * @throws com.atlassian.dbexporter.ImportExportException if anything wrong happens getting information from the database connection.
      */
-    public static String quote(Connection connection, String identifier)
+    public static String quote(ImportExportErrorService errorService, String table, Connection connection, String identifier)
     {
-        final String quoteString = identifierQuoteString(connection).trim();
+        final String quoteString = identifierQuoteString(errorService, table, connection).trim();
         return new StringBuilder(identifier.length() + 2 * quoteString.length())
                 .append(quoteString).append(identifier).append(quoteString).toString();
     }
 
-    private static String identifierQuoteString(Connection connection)
+    private static String identifierQuoteString(ImportExportErrorService errorService, String table, Connection connection)
     {
         try
         {
-            return metadata(connection).getIdentifierQuoteString();
+            return metadata(errorService, connection).getIdentifierQuoteString();
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(table, "", e);
         }
     }
 
-    public static DatabaseMetaData metadata(Connection connection)
+    public static DatabaseMetaData metadata(ImportExportErrorService errorService, Connection connection)
     {
         try
         {
@@ -161,11 +163,11 @@ public final class JdbcUtils
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException(e);
+            throw errorService.newImportExportSqlException(null, "", e);
         }
     }
 
-    public static Statement createStatement(Connection connection)
+    public static Statement createStatement(ImportExportErrorService errorService, String table, Connection connection)
     {
         try
         {
@@ -173,11 +175,11 @@ public final class JdbcUtils
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not create statement from connection", e);
+            throw errorService.newImportExportSqlException(table, "Could not create statement from connection", e);
         }
     }
 
-    public static PreparedStatement preparedStatement(Connection connection, String sql)
+    public static PreparedStatement preparedStatement(ImportExportErrorService errorService, String table, Connection connection, String sql)
     {
         try
         {
@@ -185,7 +187,7 @@ public final class JdbcUtils
         }
         catch (SQLException e)
         {
-            throw new ImportExportSqlException("Could not create prepared statement for SQL query, [" + sql + "]", e);
+            throw errorService.newImportExportSqlException(table, "Could not create prepared statement for SQL query, [" + sql + "]", e);
         }
     }
 
