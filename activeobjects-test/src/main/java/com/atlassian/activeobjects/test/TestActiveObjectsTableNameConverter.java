@@ -7,20 +7,20 @@ import net.java.ao.schema.TableNameConverter;
 
 public final class TestActiveObjectsTableNameConverter implements TableNameConverter
 {
-    private static final String PREFIX = "AO_";
+    private static final String prefix = "AO_";
 
     private final TableNameConverter tnc = new ActiveObjectsTableNameConverter(new Prefix()
     {
         @Override
         public String prepend(String string)
         {
-            return PREFIX + string;
+            return prefix + string;
         }
 
         @Override
         public boolean isStarting(String string, boolean caseSensitive)
         {
-            final String thePrefix = caseSensitive ? PREFIX : PREFIX.toLowerCase();
+            final String thePrefix = caseSensitive ? prefix : prefix.toLowerCase();
             final String toCompare = caseSensitive ? string : string.toLowerCase();
             return toCompare.startsWith(thePrefix);
         }

@@ -19,6 +19,7 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
+import com.atlassian.plugin.util.validation.ValidationPattern;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -51,8 +52,6 @@ import static com.google.common.base.Preconditions.*;
  */
 public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
 {
-    public static final String AO_TABLE_PREFIX = "AO";
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final int MAX_NUMBER_OF_ENTITIES = 50;
@@ -75,7 +74,6 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
     private ServiceRegistration tableNameConverterServiceRegistration;
     private List<ActiveObjectsUpgradeTask> upgradeTasks;
-    private String hash;
 
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver,
@@ -191,11 +189,6 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         return null; // no module
     }
 
-    public String getHash()
-    {
-        return hash;
-    }
-
     private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, TableNameConverter tableNameConverter, FieldNameConverter fieldNameConverter, Set<Class<? extends RawEntity<?>>> entities)
     {
         final DefaultActiveObjectsConfiguration configuration =
@@ -227,8 +220,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private Prefix getTableNamePrefix(Element element)
     {
-        hash = digester.digest(getNameSpace(element), 6);
-        return new SimplePrefix(toUpperCase(AO_TABLE_PREFIX + "_" + hash), "_");
+        return new SimplePrefix(toUpperCase("ao_" + digester.digest(getNameSpace(element), 6)), "_");
     }
 
     /**

@@ -39,7 +39,7 @@ public final class TestActiveObjectsBackup
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private EntityManager entityManager;
-    private PrefixedActiveObjectsBackup aoBackup;
+    private ActiveObjectsBackup aoBackup;
     private Model model;
 
     @Test
@@ -94,8 +94,7 @@ public final class TestActiveObjectsBackup
     private String save()
     {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        aoBackup.save(os, NullBackupProgressMonitor.INSTANCE, CreateBackup.PLUGIN_INFO);
-
+        aoBackup.save(os, NullBackupProgressMonitor.INSTANCE);
         try
         {
             return os.toString(UTF_8);
@@ -108,7 +107,7 @@ public final class TestActiveObjectsBackup
 
     private void restore(String xmlBackup) throws IOException
     {
-        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE, new PluginInformationChecker());
+        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE);
     }
 
     private void assertDataPresent()
@@ -120,7 +119,7 @@ public final class TestActiveObjectsBackup
     @Before
     public void setUp()
     {
-        aoBackup = new PrefixedActiveObjectsBackup(entityManager.getProvider(), CreateBackup.SCHEMA_CONFIGURATION_FACTORY, CreateBackup.BACKUP_PREFIX);
+        aoBackup = new ActiveObjectsBackup(entityManager.getProvider());
         model = new Model(entityManager);
         model.emptyDatabase();
     }

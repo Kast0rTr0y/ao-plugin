@@ -1,9 +1,8 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
-import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
-import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.activeobjects.test.model.Model;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
@@ -23,10 +22,6 @@ import java.util.Map;
 
 public final class CreateBackup
 {
-    static final Prefix BACKUP_PREFIX = BackupActiveObjectsTableNameConverter.PREFIX;
-    static final PrefixedSchemaConfigurationFactory SCHEMA_CONFIGURATION_FACTORY = new PrefixedSchemaConfigurationFactory();
-    static final TestPluginInformation PLUGIN_INFO = new TestPluginInformation();
-
     private final static ImmutableMap<String, JdbcConfiguration> JDBC = ImmutableMap.<String, JdbcConfiguration>builder()
             .put("hsql", new Hsql())
             .put("mysql", new MySql())
@@ -34,6 +29,7 @@ public final class CreateBackup
             .put("oracle", new Oracle())
             .put("sqlserver", new SqlServer())
             .build();
+
     private static final String CUSTOM = "custom";
 
     public static void main(String[] args) throws Exception
@@ -46,8 +42,7 @@ public final class CreateBackup
         model.createData();
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-        new PrefixedActiveObjectsBackup(entityManager.getProvider(), SCHEMA_CONFIGURATION_FACTORY, BACKUP_PREFIX).save(stream, NullBackupProgressMonitor.INSTANCE, PLUGIN_INFO);
+        new ActiveObjectsBackup(entityManager.getProvider()).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }
@@ -61,7 +56,7 @@ public final class CreateBackup
                 .auto()
                 .tableNameConverter(new BackupActiveObjectsTableNameConverter())
                 .fieldNameConverter(new ActiveObjectsFieldNameConverter())
-                .schemaConfiguration(SCHEMA_CONFIGURATION_FACTORY.getSchemaConfiguration(BACKUP_PREFIX))
+                .schemaConfiguration(new PrefixedSchemaConfiguration(ActiveObjectsBackup.PREFIX))
                 .build();
     }
 
@@ -142,38 +137,5 @@ public final class CreateBackup
     private static boolean isNotEmpty(String s)
     {
         return s != null && !s.equals("");
-    }
-
-    private static class TestPluginInformation implements PluginInformation
-    {
-        @Override
-        public boolean isAvailable()
-        {
-            return true;
-        }
-
-        @Override
-        public String getPluginName()
-        {
-            return "some plugin";
-        }
-
-        @Override
-        public String getPluginKey()
-        {
-            return "some-plugin-key";
-        }
-
-        @Override
-        public String getPluginVersion()
-        {
-            return "some.version";
-        }
-
-        @Override
-        public String getHash()
-        {
-            return "some0hash";
-        }
     }
 }
