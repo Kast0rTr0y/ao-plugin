@@ -8,7 +8,6 @@ import java.util.Map;
 import net.java.ao.DBParam;
 import net.java.ao.DefaultPolymorphicTypeMapper;
 import net.java.ao.EntityManager;
-import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
@@ -164,29 +163,30 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
     }
     
-    public final <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
-    {
-        try
-        {
-            entityManager.stream(type, query, streamCallback);
-        } 
-        catch (SQLException e) 
-        {
-            throw new ActiveObjectsSqlException(entityManager, e);
-        }
-    }
-
-    public final <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
-    {
-        try
-        {
-            entityManager.stream(type, streamCallback);
-        } 
-        catch (SQLException e) 
-        {
-            throw new ActiveObjectsSqlException(entityManager, e);
-        }
-    }
+    // uncomment pending AOJN release
+//    public final <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
+//    {
+//        try
+//        {
+//            entityManager.stream(type, query, streamCallback);
+//        } 
+//        catch (SQLException e) 
+//        {
+//            throw new ActiveObjectsSqlException(entityManager, e);
+//        }
+//    }
+//
+//    public final <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
+//    {
+//        try
+//        {
+//            entityManager.stream(type, streamCallback);
+//        } 
+//        catch (SQLException e) 
+//        {
+//            throw new ActiveObjectsSqlException(entityManager, e);
+//        }
+//    }
     
     public final <K> int count(Class<? extends RawEntity<K>> type)
     {

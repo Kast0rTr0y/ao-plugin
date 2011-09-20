@@ -2,9 +2,7 @@ package com.atlassian.activeobjects.external;
 
 import java.util.Map;
 
-import net.java.ao.Accessor;
 import net.java.ao.DBParam;
-import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
@@ -243,32 +241,33 @@ public interface ActiveObjects
     @SuppressWarnings("unchecked")
     public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters);
 
-    /**
-     * <p>Optimised read for large datasets. This method will stream all rows for the given type to the given callback.</p>
-     * 
-     * <p>Please see {@link #stream(Class, Query, EntityStreamCallback)} for details / limitations.
-     * 
-     * @param type The type of the entities to retrieve.
-     * @param streamCallback The receiver of the data, will be passed one entity per returned row 
-     */    
-    public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback);
-    
-    /**
-     * <p>Selects all entities of the given type and feeds them to the callback, one by one. The entities are slim, uncached, read-only
-     * representations of the data. They only supports getters or designated {@link Accessor} methods. Calling setters or <pre>save</pre> will 
-     * result in an exception. Other method calls will be ignored. The proxies do not support lazy-loading of related entities.</p>
-     * 
-     * <p>This call is optimised for efficient read operations on large datasets. For best memory usage, do not buffer the entities passed to the
-     * callback but process and discard them directly.</p>
-     * 
-     * <p>Unlike regular Entities, the read only implementations do not support flushing/refreshing. The data is a snapshot view at the time of
-     * query.</p> 
-     * 
-     * @param type The type of the entities to retrieve.
-     * @param query 
-     * @param streamCallback The receiver of the data, will be passed one entity per returned row 
-     */ 
-    public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback);
+    // uncomment pending AOJN release
+//    /**
+//     * <p>Optimised read for large datasets. This method will stream all rows for the given type to the given callback.</p>
+//     * 
+//     * <p>Please see {@link #stream(Class, Query, EntityStreamCallback)} for details / limitations.
+//     * 
+//     * @param type The type of the entities to retrieve.
+//     * @param streamCallback The receiver of the data, will be passed one entity per returned row 
+//     */    
+//    public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback);
+//    
+//    /**
+//     * <p>Selects all entities of the given type and feeds them to the callback, one by one. The entities are slim, uncached, read-only
+//     * representations of the data. They only supports getters or designated {@link Accessor} methods. Calling setters or <pre>save</pre> will 
+//     * result in an exception. Other method calls will be ignored. The proxies do not support lazy-loading of related entities.</p>
+//     * 
+//     * <p>This call is optimised for efficient read operations on large datasets. For best memory usage, do not buffer the entities passed to the
+//     * callback but process and discard them directly.</p>
+//     * 
+//     * <p>Unlike regular Entities, the read only implementations do not support flushing/refreshing. The data is a snapshot view at the time of
+//     * query.</p> 
+//     * 
+//     * @param type The type of the entities to retrieve.
+//     * @param query 
+//     * @param streamCallback The receiver of the data, will be passed one entity per returned row 
+//     */ 
+//    public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback);
     
     /**
      * Counts all entities of the specified type.  This method is actually

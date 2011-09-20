@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 
 import net.java.ao.DBParam;
-import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
@@ -93,15 +92,16 @@ final class DelegatingActiveObjects implements ActiveObjects
         return getDelegate().findWithSQL(type, keyField, sql, parameters);
     }
 
-    public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
-    {
-        getDelegate().stream(type, query, streamCallback);
-    }
-
-    public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
-    {
-        getDelegate().stream(type, streamCallback);
-    }
+    // uncomment pending release of AOJN
+//    public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
+//    {
+//        getDelegate().stream(type, query, streamCallback);
+//    }
+//
+//    public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
+//    {
+//        getDelegate().stream(type, streamCallback);
+//    }
     
     public <K> int count(Class<? extends RawEntity<K>> type)
     {
