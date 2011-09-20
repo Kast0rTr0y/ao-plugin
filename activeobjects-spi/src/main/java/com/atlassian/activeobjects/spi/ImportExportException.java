@@ -1,4 +1,4 @@
-package com.atlassian.dbexporter;
+package com.atlassian.activeobjects.spi;
 
 /**
  * The generic <em>runtime</em> exception for the DB exporter module.

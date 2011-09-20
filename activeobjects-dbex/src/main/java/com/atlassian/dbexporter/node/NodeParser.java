@@ -1,6 +1,6 @@
 package com.atlassian.dbexporter.node;
 
-import com.atlassian.dbexporter.ImportExportException;
+import com.atlassian.activeobjects.spi.ImportExportException;
 
 import java.io.Writer;
 import java.math.BigDecimal;

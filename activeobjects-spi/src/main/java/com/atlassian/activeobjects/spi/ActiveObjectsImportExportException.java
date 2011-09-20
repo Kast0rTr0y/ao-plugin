@@ -1,7 +1,5 @@
-package com.atlassian.activeobjects.backup;
+package com.atlassian.activeobjects.spi;
 
-import com.atlassian.activeobjects.spi.PluginInformation;
-import com.atlassian.dbexporter.ImportExportException;
 
 import static com.google.common.base.Preconditions.*;
 

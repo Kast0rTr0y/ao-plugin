@@ -17,7 +17,7 @@ import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportConfiguration;
 import com.atlassian.dbexporter.ImportExportErrorService;
-import com.atlassian.dbexporter.ImportExportException;
+import com.atlassian.activeobjects.spi.ImportExportException;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;

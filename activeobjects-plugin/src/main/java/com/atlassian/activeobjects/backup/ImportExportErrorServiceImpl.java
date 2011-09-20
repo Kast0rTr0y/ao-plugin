@@ -1,8 +1,9 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.spi.ActiveObjectsImportExportException;
+import com.atlassian.activeobjects.spi.ImportExportException;
 import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.dbexporter.ImportExportErrorService;
-import com.atlassian.dbexporter.ImportExportException;
 
 import java.sql.SQLException;
 

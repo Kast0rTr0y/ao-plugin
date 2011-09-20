@@ -1,5 +1,7 @@
 package com.atlassian.dbexporter;
 
+import com.atlassian.activeobjects.spi.ImportExportException;
+
 import java.sql.SQLException;
 
 public interface ImportExportErrorService
