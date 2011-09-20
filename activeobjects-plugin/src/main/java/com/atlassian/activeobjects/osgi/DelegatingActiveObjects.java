@@ -1,16 +1,18 @@
 package com.atlassian.activeobjects.osgi;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Map;
+
+import net.java.ao.DBParam;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import net.java.ao.DBParam;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
-
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.*;
 
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link com.atlassian.activeobjects.internal.ActiveObjectsProvider}</p>
@@ -91,6 +93,16 @@ final class DelegatingActiveObjects implements ActiveObjects
         return getDelegate().findWithSQL(type, keyField, sql, parameters);
     }
 
+    public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
+    {
+        getDelegate().stream(type, query, streamCallback);
+    }
+
+    public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
+    {
+        getDelegate().stream(type, streamCallback);
+    }
+    
     public <K> int count(Class<? extends RawEntity<K>> type)
     {
         return getDelegate().count(type);

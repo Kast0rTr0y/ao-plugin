@@ -1,17 +1,19 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import net.java.ao.DBParam;
-import net.java.ao.DefaultPolymorphicTypeMapper;
-import net.java.ao.EntityManager;
-import net.java.ao.Query;
-import net.java.ao.RawEntity;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.sql.SQLException;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.*;
+import net.java.ao.DBParam;
+import net.java.ao.DefaultPolymorphicTypeMapper;
+import net.java.ao.EntityManager;
+import net.java.ao.EntityStreamCallback;
+import net.java.ao.Query;
+import net.java.ao.RawEntity;
+
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * <p>Implementation of {@link com.atlassian.activeobjects.external.ActiveObjects} that mainly delegates to the
@@ -161,7 +163,31 @@ public class EntityManagedActiveObjects implements ActiveObjects
             throw new ActiveObjectsSqlException(entityManager, e);
         }
     }
+    
+    public final <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
+    {
+        try
+        {
+            entityManager.stream(type, query, streamCallback);
+        } 
+        catch (SQLException e) 
+        {
+            throw new ActiveObjectsSqlException(entityManager, e);
+        }
+    }
 
+    public final <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
+    {
+        try
+        {
+            entityManager.stream(type, streamCallback);
+        } 
+        catch (SQLException e) 
+        {
+            throw new ActiveObjectsSqlException(entityManager, e);
+        }
+    }
+    
     public final <K> int count(Class<? extends RawEntity<K>> type)
     {
         try
