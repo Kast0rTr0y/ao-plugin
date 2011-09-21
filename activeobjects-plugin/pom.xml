@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.17-SNAPSHOT</version>
+        <version>0.17</version>
     </parent>
 
     <artifactId>activeobjects-plugin</artifactId>
@@ -20,7 +20,7 @@
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <oracle.version>10.2.0.4</oracle.version>
         <jtds.version>1.2.4</jtds.version>
-        <ao.spi.compatibility.version>0.15</ao.spi.compatibility.version>
+        <ao.spi.compatibility.version>0.17</ao.spi.compatibility.version>
     </properties>
 
     <build>
