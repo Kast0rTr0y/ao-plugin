@@ -5,7 +5,7 @@ package com.atlassian.activeobjects.spi;
  *
  * @since 1.0
  */
-public class ImportExportException extends RuntimeException
+public abstract class ImportExportException extends RuntimeException
 {
     public ImportExportException(String message)
     {
