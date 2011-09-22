@@ -34,7 +34,7 @@ public final class DataExporter implements Exporter
     public DataExporter(ImportExportErrorService errorService, String schema, TableSelector tableSelector)
     {
         this.errorService = checkNotNull(errorService);
-        this.schema = schema; // maybe null
+        this.schema = isBlank(schema) ? null : schema; // maybe null
         this.tableSelector = checkNotNull(tableSelector);
     }
 
@@ -415,5 +415,22 @@ public final class DataExporter implements Exporter
         {
             throw errorService.newImportExportSqlException(table, "Could not execute query '" + sql + "' with fetch size " + fetchSize, e);
         }
+    }
+
+    private static boolean isBlank(String str)
+    {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0)
+        {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++)
+        {
+            if (!Character.isWhitespace(str.charAt(i)))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

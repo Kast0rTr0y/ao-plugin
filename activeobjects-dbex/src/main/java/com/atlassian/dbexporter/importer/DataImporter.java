@@ -38,7 +38,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
     public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
     {
         super(errorService, arounds);
-        this.schema = schema;
+        this.schema = isBlank(schema) ? null : schema;
         this.aroundTable = checkNotNull(aroundTableImporter);
     }
 
@@ -226,8 +226,6 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
         /**
          * Get the column size for all columns in the table -- only the sizes for String columns will be used
-         *
-         *
          *
          * @param connection
          * @param columns
@@ -512,5 +510,22 @@ public final class DataImporter extends AbstractSingleNodeImporter
         void before(ImportConfiguration configuration, Context context, String table, Connection connection);
 
         void after(ImportConfiguration configuration, Context context, String table, Connection connection);
+    }
+
+    private static boolean isBlank(String str)
+    {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0)
+        {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++)
+        {
+            if (!Character.isWhitespace(str.charAt(i)))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

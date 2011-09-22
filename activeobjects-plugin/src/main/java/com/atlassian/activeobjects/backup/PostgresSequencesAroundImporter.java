@@ -93,7 +93,7 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
 
     private String tableName(Connection connection, String tableName)
     {
-        final String schema = provider.getSchema();
+        final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
         final String quoted = quote(errorService, tableName, connection, tableName);
         return schema != null ? schema + "." + quoted : quoted;
     }
@@ -106,5 +106,22 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
     private static String sequenceName(String tableName, String columnName)
     {
         return tableName + "_" + columnName + "_" + "seq";
+    }
+
+    private static boolean isBlank(String str)
+    {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0)
+        {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++)
+        {
+            if (!Character.isWhitespace(str.charAt(i)))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
