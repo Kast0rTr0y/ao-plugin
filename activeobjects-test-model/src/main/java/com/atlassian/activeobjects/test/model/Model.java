@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.test.model;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.test.TestActiveObjects;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -10,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import net.java.ao.EntityManager;
+import net.java.ao.RawEntity;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,9 +82,17 @@ public final class Model
         this.ao = checkNotNull(ao);
     }
 
+    public void emptyDatabase()
+    {
+        logger.debug("Emptying the database!");
+        ao.migrate();
+    }
+
     public void migrateEntities()
     {
-        ao.migrate(Book.class, Author.class, Authorship.class);
+        final Class<? extends RawEntity<?>>[] entities = new Class[]{Book.class, Author.class, Authorship.class};
+        logger.debug("Migrating entities (), this will create tables", Joiner.on(',').join(entities));
+        ao.migrate(entities);
     }
 
     public void createData()
@@ -97,11 +107,6 @@ public final class Model
         book(PIS, PIS_PRICE, PIS_ISBN, PIS_PUBLISHED, PIS_READ, PIS_PAGES, PIS_ABSTRACT.get(), scala);
 
         book(EJ2, EJ2_PRICE, EJ2_ISBN, EJ2_PUBLISHED, EJ2_READ, EJ2_PAGES, EJ2_ABSTRACT.get(), findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
-    }
-
-    public void emptyDatabase()
-    {
-        ao.migrate();
     }
 
     private Author[] authors(String... names)
