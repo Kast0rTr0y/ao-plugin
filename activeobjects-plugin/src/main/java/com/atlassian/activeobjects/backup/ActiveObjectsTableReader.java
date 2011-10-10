@@ -27,7 +27,7 @@ import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
 
-final class ActiveObjectsTableReader implements TableReader
+public final class ActiveObjectsTableReader implements TableReader
 {
     public static final int DEFAULT_SCALE = -1;
     public static final int DEFAULT_PRECISION = -1;

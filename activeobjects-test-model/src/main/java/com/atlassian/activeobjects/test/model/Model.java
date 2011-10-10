@@ -91,7 +91,7 @@ public final class Model
     public void migrateEntities()
     {
         final Class<? extends RawEntity<?>>[] entities = new Class[]{Book.class, Author.class, Authorship.class};
-        logger.debug("Migrating entities (), this will create tables", Joiner.on(',').join(entities));
+        logger.debug("Migrating entities ({}), this will create tables", Joiner.on(',').join(entities));
         ao.migrate(entities);
     }
 

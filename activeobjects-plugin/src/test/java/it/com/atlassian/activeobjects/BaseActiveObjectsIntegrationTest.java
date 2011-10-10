@@ -3,10 +3,17 @@ package it.com.atlassian.activeobjects;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.web.WebInterfaceManager;
+import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.auth.LoginUriProvider;
+import com.atlassian.sal.api.message.HelpPathResolver;
+import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.activeobjects.junit.*;
+import com.atlassian.sal.api.user.UserManager;
+import com.atlassian.sal.api.websudo.WebSudoManager;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -74,4 +81,25 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected DataSourceProvider dataSourceProvider;
+
+    @MockHostComponent
+    protected WebInterfaceManager webInterfaceManager;
+
+    @MockHostComponent
+    protected UserManager userManager;
+
+    @MockHostComponent
+    protected LoginUriProvider loginUriProvider;
+
+    @MockHostComponent
+    protected WebSudoManager webSudoManager;
+
+    @MockHostComponent
+    protected I18nResolver i18nResolver;
+
+    @MockHostComponent
+    protected HelpPathResolver helpPathResolver;
+
+    @MockHostComponent
+    protected WebResourceManager webResourceManager;
 }

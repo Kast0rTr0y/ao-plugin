@@ -26,7 +26,7 @@ public final class PluginInformationFactory
      * @param hash the table hash for this plugin
      * @return some plugin information
      */
-    PluginInformation getPluginInformation(final String hash)
+    public PluginInformation getPluginInformation(final String hash)
     {
         if (hash == null)
         {

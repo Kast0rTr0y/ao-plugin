@@ -115,7 +115,7 @@ public final class ActiveObjectsBackup implements Backup
         }
     }
 
-    private SchemaConfiguration schemaConfiguration()
+    public static SchemaConfiguration schemaConfiguration()
     {
         return new PrefixedSchemaConfiguration(PREFIX);
     }
@@ -264,7 +264,7 @@ public final class ActiveObjectsBackup implements Backup
         }
     }
 
-    private static final class UpperCaseEntityNameProcessor implements EntityNameProcessor
+    public static final class UpperCaseEntityNameProcessor implements EntityNameProcessor
     {
         @Override
         public String tableName(String tableName)

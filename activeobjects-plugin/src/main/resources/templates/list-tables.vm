@@ -1,0 +1,31 @@
+#* @vtlvariable name="tables" type="java.util.List<com.atlassian.activeobjects.admin.tables.TablesController.TableInformation>" *#
+<html>
+    <head>
+        <meta name="decorator" content="atl.admin">
+        <meta name="admin.active.section" content="admin_system_menu/top_system_section/ao_section"/>
+
+        <title>$i18n.getText("ao.admin.title")</title>
+    </head>
+    <body>
+        <h1>$i18n.getText("ao.admin.tables.title")</h1>
+
+        <table class="aui aui-table-rowhover">
+            <thead>
+                <tr>
+                    <th>$i18n.getText("ao.admin.plugin.label")</th>
+                    <th>$i18n.getText("ao.admin.table.label")</th>
+                    <th>$i18n.getText("ao.admin.rows.label")</th>
+                </tr>
+            </thead>
+            <tbody>
+                #foreach($t in $tables)
+                <tr>
+                    <td>$t.plugin</td>
+                    <td>$t.table</td>
+                    <td>$t.rows</td>
+                </tr>
+                #end
+            </tbody>
+        </table>
+    </body>
+</html>

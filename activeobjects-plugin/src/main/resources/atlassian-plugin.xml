@@ -5,4 +5,31 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
         <application-version min="1" max="10"/>
     </plugin-info>
+
+    <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet">
+        <url-pattern>/active-objects/*</url-pattern>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:/META-INF/spring/web-context.xml</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-context-param key="enable-html-escaping" name="Enable HTML escaping context parameter">
+        <description>Enables automatic HTML escaping in Spring MVC.</description>
+        <param-name>defaultHtmlEscape</param-name>
+        <param-value>true</param-value>
+    </servlet-context-param>
+
+    <resource type="i18n" name="i18n" location="com.atlassian.activeobjects.admin.EmbeddedCrowdAdmin"/>
+
+    <web-section key="ao_section" name="Active Objects Admin Section" location="top_system_section" application="jira" weight="20">
+        <label key="ao.admin.menu.label"/>
+        <condition class="com.atlassian.activeobjects.admin.condition.UserIsSysAdminCondition"/>
+    </web-section>
+
+    <web-item key="ao-tables-web-item" name="Active Objects Tables" section="top_system_section/ao_section" weight="50" application="jira">
+        <label key="ao.admin.tables.menu.label"/>
+        <link linkId="ao_tables">/plugins/servlet/active-objects/tables/list</link>
+        <condition class="com.atlassian.activeobjects.admin.condition.UserIsSysAdminCondition"/>
+    </web-item>
 </atlassian-plugin>
