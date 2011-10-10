@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.ActiveObjectsTableNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
@@ -19,7 +20,6 @@ import com.atlassian.plugin.PluginException;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
-import com.atlassian.plugin.util.validation.ValidationPattern;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -39,8 +39,10 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
+import static com.atlassian.activeobjects.admin.PluginToTablesMapping.*;
 import static com.atlassian.activeobjects.ao.ConverterUtils.*;
 import static com.google.common.base.Preconditions.*;
+import static com.google.common.collect.Lists.newLinkedList;
 
 /**
  * <p>The module descriptor for active objects.</p>
@@ -68,6 +70,8 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private final DataSourceTypeResolver dataSourceTypeResolver;
 
+    private final PluginToTablesMapping pluginToTablesMapping;
+
     private String hash;
     private Prefix tableNamePrefix;
     private TableNameConverter tableNameConverter;
@@ -84,11 +88,13 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver,
-                                        Digester digester)
+                                        Digester digester,
+                                        PluginToTablesMapping pluginToTablesMapping)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
+        this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
     }
 
     @Override
@@ -103,6 +109,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         upgradeTasks = getUpgradeTasks(element);
 
         validateEntities(entityClasses, tableNameConverter);
+        recordTables(entityClasses, tableNameConverter);
     }
 
     public String getHash()
@@ -169,6 +176,19 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
             }
         }
     }
+
+    void recordTables(Set<Class<? extends RawEntity<?>>> entityClasses, final TableNameConverter tableNameConverter)
+    {
+        pluginToTablesMapping.add(PluginInfo.of(getPlugin()), Lists.transform(newLinkedList(entityClasses), new Function<Class<? extends RawEntity<?>>, String>()
+        {
+            @Override
+            public String apply(Class<? extends RawEntity<?>> from)
+            {
+                return tableNameConverter.getName(from);
+            }
+        }));
+    }
+
 
     @Override
     public void enabled()

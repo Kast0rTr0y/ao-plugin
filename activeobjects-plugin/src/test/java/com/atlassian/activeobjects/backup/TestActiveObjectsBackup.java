@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
@@ -122,7 +123,7 @@ public final class TestActiveObjectsBackup
     @Before
     public void setUp()
     {
-        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), new ImportExportErrorServiceImpl(new ActiveObjectsHashesReader(), new PluginInformationFactory(mock(PluginAccessor.class))));
+        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), new ActiveObjectsHashesReader(), mock(PluginAccessor.class))));
         model = new Model(entityManager);
         model.emptyDatabase();
     }

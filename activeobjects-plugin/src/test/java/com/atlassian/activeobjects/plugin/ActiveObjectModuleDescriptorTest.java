@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.plugin;
 
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
@@ -31,7 +32,8 @@ public final class ActiveObjectModuleDescriptorTest
         moduleDescriptor = new ActiveObjectModuleDescriptor(
                 mock(OsgiServiceUtils.class),
                 mock(DataSourceTypeResolver.class),
-                mock(Digester.class)
+                mock(Digester.class),
+                mock(PluginToTablesMapping.class)
         )
         {
             @Override

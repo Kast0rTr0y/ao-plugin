@@ -11,12 +11,10 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ImportExportErrorServiceImpl implements ImportExportErrorService
 {
-    private final ActiveObjectsHashesReader hashesReader;
     private final PluginInformationFactory pluginInformationFactory;
 
-    public ImportExportErrorServiceImpl(ActiveObjectsHashesReader hashesReader, PluginInformationFactory pluginInformationFactory)
+    public ImportExportErrorServiceImpl(PluginInformationFactory pluginInformationFactory)
     {
-        this.hashesReader = checkNotNull(hashesReader);
         this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
     }
 
@@ -62,6 +60,6 @@ public final class ImportExportErrorServiceImpl implements ImportExportErrorServ
 
     private PluginInformation getPluginInformation(String tableName)
     {
-        return pluginInformationFactory.getPluginInformation(hashesReader.getHash(tableName));
+        return pluginInformationFactory.getPluginInformation(tableName);
     }
 }

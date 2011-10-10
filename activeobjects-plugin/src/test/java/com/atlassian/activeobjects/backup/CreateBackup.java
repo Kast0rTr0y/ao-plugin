@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
@@ -38,7 +39,7 @@ public final class CreateBackup
 
     public static void main(String[] args) throws Exception
     {
-        final ImportExportErrorService errorService = new ImportExportErrorServiceImpl(new ActiveObjectsHashesReader(), new PluginInformationFactory(mock(PluginAccessor.class)));
+        final ImportExportErrorService errorService = new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(ActiveObjectsHashesReader.class), mock(PluginAccessor.class)));
 
         final JdbcConfiguration jdbc = selectJdbcDriver();
 

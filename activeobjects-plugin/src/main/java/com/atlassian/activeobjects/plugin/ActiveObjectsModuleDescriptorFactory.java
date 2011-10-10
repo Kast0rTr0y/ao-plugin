@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.plugin;
 
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
@@ -18,18 +19,20 @@ public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDesc
     private final OsgiServiceUtils osgiUtils;
     private final DataSourceTypeResolver dataSourceTypeResolver;
     private final Digester digester;
+    private final PluginToTablesMapping pluginToTablesMapping;
 
-    public ActiveObjectsModuleDescriptorFactory(HostContainer hostContainer, OsgiServiceUtils osgiUtils, DataSourceTypeResolver dataSourceTypeResolver, Digester digester)
+    public ActiveObjectsModuleDescriptorFactory(HostContainer hostContainer, OsgiServiceUtils osgiUtils, DataSourceTypeResolver dataSourceTypeResolver, Digester digester, PluginToTablesMapping pluginToTablesMapping)
     {
         super(checkNotNull(hostContainer), "ao", ActiveObjectModuleDescriptor.class);
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
+        this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
     }
 
     @Override
     public ModuleDescriptor getModuleDescriptor(String type) throws PluginParseException, IllegalAccessException, InstantiationException, ClassNotFoundException
     {
-        return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(osgiUtils, dataSourceTypeResolver, digester) : null;
+        return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(osgiUtils, dataSourceTypeResolver, digester, pluginToTablesMapping) : null;
     }
 }

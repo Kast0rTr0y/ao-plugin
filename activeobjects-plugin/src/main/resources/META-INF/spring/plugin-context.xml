@@ -20,6 +20,7 @@
             <constructor-arg index="3">
                 <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
             </constructor-arg>
+            <constructor-arg index="4" ref="pluginToTablesMapping"/>
         </bean>
     </osgi:service>
 
@@ -45,12 +46,17 @@
     </bean>
 
     <bean id="errorService" class="com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl">
-        <constructor-arg ref="aoHashesReader"/>
         <constructor-arg ref="pluginInformationFactory"/>
     </bean>
 
     <bean id="pluginInformationFactory" class="com.atlassian.activeobjects.backup.PluginInformationFactory">
+        <constructor-arg ref="pluginToTablesMapping"/>
+        <constructor-arg ref="aoHashesReader" />
         <constructor-arg ref="pluginAccessor"/>
+    </bean>
+
+    <bean id="pluginToTablesMapping" class="com.atlassian.activeobjects.admin.ActiveObjectsPluginToTablesMapping">
+        <constructor-arg ref="pluginSettingsFactory" />
     </bean>
 
     <bean id="aoHashesReader" class="com.atlassian.activeobjects.backup.ActiveObjectsHashesReader"/>

@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.plugin.ModuleDescriptor;
@@ -9,32 +10,47 @@ import com.atlassian.plugin.predicate.ModuleDescriptorPredicate;
 
 import java.util.Collection;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 public final class PluginInformationFactory
 {
+    private final PluginToTablesMapping pluginToTablesMapping;
+    private final ActiveObjectsHashesReader hashesReader;
     private final PluginAccessor pluginAccessor;
 
-    public PluginInformationFactory(PluginAccessor pluginAccessor)
+    public PluginInformationFactory(PluginToTablesMapping pluginToTablesMapping, ActiveObjectsHashesReader hashesReader, PluginAccessor pluginAccessor)
     {
+        this.hashesReader = checkNotNull(hashesReader);
+        this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
         this.pluginAccessor = checkNotNull(pluginAccessor);
     }
 
     /**
      * Gets plugin information from the Active Objects table hash
      *
-     * @param hash the table hash for this plugin
+     * @param tableName the table name
      * @return some plugin information
      */
-    public PluginInformation getPluginInformation(final String hash)
+    public PluginInformation getPluginInformation(final String tableName)
     {
-        if (hash == null)
+        if (tableName == null)
         {
-            return new NotAvailablePluginInformation(hash);
+            return new NotAvailablePluginInformation();
         }
 
-        final ActiveObjectModuleDescriptor aomd = getModuleDescriptor(hash);
-        return aomd != null ? new AvailablePluginInformation(hash, aomd.getPlugin()) : new NotAvailablePluginInformation(hash);
+        final PluginToTablesMapping.PluginInfo pluginInfo = pluginToTablesMapping.get(tableName);
+        if (pluginInfo != null)
+        {
+            return new AvailablePluginInformation(pluginInfo);
+        }
+
+        final ActiveObjectModuleDescriptor aomd = getModuleDescriptor(hashesReader.getHash(tableName));
+        if (aomd != null)
+        {
+            return new AvailablePluginInformation(aomd.getPlugin());
+        }
+
+        return new NotAvailablePluginInformation();
     }
 
     private ActiveObjectModuleDescriptor getModuleDescriptor(String hash)
@@ -56,15 +72,8 @@ public final class PluginInformationFactory
         });
     }
 
-    private static class NotAvailablePluginInformation implements PluginInformation
+    private static final class NotAvailablePluginInformation implements PluginInformation
     {
-        private final String hash;
-
-        public NotAvailablePluginInformation(String hash)
-        {
-            this.hash = checkNotNull(hash);
-        }
-
         @Override
         public boolean isAvailable()
         {
@@ -90,27 +99,33 @@ public final class PluginInformationFactory
         }
 
         @Override
-        public String getHash()
-        {
-            return hash;
-        }
-
-        @Override
         public String toString()
         {
             return "<unknown plugin>";
         }
     }
 
-    private class AvailablePluginInformation implements PluginInformation
+    private static final class AvailablePluginInformation implements PluginInformation
     {
-        private final String hash;
-        private final Plugin plugin;
+        private final String name;
+        private final String key;
+        private final String version;
 
-        public AvailablePluginInformation(String hash, Plugin plugin)
+        public AvailablePluginInformation(Plugin plugin)
         {
-            this.hash = checkNotNull(hash);
-            this.plugin = checkNotNull(plugin);
+            this(checkNotNull(plugin).getName(), plugin.getKey(), plugin.getPluginInformation().getVersion());
+        }
+
+        public AvailablePluginInformation(PluginToTablesMapping.PluginInfo pluginInfo)
+        {
+            this(checkNotNull(pluginInfo).name, pluginInfo.key, pluginInfo.version);
+        }
+
+        private AvailablePluginInformation(String name, String key, String version)
+        {
+            this.name = name;
+            this.key = key;
+            this.version = version;
         }
 
         @Override
@@ -122,25 +137,19 @@ public final class PluginInformationFactory
         @Override
         public String getPluginName()
         {
-            return plugin.getName();
+            return name;
         }
 
         @Override
         public String getPluginKey()
         {
-            return plugin.getKey();
+            return key;
         }
 
         @Override
         public String getPluginVersion()
         {
-            return plugin.getPluginInformation().getVersion();
-        }
-
-        @Override
-        public String getHash()
-        {
-            return hash;
+            return version;
         }
 
         @Override

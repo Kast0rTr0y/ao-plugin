@@ -10,8 +10,6 @@ public interface PluginInformation
      * <li>{@link #getPluginVersion()}</li>
      * </ul>
      *
-     * The method {@link #getHash()} shall never return {@code null}.
-     *
      * @return whether or not this is plugin information is actually available.
      */
     boolean isAvailable();
@@ -21,9 +19,4 @@ public interface PluginInformation
     String getPluginKey();
 
     String getPluginVersion();
-
-    /**
-     * The AO hash, used in database table naming.
-     */
-    String getHash();
 }

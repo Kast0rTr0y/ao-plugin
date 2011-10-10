@@ -62,7 +62,6 @@
                 <constructor-arg ref="dataSourceProvider"/>
                 <constructor-arg ref="errorService"/>
                 <constructor-arg ref="i18nResolver"/>
-                <constructor-arg ref="aoHashesReader"/>
                 <constructor-arg ref="pluginInformationFactory"/>
             </bean>
         </property>

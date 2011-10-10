@@ -22,20 +22,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.*;
 
 public final class TablesController
 {
     private final DatabaseProviderFactory databaseProviderFactory;
     private final DataSourceProvider dataSourceProvider;
     private final ImportExportErrorServiceImpl errorService;
-    private final ActiveObjectsHashesReader hashesReader;
     private final PluginInformationFactory pluginInformationFactory;
     private final I18nResolver i18nResolver;
 
-    public TablesController(DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, I18nResolver i18nResolver, ActiveObjectsHashesReader hashesReader, PluginInformationFactory pluginInformationFactory)
+    public TablesController(DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, I18nResolver i18nResolver, PluginInformationFactory pluginInformationFactory)
     {
-        this.hashesReader = hashesReader;
         this.pluginInformationFactory = pluginInformationFactory;
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
@@ -53,7 +51,7 @@ public final class TablesController
             @Override
             public TableInformation apply(Table t)
             {
-                final PluginInformation pluginInformation = pluginInformationFactory.getPluginInformation(hashesReader.getHash(t.getName()));
+                final PluginInformation pluginInformation = pluginInformationFactory.getPluginInformation(t.getName());
                 final int rowCount = from.count(t.getName());
                 return new TableInformation(
                         pluginInformation.isAvailable() ? pluginInformation.getPluginName() : i18nResolver.getText("ao.admin.plugin.unknown"),
