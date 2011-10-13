@@ -36,7 +36,7 @@ public final class ActiveObjectsAdminFunctionalTest
     public final void testAdmin()
     {
         final ActiveObjectsAdminPage admin = loginAsSysAdmin(product, ActiveObjectsAdminPage.class);
-        assertTrue(admin.getTitle().contains("Active Objects"));
+        assertTrue(admin.getTitle().contains("Plugin Data Storage"));
 
         assertTables(Lists.<AoTable>newArrayList(), admin.getTables());
 
