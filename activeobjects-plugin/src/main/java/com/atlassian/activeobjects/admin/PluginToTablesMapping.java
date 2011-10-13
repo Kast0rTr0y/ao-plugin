@@ -27,8 +27,8 @@ public interface PluginToTablesMapping
             this.key = checkNotNull(key);
             this.name = checkNotNull(name);
             this.version = checkNotNull(version);
-            this.vendorName = checkNotNull(vendorName);
-            this.vendorUrl = checkNotNull(vendorUrl);
+            this.vendorName = vendorName;
+            this.vendorUrl = vendorUrl;
         }
 
         public static PluginInfo of(Plugin plugin)
