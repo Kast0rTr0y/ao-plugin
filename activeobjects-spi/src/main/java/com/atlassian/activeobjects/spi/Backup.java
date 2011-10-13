@@ -3,7 +3,9 @@ package com.atlassian.activeobjects.spi;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/** Makes backup/restore possible ;-) */
+/**
+ * Makes backup/restore possible ;-)
+ */
 public interface Backup
 {
     /**
@@ -21,4 +23,9 @@ public interface Backup
      * @param monitor the progress monitor for the current restore
      */
     void restore(InputStream stream, RestoreProgressMonitor monitor);
+
+    /**
+     * Clears the database of any AO tables.
+     */
+    void clear();
 }

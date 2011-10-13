@@ -56,8 +56,8 @@ public final class ActiveObjectsBackup implements Backup
     private static final Charset CHARSET = Charset.forName("UTF-8");
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
-    private final ImportExportErrorService errorService;
     private final Supplier<DatabaseProvider> databaseProviderSupplier;
+    private final ImportExportErrorService errorService;
 
     public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, ImportExportErrorService errorService)
     {
@@ -78,8 +78,8 @@ public final class ActiveObjectsBackup implements Backup
 
     private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, ImportExportErrorService errorService)
     {
-        this.errorService = checkNotNull(errorService);
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
+        this.errorService = checkNotNull(errorService);
     }
 
     /**
@@ -158,6 +158,13 @@ public final class ActiveObjectsBackup implements Backup
         {
             closeCloseable(streamReader);
         }
+    }
+
+    @Override
+    public void clear()
+    {
+        final DatabaseProvider provider = databaseProviderSupplier.get();
+        new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration(), errorService).cleanup(CleanupMode.CLEAN);
     }
 
     private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider)
