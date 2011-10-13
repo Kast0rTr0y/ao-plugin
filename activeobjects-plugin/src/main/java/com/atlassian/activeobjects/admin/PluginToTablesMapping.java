@@ -1,6 +1,8 @@
 package com.atlassian.activeobjects.admin;
 
 import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.PluginInformation;
+import com.google.common.base.Preconditions;
 
 import java.util.List;
 
@@ -17,22 +19,22 @@ public interface PluginToTablesMapping
         public final String key;
         public final String name;
         public final String version;
+        public final String vendorName;
+        public final String vendorUrl;
 
-        private PluginInfo(String key, String name, String version)
+        private PluginInfo(String key, String name, String version, String vendorName, String vendorUrl)
         {
             this.key = checkNotNull(key);
             this.name = checkNotNull(name);
             this.version = checkNotNull(version);
-        }
-
-        public static PluginInfo of(String key, String name, String version)
-        {
-            return new PluginInfo(key, name, version);
+            this.vendorName = checkNotNull(vendorName);
+            this.vendorUrl = checkNotNull(vendorUrl);
         }
 
         public static PluginInfo of(Plugin plugin)
         {
-            return new PluginInfo(plugin.getKey(), plugin.getName(), plugin.getPluginInformation().getVersion());
+            final PluginInformation pluginInformation = plugin.getPluginInformation();
+            return new PluginInfo(plugin.getKey(), plugin.getName(), pluginInformation.getVersion(), pluginInformation.getVendorName(), pluginInformation.getVendorUrl());
         }
     }
 }

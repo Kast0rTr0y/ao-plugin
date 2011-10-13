@@ -34,6 +34,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <ao.test.database>${ao.test.database}</ao.test.database>
+                        <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                     </systemPropertyVariables>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>

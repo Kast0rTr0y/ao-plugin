@@ -20,16 +20,20 @@
         <param-value>true</param-value>
     </servlet-context-param>
 
-    <resource type="i18n" name="i18n" location="com.atlassian.activeobjects.admin.EmbeddedCrowdAdmin"/>
+    <resource type="i18n" name="i18n" location="com.atlassian.activeobjects.admin.ActiveObjectsAdmin"/>
 
-    <web-section key="ao_section" name="Active Objects Admin Section" location="top_system_section" application="jira" weight="20">
-        <label key="ao.admin.menu.label"/>
-        <condition class="com.atlassian.activeobjects.admin.condition.UserIsSysAdminCondition"/>
-    </web-section>
+    <web-resource key="web-resources" name="Web Resources">
+        <resource type="download" name="active-objects-admin.css" location="web/active-objects-admin.css"/>
+        <resource type="download" name="active-objects-admin.js" location="web/active-objects-admin.js"/>
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+    </web-resource>
 
-    <web-item key="ao-tables-web-item" name="Active Objects Tables" section="top_system_section/ao_section" weight="50" application="jira">
+    <resource type="download" name="images/" location="images/"/>
+
+    <web-item key="ao-tables-web-item" name="Active Objects Tables" section="advanced_menu_section/advanced_section" i18n-name-key="ao.admin.tables.webfragments.name" weight="80" application="jira">
         <label key="ao.admin.tables.menu.label"/>
         <link linkId="ao_tables">/plugins/servlet/active-objects/tables/list</link>
         <condition class="com.atlassian.activeobjects.admin.condition.UserIsSysAdminCondition"/>
+        <param name="webfragments.keywords">ao.admin.tables.webfragments.keywords</param>
     </web-item>
 </atlassian-plugin>

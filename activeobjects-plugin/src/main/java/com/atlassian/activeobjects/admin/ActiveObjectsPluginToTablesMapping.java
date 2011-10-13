@@ -16,7 +16,8 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesMapping
 {
-    private static final String KEY = "map";
+    private static final String KEY = ActiveObjectsPluginToTablesMapping.class.getName();
+
     private static final Type MAPPINGS_TYPE = new TypeToken<Map<String, PluginInfo>>()
     {
     }.getType();

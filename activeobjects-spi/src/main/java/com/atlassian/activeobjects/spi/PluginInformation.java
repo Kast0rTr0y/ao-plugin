@@ -19,4 +19,8 @@ public interface PluginInformation
     String getPluginKey();
 
     String getPluginVersion();
+
+    String getVendorName();
+
+    String getVendorUrl();
 }

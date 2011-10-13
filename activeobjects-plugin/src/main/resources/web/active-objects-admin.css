@@ -1,0 +1,57 @@
+td.first-col
+{
+    width: 40%;
+}
+
+.ao-plugin-name
+{
+    background-image: url("images/puzzle-piece.gif");
+    background-repeat: no-repeat;
+    padding: 2px 0 2px 22px;
+}
+
+.ao-plugin-info
+{
+    margin: 10px auto auto 10px;
+    display: none;
+}
+
+.ao-plugin-selected .ao-plugin-info
+{
+    display: block;
+}
+
+.ao-plugin-info dt
+{
+    display: inline;
+    float: left;
+    margin-right: 10px;
+    min-width: 80px;
+}
+
+.ao-plugin-info dt, .ao-plugin-info dd
+{
+    padding: 2px 4px;
+}
+
+td.ao-table-names, td.ao-row-counts
+{
+    padding: 0 !important;
+    border-bottom: none !important;
+}
+
+.ao-plugin td ul, .ao-plugin td li
+{
+    margin: 0;
+}
+
+.ao-plugin td ul
+{
+    list-style-type: none;
+}
+
+.ao-plugin td li
+{
+    padding: 4px 0 4px 4px;
+    border-bottom: 1px solid #EEEEEE;
+}

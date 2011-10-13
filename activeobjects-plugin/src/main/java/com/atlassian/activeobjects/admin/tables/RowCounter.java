@@ -31,7 +31,7 @@ public final class RowCounter
         try
         {
             connection = provider.getConnection();
-            stmt = provider.preparedStatement(connection, "select count(*) from " + tableName); // TODO quote
+            stmt = provider.preparedStatement(connection, "SELECT COUNT(*) FROM " + provider.withSchema(tableName));
             res = stmt.executeQuery();
 
             checkState(res.next());

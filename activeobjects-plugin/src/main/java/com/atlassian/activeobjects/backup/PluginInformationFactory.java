@@ -99,6 +99,30 @@ public final class PluginInformationFactory
         }
 
         @Override
+        public String getVendorName()
+        {
+            return null;
+        }
+
+        @Override
+        public String getVendorUrl()
+        {
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            return o != null && o instanceof NotAvailablePluginInformation;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        @Override
         public String toString()
         {
             return "<unknown plugin>";
@@ -110,22 +134,32 @@ public final class PluginInformationFactory
         private final String name;
         private final String key;
         private final String version;
+        private final String vendorName;
+        private final String vendorUrl;
 
         public AvailablePluginInformation(Plugin plugin)
         {
-            this(checkNotNull(plugin).getName(), plugin.getKey(), plugin.getPluginInformation().getVersion());
+            this(
+                    checkNotNull(plugin).getName(),
+                    plugin.getKey(),
+                    plugin.getPluginInformation().getVersion(),
+                    plugin.getPluginInformation().getVendorName(),
+                    plugin.getPluginInformation().getVendorUrl()
+            );
         }
 
         public AvailablePluginInformation(PluginToTablesMapping.PluginInfo pluginInfo)
         {
-            this(checkNotNull(pluginInfo).name, pluginInfo.key, pluginInfo.version);
+            this(checkNotNull(pluginInfo).name, pluginInfo.key, pluginInfo.version, pluginInfo.vendorName, pluginInfo.vendorUrl);
         }
 
-        private AvailablePluginInformation(String name, String key, String version)
+        private AvailablePluginInformation(String name, String key, String version, String vendorName, String vendorUrl)
         {
             this.name = name;
             this.key = key;
             this.version = version;
+            this.vendorName = vendorName;
+            this.vendorUrl = vendorUrl;
         }
 
         @Override
@@ -150,6 +184,67 @@ public final class PluginInformationFactory
         public String getPluginVersion()
         {
             return version;
+        }
+
+        @Override
+        public String getVendorName()
+        {
+            return vendorName;
+        }
+
+        @Override
+        public String getVendorUrl()
+        {
+            return vendorUrl;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+
+            final AvailablePluginInformation that = (AvailablePluginInformation) o;
+
+            if (key != null ? !key.equals(that.key) : that.key != null)
+            {
+                return false;
+            }
+            if (name != null ? !name.equals(that.name) : that.name != null)
+            {
+                return false;
+            }
+            if (vendorName != null ? !vendorName.equals(that.vendorName) : that.vendorName != null)
+            {
+                return false;
+            }
+            if (vendorUrl != null ? !vendorUrl.equals(that.vendorUrl) : that.vendorUrl != null)
+            {
+                return false;
+            }
+            if (version != null ? !version.equals(that.version) : that.version != null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = name != null ? name.hashCode() : 1;
+            result = 31 * result + (key != null ? key.hashCode() : 1);
+            result = 31 * result + (version != null ? version.hashCode() : 1);
+            result = 31 * result + (vendorName != null ? vendorName.hashCode() : 1);
+            result = 31 * result + (vendorUrl != null ? vendorUrl.hashCode() : 1);
+            return result;
         }
 
         @Override
