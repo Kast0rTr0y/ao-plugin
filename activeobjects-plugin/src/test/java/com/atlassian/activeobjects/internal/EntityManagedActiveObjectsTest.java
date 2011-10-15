@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.DisposableDataSource;
 import net.java.ao.EntityManager;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -34,15 +37,27 @@ public class EntityManagedActiveObjectsTest
     @Test
     public void testExecuteInTransaction() throws Exception
     {
-        final DatabaseProvider databaseProvider = mock(DatabaseProvider.class);
+        final DisposableDataSource disposableDataSource = mock(DisposableDataSource.class);
+        final DatabaseProvider databaseProvider = mockProvider(disposableDataSource);
         final Connection connection = mock(Connection.class);
 
         when(entityManager.getProvider()).thenReturn(databaseProvider);
-        when(databaseProvider.getConnection()).thenReturn(connection);
+        when(disposableDataSource.getConnection()).thenReturn(connection);
 
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
 
         verify(transactionManager).doInTransaction(callback);
+    }
+
+    private DatabaseProvider mockProvider(final DisposableDataSource disposableDataSource)
+    {
+        return new DatabaseProvider(disposableDataSource, null){
+            @Override
+            protected Set<String> getReservedWords()
+            {
+                return new HashSet<String>();
+            }
+        };
     }
 }
