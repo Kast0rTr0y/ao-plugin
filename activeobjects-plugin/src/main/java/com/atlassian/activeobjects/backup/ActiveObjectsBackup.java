@@ -142,7 +142,7 @@ public final class ActiveObjectsBackup implements Backup
                 new TableDefinitionImporter(errorService, new ActiveObjectsTableCreator(errorService, provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration(), errorService)),
                 new DataImporter(errorService,
                         provider.getSchema(),
-                        new SqlServerAroundTableImporter(errorService),
+                        new SqlServerAroundTableImporter(errorService, provider.getSchema()),
                         new PostgresSequencesAroundImporter(errorService, provider),
                         new OracleSequencesAroundImporter(errorService, provider),
                         new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(errorService, provider))

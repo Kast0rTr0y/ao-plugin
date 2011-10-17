@@ -89,6 +89,7 @@ public final class CreateBackup
         final String url = prompt("Url:");
         final String username = prompt("Username:", "ao_user");
         final String password = prompt("Password:", "ao_password");
+        final String schema = prompt("Schema:", "");
 
         return new JdbcConfiguration()
         {
@@ -96,6 +97,12 @@ public final class CreateBackup
             public String getUrl()
             {
                 return url;
+            }
+
+            @Override
+            public String getSchema()
+            {
+                return schema;
             }
 
             @Override
