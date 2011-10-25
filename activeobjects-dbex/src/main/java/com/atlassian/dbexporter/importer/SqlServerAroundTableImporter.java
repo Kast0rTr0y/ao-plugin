@@ -19,10 +19,12 @@ import static com.google.common.base.Preconditions.*;
 public final class SqlServerAroundTableImporter implements DataImporter.AroundTableImporter
 {
     private final ImportExportErrorService errorService;
+    private final String schema;
 
-    public SqlServerAroundTableImporter(ImportExportErrorService errorService)
+    public SqlServerAroundTableImporter(ImportExportErrorService errorService, String schema)
     {
         this.errorService = checkNotNull(errorService);
+        this.schema = schema;
     }
 
     @Override
@@ -94,7 +96,7 @@ public final class SqlServerAroundTableImporter implements DataImporter.AroundTa
 
     private String setIdentityInsertSql(String table, String onOff)
     {
-        return String.format("SET IDENTITY_INSERT %s %s", table, onOff);
+        return String.format("SET IDENTITY_INSERT %s %s", schema != null ? schema + "." + table : table, onOff);
     }
 
     private boolean isSqlServer(ImportConfiguration configuration)

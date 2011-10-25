@@ -1,16 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <backup xmlns="http://www.atlassian.com/ao" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <database>
-    <meta key="database.majorVersion" value="10"/>
-    <meta key="database.minorVersion" value="0"/>
     <meta key="database.name" value="Microsoft SQL Server"/>
     <meta key="database.version" value="10.00.1600"/>
+    <meta key="database.minorVersion" value="0"/>
+    <meta key="database.majorVersion" value="10"/>
     <meta key="driver.name" value="jTDS Type 4 JDBC Driver for MS SQL Server and Sybase"/>
     <meta key="driver.version" value="1.2.4"/>
-    <meta key="plugin.ao.hash" value="some0hash"/>
-    <meta key="plugin.key" value="some-plugin-key"/>
-    <meta key="plugin.name" value="some plugin"/>
-    <meta key="plugin.version" value="some.version"/>
   </database>
   <table name="AO_AUTHOR">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="10" scale="-1"/>
