@@ -7,6 +7,8 @@
 
     <ao key="ao-module">
         <description>The module configuring the Active Objects service used by this plugin</description>
+        <entity>com.atlassian.activeobjects.test.model.Author</entity>
+        <entity>com.atlassian.activeobjects.test.model.Authorship</entity>
         <entity>com.atlassian.activeobjects.test.model.Book</entity>
     </ao>
 
