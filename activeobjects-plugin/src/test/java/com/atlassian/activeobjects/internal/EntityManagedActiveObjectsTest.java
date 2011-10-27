@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,12 +38,9 @@ public class EntityManagedActiveObjectsTest
     @Test
     public void testExecuteInTransaction() throws Exception
     {
-        final DisposableDataSource disposableDataSource = mock(DisposableDataSource.class);
-        final DatabaseProvider databaseProvider = mockProvider(disposableDataSource);
-        final Connection connection = mock(Connection.class);
+        final DatabaseProvider databaseProvider = mockProvider();
 
         when(entityManager.getProvider()).thenReturn(databaseProvider);
-        when(disposableDataSource.getConnection()).thenReturn(connection);
 
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
@@ -50,9 +48,18 @@ public class EntityManagedActiveObjectsTest
         verify(transactionManager).doInTransaction(callback);
     }
 
-    private DatabaseProvider mockProvider(final DisposableDataSource disposableDataSource)
+    private DatabaseProvider mockProvider() throws Exception
     {
-        return new DatabaseProvider(disposableDataSource, null){
+        final DisposableDataSource disposableDataSource = mock(DisposableDataSource.class);
+        final Connection connection = mock(Connection.class);
+        final DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+
+        when(disposableDataSource.getConnection()).thenReturn(connection);
+        when(connection.getMetaData()).thenReturn(metaData);
+        when(metaData.getIdentifierQuoteString()).thenReturn("");
+        
+        return new DatabaseProvider(disposableDataSource, null)
+        {
             @Override
             protected Set<String> getReservedWords()
             {

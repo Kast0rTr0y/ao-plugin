@@ -26,6 +26,7 @@ import java.util.List;
 import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
+import static net.java.ao.sql.SqlUtils.closeQuietly;
 
 final class ActiveObjectsTableReader implements TableReader
 {
@@ -53,15 +54,20 @@ final class ActiveObjectsTableReader implements TableReader
     {
         final List<Table> tables = newArrayList();
         final DDLTable[] ddlTables;
+        Connection connection = null;
         try
         {
-            ddlTables = SchemaReader.readSchema(getConnection(), provider, schemaConfiguration, true);
+            connection = getConnection();
+            ddlTables = SchemaReader.readSchema(connection, provider, schemaConfiguration, true);
         }
         catch (SQLException e)
         {
             throw errorService.newImportExportSqlException(null, "An error occurred reading schema information from database", e);
         }
-
+        finally
+        {
+            closeQuietly(connection);
+        }
         for (DDLTable ddlTable : ddlTables)
         {
             tables.add(readTable(databaseInformation, ddlTable, entityNameProcessor));
