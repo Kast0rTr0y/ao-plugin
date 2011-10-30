@@ -18,7 +18,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -170,7 +173,15 @@ public class JdbcDriverDatabaseProviderFactoryTest
     private DataSource getMockDataSource(String driver) throws SQLException
     {
         final DataSource dataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        final Statement statement = mock(Statement.class);
+
         when(driverNameExtractor.getDriverName(dataSource)).thenReturn(driver);
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.getMetaData()).thenReturn(metaData);
+        when(connection.createStatement()).thenReturn(statement);
+        when(metaData.getIdentifierQuoteString()).thenReturn("");
         return dataSource;
     }
 }
