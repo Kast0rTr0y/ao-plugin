@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.Set;
 
 import static org.mockito.Mockito.mock;
@@ -37,12 +39,8 @@ public class EntityManagedActiveObjectsTest
     @Test
     public void testExecuteInTransaction() throws Exception
     {
-        final DisposableDataSource dataSource = mock(DisposableDataSource.class);
-        final DatabaseProvider databaseProvider = mockDatabaseProvider(dataSource);
-        final Connection connection = mock(Connection.class);
-
+        final DatabaseProvider databaseProvider = mockDatabaseProvider();
         when(entityManager.getProvider()).thenReturn(databaseProvider);
-        when(dataSource.getConnection()).thenReturn(connection);
 
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
@@ -50,8 +48,16 @@ public class EntityManagedActiveObjectsTest
         verify(transactionManager).doInTransaction(callback);
     }
 
-    private DatabaseProvider mockDatabaseProvider(final DisposableDataSource dataSource)
+    private DatabaseProvider mockDatabaseProvider() throws SQLException
     {
+        final DisposableDataSource dataSource = mock(DisposableDataSource.class);
+        final Connection connection = mock(Connection.class);
+        final DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.getMetaData()).thenReturn(metaData);
+        when(metaData.getIdentifierQuoteString()).thenReturn("");
+
         return new DatabaseProvider(dataSource, null)
         {
             @Override

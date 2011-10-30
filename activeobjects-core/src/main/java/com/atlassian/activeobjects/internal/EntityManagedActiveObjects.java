@@ -60,12 +60,26 @@ public class EntityManagedActiveObjects implements ActiveObjects
 
     public final <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys)
     {
-        return entityManager.get(type, keys);
+        try
+        {
+            return entityManager.get(type, keys);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectsSqlException(entityManager, e);
+        }
     }
 
     public final <T extends RawEntity<K>, K> T get(Class<T> type, K key)
     {
-        return entityManager.get(type, key);
+        try
+        {
+            return entityManager.get(type, key);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectsSqlException(entityManager, e);
+        }
     }
 
     public final <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params)

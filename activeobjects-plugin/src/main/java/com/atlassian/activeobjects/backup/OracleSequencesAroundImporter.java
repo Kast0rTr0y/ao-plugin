@@ -76,7 +76,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
             connection = provider.getConnection();
             for (Table table : tables)
             {
-                executeUpdate(errorService, table.getName(), connection, "ALTER TABLE " + quote(errorService, table.getName(), connection, table.getName()) + " DISABLE ALL TRIGGERS");
+                executeUpdate(errorService, table.getName(), connection, "ALTER TABLE " + tableName(connection, table.getName()) + " DISABLE ALL TRIGGERS");
             }
         }
         catch (SQLException e)
@@ -112,7 +112,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
 
     private void dropSequence(Connection connection, TableColumnPair tcp)
     {
-        executeUpdate(errorService, tcp.table.getName(), connection, "DROP SEQUENCE " + sequenceName(tcp));
+        executeUpdate(errorService, tcp.table.getName(), connection, "DROP SEQUENCE " + sequenceName(connection, tcp));
     }
 
     private void createAllSequences(Collection<Table> tables)
@@ -143,10 +143,11 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
         try
         {
             maxStmt = connection.createStatement();
-            final ResultSet res = executeQuery(errorService, tableName, maxStmt, "SELECT MAX(" + quote(errorService, tableName, connection, tcp.column.getName()) + ")" +
-                    " FROM " + quote(errorService, tableName, connection, tableName));
+            final ResultSet res = executeQuery(errorService, tableName, maxStmt,
+                    "SELECT MAX(" + quote(errorService, tableName, connection, tcp.column.getName()) + ")" +
+                    " FROM " + tableName(connection, tableName));
             final int max = getIntFromResultSet(errorService, tableName, res);
-            executeUpdate(errorService, tableName, connection, "CREATE SEQUENCE " + sequenceName(tcp)
+            executeUpdate(errorService, tableName, connection, "CREATE SEQUENCE " + sequenceName(connection, tcp)
                     + " INCREMENT BY 1 START WITH " + (max + 1) + " NOMAXVALUE MINVALUE " + (max + 1));
         }
         catch (SQLException e)
@@ -167,7 +168,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
             connection = provider.getConnection();
             for (Table table : tables)
             {
-                executeUpdate(errorService, table.getName(), connection, "ALTER TABLE " + quote(errorService, table.getName(), connection, table.getName()) + " ENABLE ALL TRIGGERS");
+                executeUpdate(errorService, table.getName(), connection, "ALTER TABLE " + tableName(connection, table.getName()) + " ENABLE ALL TRIGGERS");
             }
         }
         catch (SQLException e)
@@ -180,8 +181,34 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
         }
     }
 
-    private static String sequenceName(TableColumnPair tcp)
+    private String tableName(Connection connection, String tableName)
     {
-        return tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ";
+        final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
+        final String quoted = quote(errorService, tableName, connection, tableName);
+        return schema != null ? schema + "." + quoted : quoted;
+    }
+
+    private String sequenceName(Connection connection, TableColumnPair tcp)
+    {
+        final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
+        final String quoted = quote(errorService, tcp.table.getName(), connection, tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ");
+        return schema != null ? schema + "." + quoted : quoted;
+    }
+
+    private static boolean isBlank(String str)
+    {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0)
+        {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++)
+        {
+            if (!Character.isWhitespace(str.charAt(i)))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
