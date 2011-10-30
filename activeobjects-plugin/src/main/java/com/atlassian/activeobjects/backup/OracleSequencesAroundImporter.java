@@ -112,7 +112,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
 
     private void dropSequence(Connection connection, TableColumnPair tcp)
     {
-        executeUpdate(errorService, tcp.table.getName(), connection, "DROP SEQUENCE " + sequenceName(tcp));
+        executeUpdate(errorService, tcp.table.getName(), connection, "DROP SEQUENCE " + sequenceName(connection, tcp));
     }
 
     private void createAllSequences(Collection<Table> tables)
@@ -147,7 +147,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
                     "SELECT MAX(" + quote(errorService, tableName, connection, tcp.column.getName()) + ")" +
                     " FROM " + tableName(connection, tableName));
             final int max = getIntFromResultSet(errorService, tableName, res);
-            executeUpdate(errorService, tableName, connection, "CREATE SEQUENCE " + sequenceName(tcp)
+            executeUpdate(errorService, tableName, connection, "CREATE SEQUENCE " + sequenceName(connection, tcp)
                     + " INCREMENT BY 1 START WITH " + (max + 1) + " NOMAXVALUE MINVALUE " + (max + 1));
         }
         catch (SQLException e)
@@ -188,9 +188,11 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
         return schema != null ? schema + "." + quoted : quoted;
     }
 
-    private static String sequenceName(TableColumnPair tcp)
+    private String sequenceName(Connection connection, TableColumnPair tcp)
     {
-        return tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ";
+        final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
+        final String quoted = quote(errorService, tcp.table.getName(), connection, tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ");
+        return schema != null ? schema + "." + quoted : quoted;
     }
 
     private static boolean isBlank(String str)
