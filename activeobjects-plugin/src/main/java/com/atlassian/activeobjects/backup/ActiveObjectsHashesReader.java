@@ -30,6 +30,14 @@ public final class ActiveObjectsHashesReader
 
     private String extractHash(String tableNameWithNoAoPrefix)
     {
-        return tableNameWithNoAoPrefix.substring(0, tableNameWithNoAoPrefix.indexOf('_'));
+        final int endIndex = tableNameWithNoAoPrefix.indexOf('_');
+        if (endIndex != -1)
+        {
+            return tableNameWithNoAoPrefix.substring(0, endIndex);
+        }
+        else
+        {
+            return "";
+        }
     }
 }
