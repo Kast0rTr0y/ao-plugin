@@ -90,7 +90,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                     @Override
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new OracleDatabaseProvider(getDisposableDataSource(dataSource));
+                        return new OracleDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 },
         POSTGRESQL(DatabaseType.POSTGRESQL, "postgres")
