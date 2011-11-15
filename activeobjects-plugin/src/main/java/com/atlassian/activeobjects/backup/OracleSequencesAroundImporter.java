@@ -191,7 +191,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
     private String sequenceName(Connection connection, TableColumnPair tcp)
     {
         final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
-        final String quoted = quote(errorService, tcp.table.getName(), connection, tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ");
+        final String quoted = quote(errorService, tcp.table.getName(), connection, AoUtils.shorten(tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ"));
         return schema != null ? schema + "." + quoted : quoted;
     }
 

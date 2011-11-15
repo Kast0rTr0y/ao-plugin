@@ -126,7 +126,8 @@ public final class CreateBackup
         {
             final JdbcConfiguration jdbc = configs.getValue();
             sb.append(configs.getKey()).append(": ")
-                    .append(jdbc.getUrl()).append(" - ")
+                    .append(jdbc.getUrl()).append(" - <")
+                    .append(jdbc.getSchema()).append("> - ")
                     .append(jdbc.getUsername()).append(" - ")
                     .append(jdbc.getPassword()).append("\n");
         }
