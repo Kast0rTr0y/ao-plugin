@@ -159,9 +159,9 @@ public final class NodeBackup
         private static final String TO_TABLE = "toTable";
         private static final String TO_COLUMN = "toColumn";
 
-        public static NodeCreator add(NodeCreator node, String name)
+        public static NodeCreator add(NodeCreator node)
         {
-            return node.addNode(NAME).addAttribute(NAME_ATTR, name);
+            return node.addNode(NAME);
         }
 
         public static String getName(NodeParser node)

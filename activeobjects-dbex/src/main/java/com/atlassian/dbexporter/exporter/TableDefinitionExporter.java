@@ -74,7 +74,7 @@ public final class TableDefinitionExporter implements Exporter
 
     private void export(NodeCreator node, ForeignKey foreignKey)
     {
-        ForeignKeyDefinitionNode.add(node, foreignKey.getName());
+        ForeignKeyDefinitionNode.add(node);
         ForeignKeyDefinitionNode.setFromTable(node, foreignKey.getFromTable());
         ForeignKeyDefinitionNode.setFromColumn(node, foreignKey.getFromField());
         ForeignKeyDefinitionNode.setToTable(node, foreignKey.getToTable());

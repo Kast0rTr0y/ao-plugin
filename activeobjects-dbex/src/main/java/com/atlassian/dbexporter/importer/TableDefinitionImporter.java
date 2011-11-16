@@ -106,7 +106,6 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
     {
         checkStartNode(node, ForeignKeyDefinitionNode.NAME);
 
-        final String name = ForeignKeyDefinitionNode.getName(node);
         final String fromTable = ForeignKeyDefinitionNode.getFromTable(node);
         final String fromColumn = ForeignKeyDefinitionNode.getFromColumn(node);
         final String toTable = ForeignKeyDefinitionNode.getToTable(node);
@@ -114,7 +113,7 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
 
         checkEndNode(node.getNextNode(), ForeignKeyDefinitionNode.NAME);
         node.getNextNode(); // get to the next node, that column has been imported!
-        return new ForeignKey(name, fromTable, fromColumn, toTable, toColumn);
+        return new ForeignKey(fromTable, fromColumn, toTable, toColumn);
     }
 
     @Override
