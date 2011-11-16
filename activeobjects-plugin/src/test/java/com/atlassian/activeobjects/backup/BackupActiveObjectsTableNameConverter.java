@@ -8,7 +8,7 @@ import net.java.ao.schema.TableNameConverter;
 
 public final class BackupActiveObjectsTableNameConverter implements TableNameConverter
 {
-    public static final Prefix PREFIX = new SimplePrefix("AO");
+    public static final Prefix PREFIX = new SimplePrefix("AO_000000");
 
     private final TableNameConverter tableNameConverter;
 

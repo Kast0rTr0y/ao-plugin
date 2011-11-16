@@ -4,6 +4,8 @@ import java.util.Locale;
 
 public final class ConverterUtils
 {
+    public static final int MAX_LENGTH = 30;
+
     private ConverterUtils()
     {
     }

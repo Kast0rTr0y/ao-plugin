@@ -4,6 +4,7 @@ import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLForeignKey;
@@ -18,11 +19,13 @@ import static com.google.common.base.Preconditions.*;
 final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
 {
     private final ImportExportErrorService errorService;
+    private final NameConverters converters;
     private final DatabaseProvider provider;
 
-    public ActiveObjectsForeignKeyCreator(ImportExportErrorService errorService, DatabaseProvider provider)
+    public ActiveObjectsForeignKeyCreator(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider)
     {
         this.errorService = checkNotNull(errorService);
+        this.converters = checkNotNull(converters);
         this.provider = checkNotNull(provider);
     }
 
@@ -34,12 +37,11 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
         {
             conn = provider.getConnection();
             stmt = conn.createStatement();
-
             for (ForeignKey foreignKey : foreignKeys)
             {
                 final DDLAction a = new DDLAction(DDLActionType.ALTER_ADD_KEY);
                 a.setKey(toDdlForeignKey(foreignKey, entityNameProcessor));
-                final String[] sqlStatements = provider.renderAction(a);
+                final String[] sqlStatements = provider.renderAction(converters, a);
                 for (String sql : sqlStatements)
                 {
                     try

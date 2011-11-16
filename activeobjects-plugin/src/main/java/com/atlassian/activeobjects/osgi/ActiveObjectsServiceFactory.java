@@ -10,8 +10,7 @@ import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.plugin.PluginException;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.FieldNameConverter;
-import net.java.ao.schema.TableNameConverter;
+import net.java.ao.schema.NameConverters;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -45,11 +44,13 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
         this.provider = checkNotNull(provider);
     }
 
+    @Override
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
         return createActiveObjects(bundle);
     }
 
+    @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
         // no-op
@@ -103,36 +104,37 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
             this.bundle = checkNotNull(bundle);
         }
 
+        @Override
         public PluginKey getPluginKey()
         {
             return getDelegate().getPluginKey();
         }
 
+        @Override
         public DataSourceType getDataSourceType()
         {
             return getDelegate().getDataSourceType();
         }
 
+        @Override
         public Prefix getTableNamePrefix()
         {
             return getDelegate().getTableNamePrefix();
         }
 
-        public TableNameConverter getTableNameConverter()
+        @Override
+        public NameConverters getNameConverters()
         {
-            return getDelegate().getTableNameConverter();
+            return getDelegate().getNameConverters();
         }
 
-        public FieldNameConverter getFieldNameConverter()
-        {
-            return getDelegate().getFieldNameConverter();
-        }
-
+        @Override
         public SchemaConfiguration getSchemaConfiguration()
         {
             return getDelegate().getSchemaConfiguration();
         }
 
+        @Override
         public Set<Class<? extends RawEntity<?>>> getEntities()
         {
             return getDelegate().getEntities();

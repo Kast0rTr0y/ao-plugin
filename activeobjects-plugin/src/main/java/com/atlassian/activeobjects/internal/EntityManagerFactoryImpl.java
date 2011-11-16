@@ -5,14 +5,13 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.EntityManager;
 import net.java.ao.EntityManagerConfiguration;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.FieldNameConverter;
-import net.java.ao.schema.TableNameConverter;
+import net.java.ao.schema.NameConverters;
 
 import javax.sql.DataSource;
 
 import static com.google.common.base.Preconditions.*;
 
-public class EntityManagerFactoryImpl implements EntityManagerFactory
+public final class EntityManagerFactoryImpl implements EntityManagerFactory
 {
     private final DatabaseProviderFactory databaseProviderFactory;
 
@@ -25,8 +24,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory
     {
         final DataSourceEntityManagerConfiguration entityManagerConfiguration =
                 new DataSourceEntityManagerConfiguration(
-                        configuration.getTableNameConverter(),
-                        configuration.getFieldNameConverter(),
+                        configuration.getNameConverters(),
                         configuration.getSchemaConfiguration());
 
         return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType, schema), entityManagerConfiguration);
@@ -34,32 +32,28 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory
 
     private static class DataSourceEntityManagerConfiguration implements EntityManagerConfiguration
     {
-        private final TableNameConverter tableNameConverter;
-        private final FieldNameConverter fieldNameConverter;
+        private final NameConverters nameConverters;
         private final SchemaConfiguration schemaConfiguration;
 
-        DataSourceEntityManagerConfiguration(TableNameConverter tableNameConverter, FieldNameConverter fieldNameConverter, SchemaConfiguration schemaConfiguration)
+        DataSourceEntityManagerConfiguration(NameConverters nameConverters, SchemaConfiguration schemaConfiguration)
         {
-            this.tableNameConverter = tableNameConverter;
-            this.fieldNameConverter = fieldNameConverter;
+            this.nameConverters = nameConverters;
             this.schemaConfiguration = schemaConfiguration;
         }
 
+        @Override
         public boolean useWeakCache()
         {
             return true;
         }
 
-        public TableNameConverter getTableNameConverter()
+        @Override
+        public NameConverters getNameConverters()
         {
-            return tableNameConverter;
+            return nameConverters;
         }
 
-        public FieldNameConverter getFieldNameConverter()
-        {
-            return fieldNameConverter;
-        }
-
+        @Override
         public SchemaConfiguration getSchemaConfiguration()
         {
             return schemaConfiguration;

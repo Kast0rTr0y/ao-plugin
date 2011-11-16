@@ -37,6 +37,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.NameConverters;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -57,9 +58,10 @@ public final class ActiveObjectsBackup implements Backup
     private static final String NAMESPACE = "http://www.atlassian.com/ao";
 
     private final Supplier<DatabaseProvider> databaseProviderSupplier;
+    private final NameConverters nameConverters;
     private final ImportExportErrorService errorService;
 
-    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, ImportExportErrorService errorService)
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, NameConverters converters, ImportExportErrorService errorService)
     {
         this(new Supplier<DatabaseProvider>()
         {
@@ -68,17 +70,18 @@ public final class ActiveObjectsBackup implements Backup
             {
                 return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
             }
-        }, errorService);
+        }, converters, errorService);
     }
 
-    ActiveObjectsBackup(DatabaseProvider databaseProvider, ImportExportErrorService errorService)
+    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService)
     {
-        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), errorService);
+        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), converters, errorService);
     }
 
-    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, ImportExportErrorService errorService)
+    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService)
     {
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
+        this.nameConverters = checkNotNull(converters);
         this.errorService = checkNotNull(errorService);
     }
 
@@ -98,7 +101,7 @@ public final class ActiveObjectsBackup implements Backup
 
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(errorService, connectionProvider)),
-                new TableDefinitionExporter(new ActiveObjectsTableReader(errorService, provider, schemaConfiguration())),
+                new TableDefinitionExporter(new ActiveObjectsTableReader(errorService, nameConverters, provider, schemaConfiguration())),
                 new DataExporter(errorService, provider.getSchema(), new PrefixTableSelector(PREFIX)));
 
 
@@ -139,13 +142,13 @@ public final class ActiveObjectsBackup implements Backup
 
         final DbImporter dbImporter = new DbImporter(errorService,
                 new DatabaseInformationImporter(errorService),
-                new TableDefinitionImporter(errorService, new ActiveObjectsTableCreator(errorService, provider), new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration(), errorService)),
+                new TableDefinitionImporter(errorService, new ActiveObjectsTableCreator(errorService, provider, nameConverters), new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService)),
                 new DataImporter(errorService,
                         provider.getSchema(),
                         new SqlServerAroundTableImporter(errorService, provider.getSchema()),
                         new PostgresSequencesAroundImporter(errorService, provider),
-                        new OracleSequencesAroundImporter(errorService, provider),
-                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(errorService, provider))
+                        new OracleSequencesAroundImporter(errorService, provider, nameConverters),
+                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(errorService, nameConverters, provider))
                 ));
 
         NodeStreamReader streamReader = null;
@@ -164,7 +167,7 @@ public final class ActiveObjectsBackup implements Backup
     public void clear()
     {
         final DatabaseProvider provider = databaseProviderSupplier.get();
-        new ActiveObjectsDatabaseCleaner(provider, schemaConfiguration(), errorService).cleanup(CleanupMode.CLEAN);
+        new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService).cleanup(CleanupMode.CLEAN);
     }
 
     private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider)

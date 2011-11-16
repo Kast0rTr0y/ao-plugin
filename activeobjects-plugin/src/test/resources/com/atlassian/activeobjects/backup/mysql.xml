@@ -8,7 +8,7 @@
     <meta key="driver.name" value="MySQL-AB JDBC Driver"/>
     <meta key="driver.version" value="mysql-connector-java-5.1.13 ( Revision: ${bzr.revision-id} )"/>
   </database>
-  <table name="AO_BOOK">
+  <table name="AO_000000_BOOK">
     <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="-1" precision="-1" scale="-1"/>
     <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="4" precision="11" scale="-1"/>
@@ -17,18 +17,113 @@
     <column name="READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1" scale="-1"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
-  <table name="AO_LONG_TABLE_NAME_FOR_AUTHOR">
+  <table name="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11" scale="-1"/>
     <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
-  <table name="AO_AUTHORSHIP">
+  <table name="AO_000000_AUTHORSHIP">
     <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="4" precision="11" scale="-1"/>
     <column name="BOOK_ID" primaryKey="false" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11" scale="-1"/>
-    <foreignKey name="fk_ao_authorship_author_id" fromTable="ao_authorship" fromColumn="AUTHOR_ID" toTable="ao_long_table_name_for_author" toColumn="ID"/>
-    <foreignKey name="fk_ao_authorship_book_id" fromTable="ao_authorship" fromColumn="BOOK_ID" toTable="ao_book" toColumn="ISBN"/>
+    <foreignKey name="fk_ao_000000_authorship_author_id" fromTable="ao_000000_authorship" fromColumn="AUTHOR_ID" toTable="ao_000000_long_name_to_author" toColumn="ID"/>
+    <foreignKey name="fk_ao_000000_authorship_book_id" fromTable="ao_000000_authorship" fromColumn="BOOK_ID" toTable="ao_000000_book" toColumn="ISBN"/>
   </table>
-  <data tableName="AO_BOOK">
+  <data tableName="AO_000000_LONG_NAME_TO_AUTHOR">
+    <column name="ID"/>
+    <column name="NAME"/>
+    <row>
+      <integer>1</integer>
+      <string>Brian Goetz</string>
+    </row>
+    <row>
+      <integer>2</integer>
+      <string>Tim Peierls</string>
+    </row>
+    <row>
+      <integer>3</integer>
+      <string>Joshua Bloch</string>
+    </row>
+    <row>
+      <integer>4</integer>
+      <string>Joseph Bowbeer</string>
+    </row>
+    <row>
+      <integer>5</integer>
+      <string>David Holmes</string>
+    </row>
+    <row>
+      <integer>6</integer>
+      <string>Doug Lea</string>
+    </row>
+    <row>
+      <integer>7</integer>
+      <string>Martin Odersky</string>
+    </row>
+    <row>
+      <integer>8</integer>
+      <string>Lex Spoon</string>
+    </row>
+    <row>
+      <integer>9</integer>
+      <string>Bill Venners</string>
+    </row>
+  </data>
+  <data tableName="AO_000000_AUTHORSHIP">
+    <column name="AUTHOR_ID"/>
+    <column name="BOOK_ID"/>
+    <column name="ID"/>
+    <row>
+      <integer>1</integer>
+      <integer>9780321349606</integer>
+      <integer>1</integer>
+    </row>
+    <row>
+      <integer>2</integer>
+      <integer>9780321349606</integer>
+      <integer>2</integer>
+    </row>
+    <row>
+      <integer>3</integer>
+      <integer>9780321349606</integer>
+      <integer>3</integer>
+    </row>
+    <row>
+      <integer>4</integer>
+      <integer>9780321349606</integer>
+      <integer>4</integer>
+    </row>
+    <row>
+      <integer>5</integer>
+      <integer>9780321349606</integer>
+      <integer>5</integer>
+    </row>
+    <row>
+      <integer>6</integer>
+      <integer>9780321349606</integer>
+      <integer>6</integer>
+    </row>
+    <row>
+      <integer>7</integer>
+      <integer>9780981531601</integer>
+      <integer>7</integer>
+    </row>
+    <row>
+      <integer>8</integer>
+      <integer>9780981531601</integer>
+      <integer>8</integer>
+    </row>
+    <row>
+      <integer>9</integer>
+      <integer>9780981531601</integer>
+      <integer>9</integer>
+    </row>
+    <row>
+      <integer>3</integer>
+      <integer>9780321356680</integer>
+      <integer>10</integer>
+    </row>
+  </data>
+  <data tableName="AO_000000_BOOK">
     <column name="ABSTRACT"/>
     <column name="ISBN"/>
     <column name="NUMBER_OF_PAGES"/>
@@ -122,101 +217,6 @@ Artima is very pleased to publish the first book on Scala, written by the design
       <timestamp>2011-01-04T00:00:00.000Z</timestamp>
       <boolean>true</boolean>
       <string>Programming in Scala</string>
-    </row>
-  </data>
-  <data tableName="AO_AUTHORSHIP">
-    <column name="AUTHOR_ID"/>
-    <column name="BOOK_ID"/>
-    <column name="ID"/>
-    <row>
-      <integer>1</integer>
-      <integer>9780321349606</integer>
-      <integer>1</integer>
-    </row>
-    <row>
-      <integer>2</integer>
-      <integer>9780321349606</integer>
-      <integer>2</integer>
-    </row>
-    <row>
-      <integer>3</integer>
-      <integer>9780321349606</integer>
-      <integer>3</integer>
-    </row>
-    <row>
-      <integer>4</integer>
-      <integer>9780321349606</integer>
-      <integer>4</integer>
-    </row>
-    <row>
-      <integer>5</integer>
-      <integer>9780321349606</integer>
-      <integer>5</integer>
-    </row>
-    <row>
-      <integer>6</integer>
-      <integer>9780321349606</integer>
-      <integer>6</integer>
-    </row>
-    <row>
-      <integer>7</integer>
-      <integer>9780981531601</integer>
-      <integer>7</integer>
-    </row>
-    <row>
-      <integer>8</integer>
-      <integer>9780981531601</integer>
-      <integer>8</integer>
-    </row>
-    <row>
-      <integer>9</integer>
-      <integer>9780981531601</integer>
-      <integer>9</integer>
-    </row>
-    <row>
-      <integer>3</integer>
-      <integer>9780321356680</integer>
-      <integer>10</integer>
-    </row>
-  </data>
-  <data tableName="AO_LONG_TABLE_NAME_FOR_AUTHOR">
-    <column name="ID"/>
-    <column name="NAME"/>
-    <row>
-      <integer>1</integer>
-      <string>Brian Goetz</string>
-    </row>
-    <row>
-      <integer>2</integer>
-      <string>Tim Peierls</string>
-    </row>
-    <row>
-      <integer>3</integer>
-      <string>Joshua Bloch</string>
-    </row>
-    <row>
-      <integer>4</integer>
-      <string>Joseph Bowbeer</string>
-    </row>
-    <row>
-      <integer>5</integer>
-      <string>David Holmes</string>
-    </row>
-    <row>
-      <integer>6</integer>
-      <string>Doug Lea</string>
-    </row>
-    <row>
-      <integer>7</integer>
-      <string>Martin Odersky</string>
-    </row>
-    <row>
-      <integer>8</integer>
-      <string>Lex Spoon</string>
-    </row>
-    <row>
-      <integer>9</integer>
-      <string>Bill Venners</string>
     </row>
   </data>
 </backup>

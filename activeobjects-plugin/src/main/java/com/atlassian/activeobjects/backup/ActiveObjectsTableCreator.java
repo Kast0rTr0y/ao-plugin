@@ -6,7 +6,9 @@ import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.google.common.base.Preconditions;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLField;
@@ -35,11 +37,13 @@ final class ActiveObjectsTableCreator implements TableCreator
 
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
+    private final NameConverters converters;
 
-    public ActiveObjectsTableCreator(ImportExportErrorService errorService, DatabaseProvider provider)
+    public ActiveObjectsTableCreator(ImportExportErrorService errorService, DatabaseProvider provider, NameConverters converters)
     {
         this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
+        this.converters = checkNotNull(converters);
     }
 
     public void create(Iterable<Table> tables, EntityNameProcessor entityNameProcessor, ProgressMonitor monitor)
@@ -73,7 +77,7 @@ final class ActiveObjectsTableCreator implements TableCreator
     {
         final DDLAction a = new DDLAction(DDLActionType.CREATE);
         a.setTable(toDdlTable(table, entityNameProcessor));
-        final String[] sqlStatements = provider.renderAction(a);
+        final String[] sqlStatements = provider.renderAction(converters, a);
         for (String sql : sqlStatements)
         {
             try

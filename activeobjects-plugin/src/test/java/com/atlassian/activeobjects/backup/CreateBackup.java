@@ -48,7 +48,7 @@ public final class CreateBackup
         model.createData();
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ActiveObjectsBackup(entityManager.getProvider(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
+        new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }

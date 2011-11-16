@@ -20,6 +20,14 @@
             <constructor-arg index="3">
                 <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
             </constructor-arg>
+            <constructor-arg index="4">
+                <bean class="com.atlassian.activeobjects.internal.config.ActiveObjectsNameConvertersFactory">
+                    <constructor-arg ref="fieldNameConverter"/>
+                    <constructor-arg ref="sequenceNameConverter"/>
+                    <constructor-arg ref="triggerNameConverter"/>
+                    <constructor-arg ref="indexNameConverter"/>
+                </bean>
+            </constructor-arg>
         </bean>
     </osgi:service>
 
@@ -38,9 +46,25 @@
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
+    <bean id="fieldNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter" />
+    <bean id="sequenceNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter" />
+    <bean id="triggerNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter" />
+    <bean id="indexNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter" />
+
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg>
+            <bean class="net.java.ao.builder.SimpleNameConverters">
+                <constructor-arg index="0">
+                    <bean class="com.atlassian.activeobjects.backup.ExceptionThrowingTableNameConverter"/>
+                </constructor-arg>
+                <constructor-arg index="1" ref="fieldNameConverter"/>
+                <constructor-arg index="2" ref="sequenceNameConverter"/>
+                <constructor-arg index="3" ref="triggerNameConverter"/>
+                <constructor-arg index="4" ref="indexNameConverter"/>
+            </bean>
+        </constructor-arg>
         <constructor-arg>
             <bean class="com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl">
                 <constructor-arg>

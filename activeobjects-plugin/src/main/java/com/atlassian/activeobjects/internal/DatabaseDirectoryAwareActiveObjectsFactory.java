@@ -43,8 +43,11 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     {
         return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto()
                 .useWeakCache()
-                .tableNameConverter(configuration.getTableNameConverter())
-                .fieldNameConverter(configuration.getFieldNameConverter())
+                .tableNameConverter(configuration.getNameConverters().getTableNameConverter())
+                .fieldNameConverter(configuration.getNameConverters().getFieldNameConverter())
+                .sequenceNameConverter(configuration.getNameConverters().getSequenceNameConverter())
+                .triggerNameConverter(configuration.getNameConverters().getTriggerNameConverter())
+                .indexNameConverter(configuration.getNameConverters().getIndexNameConverter())
                 .schemaConfiguration(configuration.getSchemaConfiguration())
                 .build();
     }

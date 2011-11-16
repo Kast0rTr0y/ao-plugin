@@ -8,7 +8,7 @@
     <meta key="driver.name" value="jTDS Type 4 JDBC Driver for MS SQL Server and Sybase"/>
     <meta key="driver.version" value="1.2.4"/>
   </database>
-  <table name="AO_BOOK">
+  <table name="AO_000000_BOOK">
     <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="2005" precision="-1" scale="-1"/>
     <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="4" precision="10" scale="-1"/>
@@ -17,18 +17,18 @@
     <column name="READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1" scale="-1"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
-  <table name="AO_LONG_TABLE_NAME_FOR_AUTHOR">
+  <table name="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="10" scale="-1"/>
     <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
-  <table name="AO_AUTHORSHIP">
+  <table name="AO_000000_AUTHORSHIP">
     <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="4" precision="10" scale="-1"/>
     <column name="BOOK_ID" primaryKey="false" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="10" scale="-1"/>
-    <foreignKey name="fk_ao_authorship_book_id" fromTable="AO_AUTHORSHIP" fromColumn="BOOK_ID" toTable="AO_BOOK" toColumn="ISBN"/>
-    <foreignKey name="fk_ao_authorship_author_id" fromTable="AO_AUTHORSHIP" fromColumn="AUTHOR_ID" toTable="AO_LONG_TABLE_NAME_FOR_AUTHOR" toColumn="ID"/>
+    <foreignKey name="fk_ao_authorship_book_id" fromTable="AO_000000_AUTHORSHIP" fromColumn="BOOK_ID" toTable="AO_000000_BOOK" toColumn="ISBN"/>
+    <foreignKey name="fk_ao_authorship_author_id" fromTable="AO_000000_AUTHORSHIP" fromColumn="AUTHOR_ID" toTable="AO_000000_LONG_NAME_TO_AUTHOR" toColumn="ID"/>
   </table>
-  <data tableName="AO_BOOK">
+  <data tableName="AO_000000_BOOK">
     <column name="ABSTRACT"/>
     <column name="ISBN"/>
     <column name="NUMBER_OF_PAGES"/>
@@ -124,7 +124,7 @@ Artima is very pleased to publish the first book on Scala, written by the design
       <string>Programming in Scala</string>
     </row>
   </data>
-  <data tableName="AO_AUTHORSHIP">
+  <data tableName="AO_000000_AUTHORSHIP">
     <column name="AUTHOR_ID"/>
     <column name="BOOK_ID"/>
     <column name="ID"/>
@@ -179,7 +179,7 @@ Artima is very pleased to publish the first book on Scala, written by the design
       <integer>10</integer>
     </row>
   </data>
-  <data tableName="AO_LONG_TABLE_NAME_FOR_AUTHOR">
+  <data tableName="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID"/>
     <column name="NAME"/>
     <row>

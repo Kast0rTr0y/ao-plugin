@@ -12,6 +12,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
@@ -26,7 +27,7 @@ import java.util.List;
 import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
-import static net.java.ao.sql.SqlUtils.closeQuietly;
+import static net.java.ao.sql.SqlUtils.*;
 
 final class ActiveObjectsTableReader implements TableReader
 {
@@ -40,10 +41,12 @@ final class ActiveObjectsTableReader implements TableReader
 
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
+    private final NameConverters converters;
     private final SchemaConfiguration schemaConfiguration;
 
-    public ActiveObjectsTableReader(ImportExportErrorService errorService, DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
+    public ActiveObjectsTableReader(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
     {
+        this.converters = checkNotNull(converters);
         this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
@@ -58,7 +61,7 @@ final class ActiveObjectsTableReader implements TableReader
         try
         {
             connection = getConnection();
-            ddlTables = SchemaReader.readSchema(connection, provider, schemaConfiguration, true);
+            ddlTables = SchemaReader.readSchema(connection, provider, converters, schemaConfiguration, true);
         }
         catch (SQLException e)
         {
