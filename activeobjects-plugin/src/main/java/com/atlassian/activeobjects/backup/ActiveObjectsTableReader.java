@@ -227,6 +227,6 @@ public final class ActiveObjectsTableReader implements TableReader
 
     private ForeignKey readForeignKey(DDLForeignKey fk)
     {
-        return new ForeignKey(fk.getFKName(), fk.getDomesticTable(), fk.getField(), fk.getTable(), fk.getForeignField());
+        return new ForeignKey(fk.getDomesticTable(), fk.getField(), fk.getTable(), fk.getForeignField());
     }
 }

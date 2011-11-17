@@ -25,8 +25,8 @@
     <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="4" precision="11" scale="-1"/>
     <column name="BOOK_ID" primaryKey="false" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11" scale="-1"/>
-    <foreignKey name="fk_ao_000000_authorship_author_id" fromTable="ao_000000_authorship" fromColumn="AUTHOR_ID" toTable="ao_000000_long_name_to_author" toColumn="ID"/>
-    <foreignKey name="fk_ao_000000_authorship_book_id" fromTable="ao_000000_authorship" fromColumn="BOOK_ID" toTable="ao_000000_book" toColumn="ISBN"/>
+    <foreignKey fromTable="ao_000000_authorship" fromColumn="AUTHOR_ID" toTable="ao_000000_long_name_to_author" toColumn="ID"/>
+    <foreignKey fromTable="ao_000000_authorship" fromColumn="BOOK_ID" toTable="ao_000000_book" toColumn="ISBN"/>
   </table>
   <data tableName="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID"/>
