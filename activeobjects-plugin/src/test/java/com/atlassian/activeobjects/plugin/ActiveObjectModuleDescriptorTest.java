@@ -2,12 +2,14 @@ package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
+import com.atlassian.activeobjects.internal.config.NameConvertersFactory;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.PluginException;
 import com.google.common.collect.Sets;
 import net.java.ao.Entity;
 import net.java.ao.RawEntity;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 import org.junit.After;
 import org.junit.Before;
@@ -33,8 +35,8 @@ public final class ActiveObjectModuleDescriptorTest
                 mock(OsgiServiceUtils.class),
                 mock(DataSourceTypeResolver.class),
                 mock(Digester.class),
-                mock(PluginToTablesMapping.class)
-        )
+                mock(NameConvertersFactory.class),
+                mock(PluginToTablesMapping.class))
         {
             @Override
             public String getPluginKey()
@@ -55,12 +57,14 @@ public final class ActiveObjectModuleDescriptorTest
     public void testValidateEntitiesThrowExceptionIfHGeneratedTableNameIdLongerThan30Chars()
     {
         final String tableName = "some-long-string-just-over-30-c";
+        final NameConverters nameConverters = mock(NameConverters.class);
         final TableNameConverter tableNameConverter = mock(TableNameConverter.class);
         when(tableNameConverter.getName(SomeEntity.class)).thenReturn(tableName);
+        when(nameConverters.getTableNameConverter()).thenReturn(tableNameConverter);
 
         try
         {
-            moduleDescriptor.validateEntities(getEntities(), tableNameConverter);
+            moduleDescriptor.validateEntities(getEntities(), nameConverters);
             fail("This should have thrown an exception, if indeed " + tableName.length() + " is greater than 30");
         }
         catch (PluginException e)

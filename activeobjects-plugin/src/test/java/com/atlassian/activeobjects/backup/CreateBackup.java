@@ -49,7 +49,7 @@ public final class CreateBackup
         model.createData();
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ActiveObjectsBackup(entityManager.getProvider(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
+        new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }
@@ -127,7 +127,8 @@ public final class CreateBackup
         {
             final JdbcConfiguration jdbc = configs.getValue();
             sb.append(configs.getKey()).append(": ")
-                    .append(jdbc.getUrl()).append(" - ")
+                    .append(jdbc.getUrl()).append(" - <")
+                    .append(jdbc.getSchema()).append("> - ")
                     .append(jdbc.getUsername()).append(" - ")
                     .append(jdbc.getPassword()).append("\n");
         }

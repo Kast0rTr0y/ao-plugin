@@ -1,9 +1,8 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
+
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
-import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsTableNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
@@ -12,6 +11,7 @@ import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
+import com.atlassian.activeobjects.internal.config.NameConvertersFactory;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.AutowireCapablePlugin;
@@ -26,7 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -61,21 +61,16 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     private static final int MAX_NUMBER_OF_ENTITIES = 50;
     private static final int MAX_LENGTH_ENTITY_NAME = 30;
 
-    /**
-     * Easy registration of service
-     */
     private final OsgiServiceUtils osgiUtils;
-
     private final Digester digester;
-
     private final DataSourceTypeResolver dataSourceTypeResolver;
+    private final NameConvertersFactory nameConvertersFactory;
 
     private final PluginToTablesMapping pluginToTablesMapping;
 
     private String hash;
     private Prefix tableNamePrefix;
-    private TableNameConverter tableNameConverter;
-    private FieldNameConverter fieldNameConverter;
+    private NameConverters nameConverters;
 
     private Set<Class<? extends RawEntity<?>>> entityClasses;
 
@@ -89,12 +84,14 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver,
                                         Digester digester,
+                                        NameConvertersFactory nameConvertersFactory,
                                         PluginToTablesMapping pluginToTablesMapping)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
+        this.nameConvertersFactory = checkNotNull(nameConvertersFactory);
     }
 
     @Override
@@ -103,13 +100,12 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         super.init(plugin, element);
 
         tableNamePrefix = getTableNamePrefix(element);
-        tableNameConverter = new ActiveObjectsTableNameConverter(tableNamePrefix);
-        fieldNameConverter = new ActiveObjectsFieldNameConverter();
+        nameConverters = nameConvertersFactory.getNameConverters(tableNamePrefix);
         entityClasses = getEntities(element);
         upgradeTasks = getUpgradeTasks(element);
 
-        validateEntities(entityClasses, tableNameConverter);
-        recordTables(entityClasses, tableNameConverter);
+        validateEntities(entityClasses, nameConverters);
+        recordTables(entityClasses, nameConverters.getTableNameConverter());
     }
 
     public String getHash()
@@ -155,13 +151,14 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         }
     }
 
-    void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, TableNameConverter tableNameConverter)
+    void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters)
     {
         if (entityClasses.size() > MAX_NUMBER_OF_ENTITIES)
         {
             throw new PluginException("Plugins are allowed no more than " + MAX_NUMBER_OF_ENTITIES + " entities!");
         }
 
+        final TableNameConverter tableNameConverter = nameConverters.getTableNameConverter();
         for (Class<? extends RawEntity<?>> entityClass : entityClasses)
         {
             final String tableName = tableNameConverter.getName(entityClass);
@@ -197,11 +194,11 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
         if (tableNameConverterServiceRegistration == null)
         {
-            tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, tableNameConverter);
+            tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, nameConverters.getTableNameConverter());
         }
         if (activeObjectsConfigurationServiceRegistration == null)
         {
-            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(tableNamePrefix, tableNameConverter, fieldNameConverter, entityClasses));
+            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(tableNamePrefix, nameConverters, entityClasses));
         }
     }
 
@@ -221,14 +218,13 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         return null; // no module
     }
 
-    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, TableNameConverter tableNameConverter, FieldNameConverter fieldNameConverter, Set<Class<? extends RawEntity<?>>> entities)
+    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, NameConverters nameConverters, Set<Class<? extends RawEntity<?>>> entities)
     {
         final DefaultActiveObjectsConfiguration configuration =
                 new DefaultActiveObjectsConfiguration(PluginKey.fromBundle(getBundle()), dataSourceTypeResolver);
 
         configuration.setTableNamePrefix(tableNamePrefix);
-        configuration.setTableNameConverter(tableNameConverter);
-        configuration.setFieldNameConverter(fieldNameConverter);
+        configuration.setNameConverters(nameConverters);
         configuration.setSchemaConfiguration(new PrefixedSchemaConfiguration(tableNamePrefix));
         configuration.setEntities(entities);
         configuration.setUpgradeTasks(upgradeTasks);
@@ -326,28 +322,30 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         private final PluginKey pluginKey;
         private final DataSourceTypeResolver dataSourceTypeResolver;
         private Prefix tableNamePrefix;
-        private TableNameConverter tableNameConverter;
-        private FieldNameConverter fieldNameConverter;
+        private NameConverters nameConverters;
         private SchemaConfiguration schemaConfiguration;
         private Set<Class<? extends RawEntity<?>>> entities;
         private List<ActiveObjectsUpgradeTask> upgradeTasks;
 
-        public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
+        DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
         {
             this.pluginKey = checkNotNull(pluginKey);
             this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         }
 
+        @Override
         public PluginKey getPluginKey()
         {
             return pluginKey;
         }
 
+        @Override
         public DataSourceType getDataSourceType()
         {
             return dataSourceTypeResolver.getDataSourceType(getTableNamePrefix());
         }
 
+        @Override
         public Prefix getTableNamePrefix()
         {
             return tableNamePrefix;
@@ -358,26 +356,18 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
             this.tableNamePrefix = tableNamePrefix;
         }
 
-        public TableNameConverter getTableNameConverter()
+        @Override
+        public NameConverters getNameConverters()
         {
-            return tableNameConverter;
+            return nameConverters;
         }
 
-        public void setTableNameConverter(TableNameConverter tableNameConverter)
+        public void setNameConverters(NameConverters nameConverters)
         {
-            this.tableNameConverter = tableNameConverter;
+            this.nameConverters = nameConverters;
         }
 
-        public FieldNameConverter getFieldNameConverter()
-        {
-            return fieldNameConverter;
-        }
-
-        public void setFieldNameConverter(FieldNameConverter fieldNameConverter)
-        {
-            this.fieldNameConverter = fieldNameConverter;
-        }
-
+        @Override
         public SchemaConfiguration getSchemaConfiguration()
         {
             return schemaConfiguration;
@@ -388,6 +378,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
             this.schemaConfiguration = schemaConfiguration;
         }
 
+        @Override
         public Set<Class<? extends RawEntity<?>>> getEntities()
         {
             return entities;
@@ -398,6 +389,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
             this.entities = entities;
         }
 
+        @Override
         public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
         {
             return upgradeTasks;
@@ -409,13 +401,13 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         }
 
         @Override
-        public int hashCode()
+        public final int hashCode()
         {
             return new HashCodeBuilder(5, 13).append(pluginKey).toHashCode();
         }
 
         @Override
-        public boolean equals(Object o)
+        public final boolean equals(Object o)
         {
             if (o == null)
             {

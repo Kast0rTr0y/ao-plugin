@@ -10,10 +10,12 @@ import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.NameConverters;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,13 +26,15 @@ import static com.google.common.base.Preconditions.*;
 public final class TablesController
 {
     private final DatabaseProviderFactory databaseProviderFactory;
+    private final NameConverters nameConverters;
     private final DataSourceProvider dataSourceProvider;
     private final ImportExportErrorServiceImpl errorService;
     private final PluginInformationFactory pluginInformationFactory;
 
-    public TablesController(DatabaseProviderFactory databaseProviderFactory, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory)
+    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory)
     {
-        this.pluginInformationFactory = pluginInformationFactory;
+        this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
+        this.nameConverters = checkNotNull(nameConverters);
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.errorService = checkNotNull(errorService);
@@ -62,7 +66,7 @@ public final class TablesController
 
     private ActiveObjectsTableReader newTableReader(DatabaseProvider databaseProvider)
     {
-        return new ActiveObjectsTableReader(errorService, databaseProvider, ActiveObjectsBackup.schemaConfiguration());
+        return new ActiveObjectsTableReader(errorService, nameConverters, databaseProvider, ActiveObjectsBackup.schemaConfiguration());
     }
 
     private DatabaseProvider getDatabaseProvider()

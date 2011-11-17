@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
+import com.atlassian.activeobjects.internal.config.NameConvertersFactory;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.ModuleDescriptor;
@@ -19,20 +20,22 @@ public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDesc
     private final OsgiServiceUtils osgiUtils;
     private final DataSourceTypeResolver dataSourceTypeResolver;
     private final Digester digester;
+    private final NameConvertersFactory nameConvertersFactory;
     private final PluginToTablesMapping pluginToTablesMapping;
 
-    public ActiveObjectsModuleDescriptorFactory(HostContainer hostContainer, OsgiServiceUtils osgiUtils, DataSourceTypeResolver dataSourceTypeResolver, Digester digester, PluginToTablesMapping pluginToTablesMapping)
+    public ActiveObjectsModuleDescriptorFactory(HostContainer hostContainer, OsgiServiceUtils osgiUtils, DataSourceTypeResolver dataSourceTypeResolver, Digester digester, NameConvertersFactory nameConvertersFactory, PluginToTablesMapping pluginToTablesMapping)
     {
         super(checkNotNull(hostContainer), "ao", ActiveObjectModuleDescriptor.class);
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
+        this.nameConvertersFactory = checkNotNull(nameConvertersFactory);
     }
 
     @Override
     public ModuleDescriptor getModuleDescriptor(String type) throws PluginParseException, IllegalAccessException, InstantiationException, ClassNotFoundException
     {
-        return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(osgiUtils, dataSourceTypeResolver, digester, pluginToTablesMapping) : null;
+        return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(osgiUtils, dataSourceTypeResolver, digester, nameConvertersFactory, pluginToTablesMapping) : null;
     }
 }

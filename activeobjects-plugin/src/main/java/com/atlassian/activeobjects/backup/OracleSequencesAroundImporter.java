@@ -7,7 +7,9 @@ import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
 import com.atlassian.dbexporter.node.NodeParser;
+import com.google.common.base.Preconditions;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.NameConverters;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -24,11 +26,13 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
 {
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
+    private final NameConverters nameConverters;
 
-    public OracleSequencesAroundImporter(ImportExportErrorService errorService, DatabaseProvider provider)
+    public OracleSequencesAroundImporter(ImportExportErrorService errorService, DatabaseProvider provider, NameConverters nameConverters)
     {
         this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
+        this.nameConverters = checkNotNull(nameConverters);
     }
 
     @Override
@@ -191,7 +195,7 @@ public final class OracleSequencesAroundImporter extends NoOpAroundImporter
     private String sequenceName(Connection connection, TableColumnPair tcp)
     {
         final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
-        final String quoted = quote(errorService, tcp.table.getName(), connection, tcp.table.getName() + "_" + tcp.column.getName() + "_SEQ");
+        final String quoted = quote(errorService, tcp.table.getName(), connection, nameConverters.getSequenceNameConverter().getName(tcp.table.getName(), tcp.column.getName()));
         return schema != null ? schema + "." + quoted : quoted;
     }
 

@@ -45,7 +45,7 @@ public final class ActiveObjectsAdminFunctionalTest
 
         assertTables(
                 newArrayList(
-                        table(TEST_PLUGIN_NAME, "AO_0F732C_AUTHOR", "9"),
+                        table(TEST_PLUGIN_NAME, "AO_0F732C_LONG_NAME_TO_AUTHOR", "9"),
                         table(TEST_PLUGIN_NAME, "AO_0F732C_AUTHORSHIP", "10"),
                         table(TEST_PLUGIN_NAME, "AO_0F732C_BOOK", "3")),
                 product.visit(ActiveObjectsAdminPage.class).getTables());

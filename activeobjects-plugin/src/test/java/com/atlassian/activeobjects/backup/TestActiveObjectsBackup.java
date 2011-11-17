@@ -2,6 +2,9 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
+import com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter;
+import com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter;
+import com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
@@ -29,7 +32,12 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
 @Jdbc(DynamicJdbcConfiguration.class)
-@NameConverters(table = BackupActiveObjectsTableNameConverter.class, field = ActiveObjectsFieldNameConverter.class)
+@NameConverters(
+        table = BackupActiveObjectsTableNameConverter.class,
+        field = ActiveObjectsFieldNameConverter.class,
+        sequence = ActiveObjectsSequenceNameConverter.class,
+        trigger = ActiveObjectsTriggerNameConverter.class,
+        index = ActiveObjectsIndexNameConverter.class)
 public final class TestActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
@@ -123,7 +131,7 @@ public final class TestActiveObjectsBackup
     @Before
     public void setUp()
     {
-        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), new ActiveObjectsHashesReader(), mock(PluginAccessor.class))));
+        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), new ActiveObjectsHashesReader(), mock(PluginAccessor.class))));
         model = new Model(entityManager);
         model.emptyDatabase();
     }

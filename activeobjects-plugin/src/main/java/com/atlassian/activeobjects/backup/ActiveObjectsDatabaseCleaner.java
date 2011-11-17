@@ -3,8 +3,10 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.dbexporter.CleanupMode;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.importer.DatabaseCleaner;
+import com.google.common.base.Preconditions;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
@@ -23,13 +25,15 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ImportExportErrorService errorService;
+    private final NameConverters converters;
     private final DatabaseProvider provider;
     private final SchemaConfiguration schemaConfiguration;
 
-    public ActiveObjectsDatabaseCleaner(DatabaseProvider provider, SchemaConfiguration schemaConfiguration, ImportExportErrorService errorService)
+    public ActiveObjectsDatabaseCleaner(DatabaseProvider provider, NameConverters converters, SchemaConfiguration schemaConfiguration, ImportExportErrorService errorService)
     {
         this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
+        this.converters = checkNotNull(converters);
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
     }
 
@@ -53,7 +57,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
         Statement stmt = null;
         try
         {
-            final DDLTable[] readTables = SchemaReader.readSchema(provider, schemaConfiguration);
+            final DDLTable[] readTables = SchemaReader.readSchema(provider, converters, schemaConfiguration);
             final DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(new DDLTable[]{}, readTables, provider.isCaseSensetive()));
 
             conn = provider.getConnection();
@@ -61,7 +65,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
 
             for (DDLAction a : actions)
             {
-                final String[] sqlStatements = provider.renderAction(a);
+                final String[] sqlStatements = provider.renderAction(converters, a);
                 for (String sql : sqlStatements)
                 {
                     try

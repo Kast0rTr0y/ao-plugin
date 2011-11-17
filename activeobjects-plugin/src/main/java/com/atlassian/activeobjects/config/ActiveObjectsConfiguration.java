@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.internal.Prefix;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 
 import java.util.List;
@@ -36,19 +37,13 @@ public interface ActiveObjectsConfiguration
      */
     Prefix getTableNamePrefix();
 
-    /**
-     * Gets the table name converter to use with Active Objects
-     *
-     * @return a TableNameConverter
-     */
-    TableNameConverter getTableNameConverter();
 
     /**
-     * Gets the field name converter to use with Active Objects
+     * Gets the name converters to use with Active Objects
      *
-     * @return a field name converter
+     * @return the name converters
      */
-    FieldNameConverter getFieldNameConverter();
+    NameConverters getNameConverters();
 
     /**
      * Gets the schema configuration to use with Active Objects

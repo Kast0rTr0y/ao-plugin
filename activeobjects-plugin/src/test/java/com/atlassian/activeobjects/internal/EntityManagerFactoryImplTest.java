@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 import org.junit.After;
 import org.junit.Before;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.EntityManagerFactoryImpl}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityManagerFactoryImplTest
+public final class EntityManagerFactoryImplTest
 {
     private EntityManagerFactory entityManagerFactory;
 
@@ -62,13 +63,13 @@ public class EntityManagerFactoryImplTest
 
     private ActiveObjectsConfiguration getMockConfiguration()
     {
+        final NameConverters nameConverters = mock(NameConverters.class);
         final TableNameConverter tableNameConverter = mock(TableNameConverter.class);
-        final FieldNameConverter value = mock(FieldNameConverter.class);
         final SchemaConfiguration schemaConfiguration = mock(SchemaConfiguration.class);
 
         final ActiveObjectsConfiguration configuration = mock(ActiveObjectsConfiguration.class);
-        when(configuration.getTableNameConverter()).thenReturn(tableNameConverter);
-        when(configuration.getFieldNameConverter()).thenReturn(value);
+        when(configuration.getNameConverters()).thenReturn(nameConverters);
+        when(nameConverters.getTableNameConverter()).thenReturn(tableNameConverter);
         when(configuration.getSchemaConfiguration()).thenReturn(schemaConfiguration);
         return configuration;
     }
