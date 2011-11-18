@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.ao;
 
 import com.atlassian.activeobjects.internal.Prefix;
+import net.java.ao.ActiveObjectsException;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.Table;
 import org.junit.Before;
@@ -32,6 +33,12 @@ public final class ActiveObjectsTableNameConverterTest
         assertEquals(PREFIX + "_" + "SIMPLE_ENTITY", converter.getName(AnnotatedEntity.class));
     }
 
+    @Test(expected = ActiveObjectsException.class)
+    public void testGetNameForEntityWithTooLongName() throws Exception
+    {
+        converter.getName(EntityWithAVeryVeryLongName.class);
+    }
+
     private static interface SimpleEntity extends RawEntity<Object>
     {
     }
@@ -40,6 +47,9 @@ public final class ActiveObjectsTableNameConverterTest
     private static interface AnnotatedEntity extends RawEntity<Object>
     {
     }
+
+    private static interface EntityWithAVeryVeryLongName extends RawEntity<Object>
+    {}
 
     private static Prefix mockPrefix()
     {

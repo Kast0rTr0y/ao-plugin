@@ -9,6 +9,7 @@ import net.java.ao.schema.UnderscoreTableNameConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.atlassian.activeobjects.ao.ConverterUtils.checkLength;
 import static com.google.common.base.Preconditions.*;
 
 /**
@@ -58,6 +59,10 @@ public final class ActiveObjectsTableNameConverter implements TableNameConverter
     public String getName(Class<? extends RawEntity<?>> entityClass)
     {
         final String name = tableNameConverter.getName(entityClass);
+        checkLength(name,
+                "Invalid entity, generated table name (" + name + ") for '" + entityClass.getName() + "' is too long! " +
+                        "It should be no longer than " + ConverterUtils.MAX_LENGTH + " chars.");
+
         logger.debug("Table name for '{}' is '{}'", entityClass.getName(), name);
         return name;
     }

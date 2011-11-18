@@ -29,6 +29,9 @@
                 </bean>
             </constructor-arg>
             <constructor-arg index="5" ref="pluginToTablesMapping"/>
+            <constructor-arg index="6">
+                <bean class="com.atlassian.activeobjects.NamesLengthEntitiesValidator"/>
+            </constructor-arg>
         </bean>
     </osgi:service>
 

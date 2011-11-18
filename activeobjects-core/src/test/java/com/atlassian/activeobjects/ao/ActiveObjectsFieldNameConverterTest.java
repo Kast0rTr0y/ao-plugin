@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.ao;
 
 import net.java.ao.Accessor;
+import net.java.ao.ActiveObjectsException;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
@@ -75,7 +76,19 @@ public final class ActiveObjectsFieldNameConverterTest
         assertEquals("THIS_ID", converter.getName(method("getThis")));
     }
 
-        private static Method method(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException
+    @Test(expected = ActiveObjectsException.class)
+    public void getNameForLongMethod() throws Exception
+    {
+        converter.getName(method("getColumnWithAVeryVeryLongName"));
+    }
+
+    @Test(expected = ActiveObjectsException.class)
+    public void getPolyTypeNameForLongMethod() throws Exception
+    {
+        converter.getPolyTypeName(method("getColumnWithAVeryVeryLongName"));
+    }
+
+    private static Method method(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException
     {
         return ClassWithMethods.class.getMethod(methodName, parameterTypes);
     }
@@ -128,6 +141,12 @@ public final class ActiveObjectsFieldNameConverterTest
         @SuppressWarnings("unused")
         public void manyToMany()
         {
+        }
+
+        @SuppressWarnings("unused")
+        public SomeInterface getColumnWithAVeryVeryLongName()
+        {
+            return null;
         }
     }
 
