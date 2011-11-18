@@ -15,6 +15,7 @@ import net.java.ao.schema.UnderscoreFieldNameConverter;
 
 import java.lang.reflect.Method;
 
+import static com.atlassian.activeobjects.ao.ConverterUtils.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
 
@@ -39,13 +40,23 @@ public final class ActiveObjectsFieldNameConverter implements FieldNameConverter
     @Override
     public String getName(Method method)
     {
-        return fieldNameConverter.getName(method);
+        final String name = fieldNameConverter.getName(method);
+        checkLength(name,
+                "Invalid entity, generated field name (" + name + ") for method '" +
+                        method.getDeclaringClass().getClass() + "#"+ method.getName() + "' is too long! " +
+                        "It should be no longer than " + MAX_LENGTH + " chars.");
+        return name;
     }
 
     @Override
     public String getPolyTypeName(Method method)
     {
-        return fieldNameConverter.getPolyTypeName(method);
+        final String name = fieldNameConverter.getPolyTypeName(method);
+        checkLength(name,
+                "Invalid entity, generated field polymorphic type name (" + name + ") for method '" +
+                        method.getDeclaringClass().getClass() + "#"+ method.getName() + "' is too long! " +
+                        "It should be no longer than " + MAX_LENGTH + " chars.");
+        return name;
     }
 
     private static final class TransformingFieldNameResolver implements FieldNameResolver

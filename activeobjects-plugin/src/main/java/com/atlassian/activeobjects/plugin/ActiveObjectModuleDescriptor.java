@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.EntitiesValidator;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
@@ -14,7 +15,6 @@ import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.AutowireCapablePlugin;
 import com.atlassian.plugin.Plugin;
-import com.atlassian.plugin.PluginException;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
@@ -54,13 +54,11 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final int MAX_NUMBER_OF_ENTITIES = 50;
-    private static final int MAX_LENGTH_ENTITY_NAME = 30;
-
     private final OsgiServiceUtils osgiUtils;
     private final Digester digester;
     private final DataSourceTypeResolver dataSourceTypeResolver;
     private final NameConvertersFactory nameConvertersFactory;
+    private final EntitiesValidator entitiesValidator;
 
     private String hash;
     private Prefix tableNamePrefix;
@@ -78,12 +76,14 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
                                         DataSourceTypeResolver dataSourceTypeResolver,
                                         Digester digester,
-                                        NameConvertersFactory nameConvertersFactory)
+                                        NameConvertersFactory nameConvertersFactory,
+                                        EntitiesValidator entitiesValidator)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
         this.digester = checkNotNull(digester);
         this.nameConvertersFactory = checkNotNull(nameConvertersFactory);
+        this.entitiesValidator = checkNotNull(entitiesValidator);
     }
 
     @Override
@@ -93,10 +93,8 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
         tableNamePrefix = getTableNamePrefix(element);
         nameConverters = nameConvertersFactory.getNameConverters(tableNamePrefix);
-        entityClasses = getEntities(element);
+        entityClasses = entitiesValidator.check(getEntities(element), nameConverters);
         upgradeTasks = getUpgradeTasks(element);
-
-        validateEntities(entityClasses, nameConverters);
     }
 
     public String getHash()
@@ -139,29 +137,6 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         catch (ClassNotFoundException e)
         {
             throw new ActiveObjectsPluginException(e);
-        }
-    }
-
-    void validateEntities(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters)
-    {
-        if (entityClasses.size() > MAX_NUMBER_OF_ENTITIES)
-        {
-            throw new PluginException("Plugins are allowed no more than " + MAX_NUMBER_OF_ENTITIES + " entities!");
-        }
-
-        final TableNameConverter tableNameConverter = nameConverters.getTableNameConverter();
-        for (Class<? extends RawEntity<?>> entityClass : entityClasses)
-        {
-            final String tableName = tableNameConverter.getName(entityClass);
-            if (tableName.length() > MAX_LENGTH_ENTITY_NAME)
-            {
-                logger.error("Invalid entity defined in AO module of plugin, {}", getPluginKey());
-                logger.error("Table names cannot be longer than 30 chars long in order to work with Oracle. " +
-                        "Entity class <{}> gets a generated table name of <{}> with is beyond the 30 chars long limit.", entityClass.getName(), tableName);
-                logger.error("Please rename this entity to get a shorter table name.");
-
-                throw new PluginException("Invalid entity in AO descriptor of plugin " + getPluginKey() + ", generated table name is too long! Should be no more than 30 chars.");
-            }
         }
     }
 

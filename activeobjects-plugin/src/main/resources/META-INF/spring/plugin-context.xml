@@ -28,6 +28,9 @@
                     <constructor-arg ref="indexNameConverter"/>
                 </bean>
             </constructor-arg>
+            <constructor-arg index="5">
+                <bean class="com.atlassian.activeobjects.NamesLengthEntitiesValidator"/>
+            </constructor-arg>
         </bean>
     </osgi:service>
 
