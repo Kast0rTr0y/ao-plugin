@@ -8,6 +8,7 @@ import net.java.ao.schema.IndexNameConverter;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.SequenceNameConverter;
 import net.java.ao.schema.TriggerNameConverter;
+import net.java.ao.schema.UniqueNameConverter;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -17,14 +18,17 @@ public final class ActiveObjectsNameConvertersFactory implements NameConvertersF
     private final SequenceNameConverter sequenceNameConverter;
     private final TriggerNameConverter triggerNameConverter;
     private final IndexNameConverter indexNameConverter;
+    private final UniqueNameConverter uniqueNameConverter;
 
     public ActiveObjectsNameConvertersFactory(FieldNameConverter fieldNameConverter, SequenceNameConverter sequenceNameConverter,
-                                              TriggerNameConverter triggerNameConverter, IndexNameConverter indexNameConverter)
+                                              TriggerNameConverter triggerNameConverter, IndexNameConverter indexNameConverter,
+                                              UniqueNameConverter uniqueNameConverter)
     {
         this.fieldNameConverter = checkNotNull(fieldNameConverter);
         this.sequenceNameConverter = checkNotNull(sequenceNameConverter);
         this.triggerNameConverter = checkNotNull(triggerNameConverter);
         this.indexNameConverter = checkNotNull(indexNameConverter);
+        this.uniqueNameConverter = checkNotNull(uniqueNameConverter);
     }
 
     @Override
@@ -35,7 +39,8 @@ public final class ActiveObjectsNameConvertersFactory implements NameConvertersF
                 fieldNameConverter,
                 sequenceNameConverter,
                 triggerNameConverter,
-                indexNameConverter
+                indexNameConverter,
+                uniqueNameConverter
         );
     }
 }

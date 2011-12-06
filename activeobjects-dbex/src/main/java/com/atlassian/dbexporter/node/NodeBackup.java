@@ -130,7 +130,7 @@ public final class NodeBackup
         {
             final String stringPrecision = node.getAttribute(PRECISION);
             return stringPrecision == null ? null : Integer.valueOf(stringPrecision);
-        }
+    }
 
         public static NodeCreator setPrecision(NodeCreator node, Integer precision)
         {

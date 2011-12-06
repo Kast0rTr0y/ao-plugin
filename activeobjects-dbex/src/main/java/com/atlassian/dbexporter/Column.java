@@ -4,8 +4,6 @@ import static com.google.common.base.Preconditions.*;
 
 public final class Column
 {
-
-
     private final String name;
     private final int sqlType;
     private final Boolean primaryKey;
@@ -46,7 +44,7 @@ public final class Column
     public Integer getPrecision()
     {
         return precision;
-    }
+}
 
     public Integer getScale()
     {

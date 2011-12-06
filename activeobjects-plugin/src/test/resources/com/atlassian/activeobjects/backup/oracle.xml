@@ -21,7 +21,7 @@
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="2" precision="11" scale="-1"/>
     <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="32" scale="16"/>
     <column name="PUBLISHED" primaryKey="false" autoIncrement="false" sqlType="93" precision="-1" scale="6"/>
-    <column name="READ" primaryKey="false" autoIncrement="false" sqlType="2" precision="1" scale="-1"/>
+    <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="2" precision="1" scale="-1"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
   </table>
   <table name="AO_000000_LONG_NAME_TO_AUTHOR">
@@ -34,7 +34,7 @@
     <column name="NUMBER_OF_PAGES"/>
     <column name="PRICE"/>
     <column name="PUBLISHED"/>
-    <column name="READ"/>
+    <column name="IS_READ"/>
     <column name="TITLE"/>
     <row>
       <string>"I was fortunate indeed to have worked with a fantastic team on the design and implementation of the concurrency features added to the Java platform in Java 5.0 and Java 6. Now this same team provides the best explanation yet of these new features, and of concurrency in general. Concurrency is no longer a subject for advanced users only. Every Java developer should read this book."

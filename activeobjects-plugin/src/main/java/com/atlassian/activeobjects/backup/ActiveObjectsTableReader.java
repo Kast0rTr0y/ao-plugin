@@ -118,100 +118,17 @@ public final class ActiveObjectsTableReader implements TableReader
 
     private int getType(DatabaseInformation info, DDLField field)
     {
-        if (isPostgresVarcharForText(info, field))
-        {
-            return Types.CLOB;
-        }
-
-        return field.getType().getType();
+        return field.getJdbcType();
     }
 
-    private int getScale(DatabaseInformation info, DDLField field)
+    private Integer getScale(DatabaseInformation info, DDLField field)
     {
-        if (isHsqlDouble(info, field)
-                || isDefaultPostgresPrecisionForDouble(info, field)
-                || isDefaultMySqlPrecisionForDouble(info, field))
-        {
-            return DEFAULT_SCALE;
-        }
-
-
-        return field.getScale();
+        return field.getType().getQualifiers().getScale();
     }
 
-    private int getPrecision(DatabaseInformation info, DDLField field)
+    private Integer getPrecision(DatabaseInformation info, DDLField field)
     {
-        if (isBigInt(field)
-                || isLongVarchar(field)
-                || isHsqlDouble(info, field)
-                || isSqlServerClob(info, field)
-                || isDefaultPostgresPrecisionForDouble(info, field)
-                || isDefaultMySqlPrecisionForDouble(info, field)
-                || isPostgresVarcharForText(info, field))
-        {
-            return DEFAULT_PRECISION;
-        }
-        return field.getPrecision();
-    }
-
-    private boolean isBigInt(DDLField field)
-    {
-        return field.getType().getType() == Types.BIGINT;
-    }
-
-    private boolean isHsqlDouble(DatabaseInformation info, DDLField field)
-    {
-        return isDatabase(info, Database.Type.HSQL)
-                && isFieldOfType(field, Types.DOUBLE);
-    }
-
-    private boolean isSqlServerClob(DatabaseInformation info, DDLField field)
-    {
-        return isDatabase(info, Database.Type.MSSQL)
-                && isFieldOfType(field, Types.CLOB);
-    }
-
-    private boolean isLongVarchar(DDLField field)
-    {
-        return isFieldOfType(field, Types.LONGVARCHAR);
-    }
-
-    private boolean isDefaultPostgresPrecisionForDouble(DatabaseInformation info, DDLField field)
-    {
-        return isPostgresDouble(info, field)
-                && field.getPrecision() == DEFAULT_POSTGRES_PRECISION
-                && field.getScale() == DEFAULT_POSTGRES_SCALE;
-    }
-
-    private boolean isPostgresDouble(DatabaseInformation info, DDLField field)
-    {
-        return isDatabase(info, Database.Type.POSTGRES)
-                && isFieldOfType(field, Types.DOUBLE);
-    }
-
-    private boolean isDefaultMySqlPrecisionForDouble(DatabaseInformation info, DDLField field)
-    {
-        return isDatabase(info, Database.Type.MYSQL)
-                && isFieldOfType(field, Types.DOUBLE)
-                && field.getPrecision() == DEFAULT_MYSQL_DOUBLE_PRECISION
-                && field.getScale() == DEFAULT_MYSQL_DOUBLE_SCALE;
-    }
-
-    private boolean isPostgresVarcharForText(DatabaseInformation info, DDLField field)
-    {
-        return isDatabase(info, Database.Type.POSTGRES)
-                && isFieldOfType(field, Types.VARCHAR)
-                && field.getPrecision() == POSTGRES_PRECISION_FOR_TEXT;
-    }
-
-    private boolean isFieldOfType(DDLField field, int aDouble)
-    {
-        return field.getType().getType() == aDouble;
-    }
-
-    private boolean isDatabase(DatabaseInformation information, Database.Type dbType)
-    {
-        return database(information).getType().equals(dbType);
+        return field.getType().getQualifiers().getPrecision();
     }
 
     private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys)

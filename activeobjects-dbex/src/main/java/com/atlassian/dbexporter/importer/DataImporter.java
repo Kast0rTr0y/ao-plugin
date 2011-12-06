@@ -414,7 +414,16 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
             else if (RowDataNode.isInteger(node))
             {
-                setBigInteger(node.getContentAsBigInteger());
+                if (maxColumnSize.get(col) == 1)
+                // this is actually a boolean that was stored as an Integer!
+                // Happens with legacy Oracle.
+                {
+                    setBoolean(node.getContentAsBigInteger().intValue() == 1);
+                }
+                else
+                {
+                    setBigInteger(node.getContentAsBigInteger());
+                }
             }
             else if (RowDataNode.isDouble(node))
             {

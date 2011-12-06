@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.NoOpEntityNameProcessor;
@@ -84,7 +85,7 @@ public class TableDefinitionImporterTest
     private List<Table> verifyTables()
     {
         final ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
-        verify(tableCreator).create(argument.capture(), Matchers.<EntityNameProcessor>any(), Matchers.<ProgressMonitor>any());
+        verify(tableCreator).create(Matchers.<DatabaseInformation>any(), argument.capture(), Matchers.<EntityNameProcessor>any(), Matchers.<ProgressMonitor>any());
         return argument.getValue();
     }
 

@@ -10,6 +10,7 @@ import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
+import net.java.ao.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
         try
         {
             final DDLTable[] readTables = SchemaReader.readSchema(provider, converters, schemaConfiguration);
-            final DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(new DDLTable[]{}, readTables, provider.isCaseSensetive()));
+            final DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(provider.getTypeManager(), new DDLTable[]{}, readTables, provider.isCaseSensetive()));
 
             conn = provider.getConnection();
             stmt = conn.createStatement();
@@ -70,7 +71,10 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
                 {
                     try
                     {
-                        stmt.executeUpdate(sql);
+                        if (!StringUtils.isBlank(sql))
+                        {
+                            stmt.executeUpdate(sql);
+                        }
                     }
                     catch (SQLException e)
                     {

@@ -2,6 +2,7 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.Column;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.ImportExportErrorService;
@@ -45,7 +46,8 @@ public final class TableDefinitionImporter extends AbstractSingleNodeImporter
         monitor.end(Task.TABLE_DEFINITION);
         monitor.totalNumberOfTables(tables.size());
 
-        tableCreator.create(tables, configuration.getEntityNameProcessor(), monitor);
+        DatabaseInformation databaseInformation = context.get(DatabaseInformation.class);
+        tableCreator.create(databaseInformation, tables, configuration.getEntityNameProcessor(), monitor);
         context.putAll(tables); // add the parsed tables to the context
     }
 

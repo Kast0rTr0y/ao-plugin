@@ -21,12 +21,6 @@ public final class ActiveObjectsTriggerNameConverter implements TriggerNameConve
     }
 
     @Override
-    public String onUpdateName(String tableName, String columnName)
-    {
-        return shorten(delegate.onUpdateName(tableName, columnName), ConverterUtils.MAX_LENGTH);
-    }
-
-    @Override
     public String autoIncrementName(String tableName, String columnName)
     {
         return shorten(delegate.autoIncrementName(tableName, columnName), ConverterUtils.MAX_LENGTH);

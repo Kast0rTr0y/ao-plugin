@@ -1,9 +1,12 @@
 package com.atlassian.activeobjects;
 
 import com.atlassian.plugin.PluginException;
+import com.google.common.base.Predicate;
+import net.java.ao.ActiveObjectsException;
 import net.java.ao.Common;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
+import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
@@ -11,7 +14,9 @@ import net.java.ao.schema.TableNameConverter;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-public final class NamesLengthEntitiesValidator implements EntitiesValidator
+import static com.google.common.collect.Iterables.any;
+
+public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements EntitiesValidator
 {
     private static final int MAX_NUMBER_OF_ENTITIES = 50;
 
@@ -43,15 +48,35 @@ public final class NamesLengthEntitiesValidator implements EntitiesValidator
 
     void checkTableName(Class<? extends RawEntity<?>> entityClass, TableNameConverter tableNameConverter)
     {
-        tableNameConverter.getName(entityClass); // will throw an exception if the entity name is too long
+        final String tableName = tableNameConverter.getName(entityClass);// will throw an exception if the entity name is too long
+        if (isReservedWord(tableName))
+        {
+            throw new ActiveObjectsException("Entity class' '" + entityClass.getName() + "' table name is " + tableName + " which is a reserved word!");
+        }
     }
 
     void checkColumnName(Method method, FieldNameConverter fieldNameConverter)
     {
         if (Common.isAccessor(method) || Common.isMutator(method))
         {
-            fieldNameConverter.getName(method);
+            final String columnName = fieldNameConverter.getName(method);
+            if (isReservedWord(columnName))
+            {
+                throw new ActiveObjectsException("Method '" + method + "' column name is " + columnName + " which is a reserved word!");
+            }
         }
+    }
+
+    private boolean isReservedWord(final String name)
+    {
+        return any(OracleDatabaseProvider.RESERVED_WORDS, new Predicate<String>()
+        {
+            @Override
+            public boolean apply(String reservedWord)
+            {
+                return reservedWord.equalsIgnoreCase(name);
+            }
+        });
     }
 
     void checkPolymorphicColumnName(Method method, FieldNameConverter fieldNameConverter)
@@ -59,7 +84,11 @@ public final class NamesLengthEntitiesValidator implements EntitiesValidator
         final Class<?> attributeTypeFromMethod = Common.getAttributeTypeFromMethod(method);
         if (attributeTypeFromMethod != null && attributeTypeFromMethod.isAnnotationPresent(Polymorphic.class))
         {
-            fieldNameConverter.getPolyTypeName(method);
+            final String polyTypeName = fieldNameConverter.getPolyTypeName(method);
+            if (isReservedWord(polyTypeName))
+            {
+                throw new ActiveObjectsException("Method '" + method + "' polymorphic column name is " + polyTypeName + " which is a reserved word!");
+            }
         }
     }
 }

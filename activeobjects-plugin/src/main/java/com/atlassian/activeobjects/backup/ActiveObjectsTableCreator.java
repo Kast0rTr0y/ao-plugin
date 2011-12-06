@@ -1,26 +1,26 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.dbexporter.Column;
+import com.atlassian.dbexporter.DatabaseInformation;
+import com.atlassian.dbexporter.DatabaseInformations;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.TableCreator;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
-import com.google.common.base.Preconditions;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.types.TypeInfo;
 import net.java.ao.types.TypeManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.java.ao.types.TypeQualifiers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.List;
 
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
@@ -29,12 +29,6 @@ import static com.google.common.collect.Lists.*;
 
 final class ActiveObjectsTableCreator implements TableCreator
 {
-    private static final int DEFAULT_PRECISION = -1;
-    private static final int MAX_MYSQL_SCALE = 30;
-    private static final int ORACLE_NUMERIC_BIGINT_PRECISION = 20;
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
     private final NameConverters converters;
@@ -46,7 +40,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         this.converters = checkNotNull(converters);
     }
 
-    public void create(Iterable<Table> tables, EntityNameProcessor entityNameProcessor, ProgressMonitor monitor)
+    public void create(DatabaseInformation databaseInformation, Iterable<Table> tables, EntityNameProcessor entityNameProcessor, ProgressMonitor monitor)
     {
         Connection conn = null;
         Statement stmt = null;
@@ -58,7 +52,7 @@ final class ActiveObjectsTableCreator implements TableCreator
             for (Table table : tables)
             {
                 monitor.begin(ProgressMonitor.Task.TABLE_CREATION, entityNameProcessor.tableName(table.getName()));
-                create(stmt, table, entityNameProcessor);
+                create(DatabaseInformations.database(databaseInformation), stmt, table, entityNameProcessor);
                 monitor.end(ProgressMonitor.Task.TABLE_CREATION, entityNameProcessor.tableName(table.getName()));
             }
         }
@@ -73,10 +67,10 @@ final class ActiveObjectsTableCreator implements TableCreator
         }
     }
 
-    private void create(Statement stmt, Table table, EntityNameProcessor entityNameProcessor)
+    private void create(DatabaseInformations.Database db, Statement stmt, Table table, EntityNameProcessor entityNameProcessor)
     {
         final DDLAction a = new DDLAction(DDLActionType.CREATE);
-        a.setTable(toDdlTable(table, entityNameProcessor));
+        a.setTable(toDdlTable(exportTypeManager(db), entityNameProcessor, table));
         final String[] sqlStatements = provider.renderAction(converters, a);
         for (String sql : sqlStatements)
         {
@@ -91,7 +85,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         }
     }
 
-    private DDLTable toDdlTable(Table table, EntityNameProcessor entityNameProcessor)
+    private DDLTable toDdlTable(TypeManager exportTypeManager, EntityNameProcessor entityNameProcessor, Table table)
     {
         final DDLTable ddlTable = new DDLTable();
         ddlTable.setName(entityNameProcessor.tableName(table.getName()));
@@ -99,17 +93,20 @@ final class ActiveObjectsTableCreator implements TableCreator
         final List<DDLField> fields = newArrayList();
         for (Column column : table.getColumns())
         {
-            fields.add(toDdlField(column, entityNameProcessor));
+            fields.add(toDdlField(exportTypeManager, entityNameProcessor, column));
         }
         ddlTable.setFields(fields.toArray(new DDLField[fields.size()]));
         return ddlTable;
     }
 
-    private DDLField toDdlField(Column column, EntityNameProcessor entityNameProcessor)
+    private DDLField toDdlField(TypeManager exportTypeManager, EntityNameProcessor entityNameProcessor, Column column)
     {
         final DDLField ddlField = new DDLField();
         ddlField.setName(entityNameProcessor.columnName(column.getName()));
-        ddlField.setType(TypeManager.getInstance().getType(getSqlType(column)));
+
+        TypeInfo<?> typeFromSchema = getTypeInfo(exportTypeManager, column);
+        ddlField.setType(typeFromSchema);
+
         final Boolean pk = column.isPrimaryKey();
         if (pk != null)
         {
@@ -120,83 +117,53 @@ final class ActiveObjectsTableCreator implements TableCreator
         {
             ddlField.setAutoIncrement(autoIncrement);
         }
-        final Integer p = getPrecision(column);
-        if (p != null)
-        {
-            ddlField.setPrecision(p);
-        }
-
-        final Integer s = getScale(column);
-        if (s != null)
-        {
-            ddlField.setScale(s);
-        }
         return ddlField;
     }
 
-    private int getSqlType(Column column)
+    private TypeInfo<?> getTypeInfo(TypeManager exportTypeManager, Column column)
     {
-        if (isOracleNumericForDouble(column))
-        {
-            return Types.DOUBLE;
-        }
+        final TypeQualifiers qualifiers = getQualifiers(column);
+        final TypeInfo<?> exportedType = exportTypeManager.getTypeFromSchema(column.getSqlType(), qualifiers);
 
-        if (isOracleNumericForBigInt(column))
-        {
-            return Types.BIGINT;
-        }
+        final Class<?> javaType = exportedType.getLogicalType().getTypes().iterator().next();
 
-        if (isMySqlBoolean(column))
-        {
-            return Types.BOOLEAN;
-        }
-        return column.getSqlType();
+        return provider.getTypeManager().getType(javaType, exportedType.getQualifiers());
     }
 
-    private Integer getPrecision(Column column)
+    private TypeQualifiers getQualifiers(Column column)
     {
-        if (isOracleNumericForBigInt(column))
+        TypeQualifiers qualifiers = TypeQualifiers.qualifiers();
+        if (column.getPrecision() != null && column.getPrecision() > 0)
         {
-            return DEFAULT_PRECISION;
+            qualifiers = qualifiers.precision(column.getPrecision());
         }
-        return column.getPrecision();
+        if (column.getScale() != null && column.getScale() > 0)
+        {
+            qualifiers = qualifiers.scale(column.getScale());
+        }
+        return qualifiers;
     }
 
-    private Integer getScale(Column column)
+    /**
+     * Retrives the type managers of the export from the read database info.
+     */
+    private TypeManager exportTypeManager(DatabaseInformations.Database db)
     {
-        Integer scale = column.getScale();
-        if (scale == null)
+        switch (db.getType())
         {
-            return null;
+            case HSQL:
+                return TypeManager.hsql();
+            case MYSQL:
+                return TypeManager.mysql();
+            case POSTGRES:
+                return TypeManager.postgres();
+            case MSSQL:
+                return TypeManager.sqlServer();
+            case ORACLE:
+                return TypeManager.oracle();
+            case UNKNOWN:
+            default:
+                throw errorService.newImportExportException(null, "Could not determine the source database");
         }
-
-        final Integer precision = column.getPrecision();
-        if (precision != null && scale > precision)
-        {
-            logger.warn("Scale is greater than precision (" + scale + " > " + precision + "), which is not allowed in most databases, setting scale with same value as precision");
-            scale = precision;
-        }
-
-        if (scale > MAX_MYSQL_SCALE)
-        {
-            logger.warn("Scale is set to a value greater than 30 (" + scale + "), which is not compatible with MySQL 5, setting actual value to 30.");
-            return MAX_MYSQL_SCALE;
-        }
-        return scale;
-    }
-
-    private static boolean isOracleNumericForBigInt(Column column)
-    {
-        return column.getSqlType() == Types.NUMERIC && column.getPrecision() == ORACLE_NUMERIC_BIGINT_PRECISION;
-    }
-
-    private static boolean isOracleNumericForDouble(Column column)
-    {
-        return column.getSqlType() == Types.NUMERIC && column.getScale() != null && column.getScale() > 0;
-    }
-
-    private static boolean isMySqlBoolean(Column column)
-    {
-        return Types.BIT == column.getSqlType() && column.getPrecision() != null && column.getPrecision() == 1;
     }
 }

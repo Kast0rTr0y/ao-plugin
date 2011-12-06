@@ -11,8 +11,6 @@ import com.atlassian.activeobjects.test.model.Model;
 import com.atlassian.plugin.PluginAccessor;
 import net.java.ao.EntityManager;
 import net.java.ao.test.converters.NameConverters;
-import net.java.ao.test.jdbc.DynamicJdbcConfiguration;
-import net.java.ao.test.jdbc.Jdbc;
 import net.java.ao.test.jdbc.NonTransactional;
 import net.java.ao.test.junit.ActiveObjectsJUnitRunner;
 import org.apache.commons.io.IOUtils;
@@ -31,7 +29,6 @@ import java.io.UnsupportedEncodingException;
 import static org.mockito.Mockito.mock;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
-@Jdbc(DynamicJdbcConfiguration.class)
 @NameConverters(
         table = BackupActiveObjectsTableNameConverter.class,
         field = ActiveObjectsFieldNameConverter.class,
@@ -99,6 +96,8 @@ public final class TestActiveObjectsBackup
         assertDataPresent();
 
         final String secondXmlBackup = save();
+
+
 //        assertEquals(strip(xmlBackup), strip(secondXmlBackup));
 //        TODO, once we're happy we're restoring data correctly, we should check that saving again, gives us the 'same' backup
     }

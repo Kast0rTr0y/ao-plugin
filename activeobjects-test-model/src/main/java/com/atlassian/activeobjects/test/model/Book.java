@@ -1,12 +1,13 @@
 package com.atlassian.activeobjects.test.model;
 
+import net.java.ao.Accessor;
 import net.java.ao.ManyToMany;
+import net.java.ao.Mutator;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.PrimaryKey;
-import net.java.ao.schema.SQLType;
+import net.java.ao.schema.StringLength;
 
-import java.sql.Types;
 import java.util.Date;
 
 public interface Book extends RawEntity<Long>
@@ -21,10 +22,10 @@ public interface Book extends RawEntity<Long>
 
     void setTitle(String name);
 
-    @SQLType(Types.CLOB)
+    @StringLength(StringLength.UNLIMITED)
     String getAbstract();
 
-    @SQLType(Types.CLOB)
+    @StringLength(StringLength.UNLIMITED)
     void setAbstract(String bookAbstract);
 
     double getPrice();
@@ -34,8 +35,10 @@ public interface Book extends RawEntity<Long>
     /**
      * Whether this has been read by the user.
      */
+    @Accessor("IS_READ")
     boolean isRead();
 
+    @Mutator("IS_READ")
     void setRead(boolean read);
 
     Date getPublished();

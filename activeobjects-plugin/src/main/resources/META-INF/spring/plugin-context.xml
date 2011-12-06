@@ -26,11 +26,12 @@
                     <constructor-arg ref="sequenceNameConverter"/>
                     <constructor-arg ref="triggerNameConverter"/>
                     <constructor-arg ref="indexNameConverter"/>
+                    <constructor-arg ref="uniqueNameConverter"/>
                 </bean>
             </constructor-arg>
             <constructor-arg index="5" ref="pluginToTablesMapping"/>
             <constructor-arg index="6">
-                <bean class="com.atlassian.activeobjects.NamesLengthEntitiesValidator"/>
+                <bean class="com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator"/>
             </constructor-arg>
         </bean>
     </osgi:service>
@@ -54,6 +55,7 @@
     <bean id="sequenceNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter" />
     <bean id="triggerNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter" />
     <bean id="indexNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter" />
+    <bean id="uniqueNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsUniqueNameConverter" />
 
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
@@ -67,6 +69,7 @@
                 <constructor-arg index="2" ref="sequenceNameConverter"/>
                 <constructor-arg index="3" ref="triggerNameConverter"/>
                 <constructor-arg index="4" ref="indexNameConverter"/>
+                <constructor-arg index="5" ref="uniqueNameConverter"/>
             </bean>
         </constructor-arg>
         <constructor-arg ref="errorService"/>
