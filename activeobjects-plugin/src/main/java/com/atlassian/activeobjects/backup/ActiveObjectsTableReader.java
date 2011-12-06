@@ -20,25 +20,15 @@ import net.java.ao.schema.ddl.SchemaReader;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
 
-import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
 import static net.java.ao.sql.SqlUtils.*;
 
 public final class ActiveObjectsTableReader implements TableReader
 {
-    public static final int DEFAULT_SCALE = -1;
-    public static final int DEFAULT_PRECISION = -1;
-    public static final int DEFAULT_MYSQL_DOUBLE_PRECISION = 22;
-    public static final int DEFAULT_MYSQL_DOUBLE_SCALE = 31;
-    public static final int DEFAULT_POSTGRES_PRECISION = 17;
-    public static final int DEFAULT_POSTGRES_SCALE = 17;
-    public static final int POSTGRES_PRECISION_FOR_TEXT = 2147483647;
-
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
     private final NameConverters converters;
@@ -103,32 +93,33 @@ public final class ActiveObjectsTableReader implements TableReader
             @Override
             public Column apply(DDLField field)
             {
-                return readColumn(info, field, processor);
+                return readColumn(field, processor);
             }
         });
     }
 
-    private Column readColumn(DatabaseInformation info, DDLField field, EntityNameProcessor processor)
+    private Column readColumn(DDLField field, EntityNameProcessor processor)
     {
         final String name = processor.columnName(field.getName());
         return
-                new Column(name, getType(info, field), field.isPrimaryKey(), field.isAutoIncrement(),
-                        getPrecision(info, field), getScale(info, field));
+                new Column(name, getType(field), field.isPrimaryKey(), field.isAutoIncrement(),
+                        getPrecision(field), getScale(field));
     }
 
-    private int getType(DatabaseInformation info, DDLField field)
+    private int getType(DDLField field)
     {
         return field.getJdbcType();
     }
 
-    private Integer getScale(DatabaseInformation info, DDLField field)
+    private Integer getScale(DDLField field)
     {
         return field.getType().getQualifiers().getScale();
     }
 
-    private Integer getPrecision(DatabaseInformation info, DDLField field)
+    private Integer getPrecision(DDLField field)
     {
-        return field.getType().getQualifiers().getPrecision();
+        Integer precision = field.getType().getQualifiers().getPrecision();
+        return precision != null ? precision : field.getType().getQualifiers().getStringLength();
     }
 
     private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys)

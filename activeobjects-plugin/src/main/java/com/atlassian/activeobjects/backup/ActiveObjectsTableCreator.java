@@ -21,6 +21,7 @@ import net.java.ao.types.TypeQualifiers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
@@ -127,21 +128,39 @@ final class ActiveObjectsTableCreator implements TableCreator
 
         final Class<?> javaType = exportedType.getLogicalType().getTypes().iterator().next();
 
-        return provider.getTypeManager().getType(javaType, exportedType.getQualifiers());
+        TypeInfo<?> type = provider.getTypeManager().getType(javaType, exportedType.getQualifiers());
+        return type;
     }
 
     private TypeQualifiers getQualifiers(Column column)
     {
         TypeQualifiers qualifiers = TypeQualifiers.qualifiers();
-        if (column.getPrecision() != null && column.getPrecision() > 0)
+        if ((isString(column) || column.getSqlType() == Types.NUMERIC) && column.getPrecision() != null && column.getPrecision() > 0)
         {
             qualifiers = qualifiers.precision(column.getPrecision());
         }
-        if (column.getScale() != null && column.getScale() > 0)
+        else if (isString(column) && column.getPrecision() == -1)
+        {
+            qualifiers = qualifiers.stringLength(column.getPrecision());
+        }
+        if (column.getSqlType() == Types.NUMERIC && column.getScale() != null && column.getScale() > 0)
         {
             qualifiers = qualifiers.scale(column.getScale());
         }
+
         return qualifiers;
+    }
+
+    private boolean isString(Column column)
+    {
+        final int sqlType = column.getSqlType();
+        return
+                sqlType == Types.CHAR
+                        || sqlType == Types.LONGNVARCHAR
+                        || sqlType == Types.NCHAR
+                        || sqlType == Types.VARCHAR
+                        || sqlType == Types.CLOB
+                        || sqlType == Types.NCLOB;
     }
 
     /**

@@ -9,22 +9,22 @@
     <meta key="driver.version" value="mysql-connector-java-5.1.13 ( Revision: ${bzr.revision-id} )"/>
   </database>
   <table name="AO_000000_BOOK">
-    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="-1" precision="-1" scale="-1"/>
-    <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
-    <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="4" precision="11" scale="-1"/>
-    <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="8" precision="-1" scale="-1"/>
-    <column name="PUBLISHED" primaryKey="false" autoIncrement="false" sqlType="93" precision="19" scale="-1"/>
-    <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1" scale="-1"/>
-    <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
+    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="-1" precision="65535"/>
+    <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="-5" precision="20"/>
+    <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1"/>
+    <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="4" precision="11"/>
+    <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="8" precision="22" scale="31"/>
+    <column name="PUBLISHED" primaryKey="false" autoIncrement="false" sqlType="93" precision="19"/>
+    <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/>
   </table>
   <table name="AO_000000_LONG_NAME_TO_AUTHOR">
-    <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11" scale="-1"/>
-    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255" scale="-1"/>
+    <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11"/>
+    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/>
   </table>
   <table name="AO_000000_AUTHORSHIP">
-    <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="4" precision="11" scale="-1"/>
-    <column name="BOOK_ID" primaryKey="false" autoIncrement="false" sqlType="-5" precision="-1" scale="-1"/>
-    <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11" scale="-1"/>
+    <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="4" precision="11"/>
+    <column name="BOOK_ID" primaryKey="false" autoIncrement="false" sqlType="-5" precision="20"/>
+    <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11"/>
     <foreignKey fromTable="ao_000000_authorship" fromColumn="AUTHOR_ID" toTable="ao_000000_long_name_to_author" toColumn="ID"/>
     <foreignKey fromTable="ao_000000_authorship" fromColumn="BOOK_ID" toTable="ao_000000_book" toColumn="ISBN"/>
   </table>
@@ -126,10 +126,10 @@
   <data tableName="AO_000000_BOOK">
     <column name="ABSTRACT"/>
     <column name="ISBN"/>
+    <column name="IS_READ"/>
     <column name="NUMBER_OF_PAGES"/>
     <column name="PRICE"/>
     <column name="PUBLISHED"/>
-    <column name="IS_READ"/>
     <column name="TITLE"/>
     <row>
       <string>"I was fortunate indeed to have worked with a fantastic team on the design and implementation of the concurrency features added to the Java platform in Java 5.0 and Java 6. Now this same team provides the best explanation yet of these new features, and of concurrency in general. Concurrency is no longer a subject for advanced users only. Every Java developer should read this book."
@@ -177,10 +177,10 @@ This book covers:
     Testing concurrent programs
     Advanced topics such as atomic variables, nonblocking algorithms, and the Java Memory Model</string>
       <integer>9780321349606</integer>
+      <boolean>true</boolean>
       <integer>403</integer>
       <double>37.79</double>
       <timestamp>2006-05-19T00:00:00.000Z</timestamp>
-      <boolean>true</boolean>
       <string>Java Concurrency In Practice</string>
     </row>
     <row>
@@ -199,10 +199,10 @@ Highlights include:
 
 Simply put, Effective Java™, Second Edition, presents the most practical, authoritative guidelines available for writing efficient, well-designed programs.</string>
       <integer>9780321356680</integer>
+      <boolean>false</boolean>
       <integer xsi:nil="true"/>
       <double>41.24</double>
       <timestamp>2008-05-28T00:00:00.000Z</timestamp>
-      <boolean>false</boolean>
       <string>Effective Java (Second Edition)</string>
     </row>
     <row>
@@ -212,10 +212,10 @@ In Italian, Scala means a stairway, or steps—indeed, Scala lets you step up to
 
 Artima is very pleased to publish the first book on Scala, written by the designer of the language, Martin Odersky. Co-authored by Lex Spoon and Bill Venners, this book takes a step-by-step tutorial approach to teaching you Scala. Starting with the fundamental elements of the language, Programming in Scala introduces functional programming from the practitioner's perspective, and describes advanced language features that can make you a better, more productive developer.</string>
       <integer>9780981531601</integer>
+      <boolean>true</boolean>
       <integer xsi:nil="true"/>
       <double>31.17</double>
       <timestamp>2011-01-04T00:00:00.000Z</timestamp>
-      <boolean>true</boolean>
       <string>Programming in Scala</string>
     </row>
   </data>
