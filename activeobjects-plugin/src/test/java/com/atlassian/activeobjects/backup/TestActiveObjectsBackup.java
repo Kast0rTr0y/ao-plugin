@@ -1,18 +1,13 @@
 package com.atlassian.activeobjects.backup;
 
-import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter;
 import com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter;
 import com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter;
-import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
-import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
-import com.atlassian.plugin.PluginAccessor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.EntityManager;
 import net.java.ao.db.HSQLDatabaseProvider;
 import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
@@ -21,7 +16,6 @@ import net.java.ao.db.SQLServerDatabaseProvider;
 import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import net.java.ao.test.junit.ActiveObjectsJUnitRunner;
-import org.apache.commons.io.IOUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -30,20 +24,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 
 import static org.custommonkey.xmlunit.XMLAssert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
 @NameConverters(
@@ -52,7 +39,7 @@ import static org.mockito.Mockito.*;
         sequence = ActiveObjectsSequenceNameConverter.class,
         trigger = ActiveObjectsTriggerNameConverter.class,
         index = ActiveObjectsIndexNameConverter.class)
-public final class TestActiveObjectsBackup
+public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
@@ -60,12 +47,6 @@ public final class TestActiveObjectsBackup
     private static final String POSTGRES = "/com/atlassian/activeobjects/backup/postgres.xml";
     private static final String SQLSERVER = "/com/atlassian/activeobjects/backup/sqlserver.xml";
 
-    private static final String UTF_8 = "UTF-8";
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private EntityManager entityManager;
-    private ActiveObjectsBackup aoBackup;
     private Model model;
 
     @Test
@@ -201,25 +182,6 @@ public final class TestActiveObjectsBackup
         return node.getAttributes().getNamedItem(name).getNodeValue();
     }
 
-    private String save()
-    {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        aoBackup.save(os, NullBackupProgressMonitor.INSTANCE);
-        try
-        {
-            return os.toString(UTF_8);
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void restore(String xmlBackup) throws IOException
-    {
-        aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE);
-    }
-
     private void assertDataPresent()
     {
         model.checkAuthors();
@@ -227,33 +189,16 @@ public final class TestActiveObjectsBackup
     }
 
     @Before
-    public void setUp()
+    public void setUpModel()
     {
-        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), new ActiveObjectsHashesReader(), mock(PluginAccessor.class))));
         model = new Model(entityManager);
         model.emptyDatabase();
     }
 
     @After
-    public void tearDown()
+    public void tearDownModel()
     {
-        aoBackup = null;
         model = null;
-    }
-
-    private String read(String resource) throws IOException
-    {
-        logger.debug("Reading resource from '{}'", resource);
-        InputStream is = null;
-        try
-        {
-            is = this.getClass().getResourceAsStream(resource);
-            return IOUtils.toString(is, UTF_8);
-        }
-        finally
-        {
-            IOUtils.closeQuietly(is);
-        }
     }
 
     private static final class BackupData

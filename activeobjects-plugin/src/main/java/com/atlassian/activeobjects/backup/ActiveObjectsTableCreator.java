@@ -17,6 +17,8 @@ import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.TypeInfo;
 import net.java.ao.types.TypeManager;
 import net.java.ao.types.TypeQualifiers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,6 +32,8 @@ import static com.google.common.collect.Lists.*;
 
 final class ActiveObjectsTableCreator implements TableCreator
 {
+    private final Logger logger = LoggerFactory.getLogger("net.java.ao.sql");
+
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
     private final NameConverters converters;
@@ -77,6 +81,8 @@ final class ActiveObjectsTableCreator implements TableCreator
         {
             try
             {
+
+                logger.debug(sql);
                 stmt.executeUpdate(sql);
             }
             catch (SQLException e)
@@ -107,6 +113,7 @@ final class ActiveObjectsTableCreator implements TableCreator
 
         TypeInfo<?> typeFromSchema = getTypeInfo(exportTypeManager, column);
         ddlField.setType(typeFromSchema);
+        ddlField.setJdbcType(typeFromSchema.getJdbcWriteType());
 
         final Boolean pk = column.isPrimaryKey();
         if (pk != null)
