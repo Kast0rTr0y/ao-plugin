@@ -418,7 +418,8 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 // this is actually a boolean that was stored as an Integer!
                 // Happens with legacy Oracle.
                 {
-                    setBoolean(node.getContentAsBigInteger().intValue() == 1);
+                    BigInteger bigInt = node.getContentAsBigInteger();
+                    setBoolean(bigInt == null ? null : bigInt.intValue() == 1);
                 }
                 else
                 {
