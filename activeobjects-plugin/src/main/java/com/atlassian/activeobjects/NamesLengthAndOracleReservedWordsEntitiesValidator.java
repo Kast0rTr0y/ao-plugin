@@ -2,12 +2,13 @@ package com.atlassian.activeobjects;
 
 import com.atlassian.plugin.PluginException;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import net.java.ao.ActiveObjectsException;
 import net.java.ao.Common;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
-import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.Ignore;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 
@@ -18,7 +19,8 @@ import static com.google.common.collect.Iterables.any;
 
 public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements EntitiesValidator
 {
-    private static final int MAX_NUMBER_OF_ENTITIES = 50;
+    static final Set<String> RESERVED_WORDS = ImmutableSet.of("BLOB", "CLOB", "NUMBER", "ROWID", "TIMESTAMP", "VARCHAR2");
+    static final int MAX_NUMBER_OF_ENTITIES = 50;
 
     @Override
     public Set<Class<? extends RawEntity<?>>> check(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters)
@@ -57,7 +59,7 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements
 
     void checkColumnName(Method method, FieldNameConverter fieldNameConverter)
     {
-        if (Common.isAccessor(method) || Common.isMutator(method))
+        if ((Common.isAccessor(method) || Common.isMutator(method)) && !method.isAnnotationPresent(Ignore.class))
         {
             final String columnName = fieldNameConverter.getName(method);
             if (isReservedWord(columnName))
@@ -69,7 +71,7 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements
 
     private boolean isReservedWord(final String name)
     {
-        return any(OracleDatabaseProvider.RESERVED_WORDS, new Predicate<String>()
+        return any(RESERVED_WORDS, new Predicate<String>()
         {
             @Override
             public boolean apply(String reservedWord)

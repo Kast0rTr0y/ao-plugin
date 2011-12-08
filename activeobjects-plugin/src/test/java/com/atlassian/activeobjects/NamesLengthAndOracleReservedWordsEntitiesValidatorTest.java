@@ -3,8 +3,8 @@ package com.atlassian.activeobjects;
 import net.java.ao.ActiveObjectsException;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
-import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.Ignore;
 import net.java.ao.schema.TableNameConverter;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +14,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.lang.reflect.Method;
 
+import static com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator.RESERVED_WORDS;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
 public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
 {
     private static final Method GET_FIELD_METHOD = method(TestEntity.class, "getField");
+    private static final Method IGNORE_METHOD = method(TestEntity.class, "ignoreMethod");
     private static final Method RANDOM_METHOD = method(TestEntity.class, "randomMethod");
     private static final Method GET_ENTITY_METHOD = method(TestEntity.class, "getEntity");
 
@@ -98,7 +100,7 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
     @Test
     public void testCheckTableNameIsOracleKeyword()
     {
-        for (String oracleReservedWord : OracleDatabaseProvider.RESERVED_WORDS)
+        for (String oracleReservedWord : RESERVED_WORDS)
         {
             when(tableNameConverter.getName(TestEntity.class)).thenReturn(oracleReservedWord);
             try
@@ -116,7 +118,7 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
     @Test
     public void testCheckFieldNameIsOracleKeyword()
     {
-        for (String oracleReservedWord : OracleDatabaseProvider.RESERVED_WORDS)
+        for (String oracleReservedWord : RESERVED_WORDS)
         {
             when(fieldNameConverter.getName(GET_FIELD_METHOD)).thenReturn(oracleReservedWord);
             try
@@ -127,6 +129,23 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
             catch (ActiveObjectsException e)
             {
                 // expected
+            }
+        }
+    }
+
+    @Test
+    public void testCheckFieldNameIsOracleKeywordAndMethodIsAnnotatedIgnore()
+    {
+        for (String oracleReservedWord : RESERVED_WORDS)
+        {
+            when(fieldNameConverter.getName(IGNORE_METHOD)).thenReturn(oracleReservedWord);
+            try
+            {
+                validator.checkColumnName(IGNORE_METHOD, fieldNameConverter);
+            }
+            catch (ActiveObjectsException e)
+            {
+                fail("The validator should NOT have thrown an exception for field/column named '" + oracleReservedWord + "' which is an Oracle key word.");
             }
         }
     }
@@ -150,6 +169,9 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
         void randomMethod();
 
         PolymorphicEntity getEntity();
+
+        @Ignore
+        void ignoreMethod();
     }
 
     @Polymorphic
