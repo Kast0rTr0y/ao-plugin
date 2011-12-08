@@ -29,7 +29,6 @@ public final class TestBooleanBackup extends AbstractTestTypeBackup
 
     @Test
     @NonTransactional
-    @Ignore("Need to fix for Oracle")
     public void testSimpleEntityWithNull() throws Exception
     {
         testBackupWithValue(null);
