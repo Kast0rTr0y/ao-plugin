@@ -1,9 +1,5 @@
 package com.atlassian.activeobjects.backup;
 
-import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter;
 import com.atlassian.activeobjects.test.model.Model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,9 +9,7 @@ import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
-import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
-import net.java.ao.test.junit.ActiveObjectsJUnitRunner;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -23,7 +17,6 @@ import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,13 +25,6 @@ import java.sql.Types;
 
 import static org.custommonkey.xmlunit.XMLAssert.*;
 
-@RunWith(ActiveObjectsJUnitRunner.class)
-@NameConverters(
-        table = BackupActiveObjectsTableNameConverter.class,
-        field = ActiveObjectsFieldNameConverter.class,
-        sequence = ActiveObjectsSequenceNameConverter.class,
-        trigger = ActiveObjectsTriggerNameConverter.class,
-        index = ActiveObjectsIndexNameConverter.class)
 public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
@@ -267,12 +253,14 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
     private static final BackupData AUTHORSHIP_ID = BackupData.of("AO_000000_AUTHORSHIP", "ID", SqlType.of(Types.INTEGER), true, true);
 
     private static final BackupData BOOK_ABSTRACT = BackupData.of("AO_000000_BOOK", "ABSTRACT", SqlType.of(Types.LONGVARCHAR));
-    private static final BackupData BOOK_PAGES = BackupData.of("AO_000000_BOOK", "NUMBER_OF_PAGES", SqlType.of(Types.INTEGER));
-    private static final BackupData BOOK_PUBLISHED_DATE = BackupData.of("AO_000000_BOOK", "PUBLISHED", SqlType.of(Types.TIMESTAMP));
-    private static final BackupData BOOK_READ = BackupData.of("AO_000000_BOOK", "IS_READ", SqlType.of(Types.BOOLEAN));
     private static final BackupData BOOK_ISBN = BackupData.of("AO_000000_BOOK", "ISBN", SqlType.of(Types.BIGINT), true, false);
+    private static final BackupData BOOK_READ = BackupData.of("AO_000000_BOOK", "IS_READ", SqlType.of(Types.BOOLEAN));
+    private static final BackupData BOOK_PAGES = BackupData.of("AO_000000_BOOK", "NUMBER_OF_PAGES", SqlType.of(Types.INTEGER));
+    private static final BackupData BOOK_PRICE = BackupData.of("AO_000000_BOOK", "PRICE", SqlType.of(Types.DOUBLE));
+    private static final BackupData BOOK_PUBLISHED = BackupData.of("AO_000000_BOOK", "PUBLISHED", SqlType.of(Types.TIMESTAMP));
+    private static final BackupData BOOK_TITLE = BackupData.of("AO_000000_BOOK", "TITLE", SqlType.of(Types.VARCHAR, 255));
 
-    private static final BackupData AUTHOR_NAME = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "NAME", SqlType.of(Types.VARCHAR, 255));
+    private static final BackupData AUTHOR_NAME = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "NAME", SqlType.of(Types.VARCHAR, 60));
     private static final BackupData AUTHOR_ID = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "ID", SqlType.of(Types.INTEGER), true, true);
 
     private static Iterable<BackupData> HSQL_DATA = ImmutableList.of(
@@ -281,10 +269,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_ID,
 
             BOOK_ABSTRACT,
-            BOOK_PAGES,
-            BOOK_PUBLISHED_DATE,
-            BOOK_READ,
             BOOK_ISBN,
+            BOOK_READ,
+            BOOK_PAGES,
+            BOOK_PRICE,
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
 
             AUTHOR_NAME,
             AUTHOR_ID
@@ -296,10 +286,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_ID,
 
             BOOK_ABSTRACT,
-            BOOK_PAGES,
-            BOOK_PUBLISHED_DATE,
-            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_ISBN,
+            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
+            BOOK_PAGES,
+            BOOK_PRICE,
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
 
             AUTHOR_NAME,
             AUTHOR_ID
@@ -311,10 +303,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_ID,
 
             BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.VARCHAR, -1)),
-            BOOK_PAGES,
-            BOOK_PUBLISHED_DATE,
-            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_ISBN,
+            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
+            BOOK_PAGES,
+            BOOK_PRICE,
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
 
             AUTHOR_NAME,
             AUTHOR_ID
@@ -326,10 +320,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             BackupData.of(AUTHORSHIP_ID, SqlType.of(Types.NUMERIC, 11)),
 
             BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
-            BackupData.of(BOOK_PAGES, SqlType.of(Types.NUMERIC, 11)),
-            BOOK_PUBLISHED_DATE,
-            BackupData.of(BOOK_READ, SqlType.of(Types.NUMERIC, 1)),
             BackupData.of(BOOK_ISBN, SqlType.of(Types.NUMERIC, 20)),
+            BackupData.of(BOOK_READ, SqlType.of(Types.NUMERIC, 1)),
+            BackupData.of(BOOK_PAGES, SqlType.of(Types.NUMERIC, 11)),
+            BackupData.of(BOOK_PRICE, SqlType.of(Types.NUMERIC, 32, 16)),
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
 
             AUTHOR_NAME,
             BackupData.of(AUTHOR_ID, SqlType.of(Types.NUMERIC, 11))
@@ -341,10 +337,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_ID,
 
             BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
-            BOOK_PAGES,
-            BOOK_PUBLISHED_DATE,
-            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_ISBN,
+            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
+            BOOK_PAGES,
+            BOOK_PRICE,
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
 
             AUTHOR_NAME,
             AUTHOR_ID

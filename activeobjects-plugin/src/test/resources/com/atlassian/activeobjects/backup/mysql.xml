@@ -19,7 +19,7 @@
   </table>
   <table name="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="4" precision="11"/>
-    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/>
+    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="60"/>
   </table>
   <table name="AO_000000_AUTHORSHIP">
     <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="4" precision="11"/>

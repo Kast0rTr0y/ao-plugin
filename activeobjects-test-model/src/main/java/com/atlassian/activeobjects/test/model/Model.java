@@ -23,9 +23,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Lists.*;
+import static org.junit.Assert.assertEquals;
 
 public final class Model
 {
@@ -168,17 +169,17 @@ public final class Model
     public void checkAuthors()
     {
         ImmutableList<Author> authors = allAuthors();
-        checkState(9 == authors.size());
+        assertEquals(9, authors.size());
 
-        checkState(1 == findAuthorWithName(authors, BRIAN_GOETZ).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, TIM_PEIERLS).getBooks().length);
-        checkState(2 == findAuthorWithName(authors, JOSHUA_BLOCH).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, JOSEPH_BOWBEER).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, DOUG_LEA).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, DAVID_HOLMES).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, MARTIN_ODERSKY).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, LEX_SPOON).getBooks().length);
-        checkState(1 == findAuthorWithName(authors, BILL_VENNERS).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, BRIAN_GOETZ).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, TIM_PEIERLS).getBooks().length);
+        assertEquals(2, findAuthorWithName(authors, JOSHUA_BLOCH).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, JOSEPH_BOWBEER).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, DOUG_LEA).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, DAVID_HOLMES).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, MARTIN_ODERSKY).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, LEX_SPOON).getBooks().length);
+        assertEquals(1, findAuthorWithName(authors, BILL_VENNERS).getBooks().length);
 
         final String me = "Me"; // not a very good author if you ask me
 
@@ -187,8 +188,8 @@ public final class Model
         ao.flushAll();
 
         authors = allAuthors();
-        checkState(10 == authors.size());
-        checkState(0 == findAuthorWithName(authors, me).getBooks().length);
+        assertEquals(10, authors.size());
+        assertEquals(0, findAuthorWithName(authors, me).getBooks().length);
     }
 
     private Author findAuthorWithName(Iterable<Author> authors, final String name)
@@ -212,7 +213,7 @@ public final class Model
     {
         final ImmutableList<Book> books = allBooks();
 
-        checkState(3 == books.size());
+        assertEquals(3, books.size());
 
         checkBook(findBookWithTitle(books, JCIP), JCIP_ABSTRACT.get(), JCIP_PRICE, JCIP_ISBN, JCIP_PUBLISHED, JCIP_READ, JCIP_PAGES, 6);
         checkBook(findBookWithTitle(books, PIS), PIS_ABSTRACT.get(), PIS_PRICE, PIS_ISBN, PIS_PUBLISHED, PIS_READ, PIS_PAGES, 3);
@@ -221,13 +222,13 @@ public final class Model
 
     private void checkBook(Book book, String bookAbstract, double price, long isbn, Date published, boolean read, Integer pages, int i)
     {
-        checkState(bookAbstract.equals(book.getAbstract()), "\n----Expected:----\n%s\n----Actual:----\n%s\n------------\n", bookAbstract, book.getAbstract());
-        checkState(price == book.getPrice());
-        checkState(published.getTime() == book.getPublished().getTime());
-        checkState(isbn == book.getIsbn());
-        checkState(read == book.isRead());
-        checkState((pages == null && book.getNumberOfPages() == null) || (pages != null && pages.equals(book.getNumberOfPages())));
-        checkState(i == book.getAuthors().length);
+        assertEquals(bookAbstract, book.getAbstract());
+        assertEquals(price, book.getPrice(), 0d);
+        assertEquals(published.getTime(), book.getPublished().getTime());
+        assertEquals(isbn, book.getIsbn());
+        assertEquals(read, book.isRead());
+        assertEquals(pages, book.getNumberOfPages());
+        assertEquals(i, book.getAuthors().length);
     }
 
     private Book findBookWithTitle(Iterable<Book> books, final String title)

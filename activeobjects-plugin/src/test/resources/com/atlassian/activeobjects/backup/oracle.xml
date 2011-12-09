@@ -26,31 +26,11 @@
   </table>
   <table name="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="11"/>
-    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/>
+    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="60"/>
   </table>
   <data tableName="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID"/>
     <column name="NAME"/>
-    <row>
-      <integer>1</integer>
-      <string>Brian Goetz</string>
-    </row>
-    <row>
-      <integer>2</integer>
-      <string>Tim Peierls</string>
-    </row>
-    <row>
-      <integer>7</integer>
-      <string>Martin Odersky</string>
-    </row>
-    <row>
-      <integer>8</integer>
-      <string>Lex Spoon</string>
-    </row>
-    <row>
-      <integer>9</integer>
-      <string>Bill Venners</string>
-    </row>
     <row>
       <integer>3</integer>
       <string>Joshua Bloch</string>
@@ -66,6 +46,26 @@
     <row>
       <integer>6</integer>
       <string>Doug Lea</string>
+    </row>
+    <row>
+      <integer>7</integer>
+      <string>Martin Odersky</string>
+    </row>
+    <row>
+      <integer>8</integer>
+      <string>Lex Spoon</string>
+    </row>
+    <row>
+      <integer>1</integer>
+      <string>Brian Goetz</string>
+    </row>
+    <row>
+      <integer>2</integer>
+      <string>Tim Peierls</string>
+    </row>
+    <row>
+      <integer>9</integer>
+      <string>Bill Venners</string>
     </row>
   </data>
   <data tableName="AO_000000_AUTHORSHIP">

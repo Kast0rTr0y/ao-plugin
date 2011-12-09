@@ -142,11 +142,11 @@ final class ActiveObjectsTableCreator implements TableCreator
     private TypeQualifiers getQualifiers(Column column)
     {
         TypeQualifiers qualifiers = TypeQualifiers.qualifiers();
-        if ((isString(column) || column.getSqlType() == Types.NUMERIC) && column.getPrecision() != null && column.getPrecision() > 0)
+        if (column.getSqlType() == Types.NUMERIC && column.getPrecision() != null && column.getPrecision() > 0)
         {
             qualifiers = qualifiers.precision(column.getPrecision());
         }
-        else if (isString(column) && column.getPrecision() == -1)
+        else if (isString(column))
         {
             qualifiers = qualifiers.stringLength(column.getPrecision());
         }
