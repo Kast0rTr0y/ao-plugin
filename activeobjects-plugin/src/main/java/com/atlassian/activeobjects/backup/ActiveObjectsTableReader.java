@@ -63,7 +63,7 @@ public final class ActiveObjectsTableReader implements TableReader
         }
         for (DDLTable ddlTable : ddlTables)
         {
-            tables.add(readTable(databaseInformation, ddlTable, entityNameProcessor));
+            tables.add(readTable(ddlTable, entityNameProcessor));
         }
         return tables;
     }
@@ -80,13 +80,13 @@ public final class ActiveObjectsTableReader implements TableReader
         }
     }
 
-    private Table readTable(DatabaseInformation databaseInformation, DDLTable ddlTable, EntityNameProcessor processor)
+    private Table readTable(DDLTable ddlTable, EntityNameProcessor processor)
     {
         final String name = processor.tableName(ddlTable.getName());
-        return new Table(name, readColumns(databaseInformation, ddlTable.getFields(), processor), readForeignKeys(ddlTable.getForeignKeys()));
+        return new Table(name, readColumns(ddlTable.getFields(), processor), readForeignKeys(ddlTable.getForeignKeys()));
     }
 
-    private List<Column> readColumns(final DatabaseInformation info, DDLField[] fields, final EntityNameProcessor processor)
+    private List<Column> readColumns(DDLField[] fields, final EntityNameProcessor processor)
     {
         return Lists.transform(newArrayList(fields), new Function<DDLField, Column>()
         {

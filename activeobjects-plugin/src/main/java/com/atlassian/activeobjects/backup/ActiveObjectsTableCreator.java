@@ -131,36 +131,56 @@ final class ActiveObjectsTableCreator implements TableCreator
     private TypeInfo<?> getTypeInfo(TypeManager exportTypeManager, Column column)
     {
         final TypeQualifiers qualifiers = getQualifiers(column);
-        final TypeInfo<?> exportedType = exportTypeManager.getTypeFromSchema(column.getSqlType(), qualifiers);
-
+        final TypeInfo<?> exportedType = exportTypeManager.getTypeFromSchema(getSqlType(column), qualifiers);
         final Class<?> javaType = exportedType.getLogicalType().getTypes().iterator().next();
 
         TypeInfo<?> type = provider.getTypeManager().getType(javaType, exportedType.getQualifiers());
         return type;
     }
 
+    private int getSqlType(Column column)
+    {
+        if (column.getSqlType() == Types.NUMERIC) // dealing with Oracle, crappy I know
+        {
+            if (column.getScale() != null && column.getScale() > 0)
+            {
+                return Types.DOUBLE;
+            }
+            else if (column.getPrecision() != null)
+            {
+                switch (column.getPrecision())
+                {
+                    case 1:
+                        return Types.BOOLEAN;
+                    case 11: 
+                        return Types.INTEGER;
+                    case 126:
+                        return Types.DOUBLE;
+                    default:
+                        return Types.BIGINT;
+                }
+            }
+            else
+            {
+                throw new IllegalStateException("Could not determine the proper mapping from Oracle export, for column:" + column.getName());
+            }
+        }
+        return column.getSqlType();
+    }
+
     private TypeQualifiers getQualifiers(Column column)
     {
         TypeQualifiers qualifiers = TypeQualifiers.qualifiers();
-        if (column.getSqlType() == Types.NUMERIC && column.getPrecision() != null && column.getPrecision() > 0)
-        {
-            qualifiers = qualifiers.precision(column.getPrecision());
-        }
-        else if (isString(column))
+        if (isString(column))
         {
             qualifiers = qualifiers.stringLength(column.getPrecision());
         }
-        if (column.getSqlType() == Types.NUMERIC && column.getScale() != null && column.getScale() > 0)
-        {
-            qualifiers = qualifiers.scale(column.getScale());
-        }
-
         return qualifiers;
     }
 
     private boolean isString(Column column)
     {
-        final int sqlType = column.getSqlType();
+        final int sqlType = getSqlType(column);
         return
                 sqlType == Types.CHAR
                         || sqlType == Types.LONGNVARCHAR

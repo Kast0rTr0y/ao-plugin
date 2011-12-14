@@ -139,7 +139,8 @@ public final class DataExporter implements Exporter
                     appendInteger(table, result, col, node);
                     break;
                 case Types.NUMERIC:
-                    if (scale(table, metaData, col) > 0) // oracle uses numeric always
+                    // Oracle: either it's got a scale, or it's a DOUBLE PRECISION
+                    if (scale(table, metaData, col) > 0 || precision(table, metaData, col) == 126)
                     {
                         appendDouble(table, result, col, node);
                     }
@@ -240,6 +241,18 @@ public final class DataExporter implements Exporter
         try
         {
             return metaData.getScale(col);
+        }
+        catch (SQLException e)
+        {
+            throw errorService.newImportExportSqlException(table, "Could not get scale for col #" + col + " from result set meta data", e);
+        }
+    }
+
+    private int precision(String table, ResultSetMetaData metaData, int col)
+    {
+        try
+        {
+            return metaData.getPrecision(col);
         }
         catch (SQLException e)
         {

@@ -20,7 +20,7 @@
     <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="2" precision="20"/>
     <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="2" precision="1"/>
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="2" precision="11"/>
-    <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="126"/>
+    <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="32" scale="16"/>
     <column name="PUBLISHED" primaryKey="false" autoIncrement="false" sqlType="93" scale="6"/>
     <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/>
   </table>
@@ -31,14 +31,6 @@
   <data tableName="AO_000000_LONG_NAME_TO_AUTHOR">
     <column name="ID"/>
     <column name="NAME"/>
-    <row>
-      <integer>1</integer>
-      <string>Brian Goetz</string>
-    </row>
-    <row>
-      <integer>2</integer>
-      <string>Tim Peierls</string>
-    </row>
     <row>
       <integer>3</integer>
       <string>Joshua Bloch</string>
@@ -64,6 +56,14 @@
       <string>Lex Spoon</string>
     </row>
     <row>
+      <integer>1</integer>
+      <string>Brian Goetz</string>
+    </row>
+    <row>
+      <integer>2</integer>
+      <string>Tim Peierls</string>
+    </row>
+    <row>
       <integer>9</integer>
       <string>Bill Venners</string>
     </row>
@@ -73,54 +73,54 @@
     <column name="BOOK_ID"/>
     <column name="ID"/>
     <row>
+      <integer>1</integer>
+      <integer>9780321349606</integer>
+      <integer>1</integer>
+    </row>
+    <row>
+      <integer>2</integer>
+      <integer>9780321349606</integer>
+      <integer>2</integer>
+    </row>
+    <row>
+      <integer>3</integer>
+      <integer>9780321349606</integer>
+      <integer>3</integer>
+    </row>
+    <row>
+      <integer>4</integer>
+      <integer>9780321349606</integer>
+      <integer>4</integer>
+    </row>
+    <row>
+      <integer>5</integer>
+      <integer>9780321349606</integer>
+      <integer>5</integer>
+    </row>
+    <row>
+      <integer>6</integer>
+      <integer>9780321349606</integer>
+      <integer>6</integer>
+    </row>
+    <row>
+      <integer>7</integer>
+      <integer>9780981531601</integer>
+      <integer>7</integer>
+    </row>
+    <row>
+      <integer>8</integer>
+      <integer>9780981531601</integer>
+      <integer>8</integer>
+    </row>
+    <row>
+      <integer>9</integer>
+      <integer>9780981531601</integer>
+      <integer>9</integer>
+    </row>
+    <row>
       <integer>3</integer>
       <integer>9780321356680</integer>
       <integer>10</integer>
-    </row>
-    <row>
-      <integer>1</integer>
-      <integer>9780321349606</integer>
-      <integer>1</integer>
-    </row>
-    <row>
-      <integer>2</integer>
-      <integer>9780321349606</integer>
-      <integer>2</integer>
-    </row>
-    <row>
-      <integer>3</integer>
-      <integer>9780321349606</integer>
-      <integer>3</integer>
-    </row>
-    <row>
-      <integer>4</integer>
-      <integer>9780321349606</integer>
-      <integer>4</integer>
-    </row>
-    <row>
-      <integer>5</integer>
-      <integer>9780321349606</integer>
-      <integer>5</integer>
-    </row>
-    <row>
-      <integer>6</integer>
-      <integer>9780321349606</integer>
-      <integer>6</integer>
-    </row>
-    <row>
-      <integer>7</integer>
-      <integer>9780981531601</integer>
-      <integer>7</integer>
-    </row>
-    <row>
-      <integer>8</integer>
-      <integer>9780981531601</integer>
-      <integer>8</integer>
-    </row>
-    <row>
-      <integer>9</integer>
-      <integer>9780981531601</integer>
-      <integer>9</integer>
     </row>
   </data>
   <data tableName="AO_000000_BOOK">
@@ -131,28 +131,6 @@
     <column name="PRICE"/>
     <column name="PUBLISHED"/>
     <column name="TITLE"/>
-    <row>
-      <string>Are you looking for a deeper understanding of the Java™ programming language so that you can write code that is clearer, more correct, more robust, and more reusable? Look no further! Effective Java™, Second Edition, brings together seventy-eight indispensable programmer’s rules of thumb: working, best-practice solutions for the programming challenges you encounter every day.
-
-This highly anticipated new edition of the classic, Jolt Award-winning work has been thoroughly updated to cover Java SE 5 and Java SE 6 features introduced since the first edition. Bloch explores new design patterns and language idioms, showing you how to make the most of features ranging from generics to enums, annotations to autoboxing.
-
-Each chapter in the book consists of several “items” presented in the form of a short, standalone essay that provides specific advice, insight into Java platform subtleties, and outstanding code examples. The comprehensive descriptions and explanations for each item illuminate what to do, what not to do, and why.
-
-Highlights include:
-
-    New coverage of generics, enums, annotations, autoboxing, the for-each loop, varargs, concurrency utilities, and much more
-    Updated techniques and best practices on classic topics, including objects, classes, libraries, methods, and serialization
-    How to avoid the traps and pitfalls of commonly misunderstood subtleties of the language
-    Focus on the language and its most fundamental libraries: java.lang, java.util, and, to a lesser extent, java.util.concurrent and java.io
-
-Simply put, Effective Java™, Second Edition, presents the most practical, authoritative guidelines available for writing efficient, well-designed programs.</string>
-      <integer>9780321356680</integer>
-      <integer>0</integer>
-      <integer xsi:nil="true"/>
-      <double>41.24</double>
-      <timestamp>2008-05-28T00:00:00.000Z</timestamp>
-      <string>Effective Java (Second Edition)</string>
-    </row>
     <row>
       <string>"I was fortunate indeed to have worked with a fantastic team on the design and implementation of the concurrency features added to the Java platform in Java 5.0 and Java 6. Now this same team provides the best explanation yet of these new features, and of concurrency in general. Concurrency is no longer a subject for advanced users only. Every Java developer should read this book."
 --Martin Buchholz
@@ -217,6 +195,28 @@ Artima is very pleased to publish the first book on Scala, written by the design
       <double>31.17</double>
       <timestamp>2011-01-04T00:00:00.000Z</timestamp>
       <string>Programming in Scala</string>
+    </row>
+    <row>
+      <string>Are you looking for a deeper understanding of the Java™ programming language so that you can write code that is clearer, more correct, more robust, and more reusable? Look no further! Effective Java™, Second Edition, brings together seventy-eight indispensable programmer’s rules of thumb: working, best-practice solutions for the programming challenges you encounter every day.
+
+This highly anticipated new edition of the classic, Jolt Award-winning work has been thoroughly updated to cover Java SE 5 and Java SE 6 features introduced since the first edition. Bloch explores new design patterns and language idioms, showing you how to make the most of features ranging from generics to enums, annotations to autoboxing.
+
+Each chapter in the book consists of several “items” presented in the form of a short, standalone essay that provides specific advice, insight into Java platform subtleties, and outstanding code examples. The comprehensive descriptions and explanations for each item illuminate what to do, what not to do, and why.
+
+Highlights include:
+
+    New coverage of generics, enums, annotations, autoboxing, the for-each loop, varargs, concurrency utilities, and much more
+    Updated techniques and best practices on classic topics, including objects, classes, libraries, methods, and serialization
+    How to avoid the traps and pitfalls of commonly misunderstood subtleties of the language
+    Focus on the language and its most fundamental libraries: java.lang, java.util, and, to a lesser extent, java.util.concurrent and java.io
+
+Simply put, Effective Java™, Second Edition, presents the most practical, authoritative guidelines available for writing efficient, well-designed programs.</string>
+      <integer>9780321356680</integer>
+      <integer>0</integer>
+      <integer xsi:nil="true"/>
+      <double>41.24</double>
+      <timestamp>2008-05-28T00:00:00.000Z</timestamp>
+      <string>Effective Java (Second Edition)</string>
     </row>
   </data>
 </backup>

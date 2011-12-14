@@ -30,6 +30,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
     private static final String ORACLE = "/com/atlassian/activeobjects/backup/oracle.xml";
+    private static final String LEGACY_ORACLE = "/com/atlassian/activeobjects/backup/legacy_oracle.xml";
     private static final String POSTGRES = "/com/atlassian/activeobjects/backup/postgres.xml";
     private static final String SQLSERVER = "/com/atlassian/activeobjects/backup/sqlserver.xml";
 
@@ -61,6 +62,13 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
     public void testOracleBackup() throws Exception
     {
         testBackup(ORACLE, ORACLE_DATA);
+    }
+
+    @Test
+    @NonTransactional
+    public void testLegacyOracleBackup() throws Exception
+    {
+        testBackup(LEGACY_ORACLE, LEGACY_ORACLE_DATA);
     }
 
     @Test
@@ -315,6 +323,23 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
     );
 
     private static Iterable<BackupData> ORACLE_DATA = ImmutableList.of(
+            BackupData.of(AUTHORSHIP_AUTHOR_ID, SqlType.of(Types.NUMERIC, 11)),
+            BackupData.of(AUTHORSHIP_BOOK_ID, SqlType.of(Types.NUMERIC, 20)),
+            BackupData.of(AUTHORSHIP_ID, SqlType.of(Types.NUMERIC, 11)),
+
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
+            BackupData.of(BOOK_ISBN, SqlType.of(Types.NUMERIC, 20)),
+            BackupData.of(BOOK_READ, SqlType.of(Types.NUMERIC, 1)),
+            BackupData.of(BOOK_PAGES, SqlType.of(Types.NUMERIC, 11)),
+            BackupData.of(BOOK_PRICE, SqlType.of(Types.NUMERIC, 126)),
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
+
+            AUTHOR_NAME,
+            BackupData.of(AUTHOR_ID, SqlType.of(Types.NUMERIC, 11))
+    );
+
+    private static Iterable<BackupData> LEGACY_ORACLE_DATA = ImmutableList.of(
             BackupData.of(AUTHORSHIP_AUTHOR_ID, SqlType.of(Types.NUMERIC, 11)),
             BackupData.of(AUTHORSHIP_BOOK_ID, SqlType.of(Types.NUMERIC, 20)),
             BackupData.of(AUTHORSHIP_ID, SqlType.of(Types.NUMERIC, 11)),
