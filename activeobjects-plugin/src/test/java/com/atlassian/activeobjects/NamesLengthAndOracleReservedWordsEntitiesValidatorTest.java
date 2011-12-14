@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects;
 
+import com.atlassian.activeobjects.external.IgnoreReservedKeyword;
 import net.java.ao.ActiveObjectsException;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
@@ -22,7 +23,8 @@ import static org.mockito.Mockito.*;
 public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
 {
     private static final Method GET_FIELD_METHOD = method(TestEntity.class, "getField");
-    private static final Method IGNORE_METHOD = method(TestEntity.class, "ignoreMethod");
+    private static final Method IGNORE_METHOD = method(TestEntity.class, "getIgnoreMethod");
+    private static final Method IGNORE_RESERVED_KEYWORD_METHOD = method(TestEntity.class, "getIgnoreReservedKeywordMethod");
     private static final Method RANDOM_METHOD = method(TestEntity.class, "randomMethod");
     private static final Method GET_ENTITY_METHOD = method(TestEntity.class, "getEntity");
 
@@ -150,6 +152,23 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
         }
     }
 
+    @Test
+    public void testCheckFieldNameIsOracleKeywordAndMethodIsAnnotatedIgnoreReservedKeyword()
+    {
+        for (String oracleReservedWord : RESERVED_WORDS)
+        {
+            when(fieldNameConverter.getName(IGNORE_RESERVED_KEYWORD_METHOD)).thenReturn(oracleReservedWord);
+            try
+            {
+                validator.checkColumnName(IGNORE_RESERVED_KEYWORD_METHOD, fieldNameConverter);
+            }
+            catch (ActiveObjectsException e)
+            {
+                fail("The validator should NOT have thrown an exception for field/column named '" + oracleReservedWord + "' which is an Oracle key word.");
+            }
+        }
+    }
+
     private static Method method(Class<?> type, String name)
     {
         try
@@ -171,7 +190,10 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
         PolymorphicEntity getEntity();
 
         @Ignore
-        void ignoreMethod();
+        String getIgnoreMethod();
+
+        @IgnoreReservedKeyword
+        String getIgnoreReservedKeywordMethod();
     }
 
     @Polymorphic

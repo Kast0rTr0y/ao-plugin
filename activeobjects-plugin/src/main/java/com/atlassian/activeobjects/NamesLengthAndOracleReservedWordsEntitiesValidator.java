@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects;
 
+import com.atlassian.activeobjects.external.IgnoreReservedKeyword;
 import com.atlassian.plugin.PluginException;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
@@ -8,8 +9,11 @@ import net.java.ao.Common;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.Ignore;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -20,6 +24,8 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements
 {
     static final Set<String> RESERVED_WORDS = ImmutableSet.of("BLOB", "CLOB", "NUMBER", "ROWID", "TIMESTAMP", "VARCHAR2");
     static final int MAX_NUMBER_OF_ENTITIES = 50;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public Set<Class<? extends RawEntity<?>>> check(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters)
@@ -58,12 +64,21 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements
 
     void checkColumnName(Method method, FieldNameConverter fieldNameConverter)
     {
-        if ((Common.isAccessor(method) || Common.isMutator(method)))
+        if ((Common.isAccessor(method) || Common.isMutator(method)) && !method.isAnnotationPresent(Ignore.class))
         {
             final String columnName = fieldNameConverter.getName(method);
             if (isReservedWord(columnName))
             {
-                throw new ActiveObjectsException("Method '" + method + "' column name is " + columnName + " which is a reserved word!");
+                if (method.isAnnotationPresent(IgnoreReservedKeyword.class))
+                {
+                    logger.warn("Method " + method + " is annotated with " + IgnoreReservedKeyword.class.getName() + ", it may cause issue on Oracle. " +
+                            "You should change this column name to a non-reserved keyword! "
+                            + "The list of reserved keywords is the following: " + RESERVED_WORDS);
+                }
+                else
+                {
+                    throw new ActiveObjectsException("Method '" + method + "' column name is " + columnName + " which is a reserved word!");
+                }
             }
         }
     }
