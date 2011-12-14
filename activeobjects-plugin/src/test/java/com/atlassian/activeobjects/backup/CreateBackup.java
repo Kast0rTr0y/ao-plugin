@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
-import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
@@ -9,6 +8,7 @@ import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.plugin.PluginAccessor;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
+import net.java.ao.atlassian.AtlassianFieldNameConverter;
 import net.java.ao.builder.EntityManagerBuilder;
 import net.java.ao.test.jdbc.Hsql;
 import net.java.ao.test.jdbc.JdbcConfiguration;
@@ -62,7 +62,7 @@ public final class CreateBackup
                 .password(jdbc.getPassword())
                 .auto()
                 .tableNameConverter(new BackupActiveObjectsTableNameConverter())
-                .fieldNameConverter(new ActiveObjectsFieldNameConverter())
+                .fieldNameConverter(new AtlassianFieldNameConverter())
                 .schemaConfiguration(new PrefixedSchemaConfiguration(ActiveObjectsBackup.PREFIX))
                 .build();
     }

@@ -1,9 +1,10 @@
 package com.atlassian.activeobjects.backup;
 
-import com.atlassian.activeobjects.ao.ActiveObjectsTableNameConverter;
+import com.atlassian.activeobjects.ao.AtlassianTablePrefix;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
 import net.java.ao.RawEntity;
+import net.java.ao.atlassian.AtlassianTableNameConverter;
 import net.java.ao.schema.TableNameConverter;
 
 public final class BackupActiveObjectsTableNameConverter implements TableNameConverter
@@ -14,7 +15,7 @@ public final class BackupActiveObjectsTableNameConverter implements TableNameCon
 
     public BackupActiveObjectsTableNameConverter()
     {
-        tableNameConverter = new ActiveObjectsTableNameConverter(PREFIX);
+        tableNameConverter = new AtlassianTableNameConverter(new AtlassianTablePrefix(PREFIX));
     }
 
     @Override

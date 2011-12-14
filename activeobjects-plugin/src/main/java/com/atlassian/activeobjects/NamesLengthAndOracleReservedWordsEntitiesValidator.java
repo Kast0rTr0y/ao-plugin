@@ -8,14 +8,13 @@ import net.java.ao.Common;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.FieldNameConverter;
-import net.java.ao.schema.Ignore;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import static com.google.common.collect.Iterables.any;
+import static com.google.common.collect.Iterables.*;
 
 public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements EntitiesValidator
 {
@@ -59,7 +58,7 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements
 
     void checkColumnName(Method method, FieldNameConverter fieldNameConverter)
     {
-        if ((Common.isAccessor(method) || Common.isMutator(method)) && !method.isAnnotationPresent(Ignore.class))
+        if ((Common.isAccessor(method) || Common.isMutator(method)))
         {
             final String columnName = fieldNameConverter.getName(method);
             if (isReservedWord(columnName))

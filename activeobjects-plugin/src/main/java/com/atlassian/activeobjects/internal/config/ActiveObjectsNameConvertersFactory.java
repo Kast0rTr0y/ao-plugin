@@ -1,7 +1,8 @@
 package com.atlassian.activeobjects.internal.config;
 
-import com.atlassian.activeobjects.ao.ActiveObjectsTableNameConverter;
+import com.atlassian.activeobjects.ao.AtlassianTablePrefix;
 import com.atlassian.activeobjects.internal.Prefix;
+import net.java.ao.atlassian.AtlassianTableNameConverter;
 import net.java.ao.builder.SimpleNameConverters;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.IndexNameConverter;
@@ -35,7 +36,7 @@ public final class ActiveObjectsNameConvertersFactory implements NameConvertersF
     public NameConverters getNameConverters(Prefix prefix)
     {
         return new SimpleNameConverters(
-                new ActiveObjectsTableNameConverter(prefix),
+                new AtlassianTableNameConverter(new AtlassianTablePrefix(prefix)),
                 fieldNameConverter,
                 sequenceNameConverter,
                 triggerNameConverter,

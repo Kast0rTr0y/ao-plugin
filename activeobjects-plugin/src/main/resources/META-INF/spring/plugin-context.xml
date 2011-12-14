@@ -51,11 +51,11 @@
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
-    <bean id="fieldNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter" />
-    <bean id="sequenceNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter" />
-    <bean id="triggerNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter" />
-    <bean id="indexNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter" />
-    <bean id="uniqueNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsUniqueNameConverter" />
+    <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter" />
+    <bean id="sequenceNameConverter" class="net.java.ao.atlassian.AtlassianSequenceNameConverter" />
+    <bean id="triggerNameConverter" class="net.java.ao.atlassian.AtlassianTriggerNameConverter" />
+    <bean id="indexNameConverter" class="net.java.ao.atlassian.AtlassianIndexNameConverter" />
+    <bean id="uniqueNameConverter" class="net.java.ao.atlassian.AtlassianUniqueNameConverter" />
 
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>

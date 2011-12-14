@@ -1,14 +1,14 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
-import com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsIndexNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter;
-import com.atlassian.activeobjects.ao.ActiveObjectsTriggerNameConverter;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.plugin.PluginAccessor;
 import net.java.ao.EntityManager;
+import net.java.ao.atlassian.AtlassianFieldNameConverter;
+import net.java.ao.atlassian.AtlassianIndexNameConverter;
+import net.java.ao.atlassian.AtlassianSequenceNameConverter;
+import net.java.ao.atlassian.AtlassianTriggerNameConverter;
 import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.junit.ActiveObjectsJUnitRunner;
 import org.apache.commons.io.IOUtils;
@@ -28,10 +28,10 @@ import static org.mockito.Mockito.*;
 @RunWith(ActiveObjectsJUnitRunner.class)
 @NameConverters(
         table = BackupActiveObjectsTableNameConverter.class,
-        field = ActiveObjectsFieldNameConverter.class,
-        sequence = ActiveObjectsSequenceNameConverter.class,
-        trigger = ActiveObjectsTriggerNameConverter.class,
-        index = ActiveObjectsIndexNameConverter.class)
+        field = AtlassianFieldNameConverter.class,
+        sequence = AtlassianSequenceNameConverter.class,
+        trigger = AtlassianTriggerNameConverter.class,
+        index = AtlassianIndexNameConverter.class)
 public abstract class AbstractTestActiveObjectsBackup
 {
     private static final String UTF_8 = "UTF-8";

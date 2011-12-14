@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.atlassian.activeobjects.admin.PluginToTablesMapping.*;
-import static com.atlassian.activeobjects.ao.ConverterUtils.*;
+import static com.atlassian.activeobjects.ao.ConverterUtils.toUpperCase;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.newLinkedList;
 
