@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 
+import static com.atlassian.activeobjects.backup.SqlUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
@@ -79,16 +80,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         final String[] sqlStatements = provider.renderAction(converters, a);
         for (String sql : sqlStatements)
         {
-            try
-            {
-
-                logger.debug(sql);
-                stmt.executeUpdate(sql);
-            }
-            catch (SQLException e)
-            {
-                throw errorService.newImportExportSqlException(table.getName(), "The following sql caused an error:\n" + sql + "\n---\n", e);
-            }
+            executeUpdate(errorService, table.getName(), stmt, sql);
         }
     }
 

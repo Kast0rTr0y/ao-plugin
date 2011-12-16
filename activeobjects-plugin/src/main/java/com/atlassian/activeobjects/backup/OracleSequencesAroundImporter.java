@@ -7,7 +7,6 @@ import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
 import com.atlassian.dbexporter.node.NodeParser;
-import com.google.common.base.Preconditions;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.NameConverters;
 
@@ -17,7 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 
-import static com.atlassian.activeobjects.backup.SequenceUtils.*;
+import static com.atlassian.activeobjects.backup.SqlUtils.*;
 import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.google.common.base.Preconditions.*;

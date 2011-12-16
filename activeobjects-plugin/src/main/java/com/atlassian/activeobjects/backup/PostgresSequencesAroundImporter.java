@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static com.atlassian.activeobjects.backup.SequenceUtils.*;
+import static com.atlassian.activeobjects.backup.SqlUtils.*;
 import static com.atlassian.dbexporter.DatabaseInformations.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.google.common.base.Preconditions.*;
@@ -51,7 +51,7 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
     private void updateSequences(ImportConfiguration configuration, Context context)
     {
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
-        for (SequenceUtils.TableColumnPair tableColumnPair : tableColumnPairs(context.getAll(Table.class)))
+        for (SqlUtils.TableColumnPair tableColumnPair : tableColumnPairs(context.getAll(Table.class)))
         {
             final String tableName = entityNameProcessor.tableName(tableColumnPair.table.getName());
             final String columnName = entityNameProcessor.columnName(tableColumnPair.column.getName());

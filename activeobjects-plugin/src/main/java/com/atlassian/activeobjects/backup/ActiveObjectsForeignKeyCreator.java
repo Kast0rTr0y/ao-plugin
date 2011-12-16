@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static com.atlassian.activeobjects.backup.SqlUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -44,15 +45,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
                 final String[] sqlStatements = provider.renderAction(converters, a);
                 for (String sql : sqlStatements)
                 {
-                    try
-                    {
-                        stmt.executeUpdate(sql);
-                    }
-                    catch (SQLException e)
-                    {
-                        throw errorService.newImportExportSqlException(a.getTable().getName(),
-                                "Error creating foreign key constraint, using SQL statement '" + sql + "'", e);
-                    }
+                    executeUpdate(errorService, tableName(a), stmt, sql);
                 }
             }
         }
@@ -65,6 +58,19 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
             closeQuietly(stmt);
             closeQuietly(conn);
         }
+    }
+
+    private String tableName(DDLAction a)
+    {
+        if (a == null)
+        {
+            return null;
+        }
+        if (a.getTable() == null)
+        {
+            return null;
+        }
+        return a.getTable().getName();
     }
 
     private DDLForeignKey toDdlForeignKey(ForeignKey foreignKey, EntityNameProcessor entityNameProcessor)
