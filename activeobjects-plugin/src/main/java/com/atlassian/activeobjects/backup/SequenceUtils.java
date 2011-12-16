@@ -5,6 +5,8 @@ import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,6 +19,8 @@ import static com.google.common.collect.Iterables.*;
 
 final class SequenceUtils
 {
+    private static final Logger sqlLogger = LoggerFactory.getLogger("net.java.ao.sql");
+
     static Iterable<TableColumnPair> tableColumnPairs(Iterable<Table> tables)
     {
         return concat(transform(tables, new AutoIncrementColumnIterableFunction()));
@@ -26,6 +30,7 @@ final class SequenceUtils
     {
         try
         {
+            sqlLogger.debug(sql);
             s.executeUpdate(sql);
         }
         catch (SQLException e)
