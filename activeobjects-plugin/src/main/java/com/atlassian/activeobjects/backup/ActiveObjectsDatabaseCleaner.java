@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.*;
 
 final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
 {
+    private final Logger sqlLogger = LoggerFactory.getLogger("net.java.ao.sql");
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ImportExportErrorService errorService;
@@ -66,6 +67,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
                 {
                     try
                     {
+                        sqlLogger.debug(sql);
                         stmt.executeUpdate(sql);
                     }
                     catch (SQLException e)

@@ -7,6 +7,8 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,6 +19,8 @@ import static com.google.common.base.Preconditions.*;
 
 final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
 {
+    private final Logger sqlLogger = LoggerFactory.getLogger("net.java.ao.sql");
+
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
 
@@ -44,6 +48,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
                 {
                     try
                     {
+                        sqlLogger.debug(sql);
                         stmt.executeUpdate(sql);
                     }
                     catch (SQLException e)

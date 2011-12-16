@@ -31,6 +31,7 @@ final class ActiveObjectsTableCreator implements TableCreator
     private static final int MAX_MYSQL_SCALE = 30;
     private static final int ORACLE_NUMERIC_BIGINT_PRECISION = 20;
 
+    private final Logger sqlLogger = LoggerFactory.getLogger("net.java.ao.sql");
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ImportExportErrorService errorService;
@@ -78,6 +79,7 @@ final class ActiveObjectsTableCreator implements TableCreator
         {
             try
             {
+                sqlLogger.debug(sql);
                 stmt.executeUpdate(sql);
             }
             catch (SQLException e)
