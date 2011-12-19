@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.external;
 
+import net.java.ao.Transaction;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
@@ -24,6 +25,11 @@ public final class TransactionalAnnotationProcessor implements BeanPostProcessor
 
     public TransactionalAnnotationProcessor(ActiveObjects ao)
     {
+        // AO-283, http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6588239
+        // prevent a sun (Oracle) JVM deadlock.
+        Transaction.class.getAnnotations();
+
+
         this.ao = checkNotNull(ao);
     }
 
