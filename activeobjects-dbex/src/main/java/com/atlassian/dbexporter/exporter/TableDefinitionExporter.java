@@ -11,6 +11,7 @@ import com.atlassian.dbexporter.progress.ProgressMonitor;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
 import static com.google.common.base.Preconditions.*;
+import static com.google.common.collect.Lists.newLinkedList;
 
 public final class TableDefinitionExporter implements Exporter
 {
@@ -28,13 +29,16 @@ public final class TableDefinitionExporter implements Exporter
         monitor.begin(Task.TABLE_DEFINITION);
 
         int tableCount = 0;
-        for (Table table : tableReader.read(getDatabaseInformation(context), configuration.getEntityNameProcessor()))
+        final Iterable<Table> tables = tableReader.read(getDatabaseInformation(context), configuration.getEntityNameProcessor());
+        for (Table table : tables)
         {
             export(node, table);
             tableCount++;
         }
         monitor.end(Task.TABLE_DEFINITION);
         monitor.totalNumberOfTables(tableCount);
+
+        context.putAll(newLinkedList(tables));
     }
 
     private DatabaseInformation getDatabaseInformation(Context context)

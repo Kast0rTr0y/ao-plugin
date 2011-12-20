@@ -3,9 +3,12 @@ package com.atlassian.dbexporter.exporter;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportErrorService;
+import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
 import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 import java.math.BigDecimal;
 import java.sql.Clob;
@@ -16,8 +19,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.HashSet;
-import java.util.Set;
 
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
@@ -27,15 +28,12 @@ import static com.google.common.base.Preconditions.*;
 public final class DataExporter implements Exporter
 {
     private final ImportExportErrorService errorService;
-
     private final String schema;
-    private final TableSelector tableSelector;
 
-    public DataExporter(ImportExportErrorService errorService, String schema, TableSelector tableSelector)
+    public DataExporter(ImportExportErrorService errorService, String schema)
     {
         this.errorService = checkNotNull(errorService);
         this.schema = isBlank(schema) ? null : schema; // maybe null
-        this.tableSelector = checkNotNull(tableSelector);
     }
 
     @Override
@@ -47,7 +45,7 @@ public final class DataExporter implements Exporter
         {
             public Void call(Connection connection)
             {
-                for (String table : getTableNames(connection))
+                for (String table : getTableNames(context))
                 {
                     exportTable(table, connection, node, monitor, configuration.getEntityNameProcessor());
                 }
@@ -61,32 +59,18 @@ public final class DataExporter implements Exporter
     /**
      * Returns the names of the tables that must be included in the export.
      *
-     * @param connection the sql connection
      * @return the table names
      */
-    private Set<String> getTableNames(Connection connection)
+    private Iterable<String> getTableNames(Context context)
     {
-        final Set<String> tables = new HashSet<String>();
-        ResultSet result = getTablesResultSet(connection);
-        try
+        return Iterables.transform(context.getAll(Table.class), new Function<Table, String>()
         {
-            String tableName;
-            do
+            @Override
+            public String apply(Table t)
             {
-                tableName = tableName(result);
-                if (tableSelector.accept(tableName))
-                {
-                    tables.add(tableName);
-                }
+                return t.getName();
             }
-            while (tableName != null);
-
-            return tables;
-        }
-        finally
-        {
-            closeQuietly(result);
-        }
+        });
     }
 
     private NodeCreator exportTable(String table, Connection connection, NodeCreator node, ProgressMonitor monitor, EntityNameProcessor entityNameProcessor)
@@ -221,18 +205,6 @@ public final class DataExporter implements Exporter
         catch (SQLException e)
         {
             throw errorService.newImportExportSqlException(table, "Could not get result set metadata", e);
-        }
-    }
-
-    private String tableName(ResultSet rs)
-    {
-        try
-        {
-            return next(null, rs) ? rs.getString("TABLE_NAME") : null;
-        }
-        catch (SQLException e)
-        {
-            throw errorService.newImportExportSqlException(null, "Could not get table name from result set", e);
         }
     }
 

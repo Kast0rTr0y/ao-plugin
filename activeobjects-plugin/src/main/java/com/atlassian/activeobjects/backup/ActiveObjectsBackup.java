@@ -102,7 +102,7 @@ public final class ActiveObjectsBackup implements Backup
         final DbExporter dbExporter = new DbExporter(
                 new DatabaseInformationExporter(new ConnectionProviderInformationReader(errorService, connectionProvider)),
                 new TableDefinitionExporter(new ActiveObjectsTableReader(errorService, nameConverters, provider, schemaConfiguration())),
-                new DataExporter(errorService, provider.getSchema(), new PrefixTableSelector(PREFIX)));
+                new DataExporter(errorService, provider.getSchema()));
 
 
         NodeStreamWriter streamWriter = null;
