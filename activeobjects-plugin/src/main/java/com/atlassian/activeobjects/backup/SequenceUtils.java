@@ -5,6 +5,7 @@ import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.Table;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,6 +27,7 @@ final class SequenceUtils
     {
         try
         {
+            LoggerFactory.getLogger("net.java.ao.sql").debug(sql);
             s.executeUpdate(sql);
         }
         catch (SQLException e)

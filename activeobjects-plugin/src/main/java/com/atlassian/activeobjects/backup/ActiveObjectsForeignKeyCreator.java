@@ -8,6 +8,7 @@ import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -46,6 +47,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
                 {
                     try
                     {
+                        LoggerFactory.getLogger("net.java.ao.sql").debug(sql);
                         stmt.executeUpdate(sql);
                     }
                     catch (SQLException e)

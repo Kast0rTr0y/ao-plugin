@@ -70,6 +70,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
                 {
                     try
                     {
+                        LoggerFactory.getLogger("net.java.ao.sql").debug(sql);
                         stmt.executeUpdate(sql);
                     }
                     catch (SQLException e)
