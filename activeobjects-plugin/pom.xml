@@ -378,6 +378,76 @@
             </build>
         </profile>
         <profile>
+            <id>oracle5</id>
+            <properties>
+                <ao.test.database>oracle</ao.test.database>
+                <db.username>sys</db.username>
+                <db.password>oracle</db.password>
+                <oracle.version>11.2.0.2.0</oracle.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>ojdbc5</artifactId>
+                    <version>${oracle.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.leberrigaud.maven.plugins</groupId>
+                        <artifactId>database-maven-plugin</artifactId>
+                        <configuration>
+                            <schema>ao_schema</schema>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.oracle</groupId>
+                                <artifactId>ojdbc5</artifactId>
+                                <version>${oracle.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>oracle6</id>
+            <properties>
+                <ao.test.database>oracle</ao.test.database>
+                <db.username>sys</db.username>
+                <db.password>oracle</db.password>
+                <oracle.version>11.2.0.2.0</oracle.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>ojdbc6</artifactId>
+                    <version>${oracle.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.leberrigaud.maven.plugins</groupId>
+                        <artifactId>database-maven-plugin</artifactId>
+                        <configuration>
+                            <schema>ao_schema</schema>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.oracle</groupId>
+                                <artifactId>ojdbc6</artifactId>
+                                <version>${oracle.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>sqlserver</id>
             <properties>
                 <ao.test.database>sqlserver</ao.test.database>
