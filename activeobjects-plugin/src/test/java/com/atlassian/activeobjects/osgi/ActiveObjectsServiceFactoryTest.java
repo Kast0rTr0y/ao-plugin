@@ -1,19 +1,18 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public final class ActiveObjectsServiceFactoryTest
@@ -24,10 +23,13 @@ public final class ActiveObjectsServiceFactoryTest
     private OsgiServiceUtils osgiUtils;
 
     @Mock
+    private ActiveObjects activeObjects;
+
+    @Mock
     private ActiveObjectsConfiguration configuration;
 
     @Mock
-    private ActiveObjectsProvider provider;
+    private ActiveObjectsFactory factory;
 
     @Mock
     private Bundle bundle;
@@ -35,9 +37,10 @@ public final class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, provider);
+        serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, factory);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
+        when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);
     }
 
     @Test
@@ -46,15 +49,14 @@ public final class ActiveObjectsServiceFactoryTest
         final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
         assertNotNull(ao);
         assertTrue(ao instanceof DelegatingActiveObjects);
-
-        assertEquals(configuration, ((ActiveObjectsServiceFactory.LazyActiveObjectConfiguration) ((DelegatingActiveObjects) ao).getConfiguration()).getDelegate());
-        assertEquals(provider, ((DelegatingActiveObjects) ao).getProvider());
     }
 
     @Test
     public void testUnGetService()
     {
-        serviceFactory.ungetService(bundle, null, null);
-        verifyZeroInteractions(provider);
+        Object ao = serviceFactory.getService(bundle, null);
+        assertEquals(1, serviceFactory.aoInstances.size());
+        serviceFactory.ungetService(bundle, null, ao);
+        assertEquals(0, serviceFactory.aoInstances.size());
     }
 }

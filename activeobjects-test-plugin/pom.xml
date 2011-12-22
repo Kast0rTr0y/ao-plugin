@@ -182,7 +182,7 @@
                                 <productId>jira</productId>
                             </productIds>
                             <includes>
-                                <include>it/com/atlassian/activeobjects/ActiveObjectsAdminFunctionalTest</include>
+                                <include>it/**</include>
                             </includes>
                             <systemProperties>
                                 <tested.app>com.atlassian.webdriver.jira.JiraTestedProduct</tested.app>

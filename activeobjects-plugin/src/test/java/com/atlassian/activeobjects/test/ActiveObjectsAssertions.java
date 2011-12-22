@@ -41,6 +41,6 @@ public final class ActiveObjectsAssertions
             files = new File[0];
         }
 
-        assertEquals("Didn't fine the expected # of file in directory '" + dbDir.getAbsolutePath() + "'", expected, files.length);
+        assertEquals("Didn't find the expected # of file in directory '" + dbDir.getAbsolutePath() + "'", expected, files.length);
     }
 }
