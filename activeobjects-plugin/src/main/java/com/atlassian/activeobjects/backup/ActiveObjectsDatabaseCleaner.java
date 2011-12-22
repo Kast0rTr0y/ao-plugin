@@ -8,6 +8,7 @@ import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.schema.ddl.SQLAction;
 import net.java.ao.schema.ddl.SchemaReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,17 +59,17 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
         try
         {
             final DDLTable[] readTables = SchemaReader.readSchema(provider, converters, schemaConfiguration);
-            final DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(provider.getTypeManager(), new DDLTable[]{}, readTables, provider.isCaseSensetive()));
+            final DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(provider.getTypeManager(), new DDLTable[]{}, readTables, provider.isCaseSensitive()));
 
             conn = provider.getConnection();
             stmt = conn.createStatement();
 
             for (DDLAction a : actions)
             {
-                final String[] sqlStatements = provider.renderAction(converters, a);
-                for (String sql : sqlStatements)
+                final Iterable<SQLAction> sqlActions = provider.renderAction(converters, a);
+                for (SQLAction sql : sqlActions)
                 {
-                    executeUpdate(errorService, tableName(a), stmt, sql);
+                    executeUpdate(errorService, tableName(a), stmt, sql.getStatement());
                 }
             }
         }

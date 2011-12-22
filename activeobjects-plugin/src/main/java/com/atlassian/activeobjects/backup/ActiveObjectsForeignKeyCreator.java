@@ -8,6 +8,7 @@ import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.SQLAction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -42,10 +43,10 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
             {
                 final DDLAction a = new DDLAction(DDLActionType.ALTER_ADD_KEY);
                 a.setKey(toDdlForeignKey(foreignKey, entityNameProcessor));
-                final String[] sqlStatements = provider.renderAction(converters, a);
-                for (String sql : sqlStatements)
+                final Iterable<SQLAction> sqlActions = provider.renderAction(converters, a);
+                for (SQLAction sql : sqlActions)
                 {
-                    executeUpdate(errorService, tableName(a), stmt, sql);
+                    executeUpdate(errorService, tableName(a), stmt, sql.getStatement());
                 }
             }
         }

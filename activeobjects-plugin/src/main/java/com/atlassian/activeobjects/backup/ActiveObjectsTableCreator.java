@@ -14,6 +14,7 @@ import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.schema.ddl.SQLAction;
 import net.java.ao.types.TypeInfo;
 import net.java.ao.types.TypeManager;
 import net.java.ao.types.TypeQualifiers;
@@ -77,10 +78,10 @@ final class ActiveObjectsTableCreator implements TableCreator
     {
         final DDLAction a = new DDLAction(DDLActionType.CREATE);
         a.setTable(toDdlTable(exportTypeManager(db), entityNameProcessor, table));
-        final String[] sqlStatements = provider.renderAction(converters, a);
-        for (String sql : sqlStatements)
+        final Iterable<SQLAction> sqlStatements = provider.renderAction(converters, a);
+        for (SQLAction sql : sqlStatements)
         {
-            executeUpdate(errorService, table.getName(), stmt, sql);
+            executeUpdate(errorService, table.getName(), stmt, sql.getStatement());
         }
     }
 
