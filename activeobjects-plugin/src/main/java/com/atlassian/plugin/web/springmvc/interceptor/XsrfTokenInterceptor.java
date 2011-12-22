@@ -7,6 +7,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * Small, self-contained implementation of the XSRF token generator, copied directly from our XWork implementation.
@@ -41,8 +42,10 @@ public final class XsrfTokenInterceptor extends HandlerInterceptorAdapter
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception
     {
-        modelAndView.getModel().put("xsrfTokenName", xsrfTokenGenerator.getXsrfTokenName());
-        modelAndView.getModel().put("xsrfTokenValue", xsrfTokenGenerator.generateToken(request));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> model = modelAndView.getModel();
+        model.put("xsrfTokenName", xsrfTokenGenerator.getXsrfTokenName());
+        model.put("xsrfTokenValue", xsrfTokenGenerator.generateToken(request));
     }
 
     public void setApplicationProperties(ApplicationProperties applicationProperties)
