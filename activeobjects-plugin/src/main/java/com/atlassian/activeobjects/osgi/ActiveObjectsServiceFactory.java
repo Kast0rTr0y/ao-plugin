@@ -81,7 +81,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
             if (removed != null)
             {
                 checkState(ao == removed);
-                removed.flushAll(); // clear all caches for good measure
+
+                //we can't flush cache because some dependencies may have been de-registered already.
+                //removed.flushAll(); // clear all caches for good measure
             }
             else
             {
