@@ -138,30 +138,6 @@
                                 </bundledArtifact>
                             </bundledArtifacts>
                         </product>
-                        <product>
-                            <id>jira</id>
-                            <version>4.4.2-279</version>
-                            <productDataVersion>4.4.2-279</productDataVersion>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.activeobjects</groupId>
-                                    <artifactId>activeobjects-spi</artifactId>
-                                    <version>${project.version}</version>
-                                </libArtifact>
-                            </libArtifacts>
-                            <bundledArtifacts>
-                                <bundledArtifact>
-                                    <groupId>com.atlassian.activeobjects</groupId>
-                                    <artifactId>activeobjects-plugin</artifactId>
-                                    <version>${project.version}</version>
-                                </bundledArtifact>
-                                <bundledArtifact>
-                                    <groupId>com.atlassian.activeobjects</groupId>
-                                    <artifactId>activeobjects-jira-spi</artifactId>
-                                    <version>${project.version}</version>
-                                </bundledArtifact>
-                            </bundledArtifacts>
-                        </product>
                     </products>
                     <testGroups>
                         <testGroup>
@@ -176,21 +152,100 @@
                                 <tested.app>com.atlassian.webdriver.refapp.RefappTestedProduct</tested.app>
                             </systemProperties>
                         </testGroup>
-                        <testGroup>
-                            <id>jira</id>
-                            <productIds>
-                                <productId>jira</productId>
-                            </productIds>
-                            <includes>
-                                <include>it/**</include>
-                            </includes>
-                            <systemProperties>
-                                <tested.app>com.atlassian.webdriver.jira.JiraTestedProduct</tested.app>
-                            </systemProperties>
-                        </testGroup>
                     </testGroups>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <!--
+        Using a specific profile for JDK 7, as JIRA doesn't support it yet and setting up tests that work actually is
+        trickier than it seems. Will need to get back to it though!
+     -->
+    <profiles>
+        <profile>
+            <id>jdk6</id>
+            <activation>
+                <jdk>1.6</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <products>
+                                <product>
+                                    <id>refapp</id>
+                                    <version>2.12.0</version>
+                                    <bundledArtifacts>
+                                        <bundledArtifact>
+                                            <groupId>com.atlassian.activeobjects</groupId>
+                                            <artifactId>activeobjects-plugin</artifactId>
+                                            <version>${project.version}</version>
+                                        </bundledArtifact>
+                                        <bundledArtifact>
+                                            <groupId>com.atlassian.activeobjects</groupId>
+                                            <artifactId>activeobjects-refapp-spi</artifactId>
+                                            <version>${project.version}</version>
+                                        </bundledArtifact>
+                                    </bundledArtifacts>
+                                </product>
+                                <product>
+                                    <id>jira</id>
+                                    <version>4.4.2-279</version>
+                                    <productDataVersion>4.4.2-279</productDataVersion>
+                                    <libArtifacts>
+                                        <libArtifact>
+                                            <groupId>com.atlassian.activeobjects</groupId>
+                                            <artifactId>activeobjects-spi</artifactId>
+                                            <version>${project.version}</version>
+                                        </libArtifact>
+                                    </libArtifacts>
+                                    <bundledArtifacts>
+                                        <bundledArtifact>
+                                            <groupId>com.atlassian.activeobjects</groupId>
+                                            <artifactId>activeobjects-plugin</artifactId>
+                                            <version>${project.version}</version>
+                                        </bundledArtifact>
+                                        <bundledArtifact>
+                                            <groupId>com.atlassian.activeobjects</groupId>
+                                            <artifactId>activeobjects-jira-spi</artifactId>
+                                            <version>${project.version}</version>
+                                        </bundledArtifact>
+                                    </bundledArtifacts>
+                                </product>
+                            </products>
+                            <testGroups>
+                                <testGroup>
+                                    <id>refapp</id>
+                                    <productIds>
+                                        <productId>refapp</productId>
+                                    </productIds>
+                                    <includes>
+                                        <include>it/**</include>
+                                    </includes>
+                                    <systemProperties>
+                                        <tested.app>com.atlassian.webdriver.refapp.RefappTestedProduct</tested.app>
+                                    </systemProperties>
+                                </testGroup>
+                                <testGroup>
+                                    <id>jira</id>
+                                    <productIds>
+                                        <productId>jira</productId>
+                                    </productIds>
+                                    <includes>
+                                        <include>it/**</include>
+                                    </includes>
+                                    <systemProperties>
+                                        <tested.app>com.atlassian.webdriver.jira.JiraTestedProduct</tested.app>
+                                    </systemProperties>
+                                </testGroup>
+                            </testGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
