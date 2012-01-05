@@ -47,7 +47,7 @@
 
     <properties>
         <plugin-sdk.version>3.6</plugin-sdk.version>
-        <ao.version>0.9.10</ao.version>
+        <ao.version>0.9.11</ao.version>
         <sal.version>2.4.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.6.5</atlassian-plugins.version>
@@ -119,7 +119,7 @@
             <plugin>
                 <groupId>org.leberrigaud.maven.plugins</groupId>
                 <artifactId>database-maven-plugin</artifactId>
-                <version>0.8.2</version>
+                <version>0.9</version>
             </plugin>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
