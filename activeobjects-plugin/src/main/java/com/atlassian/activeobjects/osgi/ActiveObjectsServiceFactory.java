@@ -26,11 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.*;
-import static com.google.common.base.Suppliers.*;
 
 /**
  * <p>This is the service factory that will create the {@link com.atlassian.activeobjects.external.ActiveObjects}
@@ -45,19 +44,19 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    final Map<ActiveObjectsKey, ActiveObjects> aoInstances = new MapMaker().makeComputingMap(new Function<ActiveObjectsKey, ActiveObjects>()
+    final Map<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = new MapMaker().makeComputingMap(new Function<ActiveObjectsKey, DelegatingActiveObjects>()
     {
         @Override
-        public ActiveObjects apply(final ActiveObjectsKey key)
+        public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(memoize(new Supplier<ActiveObjects>()
+            return new DelegatingActiveObjects(new Supplier<ActiveObjects>()
             {
                 @Override
                 public ActiveObjects get()
                 {
                     return createActiveObjects(key.bundle);
                 }
-            }));
+            });
         }
     });
 
@@ -108,12 +107,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     @EventListener
     public void onHotRestart(HotRestartEvent hotRestartEvent)
     {
-        final ImmutableList<ActiveObjects> aos = ImmutableList.copyOf(aoInstances.values());
-        aoInstances.clear();
-
-        for (ActiveObjects ao : aos)
+        for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.values()))
         {
-            ao.flushAll();
+            ao.removeDelegate();
         }
     }
 
