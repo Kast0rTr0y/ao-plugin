@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.event.api.EventPublisher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,12 +33,15 @@ public final class ActiveObjectsServiceFactoryTest
     private ActiveObjectsFactory factory;
 
     @Mock
+    private EventPublisher eventPublisher;
+
+    @Mock
     private Bundle bundle;
 
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, factory);
+        serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, factory, eventPublisher);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
         when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);

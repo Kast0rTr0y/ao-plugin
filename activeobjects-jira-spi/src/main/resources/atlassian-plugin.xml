@@ -16,4 +16,9 @@
 
     <component key="ofBizDatabaseTypeExtractor" name="OfBiz Database type extractor"
                class="com.atlassian.activeobjects.jira.OfBizDatabaseTypeExtractor"/>
+
+    <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
+
+    <component key="jiraQuickRestart" name="JIRA Quick Restart"
+               class="com.atlassian.activeobjects.jira.JiraQuickRestart"/>
 </atlassian-plugin>

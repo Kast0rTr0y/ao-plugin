@@ -39,6 +39,8 @@
                         <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
                         <Import-Package>
                             com.atlassian.activeobjects.spi*,
+                            com.atlassian.event.api*,
+                            com.atlassian.jira.event*,
                             com.atlassian.jira.ofbiz*,
                             com.atlassian.sal.api*,
                             com.google.common*,
