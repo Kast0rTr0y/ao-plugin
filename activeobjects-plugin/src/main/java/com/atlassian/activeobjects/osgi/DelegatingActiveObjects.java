@@ -2,12 +2,14 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.*;
@@ -17,11 +19,11 @@ import static com.google.common.base.Preconditions.*;
  */
 final class DelegatingActiveObjects implements ActiveObjects
 {
-    private final Supplier<ActiveObjects> activeObjectsSupplier;
+    private final MemoizingSupplier activeObjectsSupplier;
 
     public DelegatingActiveObjects(Supplier<ActiveObjects> activeObjectsSupplier)
     {
-        this.activeObjectsSupplier = checkNotNull(activeObjectsSupplier);
+        this.activeObjectsSupplier = new MemoizingSupplier(checkNotNull(activeObjectsSupplier));
     }
 
     public void migrate(Class<? extends RawEntity<?>>... entities)
@@ -117,5 +119,44 @@ final class DelegatingActiveObjects implements ActiveObjects
     public <T> T executeInTransaction(TransactionCallback<T> callback)
     {
         return activeObjectsSupplier.get().executeInTransaction(callback);
+    }
+
+    public void removeDelegate()
+    {
+        activeObjectsSupplier.remove();
+    }
+
+    private static final class MemoizingSupplier implements Supplier<ActiveObjects>, Serializable
+    {
+        final Supplier<ActiveObjects> delegate;
+        transient boolean initialized;
+        transient ActiveObjects value;
+
+        MemoizingSupplier(Supplier<ActiveObjects> delegate)
+        {
+            this.delegate = delegate;
+        }
+
+        public synchronized ActiveObjects get()
+        {
+            if (!initialized)
+            {
+                value = delegate.get();
+                initialized = true;
+            }
+            return value;
+        }
+
+        public synchronized void remove()
+        {
+            if (initialized)
+            {
+                value.flushAll();
+                value = null;
+                initialized = false;
+            }
+        }
+
+        private static final long serialVersionUID = 0;
     }
 }
