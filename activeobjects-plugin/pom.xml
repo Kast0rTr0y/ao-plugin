@@ -41,6 +41,7 @@
                             !javax.servlet.jsp*,
                             !org.apache.velocity.tools*,
                             com.atlassian.activeobjects.spi;version="${ao.spi.compatibility.version}",
+                            com.atlassian.event.api*;version="2.0",
                             com.atlassian.sal.api;version="${sal.api.compatibility.version}",
                             com.atlassian.sal.api.auth;version="${sal.api.compatibility.version}",
                             com.atlassian.sal.api.message;version="${sal.api.compatibility.version}",

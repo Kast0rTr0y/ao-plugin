@@ -36,17 +36,18 @@
         </bean>
     </osgi:service>
 
-    <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects">
-        <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
-        <bean class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
-            <constructor-arg index="0" ref="osgiUtils"/>
-            <constructor-arg index="1" ref="activeObjectsFactory"/>
-        </bean>
-    </osgi:service>
+    <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
+    <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" ref="activeObjectsServiceFactory" />
 
     <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
+
+    <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
+        <constructor-arg index="0" ref="osgiUtils"/>
+        <constructor-arg index="1" ref="activeObjectsFactory"/>
+        <constructor-arg index="2" ref="eventPublisher"/>
+    </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter" />
     <bean id="sequenceNameConverter" class="net.java.ao.atlassian.AtlassianSequenceNameConverter" />

@@ -2,6 +2,7 @@ package it.com.atlassian.activeobjects;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.web.WebInterfaceManager;
 import com.atlassian.plugin.webresource.WebResourceManager;
@@ -102,4 +103,7 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected WebResourceManager webResourceManager;
+
+    @MockHostComponent
+    protected EventPublisher eventPublisher;
 }

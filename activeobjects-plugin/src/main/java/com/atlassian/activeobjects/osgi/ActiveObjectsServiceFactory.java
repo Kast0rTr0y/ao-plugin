@@ -8,9 +8,13 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.spi.HotRestartEvent;
+import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginException;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapMaker;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
@@ -22,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Suppliers.*;
@@ -60,10 +64,11 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsFactory factory;
 
-    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsFactory factory)
+    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsFactory factory, EventPublisher eventPublisher)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.factory = checkNotNull(factory);
+        checkNotNull(eventPublisher).register(this);
     }
 
     @Override
@@ -93,6 +98,22 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
         catch (Exception e)
         {
             throw new ActiveObjectsPluginException("An exception occurred un-getting the AO service for bundle " + bundle + ". This could lead to memory leaks!", e);
+        }
+    }
+
+    /**
+     * Listens for {@link HotRestartEvent} and releases all {@link ActiveObjects instances} flushing their caches.
+     * @param hotRestartEvent
+     */
+    @EventListener
+    public void onHotRestart(HotRestartEvent hotRestartEvent)
+    {
+        final ImmutableList<ActiveObjects> aos = ImmutableList.copyOf(aoInstances.values());
+        aoInstances.clear();
+
+        for (ActiveObjects ao : aos)
+        {
+            ao.flushAll();
         }
     }
 

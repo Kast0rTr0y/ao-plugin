@@ -9,7 +9,6 @@
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-
     <!-- stuff for the AO plugin itself. services not used during a Restore, are optional.  -->
     <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" cardinality="0..1"/>
     <osgi:reference id="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000" cardinality="0..1"/>
@@ -22,5 +21,5 @@
     <osgi:reference id="helpPathResolver" interface="com.atlassian.sal.api.message.HelpPathResolver"/>
     <osgi:reference id="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager"/>
     <osgi:reference id="webInterfaceManager" interface="com.atlassian.plugin.web.WebInterfaceManager"/>
-
+    <osgi:reference id="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
 </beans>
