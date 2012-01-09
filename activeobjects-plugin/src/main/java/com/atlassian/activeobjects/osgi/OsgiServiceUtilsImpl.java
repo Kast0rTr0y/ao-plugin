@@ -47,13 +47,15 @@ public class OsgiServiceUtilsImpl implements OsgiServiceUtils
         final ServiceReference[] serviceReferences = getServiceReferences(bundle, ifce, filter);
         if (serviceReferences == null || serviceReferences.length == 0)
         {
-            throw new NoServicesFoundException("Was expecting at least one service reference for interface <"
+            throw new NoServicesFoundException("Was expecting one service reference for interface <"
                     + ifce.getName() + "> and filter <" + filter + ">. Got "
-                    + (serviceReferences == null ? null : serviceReferences.length) + " !");
+                    + (serviceReferences == null ? null : serviceReferences.length) + " ! "
+                    + "You should check whether an ActiveObjectsPluginException was thrown at startup. It will give "
+                    + "you more information about potential errors in the <ao> module in your atlassian-plugin.xml.");
         }
         else if (serviceReferences.length > 1)
         {
-            throw new TooManyServicesFoundException("Was expecting at mone one service reference for interface <"
+            throw new TooManyServicesFoundException("Was expecting one service reference for interface <"
                     + ifce.getName() + "> and filter <" + filter + ">. Got " + serviceReferences.length + " !");
         }
         else
