@@ -50,7 +50,7 @@ public class OsgiServiceUtilsImpl implements OsgiServiceUtils
             throw new NoServicesFoundException("Was expecting one service reference for interface <"
                     + ifce.getName() + "> and filter <" + filter + ">. Got "
                     + (serviceReferences == null ? null : serviceReferences.length) + " ! "
-                    + "You should search whether an ActiveObjectsPluginException was thrown at startup, it will give "
+                    + "You should check whether an ActiveObjectsPluginException was thrown at startup. It will give "
                     + "you more information about potential errors in the <ao> module in your atlassian-plugin.xml.");
         }
         else if (serviceReferences.length > 1)
