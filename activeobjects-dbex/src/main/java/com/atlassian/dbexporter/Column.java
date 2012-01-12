@@ -50,10 +50,4 @@ public final class Column
     {
         return scale;
     }
-
-    @Override
-    public String toString()
-    {
-        return "Column [" + name + ", " + sqlType + "]";
-    }
 }

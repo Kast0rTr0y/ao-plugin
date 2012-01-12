@@ -36,12 +36,4 @@ public final class ForeignKey
     {
         return toField;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ForeignKey [" + fromTable + "." + fromField + " to " + toTable + "." + toField + "]";
-    }
-
-
 }

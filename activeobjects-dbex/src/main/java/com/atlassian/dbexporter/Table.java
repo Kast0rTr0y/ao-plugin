@@ -34,11 +34,4 @@ public final class Table
     {
         return unmodifiableCollection(foreignKeys);
     }
-
-    @Override
-    public String toString()
-    {
-        return "Table [" + name + "]";
-    }
-
 }
