@@ -50,9 +50,7 @@ import com.google.common.collect.Multimap;
 public final class TablesController
 {
     private static final String AO_ADMIN_DELETE_TABLE_MESSAGE = "aoAdminDeleteTableMessage";
-
     private static final String AO_ADMIN_DELETE_TABLE_LIST = "aoAdminDeleteTableList";
-
     private static final String AO_ADMIN_DELETE_TABLE_STATUS = "aoAdminDeleteTableStatus";
 
     private final Logger logger = LoggerFactory.getLogger(TablesController.class);
@@ -75,8 +73,8 @@ public final class TablesController
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.errorService = checkNotNull(errorService);
-        this.i18n = i18n;
-        this.xsrfTokenGenerator = xsrfTokenGenerator;
+        this.i18n = checkNotNull(i18n);
+        this.xsrfTokenGenerator = checkNotNull(xsrfTokenGenerator);
     }
 
     @RequestMapping(value = "/tables/list")
