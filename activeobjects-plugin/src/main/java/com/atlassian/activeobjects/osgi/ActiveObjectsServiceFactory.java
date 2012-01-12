@@ -1,13 +1,21 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
-import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
+import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.spi.HotRestartEvent;
+import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginException;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MapMaker;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.NameConverters;
@@ -18,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.*;
@@ -27,7 +36,7 @@ import static com.google.common.base.Preconditions.*;
  * instance for each plugin using active objects.</p>
  *
  * <p>The instance created by that factory is a delegating instance that works together with the
- * {@link com.atlassian.activeobjects.internal.ActiveObjectsProvider} to get a correctly configure instance according
+ * {@link ActiveObjectsServiceFactory} to get a correctly configure instance according
  * to the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration plugin configuration} and
  * the application configuration.</p>
  */
@@ -35,25 +44,73 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final OsgiServiceUtils osgiUtils;
-    private final ActiveObjectsProvider provider;
+    final Map<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = new MapMaker().makeComputingMap(new Function<ActiveObjectsKey, DelegatingActiveObjects>()
+    {
+        @Override
+        public DelegatingActiveObjects apply(final ActiveObjectsKey key)
+        {
+            return new DelegatingActiveObjects(new Supplier<ActiveObjects>()
+            {
+                @Override
+                public ActiveObjects get()
+                {
+                    return createActiveObjects(key.bundle);
+                }
+            });
+        }
+    });
 
-    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsProvider provider)
+    private final OsgiServiceUtils osgiUtils;
+    private final ActiveObjectsFactory factory;
+
+    public ActiveObjectsServiceFactory(OsgiServiceUtils osgiUtils, ActiveObjectsFactory factory, EventPublisher eventPublisher)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
-        this.provider = checkNotNull(provider);
+        this.factory = checkNotNull(factory);
+        checkNotNull(eventPublisher).register(this);
     }
 
     @Override
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
-        return createActiveObjects(bundle);
+        return aoInstances.get(new ActiveObjectsKey(bundle));
     }
 
     @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
-        // no-op
+        try
+        {
+            final ActiveObjects removed = aoInstances.remove(new ActiveObjectsKey(bundle));
+            if (removed != null)
+            {
+                checkState(ao == removed);
+
+                //we can't flush cache because some dependencies may have been de-registered already.
+                //removed.flushAll(); // clear all caches for good measure
+            }
+            else
+            {
+                logger.warn("Didn't find Active Objects instance matching {}, this shouldn't be happening!", bundle);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new ActiveObjectsPluginException("An exception occurred un-getting the AO service for bundle " + bundle + ". This could lead to memory leaks!", e);
+        }
+    }
+
+    /**
+     * Listens for {@link HotRestartEvent} and releases all {@link ActiveObjects instances} flushing their caches.
+     * @param hotRestartEvent
+     */
+    @EventListener
+    public void onHotRestart(HotRestartEvent hotRestartEvent)
+    {
+        for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.values()))
+        {
+            ao.removeDelegate();
+        }
     }
 
     /**
@@ -64,8 +121,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
      */
     private ActiveObjects createActiveObjects(Bundle bundle)
     {
-        logger.debug("Creating active object service for bundle {}", bundle.getSymbolicName());
-        return new DelegatingActiveObjects(new LazyActiveObjectConfiguration(bundle), provider);
+        logger.debug("Creating active object service for bundle {} [{}]", bundle.getSymbolicName(), bundle.getBundleId());
+        return factory.create(new LazyActiveObjectConfiguration(bundle));
     }
 
     /**
@@ -92,6 +149,39 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
                     "Did you define an 'ao' module descriptor in your plugin?\n" +
                     "Try adding this in your atlassian-plugin.xml file: <ao key='some-key' />");
             throw new PluginException(e);
+        }
+    }
+
+    private static final class ActiveObjectsKey
+    {
+        public final Bundle bundle;
+
+        private ActiveObjectsKey(Bundle bundle)
+        {
+            this.bundle = checkNotNull(bundle);
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+
+            final ActiveObjectsKey that = (ActiveObjectsKey) o;
+
+            return this.bundle.getBundleId() == that.bundle.getBundleId();
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return ((Long) bundle.getBundleId()).hashCode();
         }
     }
 
@@ -159,7 +249,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
                     && obj instanceof LazyActiveObjectConfiguration
                     && bundle.getBundleId() == ((LazyActiveObjectConfiguration) obj).bundle.getBundleId();
         }
-        
+
         ActiveObjectsConfiguration getDelegate()
         {
             return getConfiguration(bundle);

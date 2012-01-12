@@ -1,9 +1,8 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.internal.ActiveObjectsProvider;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Suppliers;
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
@@ -17,13 +16,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
- * The main reason for this tests is to ensure that we use the private
- * {@link com.atlassian.activeobjects.osgi.DelegatingActiveObjects#getDelegate()} method.
+ * The main reason for this tests is to ensure that we use the  supplier.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DelegatingActiveObjectsTest
@@ -31,27 +27,19 @@ public class DelegatingActiveObjectsTest
     private ActiveObjects activeObjects;
 
     @Mock
-    private ActiveObjectsConfiguration configuration;
-
-    @Mock
-    private ActiveObjectsProvider provider;
-
-    @Mock
     private ActiveObjects delegateActiveObjects;
 
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(configuration, provider);
-        when(provider.get(configuration)).thenReturn(delegateActiveObjects);
+        activeObjects = new DelegatingActiveObjects(Suppliers.ofInstance(delegateActiveObjects));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testMigrate() throws Exception
     {
         activeObjects.migrate(AnEntity.class);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).migrate(AnEntity.class);
     }
 
@@ -59,8 +47,6 @@ public class DelegatingActiveObjectsTest
     public void testFlushAll() throws Exception
     {
         activeObjects.flushAll();
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).flushAll();
     }
 
@@ -68,8 +54,6 @@ public class DelegatingActiveObjectsTest
     public void testFlush() throws Exception
     {
         activeObjects.flush();
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).flush();
     }
 
@@ -79,7 +63,6 @@ public class DelegatingActiveObjectsTest
         final Integer key = 1;
         activeObjects.get(AnEntity.class, key);
 
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).get(AnEntity.class, key);
     }
 
@@ -89,8 +72,6 @@ public class DelegatingActiveObjectsTest
         final Integer key1 = 1;
         final Integer key2 = 2;
         activeObjects.get(AnEntity.class, key1, key2);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).get(AnEntity.class, key1, key2);
     }
 
@@ -99,10 +80,7 @@ public class DelegatingActiveObjectsTest
     {
         final HashMap<String, Object> aMap = new HashMap<String, Object>();
         activeObjects.create(AnEntity.class, aMap);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).create(AnEntity.class, aMap);
-
     }
 
     @Test
@@ -110,8 +88,6 @@ public class DelegatingActiveObjectsTest
     {
         final DBParam dbParam = new DBParam("field", "value");
         activeObjects.create(AnEntity.class, dbParam);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).create(AnEntity.class, dbParam);
     }
 
@@ -120,8 +96,6 @@ public class DelegatingActiveObjectsTest
     {
         final AnEntity entity = new AnEntity();
         activeObjects.delete(entity);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).delete(entity);
     }
 
@@ -129,8 +103,6 @@ public class DelegatingActiveObjectsTest
     public void testFindClass() throws Exception
     {
         activeObjects.find(AnEntity.class);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(AnEntity.class);
     }
 
@@ -142,8 +114,6 @@ public class DelegatingActiveObjectsTest
         final Object param = new Object();
 
         activeObjects.find(type, criteria, param);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(type, criteria, param);
     }
 
@@ -154,8 +124,6 @@ public class DelegatingActiveObjectsTest
         final Query query = Query.select();
 
         activeObjects.find(type, query);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(type, query);
     }
 
@@ -167,8 +135,6 @@ public class DelegatingActiveObjectsTest
         final Query query = Query.select();
 
         activeObjects.find(type, field, query);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).find(type, field, query);
     }
 
@@ -181,8 +147,6 @@ public class DelegatingActiveObjectsTest
         final Object param = new Object();
 
         activeObjects.findWithSQL(type, keyField, sql, param);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).findWithSQL(type, keyField, sql, param);
     }
 
@@ -192,8 +156,6 @@ public class DelegatingActiveObjectsTest
         final Class<AnEntity> type = AnEntity.class;
 
         activeObjects.count(type);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).count(type);
     }
 
@@ -205,8 +167,6 @@ public class DelegatingActiveObjectsTest
         final Object param = new Object();
 
         activeObjects.count(type, criteria, param);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).count(type, criteria, param);
     }
 
@@ -217,8 +177,6 @@ public class DelegatingActiveObjectsTest
         final Query query = Query.select();
 
         activeObjects.count(type, query);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).count(type, query);
     }
 
@@ -227,8 +185,6 @@ public class DelegatingActiveObjectsTest
     {
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
-
-        verify(provider).get(configuration);
         verify(delegateActiveObjects).executeInTransaction(callback);
     }
 

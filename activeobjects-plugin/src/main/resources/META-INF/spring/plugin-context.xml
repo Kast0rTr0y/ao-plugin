@@ -34,20 +34,18 @@
         </bean>
     </osgi:service>
 
-    <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects">
-        <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
-        <bean class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
-            <constructor-arg index="0" ref="osgiUtils"/>
-            <constructor-arg index="1" ref="aoProvider"/>
-        </bean>
-    </osgi:service>
+    <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
+    <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" ref="activeObjectsServiceFactory" />
 
     <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
 
-    <osgi:list id="pluginConfigurations" cardinality="0..N"
-               interface="com.atlassian.activeobjects.config.ActiveObjectsConfiguration"/>
-
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
+
+    <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
+        <constructor-arg index="0" ref="osgiUtils"/>
+        <constructor-arg index="1" ref="activeObjectsFactory"/>
+        <constructor-arg index="2" ref="eventPublisher"/>
+    </bean>
 
     <bean id="fieldNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsFieldNameConverter" />
     <bean id="sequenceNameConverter" class="com.atlassian.activeobjects.ao.ActiveObjectsSequenceNameConverter" />
@@ -87,43 +85,31 @@
         <constructor-arg>
             <osgi:reference id="activeObjectsConfiguration"
                             interface="com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration"
-                            cardinality="0..1" timeout="0">
-                <osgi:listener bind-method="onActiveObjectsConfigurationServiceBind"
-                               unbind-method="onActiveObjectsConfigurationServiceUnbind">
-                    <bean class="com.atlassian.activeobjects.config.internal.ActiveObjectsPluginConfigurationServiceListener">
-                        <constructor-arg ref="registry"/>
-                    </bean>
-                </osgi:listener>
-            </osgi:reference>
+                            cardinality="0..1" timeout="5000"/>
         </constructor-arg>
     </bean>
 
     <bean id="osgiUtils" class="com.atlassian.activeobjects.osgi.OsgiServiceUtilsImpl"/>
 
-    <bean id="aoProvider" class="com.atlassian.activeobjects.internal.RegistryBasedActiveObjectsProvider">
-        <constructor-arg index="0" ref="registry"/>
-        <constructor-arg index="1">
-            <bean class="com.atlassian.activeobjects.internal.DelegatingActiveObjectsFactory">
-                <constructor-arg index="0">
-                    <list>
-                        <bean class="com.atlassian.activeobjects.internal.DatabaseDirectoryAwareActiveObjectsFactory">
-                            <constructor-arg index="0" ref="aoUpgradeManager"/>
-                            <constructor-arg index="1" ref="applicationProperties"/>
-                            <constructor-arg index="2" ref="aoPluginConfiguration"/>
+    <bean id="activeObjectsFactory" class="com.atlassian.activeobjects.internal.DelegatingActiveObjectsFactory">
+        <constructor-arg index="0">
+            <list>
+                <bean class="com.atlassian.activeobjects.internal.DatabaseDirectoryAwareActiveObjectsFactory">
+                    <constructor-arg index="0" ref="aoUpgradeManager"/>
+                    <constructor-arg index="1" ref="applicationProperties"/>
+                    <constructor-arg index="2" ref="aoPluginConfiguration"/>
+                </bean>
+                <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
+                    <constructor-arg index="0" ref="aoUpgradeManager"/>
+                    <constructor-arg index="1">
+                        <bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
+                            <constructor-arg index="0" ref="databaseProviderFactory"/>
                         </bean>
-                        <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
-                            <constructor-arg index="0" ref="aoUpgradeManager"/>
-                            <constructor-arg index="1">
-                                <bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
-                                    <constructor-arg index="0" ref="databaseProviderFactory"/>
-                                </bean>
-                            </constructor-arg>
-                            <constructor-arg index="2" ref="dataSourceProvider"/>
-                            <constructor-arg index="3" ref="transactionTemplate"/>
-                        </bean>
-                    </list>
-                </constructor-arg>
-            </bean>
+                    </constructor-arg>
+                    <constructor-arg index="2" ref="dataSourceProvider"/>
+                    <constructor-arg index="3" ref="transactionTemplate"/>
+                </bean>
+            </list>
         </constructor-arg>
     </bean>
 
@@ -145,6 +131,4 @@
             <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
         </constructor-arg>
     </bean>
-
-    <bean id="registry" class="com.atlassian.activeobjects.internal.WeakReferencedActiveObjectsRegistry"/>
 </beans>

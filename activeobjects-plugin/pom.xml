@@ -36,6 +36,7 @@
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
                             com.atlassian.activeobjects.spi;version="${ao.spi.compatibility.version}",
+                            com.atlassian.event.api*;version="2.0",
                             com.atlassian.sal.api;version="2.0",
                             com.atlassian.sal.api.auth;version="2.0",
                             com.atlassian.sal.api.message;version="2.0",

@@ -2,6 +2,7 @@ package it.com.atlassian.activeobjects;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -74,4 +75,7 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected DataSourceProvider dataSourceProvider;
+
+    @MockHostComponent
+    protected EventPublisher eventPublisher;
 }

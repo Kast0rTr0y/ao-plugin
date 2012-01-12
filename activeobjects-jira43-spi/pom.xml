@@ -25,6 +25,9 @@
                             com.atlassian.activeobjects.spi*;version="${project.version}",
                         </Export-Package>
                         <Import-Package>
+                            com.atlassian.activeobjects.spi*,
+                            com.atlassian.event.api*,
+                            com.atlassian.jira.event*,
                             com.atlassian.jira.ofbiz*,
                             com.atlassian.sal.api*,
                             com.google.common*,
