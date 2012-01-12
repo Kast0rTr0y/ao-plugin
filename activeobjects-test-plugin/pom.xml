@@ -119,7 +119,7 @@
                 <artifactId>maven-refapp-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <webdriver.browser>htmlunit</webdriver.browser>
+                        <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
                     <products>
                         <product>
