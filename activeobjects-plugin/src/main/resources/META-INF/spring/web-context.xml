@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <context:component-scan base-package="com.atlassian.activeobjects.admin.tables"/>
+ 
     <bean id="handler" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
         <property name="mappings">
             <props>
@@ -23,7 +27,7 @@
                 <bean class="com.atlassian.plugin.web.springmvc.interceptor.XsrfTokenInterceptor">
                     <property name="applicationProperties" ref="applicationProperties"/>
                     <property name="xsrfTokenGenerator" ref="xsrfTokenGenerator"/>
-                    <property name="redirectPath" value="/directories/list?timeout=true"/>
+                    <property name="redirectPath" value="/tables/list?timeout=true"/>
                 </bean>
             </list>
         </property>
@@ -55,27 +59,24 @@
         <property name="i18nResolver" ref="i18nResolver"/>
     </bean>
 
-    <bean id="tablesController" class="org.springframework.web.servlet.mvc.multiaction.MultiActionController">
-        <property name="delegate">
-            <bean class="com.atlassian.activeobjects.admin.tables.TablesController">
-                <constructor-arg ref="databaseProviderFactory"/>
-                <constructor-arg>
-                    <bean class="net.java.ao.builder.SimpleNameConverters">
-                        <constructor-arg index="0">
-                            <bean class="com.atlassian.activeobjects.backup.ExceptionThrowingTableNameConverter"/>
-                        </constructor-arg>
-                        <constructor-arg index="1" ref="fieldNameConverter"/>
-                        <constructor-arg index="2" ref="sequenceNameConverter"/>
-                        <constructor-arg index="3" ref="triggerNameConverter"/>
-                        <constructor-arg index="4" ref="indexNameConverter"/>
-                        <constructor-arg index="5" ref="uniqueNameConverter"/>
-                    </bean>
+    <bean id="tablesController" class="com.atlassian.activeobjects.admin.tables.TablesController">
+        <constructor-arg ref="databaseProviderFactory"/>
+        <constructor-arg>
+            <bean class="net.java.ao.builder.SimpleNameConverters">
+                <constructor-arg index="0">
+                    <bean class="com.atlassian.activeobjects.backup.ExceptionThrowingTableNameConverter"/>
                 </constructor-arg>
-                <constructor-arg ref="dataSourceProvider"/>
-                <constructor-arg ref="errorService"/>
-                <constructor-arg ref="pluginInformationFactory"/>
+                <constructor-arg index="1" ref="fieldNameConverter"/>
+                <constructor-arg index="2" ref="sequenceNameConverter"/>
+                <constructor-arg index="3" ref="triggerNameConverter"/>
+                <constructor-arg index="4" ref="indexNameConverter"/>
+                <constructor-arg index="5" ref="uniqueNameConverter"/>
             </bean>
-        </property>
+        </constructor-arg>
+        <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg ref="errorService"/>
+        <constructor-arg ref="pluginInformationFactory"/>
+        <constructor-arg ref="i18nResolver"/>
+        <constructor-arg ref="xsrfTokenGenerator"/>
     </bean>
-
 </beans>
