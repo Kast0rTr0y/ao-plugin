@@ -108,7 +108,7 @@
             <plugin>
                 <groupId>org.leberrigaud.maven.plugins</groupId>
                 <artifactId>database-maven-plugin</artifactId>
-                <version>0.7</version>
+                <version>0.9</version>
                 <configuration>
                     <skip>${db.skip}</skip>
                     <database>${ao.test.database}</database>
@@ -333,6 +333,9 @@
                     <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
+                        <configuration>
+                            <schema>ao_schema</schema>
+                        </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>postgresql</groupId>
