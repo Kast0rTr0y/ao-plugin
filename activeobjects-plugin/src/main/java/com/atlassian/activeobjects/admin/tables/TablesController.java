@@ -131,7 +131,7 @@ public final class TablesController
         });
 
         boolean success = true;
-        String errorMessage = "";
+        String errorMessage;
         if (Iterables.size(tablesToDelete) == Iterables.size(tableNames))
         {
 
@@ -139,6 +139,7 @@ public final class TablesController
             try
             {
                 dropper.drop(databaseInformation, tablesToDelete, newEntityNameProcessor());
+                errorMessage = "";
             }
             catch (ImportExportException exception)
             {
