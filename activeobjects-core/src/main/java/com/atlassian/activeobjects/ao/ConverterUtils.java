@@ -8,8 +8,13 @@ public final class ConverterUtils
     {
     }
 
-    public static String toUpperCase(String name)
+    public static String toLowerCase(String s)
     {
-        return name == null ? name : name.toUpperCase(Locale.ENGLISH);
+        return s == null ? s : s.toLowerCase(Locale.ENGLISH);
+    }
+    
+    public static String toUpperCase(String s)
+    {
+        return s == null ? s : s.toUpperCase(Locale.ENGLISH);
     }
 }

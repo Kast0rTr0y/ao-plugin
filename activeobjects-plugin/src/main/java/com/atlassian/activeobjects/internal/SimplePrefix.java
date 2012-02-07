@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
-import java.util.Locale;
-
+import static com.atlassian.activeobjects.ao.ConverterUtils.toLowerCase;
 import static com.google.common.base.Preconditions.*;
 
 public final class SimplePrefix implements Prefix
@@ -44,6 +43,6 @@ public final class SimplePrefix implements Prefix
 
     private String transform(String s, boolean caseSensitive)
     {
-        return caseSensitive ? s : s.toLowerCase(Locale.getDefault());
+        return caseSensitive ? s : toLowerCase(s);
     }
 }

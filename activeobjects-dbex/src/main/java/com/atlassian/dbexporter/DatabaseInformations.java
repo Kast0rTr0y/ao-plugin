@@ -107,7 +107,7 @@ public final class DatabaseInformations
 
         private String toLowerCase(String s)
         {
-            return s.toLowerCase(Locale.US);
+            return s == null ? s : s.toLowerCase(Locale.ENGLISH);
         }
     }
 
