@@ -100,12 +100,14 @@ public final class PostgresSequencesAroundImporter extends NoOpAroundImporter
 
     private String alterSequence(Connection connection, String tableName, String columnName, int val)
     {
-        return "ALTER SEQUENCE " + quote(errorService, tableName, connection, sequenceName(tableName, columnName)) + " RESTART WITH " + val;
+        return "ALTER SEQUENCE " + sequenceName(connection, tableName, columnName) + " RESTART WITH " + val;
     }
 
-    private static String sequenceName(String tableName, String columnName)
+    private String sequenceName(Connection connection, String tableName, String columnName)
     {
-        return tableName + "_" + columnName + "_" + "seq";
+        final String schema = isBlank(provider.getSchema()) ? null : provider.getSchema();
+        final String quoted = quote(errorService, tableName, connection, tableName + "_" + columnName + "_" + "seq");
+        return schema != null ? schema + "." + quoted : quoted;
     }
 
     private static boolean isBlank(String str)

@@ -117,11 +117,6 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.leberrigaud.maven.plugins</groupId>
-                <artifactId>database-maven-plugin</artifactId>
-                <version>0.8.2</version>
-            </plugin>
-            <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-dependency-tracker-plugin</artifactId>
             </plugin>
