@@ -14,8 +14,8 @@ import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
 
 import javax.sql.DataSource;
-import java.util.Locale;
 
+import static com.atlassian.activeobjects.ao.ConverterUtils.*;
 import static com.google.common.base.Preconditions.*;
 
 public final class JdbcDriverDatabaseProviderFactory implements DatabaseProviderFactory
@@ -142,7 +142,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
 
         boolean accept(String otherDriverName)
         {
-            return otherDriverName != null && otherDriverName.toLowerCase(Locale.ENGLISH).contains(this.driverName);
+            return otherDriverName != null && toLowerCase(otherDriverName).contains(this.driverName);
         }
 
         // apparently useless, I know, but the compiler complains if not there
