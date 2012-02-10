@@ -36,4 +36,10 @@
         <condition class="com.atlassian.activeobjects.admin.condition.UserIsSysAdminCondition"/>
         <param name="webfragments.keywords">ao.admin.tables.webfragments.keywords</param>
     </web-item>
+    
+    <web-item key="ao-tables-web-item-refapp" section="system.admin/general" weight="60" application="refapp">
+        <label key="ao.admin.tables.menu.label"/>
+        <link linkId="aoAdmin">/plugins/servlet/active-objects/tables/list</link>
+    </web-item>
+    
 </atlassian-plugin>

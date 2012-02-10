@@ -148,7 +148,7 @@ public final class ActiveObjectsBackup implements Backup
                         new SqlServerAroundTableImporter(errorService, provider.getSchema()),
                         new PostgresSequencesAroundImporter(errorService, provider),
                         new OracleSequencesAroundImporter(errorService, provider, nameConverters),
-                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyCreator(errorService, nameConverters, provider))
+                        new ForeignKeyAroundImporter(new ActiveObjectsForeignKeyManager(errorService, provider, nameConverters))
                 ));
 
         NodeStreamReader streamReader = null;

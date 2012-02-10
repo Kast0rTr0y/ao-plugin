@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.atlassian.activeobjects.backup.ActiveObjectsBackup;
+import com.atlassian.activeobjects.backup.ActiveObjectsBackup.UpperCaseEntityNameProcessor;
+import com.atlassian.activeobjects.backup.ActiveObjectsForeignKeyManager;
 import com.atlassian.activeobjects.backup.ActiveObjectsTableDropper;
 import com.atlassian.activeobjects.backup.ActiveObjectsTableReader;
 import com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl;
@@ -33,9 +35,11 @@ import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.Table;
+import com.atlassian.dbexporter.TableDropper;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DatabaseInformationReader;
 import com.atlassian.dbexporter.exporter.TableReader;
+import com.atlassian.dbexporter.importer.ForeignKeyManager;
 import com.atlassian.plugin.web.springmvc.xsrf.XsrfTokenGenerator;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.google.common.base.Predicate;
@@ -119,7 +123,8 @@ public final class TablesController
     @RequestMapping(value = "/tables/drop", method = RequestMethod.POST)
     public ModelAndView drop(final @RequestParam List<String> tableNames, HttpSession session) throws Exception
     {
-        ActiveObjectsTableDropper dropper = new ActiveObjectsTableDropper(errorService, getDatabaseProvider(), nameConverters);
+        TableDropper dropper = new ActiveObjectsTableDropper(errorService, getDatabaseProvider(), nameConverters);
+        ForeignKeyManager fkManager = new ActiveObjectsForeignKeyManager(errorService, getDatabaseProvider(), nameConverters);
         Iterable<Table> tables = readTables(newTableReader(getDatabaseProvider()));
         Iterable<Table> tablesToDelete = Iterables.filter(tables, new Predicate<Table>()
         {
@@ -138,14 +143,16 @@ public final class TablesController
             DatabaseInformation databaseInformation = new DatabaseInformation(getDatabaseInformationReader().get());
             try
             {
-                dropper.drop(databaseInformation, tablesToDelete, newEntityNameProcessor());
+                UpperCaseEntityNameProcessor entityNameProcessor = newEntityNameProcessor();
+                Iterable<Table> tablesWithoutFK = fkManager.dropForTables(tablesToDelete, entityNameProcessor);
+                dropper.drop(databaseInformation, tablesWithoutFK, entityNameProcessor);
                 errorMessage = "";
             }
             catch (ImportExportException exception)
             {
                 logger.error("An error was encountered while trying to drop tables (" + StringUtils.join(tablesToDelete.iterator(), ", ") + ")", exception);
                 success = false;
-                errorMessage = exception.getCause() != null ? exception.getCause().getMessage() : "";
+                errorMessage = exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage();
             }
         }
         else

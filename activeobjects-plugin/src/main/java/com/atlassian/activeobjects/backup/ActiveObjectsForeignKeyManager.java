@@ -3,6 +3,10 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.ImportExportErrorService;
+import com.atlassian.dbexporter.Table;
+import com.atlassian.dbexporter.importer.ForeignKeyManager;
+import com.google.common.collect.Lists;
+
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
@@ -13,25 +17,50 @@ import net.java.ao.schema.ddl.SQLAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
 
 import static com.atlassian.activeobjects.backup.SqlUtils.*;
 import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
 import static com.google.common.base.Preconditions.*;
 
-final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
+public final class ActiveObjectsForeignKeyManager implements ForeignKeyManager
 {
     private final ImportExportErrorService errorService;
     private final NameConverters converters;
     private final DatabaseProvider provider;
 
-    public ActiveObjectsForeignKeyCreator(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider)
+    public ActiveObjectsForeignKeyManager(ImportExportErrorService errorService, DatabaseProvider provider, NameConverters converters)
     {
         this.errorService = checkNotNull(errorService);
         this.converters = checkNotNull(converters);
         this.provider = checkNotNull(provider);
     }
-
+    
     public void create(Iterable<ForeignKey> foreignKeys, EntityNameProcessor entityNameProcessor)
+    {
+        alter(DDLActionType.ALTER_ADD_KEY, foreignKeys, entityNameProcessor);
+    }
+    
+    private void drop(Iterable<ForeignKey> foreignKeys, EntityNameProcessor entityNameProcessor)
+    {
+        alter(DDLActionType.ALTER_DROP_KEY, foreignKeys, entityNameProcessor);
+    }
+    
+    public Iterable<Table> dropForTables(Iterable<Table> tables, EntityNameProcessor entityNameProcessor)
+    {
+        List<ForeignKey> foreignKeys = Lists.newArrayList();
+        List<Table> tablesWithoutForeignKeys = Lists.newArrayList();
+        for (Table table : tables)
+        {
+            foreignKeys.addAll(table.getForeignKeys());
+            tablesWithoutForeignKeys.add(new Table(table.getName(), table.getColumns(), Collections.<ForeignKey>emptyList()));
+        }
+        drop(foreignKeys, entityNameProcessor);
+        return tablesWithoutForeignKeys;
+    }
+
+    private void alter(DDLActionType ddlActionType, Iterable<ForeignKey> foreignKeys, EntityNameProcessor entityNameProcessor)
     {
         Connection conn = null;
         Statement stmt = null;
@@ -41,7 +70,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
             stmt = conn.createStatement();
             for (ForeignKey foreignKey : foreignKeys)
             {
-                final DDLAction a = new DDLAction(DDLActionType.ALTER_ADD_KEY);
+                final DDLAction a = new DDLAction(ddlActionType);
                 a.setKey(toDdlForeignKey(foreignKey, entityNameProcessor));
                 final Iterable<SQLAction> sqlActions = provider.renderAction(converters, a);
                 for (SQLAction sql : sqlActions)
@@ -61,7 +90,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
         }
     }
 
-    private String tableName(DDLAction a)
+    private static String tableName(DDLAction a)
     {
         if (a == null)
         {
@@ -74,7 +103,7 @@ final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
         return a.getTable().getName();
     }
 
-    private DDLForeignKey toDdlForeignKey(ForeignKey foreignKey, EntityNameProcessor entityNameProcessor)
+    private static DDLForeignKey toDdlForeignKey(ForeignKey foreignKey, EntityNameProcessor entityNameProcessor)
     {
         final DDLForeignKey ddlForeignKey = new DDLForeignKey();
         ddlForeignKey.setDomesticTable(entityNameProcessor.tableName(foreignKey.getFromTable()));

@@ -16,6 +16,8 @@ import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.SQLAction;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +48,14 @@ final public class ActiveObjectsTableDropper extends AbstractActiveObjectsTableM
 
     public void drop(DatabaseInformation databaseInformation, Iterable<Table> tables, EntityNameProcessor entityNameProcessor)
     {
-        // Sort the tables so that foreign keys are dropped first
+        // Check foreign keys were dropped
+        for (Table table : tables)
+        {
+            if (!table.getForeignKeys().isEmpty())
+            {
+                throw errorService.newImportExportException(table.getName(), "The table " + table.getName() + " still has foreign keys: " + StringUtils.join(table.getForeignKeys(), ", "));
+            }
+        }
         List<Table> orderedTables = Lists.newArrayList(tables);
         Collections.sort(orderedTables, new Comparator<Table>()
         {

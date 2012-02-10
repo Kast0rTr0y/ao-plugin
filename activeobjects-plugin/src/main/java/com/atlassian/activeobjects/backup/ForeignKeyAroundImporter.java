@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.dbexporter.Context;
 import com.atlassian.dbexporter.ForeignKey;
 import com.atlassian.dbexporter.Table;
+import com.atlassian.dbexporter.importer.ForeignKeyManager;
 import com.atlassian.dbexporter.importer.ImportConfiguration;
 import com.atlassian.dbexporter.importer.NoOpAroundImporter;
 import com.atlassian.dbexporter.node.NodeParser;
@@ -16,9 +17,9 @@ import static com.google.common.collect.Iterables.*;
 
 public final class ForeignKeyAroundImporter extends NoOpAroundImporter
 {
-    private final ForeignKeyCreator foreignKeyCreator;
+    private final ForeignKeyManager foreignKeyCreator;
 
-    public ForeignKeyAroundImporter(ForeignKeyCreator foreignKeyCreator)
+    public ForeignKeyAroundImporter(ForeignKeyManager foreignKeyCreator)
     {
         this.foreignKeyCreator = checkNotNull(foreignKeyCreator);
     }

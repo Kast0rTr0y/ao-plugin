@@ -28,4 +28,15 @@
         <description>Backups the data in the database when GETing, restores when POSTing, empties when DELETEing</description>
         <url-pattern>/ao-test</url-pattern>
     </servlet>
+    
+    <web-item key="create-tables" section="index.links" weight="40" application="refapp">
+        <label key="AO Test Plugin Url - Create Tables"/>
+        <link linkId="create-tables-link">/plugins/servlet/ao-test?create=true</link>
+    </web-item>
+    
+    <web-item key="manage-backup" section="index.links" weight="50" application="refapp">
+        <label key="AO Test Plugin REST Url - HTTP GET to read data - POST to restore data - DELETE to empty"/>
+        <link linkId="backup-rest-link">/plugins/servlet/ao-test</link>
+    </web-item>
+    
 </atlassian-plugin>
