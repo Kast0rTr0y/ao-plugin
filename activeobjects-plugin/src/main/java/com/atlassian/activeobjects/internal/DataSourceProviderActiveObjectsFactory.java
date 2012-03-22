@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import net.java.ao.EntityManager;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -46,7 +47,8 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();
-        return new EntityManagedActiveObjects(entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema(), configuration), new SalTransactionManager(transactionTemplate));
+        final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema(), configuration);
+        return new EntityManagedActiveObjects(entityManager, new SalTransactionManager(transactionTemplate, entityManager));
     }
 
     private DataSource getDataSource()
