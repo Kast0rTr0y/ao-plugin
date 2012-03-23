@@ -1,0 +1,1 @@
+As of FECRU 2.7.0-M3 the spi implementation of ActiveObjects has moved into fecru core. activeobjects-fecru-spi 0.15 will continue to work on fecru 2.6.1  but is redundant on 2.7.0-M3 and above

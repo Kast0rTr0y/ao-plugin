@@ -1,0 +1,69 @@
+#* @vtlvariable name="tables" type="com.google.common.collect.Multimap<com.atlassian.activeobjects.spi.PluginInformation, com.atlassian.activeobjects.admin.tables.TablesController.TableInformation>" *#
+<html>
+    <head>
+        <meta name="decorator" content="atl.admin">
+
+        <meta name="admin.active.tab" content="ao_tables"/>
+        <meta name="admin.active.section" content="admin_system_menu/advanced_menu_section/advanced_section"/>
+
+        <title>$i18n.getText("ao.admin.title")</title>
+        $webResourceManager.requireResource("com.atlassian.activeobjects.activeobjects-plugin:web-resources")
+    </head>
+    <body>
+        <h1>$i18n.getText("ao.admin.tables.title")</h1>
+
+        <table class="aui aui-table-rowhover">
+            <thead>
+                <tr>
+                    <th>$i18n.getText("ao.admin.plugin.label")</th>
+                    <th>$i18n.getText("ao.admin.table.label")</th>
+                    <th>$i18n.getText("ao.admin.rows.label")</th>
+                </tr>
+            </thead>
+            <tbody>
+                #foreach($plugin in $tables.keySet())
+                <tr class="ao-plugin">
+                    <td class="first-col">
+                        #if ($plugin.available)
+                        <span class="ao-plugin-name">$plugin.pluginName</span>
+                        <dl class="ao-plugin-info">
+
+                            <dt>$i18n.getText("ao.admin.plugin.key.label")</dt>
+                            <dd>$plugin.pluginKey</dd>
+
+                            <dt>$i18n.getText("ao.admin.plugin.vendor.label")</dt>
+                            <dd>
+                                #if ($plugin.vendorName && $plugin.vendorUrl)
+                                    <a href="$plugin.vendorUrl">$!plugin.vendorName</a>
+                                #else
+                                    $!plugin.vendorName
+                                #end
+                            </dd>
+
+                            <dt>$i18n.getText("ao.admin.plugin.version.label")</dt>
+                            <dd>$plugin.pluginVersion</dd>
+                        </dl>
+                        #else
+                            <span class="ao-plugin-unknown">$i18n.getText("ao.admin.plugin.unknown")</span>
+                        #end
+                    </td>
+                    <td class="ao-table-names">
+                        <ul>
+                            #foreach($i in $tables.get($plugin))
+                            <li>$i.table</li>
+                            #end
+                        </ul>
+                    </td>
+                    <td class="ao-row-counts">
+                        <ul>
+                            #foreach($i in $tables.get($plugin))
+                            <li>$i.rows</li>
+                            #end
+                        </ul>
+                    </td>
+                </tr>
+                #end
+            </tbody>
+        </table>
+    </body>
+</html>
