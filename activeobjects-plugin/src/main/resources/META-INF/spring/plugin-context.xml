@@ -40,6 +40,7 @@
     <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" ref="activeObjectsServiceFactory" />
 
     <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
+    <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
