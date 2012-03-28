@@ -42,9 +42,6 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>com.atlassian.activeobjects.bamboo.spi</Bundle-SymbolicName>
-                        <!--<Export-Package>-->
-                            <!--com.atlassian.activeobjects.spi*;version="${project.version}",-->
-                        <!--</Export-Package>-->
                         <Import-Package>
                             com.atlassian.bamboo*,
                             com.atlassian.hibernate,
