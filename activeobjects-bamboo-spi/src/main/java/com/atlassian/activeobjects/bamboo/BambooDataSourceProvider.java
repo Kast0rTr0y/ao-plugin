@@ -13,7 +13,7 @@ import net.sf.hibernate.dialect.HSQLDialect;
 import net.sf.hibernate.dialect.MySQLDialect;
 import net.sf.hibernate.dialect.Oracle9Dialect;
 import net.sf.hibernate.dialect.PostgreSQLDialect;
-import net.sf.hibernate.dialect.SQLServerDialect;
+import net.sf.hibernate.dialect.SQLServerIntlDialect;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -32,7 +32,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
             .put(MySQLDialect.class, DatabaseType.MYSQL)
             .put(PostgreSQLDialect.class, DatabaseType.POSTGRESQL)
             .put(Oracle9Dialect.class, DatabaseType.ORACLE)
-            .put(SQLServerDialect.class, DatabaseType.MS_SQL)
+            .put(SQLServerIntlDialect.class, DatabaseType.MS_SQL)
             .put(DB2Dialect.class, DatabaseType.DB2)
             .build();
 
