@@ -1,6 +1,6 @@
-<atlassian-plugin key="com.atlassian.activeobjects.bamboo.spi" name="${pom.name}" system="false" pluginsVersion="2">
+<atlassian-plugin key="com.atlassian.activeobjects.bamboo.spi" name="${project.name}" system="false" pluginsVersion="2">
   <plugin-info>
-    <description>${pom.description}</description>
+    <description>${project.description}</description>
     <vendor name="Atlassian Software Systems" url="http://www.atlassian.com"/>
     <version>${project.version}</version>
   </plugin-info>
