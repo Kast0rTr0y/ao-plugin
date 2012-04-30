@@ -7,7 +7,7 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>A connection that can't be closed.</p>
@@ -40,7 +40,7 @@ final class ConnectionHandler implements InvocationHandler
 
     private Object delegate(Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
-        return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
+        return method.invoke(delegate, args);
     }
 
     public static Connection newInstance(Connection c)
