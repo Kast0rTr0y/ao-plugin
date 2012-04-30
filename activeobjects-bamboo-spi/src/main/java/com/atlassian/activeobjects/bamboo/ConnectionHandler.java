@@ -40,7 +40,7 @@ final class ConnectionHandler implements InvocationHandler
 
     private Object delegate(Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
-        return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
+        return method.invoke(delegate, args);
     }
 
     public static Connection newInstance(Connection c)
