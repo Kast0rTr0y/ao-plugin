@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.activeobjects</groupId>
+        <artifactId>activeobjects-plugin-parent-pom</artifactId>
+        <version>0.19.8</version>
+    </parent>
+
+    <groupId>com.atlassian.activeobjects</groupId>
+    <artifactId>activeobjects-jira43-spi</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>ActiveObjects Plugin - JIRA 4.3.x SPI implementation</name>
+    <description>This is the JIRA implementation of the SPI for JIRA 4.3.x.</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
+                        <Export-Package>
+                            com.atlassian.activeobjects.spi*;version="${project.version}",
+                        </Export-Package>
+                        <Import-Package>
+                            com.atlassian.activeobjects.spi*,
+                            com.atlassian.event.api*,
+                            com.atlassian.jira.event*,
+                            com.atlassian.jira.ofbiz*,
+                            com.atlassian.sal.api*,
+                            com.google.common*,
+                            java.sql,
+                            javax.naming;resolution:=optional,
+                            javax.sql,
+                            org.ofbiz.core.entity.jdbc.dbtype,
+                            org.ofbiz.core.entity.config,
+                            org.slf4j*,
+                        </Import-Package>
+                        <Private-Package>
+                            com.atlassian.activeobjects.jira*,
+                        </Private-Package>
+                        <Embed-Dependency>!clover.*;scope=compile|runtime;inline=true</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                        <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
+                        <Spring-Context>*;timeout:=60</Spring-Context>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-jira-spi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

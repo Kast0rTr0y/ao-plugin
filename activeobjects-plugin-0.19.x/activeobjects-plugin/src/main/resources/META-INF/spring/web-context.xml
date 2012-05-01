@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="handler" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/tables/**">tablesController</prop>
+            </props>
+        </property>
+
+        <property name="interceptors">
+            <list>
+                <bean class="com.atlassian.plugin.web.springmvc.interceptor.ContentTypeInterceptor"/>
+                <bean class="com.atlassian.plugin.web.springmvc.interceptor.SystemAdminAuthorisationInterceptor">
+                    <constructor-arg index="0" ref="userManager"/>
+                    <constructor-arg index="1" ref="loginUriProvider"/>
+                    <constructor-arg index="2" ref="applicationProperties"/>
+                </bean>
+                <bean class="com.atlassian.plugin.web.springmvc.interceptor.WebSudoAuthorisationInterceptor">
+                    <constructor-arg ref="webSudoManager"/>
+                </bean>
+                <bean class="com.atlassian.plugin.web.springmvc.interceptor.XsrfTokenInterceptor">
+                    <property name="applicationProperties" ref="applicationProperties"/>
+                    <property name="xsrfTokenGenerator" ref="xsrfTokenGenerator"/>
+                    <property name="redirectPath" value="/directories/list?timeout=true"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="xsrfTokenGenerator" class="com.atlassian.plugin.web.springmvc.xsrf.SimpleXsrfTokenGenerator"/>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
+        <property name="prefix" value="/templates/"/>
+        <property name="suffix" value=".vm"/>
+        <property name="exposeSpringMacroHelpers" value="true"/>
+        <!--<property name="contentType" value="text/html; charset=UTF-8"/>--> <!-- this should ensure Sitemesh decoration but doesn't, so instead we use a ContentTypeInterceptor -->
+        <property name="attributesMap">
+            <map>
+                <entry key="i18n" value-ref="i18nResolver"/>
+                <entry key="helpPathResolver" value-ref="helpPathResolver"/>
+                <entry key="applicationProperties" value-ref="applicationProperties"/>
+                <entry key="webResourceManager" value-ref="webResourceManager"/>
+                <entry key="webInterfaceManager" value-ref="webInterfaceManager"/>
+                <entry key="xsrfTokenGenerator" value-ref="xsrfTokenGenerator"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer"/>
+
+    <bean id="messageSource" class="com.atlassian.plugin.web.springmvc.message.ApplicationMessageSource">
+        <property name="keyPrefix" value="embedded.crowd.validation."/>
+        <property name="i18nResolver" ref="i18nResolver"/>
+    </bean>
+
+    <bean id="tablesController" class="org.springframework.web.servlet.mvc.multiaction.MultiActionController">
+        <property name="delegate">
+            <bean class="com.atlassian.activeobjects.admin.tables.TablesController">
+                <constructor-arg ref="databaseProviderFactory"/>
+                <constructor-arg>
+                    <bean class="net.java.ao.builder.SimpleNameConverters">
+                        <constructor-arg index="0">
+                            <bean class="com.atlassian.activeobjects.backup.ExceptionThrowingTableNameConverter"/>
+                        </constructor-arg>
+                        <constructor-arg index="1" ref="fieldNameConverter"/>
+                        <constructor-arg index="2" ref="sequenceNameConverter"/>
+                        <constructor-arg index="3" ref="triggerNameConverter"/>
+                        <constructor-arg index="4" ref="indexNameConverter"/>
+                        <constructor-arg index="5" ref="uniqueNameConverter"/>
+                    </bean>
+                </constructor-arg>
+                <constructor-arg ref="dataSourceProvider"/>
+                <constructor-arg ref="errorService"/>
+                <constructor-arg ref="pluginInformationFactory"/>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

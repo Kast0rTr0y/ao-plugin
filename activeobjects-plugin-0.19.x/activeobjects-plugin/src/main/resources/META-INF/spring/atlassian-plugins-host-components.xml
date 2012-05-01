@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ DO NOT change that file's name! It's there so that the plugin system doesn't automagically generate it for us.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+    <!-- stuff for the AO plugin itself. services not used during a Restore, are optional.  -->
+    <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" cardinality="0..1"/>
+    <osgi:reference id="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000" cardinality="0..1"/>
+    <osgi:reference id="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+    <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
+    <osgi:reference id="userManager" interface="com.atlassian.sal.api.user.UserManager"/>
+    <osgi:reference id="loginUriProvider" interface="com.atlassian.sal.api.auth.LoginUriProvider"/>
+    <osgi:reference id="webSudoManager" interface="com.atlassian.sal.api.websudo.WebSudoManager"/>
+    <osgi:reference id="i18nResolver" interface="com.atlassian.sal.api.message.I18nResolver"/>
+    <osgi:reference id="helpPathResolver" interface="com.atlassian.sal.api.message.HelpPathResolver"/>
+    <osgi:reference id="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager"/>
+    <osgi:reference id="webInterfaceManager" interface="com.atlassian.plugin.web.WebInterfaceManager"/>
+    <osgi:reference id="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
+</beans>
