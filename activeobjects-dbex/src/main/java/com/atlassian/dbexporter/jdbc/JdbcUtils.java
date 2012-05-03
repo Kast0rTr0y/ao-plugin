@@ -1,5 +1,6 @@
 package com.atlassian.dbexporter.jdbc;
 
+import com.atlassian.activeobjects.spi.ConnectionHandler;
 import com.atlassian.dbexporter.ConnectionProvider;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import org.slf4j.Logger;
@@ -27,8 +28,7 @@ public final class JdbcUtils
         try
         {
             connection = provider.getConnection();
-            return callable.call(ConnectionHandler.newInstance(connection, new ConnectionHandler.Closeable()
-            {
+            return callable.call(ConnectionHandler.newInstance(connection, new ConnectionHandler.Closeable() {
                 @Override
                 public void close() throws SQLException
                 {

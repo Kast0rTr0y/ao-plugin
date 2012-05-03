@@ -1,4 +1,4 @@
-package com.atlassian.activeobjects.bamboo;
+package com.atlassian.activeobjects.spi;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -7,15 +7,14 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * <p>A connection that can't be closed.</p>
- * <p>All calls to Active Objects wihtin Confluence (i.e within a plugin installed on a Confluence instance) must happen
- * within a transaction. For this transactions to be successful, we can't let ActiveObjects close the connection in the
- * middle of it.</p>
+ * <p>All calls to Active Objects must happen within a transaction. For this transactions to be successful, we can't let
+ * ActiveObjects close the connection in the middle of it.</p>
  */
-final class ConnectionHandler implements InvocationHandler
+public final class ConnectionHandler implements InvocationHandler
 {
     private final Connection delegate;
     private final Closeable closeable;
@@ -68,7 +67,7 @@ final class ConnectionHandler implements InvocationHandler
                 && method.getParameterTypes().length == 0;
     }
 
-    static interface Closeable
+    public static interface Closeable
     {
         void close() throws SQLException;
     }

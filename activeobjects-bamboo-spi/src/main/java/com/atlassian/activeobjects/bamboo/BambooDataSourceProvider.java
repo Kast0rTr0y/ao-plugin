@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.bamboo;
 
 import com.atlassian.activeobjects.bamboo.hibernate.DialectExtractor;
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.ConnectionHandler;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory;
 import com.google.common.collect.ImmutableMap;
