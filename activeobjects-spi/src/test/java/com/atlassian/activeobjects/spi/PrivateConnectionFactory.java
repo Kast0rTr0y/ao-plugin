@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 /**
  * @see com.atlassian.activeobjects.spi.ConnectionHandlerTest#testPrivateDelegate()
@@ -248,6 +249,23 @@ public class PrivateConnectionFactory {
         @Override
         public Struct createStruct(final String typeName, final Object[] attributes) throws SQLException {
             return null;
+        }
+
+        public void setSchema(final String schema) throws SQLException {
+        }
+
+        public String getSchema() throws SQLException {
+            return null;
+        }
+
+        public void abort(final Executor executor) throws SQLException {
+        }
+
+        public void setNetworkTimeout(final Executor executor, final int milliseconds) throws SQLException {
+        }
+
+        public int getNetworkTimeout() throws SQLException {
+            return 0;
         }
 
         @Override
