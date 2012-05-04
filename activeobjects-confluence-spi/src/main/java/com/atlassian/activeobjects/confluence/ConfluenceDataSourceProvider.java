@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.confluence;
 
 import com.atlassian.activeobjects.confluence.hibernate.DialectExtractor;
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.ConnectionHandler;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.hibernate.PluginHibernateSessionFactory;
 import com.google.common.collect.ImmutableMap;
