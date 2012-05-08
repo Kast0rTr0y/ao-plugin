@@ -30,7 +30,7 @@ final class SalTransactionManager extends AbstractLoggingTransactionManager
         }
         catch (final RuntimeException exception)
         {
-            entityManager.flushDirty();
+            entityManager.flushAll();
             throw exception;
         }
     }
