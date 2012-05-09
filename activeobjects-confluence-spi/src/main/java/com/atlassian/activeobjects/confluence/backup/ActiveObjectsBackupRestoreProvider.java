@@ -15,30 +15,30 @@ import com.atlassian.confluence.importexport.plugin.BackupRestoreProvider;
 public class ActiveObjectsBackupRestoreProvider implements BackupRestoreProvider
 {
     private Backup backup;
-	
-	public void backup(OutputStream os) throws ImportExportException
-	{
-	    try
-	    {
-	        backup.save(os, new LoggingBackupProgressMonitor());
-	    }
-	    catch(Exception ex)
-	    {
-	        throw new ImportExportException(ex);
-	    }
-	}
-	
-	public void restore(InputStream is) throws ImportExportException
-	{
-	    try
+
+    public void backup(OutputStream os) throws ImportExportException
+    {
+        try
         {
-            backup.restore(is, new LoggingRestoreProgressMonitor());    
+            backup.save(os, new LoggingBackupProgressMonitor());
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             throw new ImportExportException(ex);
         }
-	}
+    }
+
+    public void restore(InputStream is) throws ImportExportException
+    {
+        try
+        {
+            backup.restore(is, new LoggingRestoreProgressMonitor());
+        }
+        catch (Exception ex)
+        {
+            throw new ImportExportException(ex);
+        }
+    }
 
     public void setBackup(Backup backup)
     {
