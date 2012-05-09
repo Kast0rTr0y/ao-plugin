@@ -41,6 +41,8 @@
                             com.atlassian.activeobjects.spi*;version="${project.version}",
                         </Export-Package>
                         <Import-Package>
+                            com.atlassian.confluence.importexport,
+                        	com.atlassian.confluence.importexport.plugin,
                             com.atlassian.hibernate,
                             com.atlassian.sal.api*,
                             com.google.common*,
@@ -72,7 +74,7 @@
         <dependency>
             <groupId>com.atlassian.confluence</groupId>
             <artifactId>confluence</artifactId>
-            <version>3.4-m2-r2</version>
+            <version>4.3-m2</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -88,12 +90,6 @@
                     <artifactId>glue</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>hibernate</groupId>
-            <artifactId>hibernate</artifactId>
-            <version>2.1.8-atlassian</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -13,4 +13,6 @@
     <component key="dialectExractor" class="com.atlassian.activeobjects.confluence.hibernate.HibernateSessionDialectExtractor" name="Dialect Extractor"/>
 
     <component-import key="hibernateSessionFactory" interface="com.atlassian.hibernate.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
+
+    <backup-restore key="activeObjectsBackupRestoreProvider" class="com.atlassian.activeobjects.confluence.backup.ActiveObjectsBackupRestoreProvider" public="true"/>
 </atlassian-plugin>
