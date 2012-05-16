@@ -483,14 +483,19 @@ public final class DataImporter extends AbstractSingleNodeImporter
         protected void executePS() throws SQLException
         {
             ps.addBatch();
-            if ((batch = (batch + 1) % batchSize) == 0)
+            if ((++batch) % batchSize == 0)
             {
                 flush();
+                batch = 0;
             }
         }
 
         private void flush()
         {
+            if (batch == 0)
+            {
+                return;
+            }
             try
             {
                 for (int result : ps.executeBatch())

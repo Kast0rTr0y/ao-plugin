@@ -28,6 +28,7 @@ import static org.custommonkey.xmlunit.XMLAssert.*;
 public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBackup
 {
     private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
+    private static final String HSQL_EMPTY = "/com/atlassian/activeobjects/backup/hsql_empty.xml";
     private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
     private static final String ORACLE = "/com/atlassian/activeobjects/backup/oracle.xml";
     private static final String LEGACY_ORACLE = "/com/atlassian/activeobjects/backup/legacy_oracle.xml";
@@ -41,6 +42,15 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
     public void testHsqlBackup() throws Exception
     {
         testBackup(HSQL, HSQL_DATA);
+    }
+
+    @Test
+    @NonTransactional
+    public void testHsqlEmptyBackup() throws Exception
+    {
+        String xmlBackup = read(HSQL_EMPTY);
+        checkXmlBackup(xmlBackup, HSQL_DATA);
+        restore(xmlBackup);
     }
 
     @Test
