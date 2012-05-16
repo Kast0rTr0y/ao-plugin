@@ -1,16 +1,15 @@
-<atlassian-plugin key="com.atlassian.activeobjects.bamboo.spi"
-                  name="Bamboo Active Objects SPI implementation" system="false" pluginsVersion="2">
-    <plugin-info>
-        <description>A plugin that provides the DataSourceProvider service for Active Objects</description>
-        <vendor name="Atlassian Software Systems" url="http://www.atlassian.com"/>
-        <version>${project.version}</version>
-    </plugin-info>
+<atlassian-plugin key="com.atlassian.activeobjects.bamboo.spi" name="${project.name}" system="false" pluginsVersion="2">
+  <plugin-info>
+    <description>${project.description}</description>
+    <vendor name="Atlassian Software Systems" url="http://www.atlassian.com"/>
+    <version>${project.version}</version>
+  </plugin-info>
 
-    <component key="dataSourceProvider" class="com.atlassian.activeobjects.bamboo.BambooDataSourceProvider" name="Data Source Provider" public="true">
-        <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
-    </component>
+  <component key="dataSourceProvider" class="com.atlassian.activeobjects.bamboo.BambooDataSourceProvider" name="Data Source Provider" public="true">
+    <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+  </component>
 
-    <component key="dialectExractor" class="com.atlassian.activeobjects.bamboo.hibernate.HibernateSessionDialectExtractor" name="Dialect Extractor"/>
+  <component key="dialectExtractor" class="com.atlassian.activeobjects.bamboo.hibernate.HibernateSessionDialectExtractor" name="Dialect Extractor"/>
 
-    <component-import key="hibernateSessionFactory" interface="com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
+  <component-import key="hibernateSessionFactory" interface="com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
 </atlassian-plugin>

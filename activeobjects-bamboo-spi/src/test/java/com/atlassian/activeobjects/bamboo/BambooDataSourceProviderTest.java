@@ -12,7 +12,7 @@ import net.sf.hibernate.dialect.MySQLDialect;
 import net.sf.hibernate.dialect.Oracle9Dialect;
 import net.sf.hibernate.dialect.OracleDialect;
 import net.sf.hibernate.dialect.PostgreSQLDialect;
-import net.sf.hibernate.dialect.SQLServerDialect;
+import net.sf.hibernate.dialect.SQLServerIntlDialect;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
 /**
- * Testing {@link com.atlassian.activeobjects.bamboo.BambooDataSourceProviderTest}
+ * Testing {@link com.atlassian.activeobjects.bamboo.BambooDataSourceProvider}
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BambooDataSourceProviderTest
@@ -35,12 +35,12 @@ public class BambooDataSourceProviderTest
     private PluginHibernateSessionFactory sessionFactory;
 
     @Mock
-    private DialectExtractor dialectExtrator;
+    private DialectExtractor dialectExtractor;
 
     @Before
     public void setUp() throws Exception
     {
-        dataSourceProvider = new BambooDataSourceProvider(sessionFactory, dialectExtrator);
+        dataSourceProvider = new BambooDataSourceProvider(sessionFactory, dialectExtractor);
     }
 
     @After
@@ -84,7 +84,7 @@ public class BambooDataSourceProviderTest
     @Test
     public void testGetMsSqlDatabaseTypeWithMsSqlDialect()
     {
-        assertDatabaseTypeForDialect(DatabaseType.MS_SQL, SQLServerDialect.class);
+        assertDatabaseTypeForDialect(DatabaseType.MS_SQL, SQLServerIntlDialect.class);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class BambooDataSourceProviderTest
 
     private void assertDatabaseTypeForDialect(DatabaseType databaseType, Class<? extends Dialect> dialect)
     {
-        doReturn(dialect).when(dialectExtrator).getDialect();
+        doReturn(dialect).when(dialectExtractor).getDialect();
         assertEquals(databaseType, dataSourceProvider.getDatabaseType());
     }
 }
