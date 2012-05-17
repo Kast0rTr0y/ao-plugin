@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.internal.db.SQLServerCSDatabaseProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Disposable;
@@ -11,12 +12,11 @@ import net.java.ao.db.HSQLDatabaseProvider;
 import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
-import net.java.ao.db.SQLServerDatabaseProvider;
 
 import javax.sql.DataSource;
 
-import static com.atlassian.activeobjects.ao.ConverterUtils.*;
-import static com.google.common.base.Preconditions.*;
+import static com.atlassian.activeobjects.ao.ConverterUtils.toLowerCase;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class JdbcDriverDatabaseProviderFactory implements DatabaseProviderFactory
 {
@@ -106,7 +106,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                     @Override
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource), schema);
+                        return new SQLServerCSDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 },
         MSSQL_JTDS(DatabaseType.MS_SQL, "jtds")
@@ -114,7 +114,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                     @Override
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
-                        return new SQLServerDatabaseProvider(getDisposableDataSource(dataSource), schema);
+                        return new SQLServerCSDatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 },
         HSQLDB(DatabaseType.HSQL, "hsql")

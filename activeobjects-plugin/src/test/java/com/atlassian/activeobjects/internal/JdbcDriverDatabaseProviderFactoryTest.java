@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.internal.db.SQLServerCSDatabaseProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.db.ClientDerbyDatabaseProvider;
@@ -134,19 +135,19 @@ public class JdbcDriverDatabaseProviderFactoryTest
     @Test
     public void testGetDatabaseProviderForMsSqlDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(SQLServerCSDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.UNKNOWN);
     }
 
     @Test
     public void testGetDatabaseProviderForMsSqlDatabaseType() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.MS_SQL);
+        testGetProviderOfTypeForDriverClassName(SQLServerCSDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.MS_SQL);
     }
 
     @Test
     public void testGetDatabaseProviderForJtdsDriver() throws Exception
     {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(SQLServerCSDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.UNKNOWN);
     }
 
     @Test
