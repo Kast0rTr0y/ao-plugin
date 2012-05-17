@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.activeobjects</groupId>
+        <artifactId>activeobjects-plugin-parent-pom</artifactId>
+        <version>0.19.11.bamboo.2</version>
+    </parent>
+
+    <groupId>com.atlassian.activeobjects</groupId>
+    <artifactId>activeobjects-spi</artifactId>
+
+    <name>ActiveObjects Plugin - SPI</name>
+    <description>This is the SPI that Atlassian product need to implement in order to support ActiveObjects.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>

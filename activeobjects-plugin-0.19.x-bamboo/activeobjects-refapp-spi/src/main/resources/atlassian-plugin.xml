@@ -1,0 +1,19 @@
+<atlassian-plugin key="com.atlassian.activeobjects.refapp.spi"
+                  name="Refapp Active Objects SPI implementation" system="false" pluginsVersion="2">
+    <plugin-info>
+        <description>A plugin that provides the DataSourceProvider service</description>
+        <vendor name="Atlassian Software Systems" url="http://www.atlassian.com"/>
+        <version>${project.version}</version>
+    </plugin-info>
+
+    <component key="dataSourceProvider" class="com.atlassian.activeobjects.refapp.RefappDataSourceProvider" name="Data Source Provider" public="true">
+        <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
+    <component name="Refapp Data Source" key="refapp-datasource"
+               class="com.atlassian.activeobjects.refapp.RefappDataSource" public="false">
+        <interface>javax.sql.DataSource</interface>
+    </component>
+
+    <component-import name="Application Properties" key="application-properties" interface="com.atlassian.sal.api.ApplicationProperties"/>
+</atlassian-plugin>

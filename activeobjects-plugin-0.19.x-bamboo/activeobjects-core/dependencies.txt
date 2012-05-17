@@ -1,0 +1,10 @@
+com.atlassian.activeobjects:activeobjects-spi:0.16-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
+com.atlassian.sal:sal-api:2.1.0:jar:-:provided||{sha1}4e1d34761e29324eb6e9cbdd9b6d56e6bbe3c294|{sha1}c6bdd6a5a0b691df0fa953c23c0222e34a1f7b4a
+com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
+commons-logging:commons-logging:1.1.1:jar:-:provided|org.springframework:spring-beans:jar:2.5.6|{sha1}5043bfebc3db072ed80fbd362e7caf00e885d8ae|{sha1}76672afb562b9e903674ad3a544cdf2092f1faa3
+net.java.dev.activeobjects:activeobjects:0.9-m31:jar:-:compile||{sha1}8488adf45c955ca6d17b2a116a425c1d577afc00|{sha1}89a422b246cc22f68158564c78c2a0a05d944b9f
+org.apache.lucene:lucene-core:2.2.0:jar:-:compile|net.java.dev.activeobjects:activeobjects:jar:0.9-m31|{sha1}47b6eee2e17bd68911e7045896a1c09de0b2dda8|{sha1}8217169ee1310ed6899111cc127abd5fc01f7eba
+org.apache.lucene:lucene-queries:2.2.0:jar:-:compile|net.java.dev.activeobjects:activeobjects:jar:0.9-m31|{sha1}15fc81aacee04831d7834edd0638b528353292a7|{sha1}502296d5b6e5a81aac942fe3b3a0c776bb6de92b
+org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
+org.springframework:spring-beans:2.5.6:jar:-:provided||{sha1}449ea46b27426eb846611a90b2fb8b4dcf271191|{sha1}24ffcedb04c6c114d841de2b3bc6e75f7bac19ec
+org.springframework:spring-core:2.5.6:jar:-:provided|org.springframework:spring-beans:jar:2.5.6|{sha1}c450bc49099430e13d21548d1e3d1a564b7e35e9|{sha1}4584af961234a191b07b90efbd71c2e717681ed6
