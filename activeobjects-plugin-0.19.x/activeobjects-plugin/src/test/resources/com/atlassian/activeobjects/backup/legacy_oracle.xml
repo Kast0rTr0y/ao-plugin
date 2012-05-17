@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<backup xmlns="http://www.atlassian.com/ao" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <database>
+    <meta key="database.name" value="Oracle"/>
+    <meta key="database.version" value="Oracle Database 10g Express Edition Release 10.2.0.1.0 - Production"/>
+    <meta key="database.minorVersion" value="2"/>
+    <meta key="database.majorVersion" value="10"/>
+    <meta key="driver.name" value="Oracle JDBC driver"/>
+    <meta key="driver.version" value="10.2.0.4.0"/>
+  </database>
+  <table name="AO_000000_AUTHORSHIP">
+    <column name="AUTHOR_ID" primaryKey="false" autoIncrement="false" sqlType="2" precision="11"/>
+    <column name="BOOK_ID" primaryKey="false" autoIncrement="false" sqlType="2" precision="20"/>
+    <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="11"/>
+    <foreignKey fromTable="AO_000000_AUTHORSHIP" fromColumn="BOOK_ID" toTable="AO_000000_BOOK" toColumn="ISBN"/>
+    <foreignKey fromTable="AO_000000_AUTHORSHIP" fromColumn="AUTHOR_ID" toTable="AO_000000_LONG_NAME_TO_AUTHOR" toColumn="ID"/>
+  </table>
+  <table name="AO_000000_BOOK">
+    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="2005" precision="-1"/>
+    <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="2" precision="20"/>
+    <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="2" precision="1"/>
+    <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="2" precision="11"/>
+    <column name="PRICE" primaryKey="false" autoIncrement="false" sqlType="2" precision="32" scale="16"/>
+    <column name="PUBLISHED" primaryKey="false" autoIncrement="false" sqlType="93" scale="6"/>
+    <column name="TITLE" primaryKey="false" autoIncrement="false" sqlType="12" precision="255"/>
+  </table>
+  <table name="AO_000000_LONG_NAME_TO_AUTHOR">
+    <column name="ID" primaryKey="true" autoIncrement="true" sqlType="2" precision="11"/>
+    <column name="NAME" primaryKey="false" autoIncrement="false" sqlType="12" precision="60"/>
+  </table>
+  <data tableName="AO_000000_LONG_NAME_TO_AUTHOR">
+    <column name="ID"/>
+    <column name="NAME"/>
+    <row>
+      <integer>3</integer>
+      <string>Joshua Bloch</string>
+    </row>
+    <row>
+      <integer>4</integer>
+      <string>Joseph Bowbeer</string>
+    </row>
+    <row>
+      <integer>5</integer>
+      <string>David Holmes</string>
+    </row>
+    <row>
+      <integer>6</integer>
+      <string>Doug Lea</string>
+    </row>
+    <row>
+      <integer>7</integer>
+      <string>Martin Odersky</string>
+    </row>
+    <row>
+      <integer>8</integer>
+      <string>Lex Spoon</string>
+    </row>
+    <row>
+      <integer>1</integer>
+      <string>Brian Goetz</string>
+    </row>
+    <row>
+      <integer>2</integer>
+      <string>Tim Peierls</string>
+    </row>
+    <row>
+      <integer>9</integer>
+      <string>Bill Venners</string>
+    </row>
+  </data>
+  <data tableName="AO_000000_AUTHORSHIP">
+    <column name="AUTHOR_ID"/>
+    <column name="BOOK_ID"/>
+    <column name="ID"/>
+    <row>
+      <integer>1</integer>
+      <integer>9780321349606</integer>
+      <integer>1</integer>
+    </row>
+    <row>
+      <integer>2</integer>
+      <integer>9780321349606</integer>
+      <integer>2</integer>
+    </row>
+    <row>
+      <integer>3</integer>
+      <integer>9780321349606</integer>
+      <integer>3</integer>
+    </row>
+    <row>
+      <integer>4</integer>
+      <integer>9780321349606</integer>
+      <integer>4</integer>
+    </row>
+    <row>
+      <integer>5</integer>
+      <integer>9780321349606</integer>
+      <integer>5</integer>
+    </row>
+    <row>
+      <integer>6</integer>
+      <integer>9780321349606</integer>
+      <integer>6</integer>
+    </row>
+    <row>
+      <integer>7</integer>
+      <integer>9780981531601</integer>
+      <integer>7</integer>
+    </row>
+    <row>
+      <integer>8</integer>
+      <integer>9780981531601</integer>
+      <integer>8</integer>
+    </row>
+    <row>
+      <integer>9</integer>
+      <integer>9780981531601</integer>
+      <integer>9</integer>
+    </row>
+    <row>
+      <integer>3</integer>
+      <integer>9780321356680</integer>
+      <integer>10</integer>
+    </row>
+  </data>
+  <data tableName="AO_000000_BOOK">
+    <column name="ABSTRACT"/>
+    <column name="ISBN"/>
+    <column name="IS_READ"/>
+    <column name="NUMBER_OF_PAGES"/>
+    <column name="PRICE"/>
+    <column name="PUBLISHED"/>
+    <column name="TITLE"/>
+    <row>
+      <string>"I was fortunate indeed to have worked with a fantastic team on the design and implementation of the concurrency features added to the Java platform in Java 5.0 and Java 6. Now this same team provides the best explanation yet of these new features, and of concurrency in general. Concurrency is no longer a subject for advanced users only. Every Java developer should read this book."
+--Martin Buchholz
+JDK Concurrency Czar, Sun Microsystems
+
+"For the past 30 years, computer performance has been driven by Moore's Law; from now on, it will be driven by Amdahl's Law. Writing code that effectively exploits multiple processors can be very challenging. Java Concurrency in Practice provides you with the concepts and techniques needed to write safe and scalable Java programs for today's--and tomorrow's--systems."
+--Doron Rajwan
+Research Scientist, Intel Corp
+
+"This is the book you need if you're writing--or designing, or debugging, or maintaining, or contemplating--multithreaded Java programs. If you've ever had to synchronize a method and you weren't sure why, you owe it to yourself and your users to read this book, cover to cover."
+--Ted Neward
+Author of Effective Enterprise Java
+
+"Brian addresses the fundamental issues and complexities of concurrency with uncommon clarity. This book is a must-read for anyone who uses threads and cares about performance."
+--Kirk Pepperdine
+CTO, JavaPerformanceTuning.com
+
+"This book covers a very deep and subtle topic in a very clear and concise way, making it the perfect Java Concurrency reference manual. Each page is filled with the problems (and solutions!) that programmers struggle with every day. Effectively exploiting concurrency is becoming more and more important now that Moore's Law is delivering more cores but not faster cores, and this book will show you how to do it."
+--Dr. Cliff Click
+Senior Software Engineer, Azul Systems
+
+"I have a strong interest in concurrency, and have probably written more thread deadlocks and made more synchronization mistakes than most programmers. Brian's book is the most readable on the topic of threading and concurrency in Java, and deals with this difficult subject with a wonderful hands-on approach. This is a book I am recommending to all my readers of The Java Specialists' Newsletter, because it is interesting, useful, and relevant to the problems facing Java developers today."
+--Dr. Heinz Kabutz
+The Java Specialists' Newsletter
+
+"I've focused a career on simplifying simple problems, but this book ambitiously and effectively works to simplify a complex but critical subject: concurrency. Java Concurrency in Practice is revolutionary in its approach, smooth and easy in style, and timely in its delivery--it's destined to be a very important book."
+--Bruce Tate
+Author of Beyond Java
+
+"Java Concurrency in Practice is an invaluable compilation of threading know-how for Java developers. I found reading this book intellectually exciting, in part because it is an excellent introduction to Java's concurrency API, but mostly because it captures in a thorough and accessible way expert knowledge on threading not easily found elsewhere."
+--Bill Venners
+Author of Inside the Java Virtual Machine
+
+Threads are a fundamental part of the Java platform. As multicore processors become the norm, using concurrency effectively becomes essential for building high-performance applications. Java SE 5 and 6 are a huge step forward for the development of concurrent applications, with improvements to the Java Virtual Machine to support high-performance, highly scalable concurrent classes and a rich set of new concurrency building blocks. In Java Concurrency in Practice, the creators of these new facilities explain not only how they work and how to use them, but also the motivation and design patterns behind them.
+
+However, developing, testing, and debugging multithreaded programs can still be very difficult; it is all too easy to create concurrent programs that appear to work, but fail when it matters most: in production, under heavy load. Java Concurrency in Practice arms readers with both the theoretical underpinnings and concrete techniques for building reliable, scalable, maintainable concurrent applications. Rather than simply offering an inventory of concurrency APIs and mechanisms, it provides design rules, patterns, and mental models that make it easier to build concurrent programs that are both correct and performant.
+
+This book covers:
+
+    Basic concepts of concurrency and thread safety
+    Techniques for building and composing thread-safe classes
+    Using the concurrency building blocks in java.util.concurrent
+    Performance optimization dos and don'ts
+    Testing concurrent programs
+    Advanced topics such as atomic variables, nonblocking algorithms, and the Java Memory Model</string>
+      <integer>9780321349606</integer>
+      <integer>1</integer>
+      <integer>403</integer>
+      <double>37.79</double>
+      <timestamp>2006-05-19T00:00:00.000Z</timestamp>
+      <string>Java Concurrency In Practice</string>
+    </row>
+    <row>
+      <string>Scala is an object-oriented programming language for the Java Virtual Machine. In addition to being object-oriented, Scala is also a functional language, and combines the best approaches to OO and functional programming.
+
+In Italian, Scala means a stairway, or steps—indeed, Scala lets you step up to a programming environment that incorporates some of the best recent thinking in programming language design while also letting you use all your existing Java code.
+
+Artima is very pleased to publish the first book on Scala, written by the designer of the language, Martin Odersky. Co-authored by Lex Spoon and Bill Venners, this book takes a step-by-step tutorial approach to teaching you Scala. Starting with the fundamental elements of the language, Programming in Scala introduces functional programming from the practitioner's perspective, and describes advanced language features that can make you a better, more productive developer.</string>
+      <integer>9780981531601</integer>
+      <integer>1</integer>
+      <integer xsi:nil="true"/>
+      <double>31.17</double>
+      <timestamp>2011-01-04T00:00:00.000Z</timestamp>
+      <string>Programming in Scala</string>
+    </row>
+    <row>
+      <string>Are you looking for a deeper understanding of the Java™ programming language so that you can write code that is clearer, more correct, more robust, and more reusable? Look no further! Effective Java™, Second Edition, brings together seventy-eight indispensable programmer’s rules of thumb: working, best-practice solutions for the programming challenges you encounter every day.
+
+This highly anticipated new edition of the classic, Jolt Award-winning work has been thoroughly updated to cover Java SE 5 and Java SE 6 features introduced since the first edition. Bloch explores new design patterns and language idioms, showing you how to make the most of features ranging from generics to enums, annotations to autoboxing.
+
+Each chapter in the book consists of several “items” presented in the form of a short, standalone essay that provides specific advice, insight into Java platform subtleties, and outstanding code examples. The comprehensive descriptions and explanations for each item illuminate what to do, what not to do, and why.
+
+Highlights include:
+
+    New coverage of generics, enums, annotations, autoboxing, the for-each loop, varargs, concurrency utilities, and much more
+    Updated techniques and best practices on classic topics, including objects, classes, libraries, methods, and serialization
+    How to avoid the traps and pitfalls of commonly misunderstood subtleties of the language
+    Focus on the language and its most fundamental libraries: java.lang, java.util, and, to a lesser extent, java.util.concurrent and java.io
+
+Simply put, Effective Java™, Second Edition, presents the most practical, authoritative guidelines available for writing efficient, well-designed programs.</string>
+      <integer>9780321356680</integer>
+      <integer>0</integer>
+      <integer xsi:nil="true"/>
+      <double>41.24</double>
+      <timestamp>2008-05-28T00:00:00.000Z</timestamp>
+      <string>Effective Java (Second Edition)</string>
+    </row>
+  </data>
+</backup>

@@ -1,0 +1,24 @@
+<atlassian-plugin key="com.atlassian.activeobjects.jira.spi" name="JIRA Active Objects SPI implementation"
+                  system="false" pluginsVersion="2">
+    <plugin-info>
+        <description>A plugin that provides the DataSourceProvider service</description>
+        <vendor name="Atlassian Software Systems" url="http://www.atlassian.com"/>
+        <version>${project.version}</version>
+    </plugin-info>
+
+    <component key="dataSourceProvider" name="Data Source Provider" public="true"
+               class="com.atlassian.activeobjects.jira.JiraDataSourceProvider">
+        <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
+    <component key="ofBizConnectionFactory" name="OfBiz Connection factory"
+               class="com.atlassian.jira.ofbiz.DefaultOfBizConnectionFactory"/>
+
+    <component key="ofBizDatabaseTypeExtractor" name="OfBiz Database type extractor"
+               class="com.atlassian.activeobjects.jira.OfBizDatabaseTypeExtractor"/>
+
+    <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
+
+    <component key="jiraQuickRestart" name="JIRA Quick Restart"
+               class="com.atlassian.activeobjects.jira.JiraQuickRestart"/>
+</atlassian-plugin>

@@ -1,0 +1,95 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.activeobjects</groupId>
+        <artifactId>activeobjects-plugin-parent-pom</artifactId>
+        <version>0.19.12-SNAPSHOT</version>
+    </parent>
+
+    <groupId>com.atlassian.activeobjects</groupId>
+    <artifactId>activeobjects-confluence-spi</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>ActiveObjects Plugin - Confluence SPI implementation</name>
+    <description>This is the Confluence implementation of the SPI.</description>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>atlassian-plugin.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>atlassian-plugin.xml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.atlassian.activeobjects.confluence.spi</Bundle-SymbolicName>
+                        <Export-Package>
+                            com.atlassian.activeobjects.spi*;version="${project.version}",
+                        </Export-Package>
+                        <Import-Package>
+                            com.atlassian.confluence.importexport,
+                        	com.atlassian.confluence.importexport.plugin,
+                            com.atlassian.hibernate,
+                            com.atlassian.sal.api*,
+                            com.google.common*,
+                            java.sql,
+                            javax.naming;resolution:=optional,
+                            javax.sql,
+                            net.sf.hibernate*,
+                            org.slf4j*,
+                        </Import-Package>
+                        <Private-Package>
+                            com.atlassian.activeobjects.confluence*,
+                        </Private-Package>
+                        <Embed-Dependency>!clover.*;scope=compile|runtime;inline=true</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                        <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
+                        <Spring-Context>*;timeout:=60</Spring-Context>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-spi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.confluence</groupId>
+            <artifactId>confluence</artifactId>
+            <version>4.3-m2</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>tangosol-coherence</groupId>
+                    <artifactId>coherence</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tangosol-coherence</groupId>
+                    <artifactId>tangosol</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>glue</groupId>
+                    <artifactId>glue</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+</project>
