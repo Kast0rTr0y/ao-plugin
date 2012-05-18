@@ -1,20 +1,23 @@
 package com.atlassian.activeobjects.internal;
 
-import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
-import net.java.ao.EntityManager;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
-import static com.google.common.base.Preconditions.*;
+import javax.sql.DataSource;
+
+import net.java.ao.EntityManager;
+
+import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 
 /**
  * Creates a new instance of ActiveObjects given a dataSourceProvider
@@ -24,15 +27,22 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     private final EntityManagerFactory entityManagerFactory;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
+    private TransactionSynchronisationManager transactionSynchronizationManager;
 
-    public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
+    public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, 
+            EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
     {
         super(DataSourceType.APPLICATION, aoUpgradeManager);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
     }
-
+    
+    public void setTransactionSynchronizationManager(TransactionSynchronisationManager transactionSynchronizationManager)
+    {
+        this.transactionSynchronizationManager = transactionSynchronizationManager;
+    }
+    
     /**
      * Creates an {@link com.atlassian.activeobjects.external.ActiveObjects} using the
      * {@link com.atlassian.activeobjects.spi.DataSourceProvider}
@@ -48,7 +58,8 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
         // the data source from the application
         final DataSource dataSource = getDataSource();
         final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema(), configuration);
-        return new EntityManagedActiveObjects(entityManager, new SalTransactionManager(transactionTemplate, entityManager));
+        return new EntityManagedActiveObjects(entityManager, 
+                new SalTransactionManager(transactionTemplate, entityManager, transactionSynchronizationManager));
     }
 
     private DataSource getDataSource()

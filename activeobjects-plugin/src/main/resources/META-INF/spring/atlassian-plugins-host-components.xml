@@ -12,6 +12,8 @@
     <!-- stuff for the AO plugin itself. services not used during a Restore, are optional.  -->
     <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" cardinality="0..1"/>
     <osgi:reference id="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" timeout="5000" cardinality="0..1"/>
+    <osgi:reference id="aoSynchronizationManager" interface="com.atlassian.activeobjects.spi.TransactionSynchronisationManager" 
+        timeout="5000" cardinality="0..1"/>
     <osgi:reference id="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
     <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
     <osgi:reference id="userManager" interface="com.atlassian.sal.api.user.UserManager"/>

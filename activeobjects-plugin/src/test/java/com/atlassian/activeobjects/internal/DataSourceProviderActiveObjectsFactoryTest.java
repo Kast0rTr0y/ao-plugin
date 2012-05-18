@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import net.java.ao.EntityManager;
 import org.junit.After;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DataSourceProviderActiveObjectsFactoryTest
 {
-    private ActiveObjectsFactory activeObjectsFactory;
+    private DataSourceProviderActiveObjectsFactory activeObjectsFactory;
 
     @Mock
     private ActiveObjectUpgradeManager upgradeManager;
@@ -45,11 +46,15 @@ public class DataSourceProviderActiveObjectsFactoryTest
 
     @Mock
     private ActiveObjectsConfiguration configuration;
+    
+    @Mock 
+    private TransactionSynchronisationManager transactionSynchronizationManager;
 
     @Before
     public void setUp()
     {
         activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate);
+        activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
     }
 
     @After
