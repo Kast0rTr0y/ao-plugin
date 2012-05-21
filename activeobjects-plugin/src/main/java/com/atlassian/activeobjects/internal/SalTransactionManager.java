@@ -41,9 +41,10 @@ final class SalTransactionManager extends AbstractLoggingTransactionManager
         {
             transactionSynced = synchManager.runOnRollBack(rollBackAction);
         }
+        final T result;
         try
         {
-            return transactionTemplate.execute(callback);
+            result = transactionTemplate.execute(callback);
         }
         catch (final RuntimeException exception)
         {
@@ -60,6 +61,8 @@ final class SalTransactionManager extends AbstractLoggingTransactionManager
             }
             throw exception;
         }
+        entityManager.flushEntityCache();
+        return result;
     }
     
     private Runnable createRollbackAction(final EntityManager entityManager)
