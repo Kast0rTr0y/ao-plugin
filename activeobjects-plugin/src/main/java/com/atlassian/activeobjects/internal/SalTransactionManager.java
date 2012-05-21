@@ -36,10 +36,14 @@ final class SalTransactionManager extends AbstractLoggingTransactionManager
     <T> T inTransaction(TransactionCallback<T> callback)
     {
         boolean transactionSynced = false;
-        Runnable rollBackAction = createRollbackAction(entityManager);
+        final Runnable commitAction = createCommitAction(entityManager);
+        final Runnable rollBackAction = createRollbackAction(entityManager);
         if(synchManager != null)
         {
-            transactionSynced = synchManager.runOnRollBack(rollBackAction);
+            transactionSynced = synchManager.runOnSuccessfulCommit(commitAction);
+            if (transactionSynced) {
+                synchManager.runOnRollBack(rollBackAction);
+            }
         }
         final T result;
         try
@@ -61,10 +65,25 @@ final class SalTransactionManager extends AbstractLoggingTransactionManager
             }
             throw exception;
         }
-        entityManager.flushEntityCache();
+        if (!transactionSynced) {
+            commitAction.run();
+        }
         return result;
     }
-    
+
+    private Runnable createCommitAction(final EntityManager entityManager)
+    {
+        return new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                log.debug("Flushing entityManager due to commit");
+                entityManager.flushEntityCache();
+            }
+        };
+    }
+
     private Runnable createRollbackAction(final EntityManager entityManager)
     {
         return new Runnable()
