@@ -2,13 +2,10 @@ package com.atlassian.activeobjects.config;
 
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.DataSourceType;
-import com.atlassian.activeobjects.internal.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.NameConverters;
-import net.java.ao.schema.TableNameConverter;
 
 import java.util.List;
 import java.util.Set;
@@ -16,10 +13,12 @@ import java.util.Set;
 /** <p>This represents the configuration of active objects for a given module descriptor.</p> */
 public interface ActiveObjectsConfiguration
 {
+    static final String AO_TABLE_PREFIX = "AO";
+
     /**
      * The plugin key for which this configuration is defined.
      *
-     * @return a {@link com.atlassian.activeobjects.internal.PluginKey}, cannot be {@link null}
+     * @return a {@link PluginKey}, cannot be {@link null}
      */
     PluginKey getPluginKey();
 
@@ -36,7 +35,6 @@ public interface ActiveObjectsConfiguration
      * @return the prefix to use for table names in the database.
      */
     Prefix getTableNamePrefix();
-
 
     /**
      * Gets the name converters to use with Active Objects

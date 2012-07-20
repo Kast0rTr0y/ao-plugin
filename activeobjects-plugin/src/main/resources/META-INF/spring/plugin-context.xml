@@ -9,39 +9,45 @@
             <constructor-arg index="0">
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
             </constructor-arg>
-            <constructor-arg index="1" ref="osgiUtils"/>
-            <constructor-arg index="2">
-                <bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
-                    <constructor-arg index="0" ref="pluginSettingsFactory"/>
-                    <constructor-arg index="1" ref="settingKeys"/>
-                    <constructor-arg index="2" value="APPLICATION"/>
-                </bean>
-            </constructor-arg>
-            <constructor-arg index="3">
-                <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
-            </constructor-arg>
+            <constructor-arg index="1" ref="activeObjectsConfigurationFactoryBean"/>
+            <constructor-arg index="2" ref="osgiUtils"/>
+            <constructor-arg index="3" ref="pluginToTablesMapping"/>
             <constructor-arg index="4">
-                <bean class="com.atlassian.activeobjects.internal.config.ActiveObjectsNameConvertersFactory">
-                    <constructor-arg ref="fieldNameConverter"/>
-                    <constructor-arg ref="sequenceNameConverter"/>
-                    <constructor-arg ref="triggerNameConverter"/>
-                    <constructor-arg ref="indexNameConverter"/>
-                    <constructor-arg ref="uniqueNameConverter"/>
-                </bean>
-            </constructor-arg>
-            <constructor-arg index="5" ref="pluginToTablesMapping"/>
-            <constructor-arg index="6">
                 <bean class="com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator"/>
             </constructor-arg>
         </bean>
     </osgi:service>
 
     <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
-    <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" ref="activeObjectsServiceFactory" />
+    <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" ref="activeObjectsServiceFactory"/>
 
     <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
+
+    <osgi:service id="activeObjectsConfigurationFactory" ref="activeObjectsConfigurationFactoryBean" interface="com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory" />
+
+    <bean id="activeObjectsConfigurationFactoryBean" class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsConfigurationFactory">
+        <constructor-arg index="0">
+            <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <bean class="com.atlassian.activeobjects.internal.config.ActiveObjectsNameConvertersFactory">
+                <constructor-arg ref="fieldNameConverter"/>
+                <constructor-arg ref="sequenceNameConverter"/>
+                <constructor-arg ref="triggerNameConverter"/>
+                <constructor-arg ref="indexNameConverter"/>
+                <constructor-arg ref="uniqueNameConverter"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg index="2">
+            <bean class="com.atlassian.activeobjects.internal.DataSourceTypeResolverImpl">
+                <constructor-arg index="0" ref="pluginSettingsFactory"/>
+                <constructor-arg index="1" ref="settingKeys"/>
+                <constructor-arg index="2" value="APPLICATION"/>
+            </bean>
+        </constructor-arg>
+    </bean>
 
     <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
         <constructor-arg index="0" ref="osgiUtils"/>
@@ -49,11 +55,11 @@
         <constructor-arg index="2" ref="eventPublisher"/>
     </bean>
 
-    <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter" />
-    <bean id="sequenceNameConverter" class="net.java.ao.atlassian.AtlassianSequenceNameConverter" />
-    <bean id="triggerNameConverter" class="net.java.ao.atlassian.AtlassianTriggerNameConverter" />
-    <bean id="indexNameConverter" class="net.java.ao.atlassian.AtlassianIndexNameConverter" />
-    <bean id="uniqueNameConverter" class="net.java.ao.atlassian.AtlassianUniqueNameConverter" />
+    <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
+    <bean id="sequenceNameConverter" class="net.java.ao.atlassian.AtlassianSequenceNameConverter"/>
+    <bean id="triggerNameConverter" class="net.java.ao.atlassian.AtlassianTriggerNameConverter"/>
+    <bean id="indexNameConverter" class="net.java.ao.atlassian.AtlassianIndexNameConverter"/>
+    <bean id="uniqueNameConverter" class="net.java.ao.atlassian.AtlassianUniqueNameConverter"/>
 
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
@@ -79,15 +85,12 @@
 
     <bean id="pluginInformationFactory" class="com.atlassian.activeobjects.backup.PluginInformationFactory">
         <constructor-arg ref="pluginToTablesMapping"/>
-        <constructor-arg ref="aoHashesReader" />
         <constructor-arg ref="pluginAccessor"/>
     </bean>
 
     <bean id="pluginToTablesMapping" class="com.atlassian.activeobjects.admin.ActiveObjectsPluginToTablesMapping">
-        <constructor-arg ref="pluginSettingsFactory" />
+        <constructor-arg ref="pluginSettingsFactory"/>
     </bean>
-
-    <bean id="aoHashesReader" class="com.atlassian.activeobjects.backup.ActiveObjectsHashesReader"/>
 
     <bean id="aoPluginConfiguration"
           class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsPluginConfiguration">

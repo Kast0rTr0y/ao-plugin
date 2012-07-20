@@ -15,12 +15,10 @@ import static com.google.common.base.Preconditions.*;
 public final class PluginInformationFactory
 {
     private final PluginToTablesMapping pluginToTablesMapping;
-    private final ActiveObjectsHashesReader hashesReader;
     private final PluginAccessor pluginAccessor;
 
-    public PluginInformationFactory(PluginToTablesMapping pluginToTablesMapping, ActiveObjectsHashesReader hashesReader, PluginAccessor pluginAccessor)
+    public PluginInformationFactory(PluginToTablesMapping pluginToTablesMapping, PluginAccessor pluginAccessor)
     {
-        this.hashesReader = checkNotNull(hashesReader);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
         this.pluginAccessor = checkNotNull(pluginAccessor);
     }
@@ -44,7 +42,7 @@ public final class PluginInformationFactory
             return new AvailablePluginInformation(pluginInfo);
         }
 
-        final ActiveObjectModuleDescriptor aomd = getModuleDescriptor(hashesReader.getHash(tableName));
+        final ActiveObjectModuleDescriptor aomd = getModuleDescriptor(tableName);
         if (aomd != null)
         {
             return new AvailablePluginInformation(aomd.getPlugin());
@@ -53,13 +51,13 @@ public final class PluginInformationFactory
         return new NotAvailablePluginInformation();
     }
 
-    private ActiveObjectModuleDescriptor getModuleDescriptor(String hash)
+    private ActiveObjectModuleDescriptor getModuleDescriptor(String tableName)
     {
-        final Collection<ModuleDescriptor<Object>> moduleDescriptors = findModuleDescriptors(hash);
+        final Collection<ModuleDescriptor<Object>> moduleDescriptors = findModuleDescriptors(tableName);
         return moduleDescriptors.isEmpty() ? null : (ActiveObjectModuleDescriptor) moduleDescriptors.iterator().next();
     }
 
-    private Collection<ModuleDescriptor<Object>> findModuleDescriptors(final String hash)
+    private Collection<ModuleDescriptor<Object>> findModuleDescriptors(final String tableName)
     {
         return pluginAccessor.getModuleDescriptors(new ModuleDescriptorPredicate<Object>()
         {
@@ -67,7 +65,7 @@ public final class PluginInformationFactory
             public boolean matches(ModuleDescriptor<? extends Object> moduleDescriptor)
             {
                 return moduleDescriptor instanceof ActiveObjectModuleDescriptor
-                        && ((ActiveObjectModuleDescriptor) moduleDescriptor).getHash().equalsIgnoreCase(hash);
+                        && ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration().getTableNamePrefix().isStarting(tableName, false);
             }
         });
     }
