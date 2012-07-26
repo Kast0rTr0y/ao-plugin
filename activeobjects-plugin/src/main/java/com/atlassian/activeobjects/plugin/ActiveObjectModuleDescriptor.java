@@ -1,19 +1,12 @@
 package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.EntitiesValidator;
-import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
+import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
-import com.atlassian.activeobjects.internal.DataSourceType;
-import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
-import com.atlassian.activeobjects.internal.PluginKey;
-import com.atlassian.activeobjects.internal.Prefix;
-import com.atlassian.activeobjects.internal.SimplePrefix;
-import com.atlassian.activeobjects.internal.config.NameConvertersFactory;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
-import com.atlassian.activeobjects.util.Digester;
 import com.atlassian.plugin.AutowireCapablePlugin;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
@@ -24,11 +17,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.java.ao.RawEntity;
-import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.dom4j.Element;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
@@ -39,9 +28,8 @@ import java.util.List;
 import java.util.Set;
 
 import static com.atlassian.activeobjects.admin.PluginToTablesMapping.*;
-import static com.atlassian.activeobjects.ao.ConverterUtils.toUpperCase;
 import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Lists.*;
 
 /**
  * <p>The module descriptor for active objects.</p>
@@ -53,42 +41,29 @@ import static com.google.common.collect.Lists.newLinkedList;
  */
 public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
 {
-    public static final String AO_TABLE_PREFIX = "AO";
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final ActiveObjectsConfigurationFactory configurationFactory;
     private final OsgiServiceUtils osgiUtils;
-    private final Digester digester;
-    private final DataSourceTypeResolver dataSourceTypeResolver;
-    private final NameConvertersFactory nameConvertersFactory;
     private final EntitiesValidator entitiesValidator;
     private final PluginToTablesMapping pluginToTablesMapping;
-
-    private String hash;
-    private Prefix tableNamePrefix;
-    private NameConverters nameConverters;
-
-    private Set<Class<? extends RawEntity<?>>> entityClasses;
 
     /**
      * The service registration for the active objects configuration, defined by this plugin.
      */
     private ServiceRegistration activeObjectsConfigurationServiceRegistration;
     private ServiceRegistration tableNameConverterServiceRegistration;
-    private List<ActiveObjectsUpgradeTask> upgradeTasks;
 
-    public ActiveObjectModuleDescriptor(OsgiServiceUtils osgiUtils,
-                                        DataSourceTypeResolver dataSourceTypeResolver,
-                                        Digester digester,
-                                        NameConvertersFactory nameConvertersFactory,
+    private ActiveObjectsConfiguration configuration;
+
+    public ActiveObjectModuleDescriptor(ActiveObjectsConfigurationFactory configurationFactory,
+                                        OsgiServiceUtils osgiUtils,
                                         PluginToTablesMapping pluginToTablesMapping,
                                         EntitiesValidator entitiesValidator)
     {
+        this.configurationFactory = checkNotNull(configurationFactory);
         this.osgiUtils = checkNotNull(osgiUtils);
-        this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
-        this.digester = checkNotNull(digester);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
-        this.nameConvertersFactory = checkNotNull(nameConvertersFactory);
         this.entitiesValidator = checkNotNull(entitiesValidator);
     }
 
@@ -97,17 +72,12 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     {
         super.init(plugin, element);
 
-        tableNamePrefix = getTableNamePrefix(element);
-        nameConverters = nameConvertersFactory.getNameConverters(tableNamePrefix);
-        entityClasses = entitiesValidator.check(getEntities(element), nameConverters);
-        upgradeTasks = getUpgradeTasks(element);
+        final Set<Class<? extends RawEntity<?>>> entities = getEntities(element);
+        final List<ActiveObjectsUpgradeTask> upgradeTasks = getUpgradeTasks(element);
+        configuration = getActiveObjectsConfiguration(getNameSpace(element), entities, upgradeTasks);
 
-        recordTables(entityClasses, nameConverters.getTableNameConverter());
-    }
-
-    public String getHash()
-    {
-        return hash;
+        final Set<Class<? extends RawEntity<?>>> entityClasses = entitiesValidator.check(entities, configuration.getNameConverters());
+        recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
     }
 
     private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element)
@@ -167,11 +137,11 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
         if (tableNameConverterServiceRegistration == null)
         {
-            tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, nameConverters.getTableNameConverter());
+            tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, configuration.getNameConverters().getTableNameConverter());
         }
         if (activeObjectsConfigurationServiceRegistration == null)
         {
-            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, getActiveObjectsBundleConfiguration(tableNamePrefix, nameConverters, entityClasses));
+            activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, configuration);
         }
     }
 
@@ -191,17 +161,14 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         return null; // no module
     }
 
-    private ActiveObjectsConfiguration getActiveObjectsBundleConfiguration(Prefix tableNamePrefix, NameConverters nameConverters, Set<Class<? extends RawEntity<?>>> entities)
+    public ActiveObjectsConfiguration getConfiguration()
     {
-        final DefaultActiveObjectsConfiguration configuration =
-                new DefaultActiveObjectsConfiguration(PluginKey.fromBundle(getBundle()), dataSourceTypeResolver);
-
-        configuration.setTableNamePrefix(tableNamePrefix);
-        configuration.setNameConverters(nameConverters);
-        configuration.setSchemaConfiguration(new PrefixedSchemaConfiguration(tableNamePrefix));
-        configuration.setEntities(entities);
-        configuration.setUpgradeTasks(upgradeTasks);
         return configuration;
+    }
+
+    private ActiveObjectsConfiguration getActiveObjectsConfiguration(String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks)
+    {
+        return configurationFactory.getConfiguration(getBundle(), namespace, entities, upgradeTasks);
     }
 
     private void unregister(ServiceRegistration serviceRegistration)
@@ -217,12 +184,6 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
                 logger.debug("Service has already been unregistered", ignored);
             }
         }
-    }
-
-    private Prefix getTableNamePrefix(Element element)
-    {
-        hash = digester.digest(getNameSpace(element), 6);
-        return new SimplePrefix(toUpperCase(AO_TABLE_PREFIX + "_" + hash), "_");
     }
 
     /**
@@ -282,121 +243,5 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     private static List<Element> getSubElements(Element element, String name)
     {
         return element.elements(name);
-    }
-
-    /**
-     * <p>Default implementation of the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration}.</p>
-     * <p>Note: it implements {@link #hashCode()} and {@link #equals(Object)} correctly to be used safely with collections. Those
-     * implementation are based solely on the {@link com.atlassian.activeobjects.internal.PluginKey} and nothing else as this is
-     * the only immutable field.</p>
-     */
-    private static class DefaultActiveObjectsConfiguration implements ActiveObjectsConfiguration
-    {
-        private final PluginKey pluginKey;
-        private final DataSourceTypeResolver dataSourceTypeResolver;
-        private Prefix tableNamePrefix;
-        private NameConverters nameConverters;
-        private SchemaConfiguration schemaConfiguration;
-        private Set<Class<? extends RawEntity<?>>> entities;
-        private List<ActiveObjectsUpgradeTask> upgradeTasks;
-
-        DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
-        {
-            this.pluginKey = checkNotNull(pluginKey);
-            this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
-        }
-
-        @Override
-        public PluginKey getPluginKey()
-        {
-            return pluginKey;
-        }
-
-        @Override
-        public DataSourceType getDataSourceType()
-        {
-            return dataSourceTypeResolver.getDataSourceType(getTableNamePrefix());
-        }
-
-        @Override
-        public Prefix getTableNamePrefix()
-        {
-            return tableNamePrefix;
-        }
-
-        public void setTableNamePrefix(Prefix tableNamePrefix)
-        {
-            this.tableNamePrefix = tableNamePrefix;
-        }
-
-        @Override
-        public NameConverters getNameConverters()
-        {
-            return nameConverters;
-        }
-
-        public void setNameConverters(NameConverters nameConverters)
-        {
-            this.nameConverters = nameConverters;
-        }
-
-        @Override
-        public SchemaConfiguration getSchemaConfiguration()
-        {
-            return schemaConfiguration;
-        }
-
-        public void setSchemaConfiguration(SchemaConfiguration schemaConfiguration)
-        {
-            this.schemaConfiguration = schemaConfiguration;
-        }
-
-        @Override
-        public Set<Class<? extends RawEntity<?>>> getEntities()
-        {
-            return entities;
-        }
-
-        public void setEntities(Set<Class<? extends RawEntity<?>>> entities)
-        {
-            this.entities = entities;
-        }
-
-        @Override
-        public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
-        {
-            return upgradeTasks;
-        }
-
-        public void setUpgradeTasks(List<ActiveObjectsUpgradeTask> upgradeTasks)
-        {
-            this.upgradeTasks = upgradeTasks;
-        }
-
-        @Override
-        public final int hashCode()
-        {
-            return new HashCodeBuilder(5, 13).append(pluginKey).toHashCode();
-        }
-
-        @Override
-        public final boolean equals(Object o)
-        {
-            if (o == null)
-            {
-                return false;
-            }
-            if (o == this)
-            {
-                return true;
-            }
-            if (o.getClass() != getClass())
-            {
-                return false;
-            }
-
-            final DefaultActiveObjectsConfiguration configuration = (DefaultActiveObjectsConfiguration) o;
-            return new EqualsBuilder().append(pluginKey, configuration.pluginKey).isEquals();
-        }
     }
 }

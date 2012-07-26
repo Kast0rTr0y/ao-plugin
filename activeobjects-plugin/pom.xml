@@ -102,6 +102,7 @@
                             org.codehaus.stax2*,
                         </Private-Package>
                         <Export-Package>
+                            com.atlassian.activeobjects.config;version="${project.version}",
                             com.atlassian.activeobjects.external*;version="${project.version}",
                             com.atlassian.activeobjects.tx*;version="${project.version}",
                             net.java.ao;version="${ao.version}",

@@ -6,7 +6,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.DataSourceType;
-import com.atlassian.activeobjects.internal.PluginKey;
+import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.event.api.EventListener;
