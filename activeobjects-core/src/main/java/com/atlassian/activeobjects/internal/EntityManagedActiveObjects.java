@@ -118,6 +118,18 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
     }
 
+    public <K> int deleteWithSQL(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
+    {
+        try
+        {
+            return entityManager.deleteWithSQL(type, criteria, parameters);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectsSqlException(entityManager, e);
+        }
+    }
+
     public final <T extends RawEntity<K>, K> T[] find(Class<T> type)
     {
         try
