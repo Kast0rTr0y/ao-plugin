@@ -66,6 +66,11 @@ final class DelegatingActiveObjects implements ActiveObjects
         activeObjectsSupplier.get().delete(entities);
     }
 
+    public <K> int deleteWithSQL(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
+    {
+        return activeObjectsSupplier.get().deleteWithSQL(type, criteria, parameters);
+    }
+
     public <T extends RawEntity<K>, K> T[] find(Class<T> type)
     {
         return activeObjectsSupplier.get().find(type);
