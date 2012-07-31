@@ -1,0 +1,39 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+        <application-version min="1" max="10"/>
+    </plugin-info>
+
+    <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet">
+        <url-pattern>/active-objects/*</url-pattern>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:/META-INF/spring/web-context.xml</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-context-param key="enable-html-escaping" name="Enable HTML escaping context parameter">
+        <description>Enables automatic HTML escaping in Spring MVC.</description>
+        <param-name>defaultHtmlEscape</param-name>
+        <param-value>true</param-value>
+    </servlet-context-param>
+
+    <resource type="i18n" name="i18n" location="com.atlassian.activeobjects.admin.ActiveObjectsAdmin"/>
+
+    <web-resource key="web-resources" name="Web Resources">
+        <resource type="download" name="active-objects-admin.css" location="web/active-objects-admin.css"/>
+        <resource type="download" name="active-objects-admin.js" location="web/active-objects-admin.js"/>
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+    </web-resource>
+
+    <resource type="download" name="images/" location="images/"/>
+
+    <web-item key="ao-tables-web-item" name="Active Objects Tables" section="advanced_menu_section/advanced_section" i18n-name-key="ao.admin.tables.webfragments.name" weight="80" application="jira">
+        <label key="ao.admin.tables.menu.label"/>
+        <link linkId="ao_tables">/plugins/servlet/active-objects/tables/list</link>
+        <condition class="com.atlassian.activeobjects.admin.condition.UserIsSysAdminCondition"/>
+        <param name="webfragments.keywords">ao.admin.tables.webfragments.keywords</param>
+    </web-item>
+</atlassian-plugin>

@@ -1,0 +1,24 @@
+<atlassian-plugin key="com.atlassian.activeobjects.confluence.spi"
+                  name="Confluence Active Objects SPI implementation" system="false" pluginsVersion="2">
+    <plugin-info>
+        <description>A plugin that provides the DataSourceProvider service for Active Objects</description>
+        <vendor name="Atlassian Software Systems" url="http://www.atlassian.com"/>
+        <version>${project.version}</version>
+    </plugin-info>
+
+    <component key="dataSourceProvider" class="com.atlassian.activeobjects.confluence.ConfluenceDataSourceProvider" name="Data Source Provider" public="true">
+        <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
+    <component key="aoSynchronizationManager" class="com.atlassian.activeobjects.confluence.transaction.ConfluenceAOSynchronisationManager" 
+        name="Synchonisation Manager" public="true">
+        <interface>com.atlassian.activeobjects.spi.TransactionSynchronisationManager</interface>
+    </component>
+
+    <component key="dialectExractor" class="com.atlassian.activeobjects.confluence.hibernate.HibernateSessionDialectExtractor" name="Dialect Extractor"/>
+
+    <component-import key="hibernateSessionFactory" interface="com.atlassian.hibernate.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
+    <component-import key="synchronizationManager" interface="com.atlassian.confluence.core.SynchronizationManager" name="Confluence Synchronisation Manager"/>
+    
+    <backup-restore key="activeObjectsBackupRestoreProvider" class="com.atlassian.activeobjects.confluence.backup.ActiveObjectsBackupRestoreProvider" public="true"/>
+</atlassian-plugin>
