@@ -1,6 +1,7 @@
 package it.com.atlassian.activeobjects;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
@@ -106,4 +107,7 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected EventPublisher eventPublisher;
+    
+    @MockHostComponent
+    protected TransactionSynchronisationManager transactionSynchronizationManager;
 }

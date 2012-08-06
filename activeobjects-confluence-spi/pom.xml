@@ -41,6 +41,8 @@
                             com.atlassian.activeobjects.spi*;version="${project.version}",
                         </Export-Package>
                         <Import-Package>
+                            com.atlassian.confluence.core,
+                            org.springframework.transaction.support,
                             com.atlassian.confluence.importexport,
                         	com.atlassian.confluence.importexport.plugin,
                             com.atlassian.hibernate,

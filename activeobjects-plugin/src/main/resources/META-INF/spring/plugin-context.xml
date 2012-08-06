@@ -108,7 +108,7 @@
                     <constructor-arg index="1" ref="applicationProperties"/>
                     <constructor-arg index="2" ref="aoPluginConfiguration"/>
                 </bean>
-                <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory">
+                <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory" autowire="byName">
                     <constructor-arg index="0" ref="aoUpgradeManager"/>
                     <constructor-arg index="1">
                         <bean class="com.atlassian.activeobjects.internal.EntityManagerFactoryImpl">
@@ -117,6 +117,7 @@
                     </constructor-arg>
                     <constructor-arg index="2" ref="dataSourceProvider"/>
                     <constructor-arg index="3" ref="transactionTemplate"/>
+                    <property name="transactionSynchronizationManager" ref="aoSynchronizationManager"/>
                 </bean>
             </list>
         </constructor-arg>
