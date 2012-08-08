@@ -9,7 +9,7 @@
             <constructor-arg index="0">
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
             </constructor-arg>
-            <constructor-arg index="1" ref="activeObjectsConfigurationFactoryBean"/>
+            <constructor-arg index="1" ref="activeObjectsConfigurationFactory"/>
             <constructor-arg index="2" ref="osgiUtils"/>
             <constructor-arg index="3" ref="pluginToTablesMapping"/>
             <constructor-arg index="4">
@@ -25,9 +25,7 @@
 
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
-    <osgi:service id="activeObjectsConfigurationFactory" ref="activeObjectsConfigurationFactoryBean" interface="com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory" />
-
-    <bean id="activeObjectsConfigurationFactoryBean" class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsConfigurationFactory">
+    <bean id="activeObjectsConfigurationFactory" class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsConfigurationFactory">
         <constructor-arg index="0">
             <bean class="com.atlassian.activeobjects.util.HexMd5Digester"/>
         </constructor-arg>
@@ -50,9 +48,13 @@
     </bean>
 
     <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
-        <constructor-arg index="0" ref="osgiUtils"/>
-        <constructor-arg index="1" ref="activeObjectsFactory"/>
-        <constructor-arg index="2" ref="eventPublisher"/>
+        <constructor-arg index="0">
+            <bean class="com.atlassian.activeobjects.spring.ApplicationContextFactoryBean"/>
+        </constructor-arg>
+        <constructor-arg index="1" ref="osgiUtils"/>
+        <constructor-arg index="2" ref="activeObjectsFactory"/>
+        <constructor-arg index="3" ref="activeObjectsConfigurationFactory" />
+        <constructor-arg index="4" ref="eventPublisher"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
