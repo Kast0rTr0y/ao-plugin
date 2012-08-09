@@ -30,20 +30,17 @@ final class SalTransactionManager extends AbstractLoggingTransactionManager
     {
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.entityManager = checkNotNull(entityManager);
-        this.synchManager = synchManager;
+        this.synchManager = checkNotNull(synchManager);
     }
 
     <T> T inTransaction(TransactionCallback<T> callback)
     {
-        boolean transactionSynced = false;
         final Runnable commitAction = createCommitAction(entityManager);
         final Runnable rollBackAction = createRollbackAction(entityManager);
-        if(synchManager != null)
+        final boolean transactionSynced = synchManager.runOnSuccessfulCommit(commitAction);
+        if (transactionSynced)
         {
-            transactionSynced = synchManager.runOnSuccessfulCommit(commitAction);
-            if (transactionSynced) {
-                synchManager.runOnRollBack(rollBackAction);
-            }
+            synchManager.runOnRollBack(rollBackAction);
         }
         final T result;
         try
