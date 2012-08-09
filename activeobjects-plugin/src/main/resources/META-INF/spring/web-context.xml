@@ -51,7 +51,6 @@
     <bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer"/>
 
     <bean id="messageSource" class="com.atlassian.plugin.web.springmvc.message.ApplicationMessageSource">
-        <property name="keyPrefix" value="embedded.crowd.validation."/>
         <property name="i18nResolver" ref="i18nResolver"/>
     </bean>
 
