@@ -44,7 +44,7 @@ public abstract class AbstractTestActiveObjectsBackup
     @Before
     public final void setUp()
     {
-        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), new ActiveObjectsHashesReader(), mock(PluginAccessor.class))));
+         aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class))));
     }
 
     @After

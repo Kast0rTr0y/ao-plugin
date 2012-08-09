@@ -39,7 +39,7 @@ public final class CreateBackup
 
     public static void main(String[] args) throws Exception
     {
-        final ImportExportErrorService errorService = new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), new ActiveObjectsHashesReader(), mock(PluginAccessor.class)));
+        final ImportExportErrorService errorService = new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class)));
 
         final JdbcConfiguration jdbc = selectJdbcDriver();
 
