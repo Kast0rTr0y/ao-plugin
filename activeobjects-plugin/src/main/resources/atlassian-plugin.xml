@@ -6,6 +6,14 @@
         <application-version min="1" max="10"/>
     </plugin-info>
 
+    <servlet-filter key="admin-ui-filter" name="Admin UI Filter" class="com.atlassian.activeobjects.servlet.AdminUiFilter" location="after-encoding" weight="1000">
+        <description>A filter that checks whether the Active Objects admin UI is enabled or not.</description>
+        <url-pattern>/plugins/servlet/active-objects/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </servlet-filter>
+
     <servlet key="dispatcher-servlet" name="Dispatcher Servlet" class="com.atlassian.plugin.web.springmvc.DispatcherServlet">
         <url-pattern>/active-objects/*</url-pattern>
         <init-param>
