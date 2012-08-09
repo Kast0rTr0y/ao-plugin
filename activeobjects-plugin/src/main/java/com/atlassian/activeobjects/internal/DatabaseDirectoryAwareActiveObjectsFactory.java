@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import com.atlassian.sal.api.ApplicationProperties;

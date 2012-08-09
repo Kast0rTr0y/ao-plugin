@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.event.api.EventPublisher;
@@ -11,6 +12,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
+import org.springframework.context.ApplicationContext;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -21,10 +23,16 @@ public final class ActiveObjectsServiceFactoryTest
     private ActiveObjectsServiceFactory serviceFactory;
 
     @Mock
+    private ApplicationContext applicationContext;
+
+    @Mock
     private OsgiServiceUtils osgiUtils;
 
     @Mock
     private ActiveObjects activeObjects;
+
+    @Mock
+    private ActiveObjectsConfigurationFactory configurationFactory;
 
     @Mock
     private ActiveObjectsConfiguration configuration;
@@ -41,7 +49,7 @@ public final class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(osgiUtils, factory, eventPublisher);
+        serviceFactory = new ActiveObjectsServiceFactory(applicationContext, osgiUtils, factory, configurationFactory, eventPublisher);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
         when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);
