@@ -1,7 +1,6 @@
 package com.atlassian.dbexporter.jdbc;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -21,7 +20,7 @@ final class ConnectionHandler implements InvocationHandler
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException
     {
         if (isCloseMethod(method))
         {
@@ -32,9 +31,23 @@ final class ConnectionHandler implements InvocationHandler
         return delegate(method, args);
     }
 
-    private Object delegate(Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
+    private Object delegate(Method method, Object[] args) throws SQLException
     {
-        return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
+        try
+        {
+            return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
+        }
+        catch (Exception e)
+        {
+            if (e.getCause() instanceof SQLException)
+            {
+                throw (SQLException) e.getCause();
+            }
+            else
+            {
+                throw new SQLException(e.getCause());
+            }
+        }
     }
 
     public static Connection newInstance(Connection c, Closeable closeable)
