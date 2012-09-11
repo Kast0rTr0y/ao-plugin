@@ -1,12 +1,13 @@
 package com.atlassian.dbexporter.jdbc;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 final class ConnectionHandler implements InvocationHandler
 {
@@ -37,16 +38,34 @@ final class ConnectionHandler implements InvocationHandler
         {
             return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
-            if (e.getCause() instanceof SQLException)
+            throw new IllegalStateException(e);
+        }
+        catch (InvocationTargetException e)
+        {
+            Throwable cause = e.getCause();
+
+            if (cause instanceof SQLException)
             {
-                throw (SQLException) e.getCause();
+                throw (SQLException) cause;
             }
-            else
+
+            if (cause instanceof RuntimeException)
             {
-                throw new SQLException(e.getCause());
+                throw (RuntimeException) cause;
             }
+
+            if (cause instanceof Error)
+            {
+                throw (Error) cause;
+            }
+
+            throw new RuntimeException("Unexpected checked exception", cause);
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new IllegalStateException(e); // should not be possible
         }
     }
 
