@@ -1,4 +1,4 @@
-package com.atlassian.activeobjects.spi;
+package com.atlassian.activeobjects.spi.factory;
 
 import java.sql.Array;
 import java.sql.Blob;

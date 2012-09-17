@@ -41,7 +41,7 @@ public final class ConnectionHandler implements InvocationHandler
     {
         try
         {
-            return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
+            return method.invoke(delegate, args);
         }
         catch (IllegalAccessException e)
         {
@@ -67,10 +67,6 @@ public final class ConnectionHandler implements InvocationHandler
             }
 
             throw new RuntimeException("Unexpected checked exception", cause);
-        }
-        catch (NoSuchMethodException e)
-        {
-            throw new IllegalStateException(e); // should not be possible
         }
     }
 

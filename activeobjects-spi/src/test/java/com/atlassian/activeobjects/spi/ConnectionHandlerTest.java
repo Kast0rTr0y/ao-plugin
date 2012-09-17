@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.spi;
 
+import com.atlassian.activeobjects.spi.factory.PrivateConnectionFactory;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
