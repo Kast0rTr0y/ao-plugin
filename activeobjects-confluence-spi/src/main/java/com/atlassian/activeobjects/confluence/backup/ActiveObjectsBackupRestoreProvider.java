@@ -1,11 +1,11 @@
 package com.atlassian.activeobjects.confluence.backup;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.confluence.importexport.ImportExportException;
 import com.atlassian.confluence.importexport.plugin.BackupRestoreProvider;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Backup and restore provider, implementing confluences backup and restore
@@ -40,7 +40,7 @@ public class ActiveObjectsBackupRestoreProvider implements BackupRestoreProvider
         }
     }
 
-    public void setBackup(Backup backup)
+	public void setBackup(Backup backup)
     {
         this.backup = backup;
     }

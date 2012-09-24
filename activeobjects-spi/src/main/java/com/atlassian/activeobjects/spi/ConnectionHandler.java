@@ -26,7 +26,7 @@ public final class ConnectionHandler implements InvocationHandler
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException
     {
         if (isCloseMethod(method))
         {
@@ -37,9 +37,37 @@ public final class ConnectionHandler implements InvocationHandler
         return delegate(method, args);
     }
 
-    private Object delegate(Method method, Object[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
+    private Object delegate(Method method, Object[] args) throws SQLException
     {
-        return method.invoke(delegate, args);
+        try
+        {
+            return method.invoke(delegate, args);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new IllegalStateException(e);
+        }
+        catch (InvocationTargetException e)
+        {
+            Throwable cause = e.getCause();
+
+            if (cause instanceof SQLException)
+            {
+                throw (SQLException) cause;
+            }
+
+            if (cause instanceof RuntimeException)
+            {
+                throw (RuntimeException) cause;
+            }
+
+            if (cause instanceof Error)
+            {
+                throw (Error) cause;
+            }
+
+            throw new RuntimeException("Unexpected checked exception", cause);
+        }
     }
 
     public static Connection newInstance(Connection c)
