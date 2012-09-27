@@ -21,19 +21,19 @@ public final class ImportExportErrorServiceImpl implements ImportExportErrorServ
     @Override
     public ImportExportException newImportExportException(String tableName, String message)
     {
-        return new ActiveObjectsImportExportException(getPluginInformation(tableName), message);
+        return new ActiveObjectsImportExportException(tableName, getPluginInformation(tableName), message);
     }
 
     @Override
     public ImportExportException newImportExportSqlException(String tableName, String message, SQLException e)
     {
-        return new ActiveObjectsImportExportException(getPluginInformation(tableName), message, e);
+        return new ActiveObjectsImportExportException(tableName, getPluginInformation(tableName), message, e);
     }
 
     @Override
     public ImportExportException newRowImportSqlException(String tableName, long rowNum, SQLException e)
     {
-        return new ActiveObjectsImportExportException(
+        return new ActiveObjectsImportExportException(tableName,
                 getPluginInformation(tableName),
                 "There has been a SQL exception importing row #"
                         + rowNum + " for table '" + tableName +
@@ -43,19 +43,19 @@ public final class ImportExportErrorServiceImpl implements ImportExportErrorServ
     @Override
     public ImportExportException newParseException(Throwable t)
     {
-        return new ActiveObjectsImportExportException(getPluginInformation(null), t);
+        return new ActiveObjectsImportExportException(null, getPluginInformation(null), t);
     }
 
     @Override
     public ImportExportException newParseException(String message)
     {
-        return new ActiveObjectsImportExportException(getPluginInformation(null), message);
+        return new ActiveObjectsImportExportException(null, getPluginInformation(null), message);
     }
 
     @Override
     public ImportExportException newParseException(String message, Throwable t)
     {
-        return new ActiveObjectsImportExportException(getPluginInformation(null), message, t);
+        return new ActiveObjectsImportExportException(null, getPluginInformation(null), message, t);
     }
 
     private PluginInformation getPluginInformation(String tableName)
