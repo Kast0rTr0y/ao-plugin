@@ -15,8 +15,8 @@ public class PluginExistenceTest extends NimbleFuncTestCase {
 	@Test
 	public void testIfPluginIsInstalledAndEnabled() throws Exception
 	{
-		assertTrue("Plugin aui is not installed", administration.plugins().isPluginInstalled(PLUGIN_KEY));
-		assertTrue("Plugin aui is not enabled", administration.plugins().isPluginEnabled(PLUGIN_KEY));
+		assertTrue("Plugin is not installed", administration.plugins().isPluginInstalled(PLUGIN_KEY));
+		assertTrue("Plugin is not enabled", administration.plugins().isPluginEnabled(PLUGIN_KEY));
 	}
 
 }
