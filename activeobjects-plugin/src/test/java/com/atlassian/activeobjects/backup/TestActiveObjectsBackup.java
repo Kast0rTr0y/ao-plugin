@@ -286,7 +286,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BOOK_ABSTRACT,
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.LONGVARCHAR, 16 * 1024 * 1024)),
             BOOK_ISBN,
             BOOK_READ,
             BOOK_PAGES,
@@ -303,7 +303,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BOOK_ABSTRACT,
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.LONGVARCHAR, Integer.MAX_VALUE)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
@@ -320,7 +320,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.VARCHAR, -1)),
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.VARCHAR, 1024 * 1024 * 1024)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
@@ -337,7 +337,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             BackupData.of(AUTHORSHIP_BOOK_ID, SqlType.of(Types.NUMERIC, 20)),
             BackupData.of(AUTHORSHIP_ID, SqlType.of(Types.NUMERIC, 11)),
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB, Integer.MAX_VALUE)),
             BackupData.of(BOOK_ISBN, SqlType.of(Types.NUMERIC, 20)),
             BackupData.of(BOOK_READ, SqlType.of(Types.NUMERIC, 1)),
             BackupData.of(BOOK_PAGES, SqlType.of(Types.NUMERIC, 11)),
@@ -371,7 +371,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB, Integer.MAX_VALUE)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
