@@ -16,7 +16,7 @@
     <foreignKey fromTable="AO_000000_AUTHORSHIP" fromColumn="AUTHOR_ID" toTable="AO_000000_LONG_NAME_TO_AUTHOR" toColumn="ID"/>
   </table>
   <table name="AO_000000_BOOK">
-    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="2005" precision="2147483647"/>
+    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="2005" precision="1073741823"/>
     <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="-5" precision="19"/>
     <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1"/>
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="4" precision="10"/>
