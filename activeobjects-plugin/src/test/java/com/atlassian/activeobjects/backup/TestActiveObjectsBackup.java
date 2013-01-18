@@ -286,7 +286,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.LONGVARCHAR, 16 * 1024 * 1024)),
+            BOOK_ABSTRACT,
             BOOK_ISBN,
             BOOK_READ,
             BOOK_PAGES,
@@ -371,7 +371,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB, Integer.MAX_VALUE)),
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB, (1<<30) - 1)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
