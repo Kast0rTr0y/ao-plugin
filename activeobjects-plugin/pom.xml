@@ -40,6 +40,10 @@
                     <systemPropertyVariables>
                         <ao.test.database>${ao.test.database}</ao.test.database>
                         <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                        <db.username>${db.username}</db.username>
+                        <db.password>${db.password}</db.password>
+                        <db.url>${db.url}</db.url>
+                        <db.schema>${db.schema}</db.schema>
                     </systemPropertyVariables>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
