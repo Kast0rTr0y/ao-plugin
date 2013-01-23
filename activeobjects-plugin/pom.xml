@@ -16,6 +16,12 @@
 
     <properties>
         <db.skip>false</db.skip>
+        <db.host>localhost</db.host>
+        <db.name>ao_test</db.name>
+        <db.sid>orcl</db.sid>
+        <db.username>ao_user</db.username>
+        <db.password>ao_password</db.password>
+        <db.schema>ao_schema</db.schema>
         <mysql.version>5.1.13</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <oracle.version>10.2.0.4</oracle.version>
@@ -127,15 +133,17 @@
             <plugin>
                 <groupId>org.leberrigaud.maven.plugins</groupId>
                 <artifactId>database-maven-plugin</artifactId>
-                <version>0.9.1</version>
+                <version>0.10</version>
                 <configuration>
                     <skip>${db.skip}</skip>
                     <database>${ao.test.database}</database>
-                    <name>ao_test</name>
-                    <username>ao_user</username>
-                    <password>ao_password</password>
-                    <rootUsername>${db.username}</rootUsername>
-                    <rootPassword>${db.password}</rootPassword>
+                    <schema>${db.schema}</schema>
+                    <name>${db.name}</name>
+                    <host>${db.host}</host>
+                    <username>${db.username}</username>
+                    <password>${db.password}</password>
+                    <rootUsername>${db.system.username}</rootUsername>
+                    <rootPassword>${db.system.password}</rootPassword>
                 </configuration>
                 <executions>
                     <execution>
@@ -368,8 +376,8 @@
             <id>mysql</id>
             <properties>
                 <ao.test.database>mysql</ao.test.database>
-                <db.username>root</db.username>
-                <db.password />
+                <db.system.username>root</db.system.username>
+                <db.system.password />
             </properties>
             <dependencies>
                 <dependency>
@@ -398,8 +406,8 @@
             <id>postgres</id>
             <properties>
                 <ao.test.database>postgres</ao.test.database>
-                <db.username>postgres</db.username>
-                <db.password>postgres</db.password>
+                <db.system.username>postgres</db.system.username>
+                <db.system.password>postgres</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -415,7 +423,7 @@
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -432,8 +440,8 @@
             <id>oracle</id>
             <properties>
                 <ao.test.database>oracle</ao.test.database>
-                <db.username>sys</db.username>
-                <db.password>oracle</db.password>
+                <db.system.username>sys</db.system.username>
+                <db.system.password>oracle</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -449,7 +457,8 @@
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -484,7 +493,8 @@
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -519,7 +529,8 @@
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -536,8 +547,8 @@
             <id>sqlserver</id>
             <properties>
                 <ao.test.database>sqlserver</ao.test.database>
-                <db.username>sa</db.username>
-                <db.password>admin</db.password>
+                <db.system.username>sa</db.system.username>
+                <db.system.password>password</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -552,9 +563,6 @@
                     <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
-                        <configuration>
-                            <schema>ao_schema</schema>
-                        </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>net.sourceforge.jtds</groupId>
