@@ -18,7 +18,6 @@
         <db.skip>false</db.skip>
         <mysql.version>5.1.13</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
-        <oracle.version>11.2.0.7.0</oracle.version>
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.17</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
@@ -539,6 +538,7 @@
                 <ao.test.database>oracle</ao.test.database>
                 <db.system.username>sys</db.system.username>
                 <db.system.password>oracle</db.system.password>
+                <oracle.version>10.2.0.4</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -608,12 +608,12 @@
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
-                <oracle.version>11.2.0.7.0</oracle.version>
+                <oracle.version>11.2.0.2.0</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>com.oracle</groupId>
-                    <artifactId>oracle-jdbc15</artifactId>
+                    <artifactId>ojdbc5</artifactId>
                     <version>${oracle.version}</version>
                     <scope>test</scope>
                 </dependency>
@@ -645,7 +645,7 @@
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
-                                <artifactId>oracle-jdbc15</artifactId>
+                                <artifactId>ojdbc5</artifactId>
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
@@ -678,11 +678,12 @@
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
+                <oracle.version>11.2.0.2.0</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>com.oracle</groupId>
-                    <artifactId>oracle-jdbc16</artifactId>
+                    <artifactId>ojdbc6</artifactId>
                     <version>${oracle.version}</version>
                     <scope>test</scope>
                 </dependency>
@@ -714,7 +715,7 @@
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
-                                <artifactId>oracle-jdbc16</artifactId>
+                                <artifactId>ojdbc6</artifactId>
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
