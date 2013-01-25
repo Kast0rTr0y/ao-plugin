@@ -387,7 +387,7 @@
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 com.atlassian.activeobjects.junit.OracleTest,
                                 com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
                         </configuration>
                     </plugin>
@@ -451,7 +451,7 @@
                                 <!--com.atlassian.activeobjects.junit.MySqlTest,-->
                                 com.atlassian.activeobjects.junit.OracleTest,
                                 com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
                         </configuration>
                     </plugin>
@@ -518,7 +518,7 @@
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 com.atlassian.activeobjects.junit.OracleTest,
-                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest
                                 <!--com.atlassian.activeobjects.junit.PostgresTest,-->
                             </excludedGroups>
                         </configuration>
@@ -589,7 +589,7 @@
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 <!--com.atlassian.activeobjects.junit.OracleTest,-->
                                 com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
                         </configuration>
                     </plugin>
@@ -608,12 +608,12 @@
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
-                <oracle.version>11.2.0.2.0</oracle.version>
+                <oracle.version>11.2.0.7.0</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>com.oracle</groupId>
-                    <artifactId>ojdbc5</artifactId>
+                    <artifactId>oracle-jdbc15</artifactId>
                     <version>${oracle.version}</version>
                     <scope>test</scope>
                 </dependency>
@@ -645,7 +645,7 @@
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
-                                <artifactId>ojdbc5</artifactId>
+                                <artifactId>oracle-jdbc15</artifactId>
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
@@ -659,7 +659,7 @@
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 <!--com.atlassian.activeobjects.junit.OracleTest,-->
                                 com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
                         </configuration>
                     </plugin>
@@ -683,7 +683,7 @@
             <dependencies>
                 <dependency>
                     <groupId>com.oracle</groupId>
-                    <artifactId>ojdbc6</artifactId>
+                    <artifactId>oracle-jdbc16</artifactId>
                     <version>${oracle.version}</version>
                     <scope>test</scope>
                 </dependency>
@@ -715,7 +715,7 @@
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
-                                <artifactId>ojdbc6</artifactId>
+                                <artifactId>oracle-jdbc16</artifactId>
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
@@ -729,7 +729,7 @@
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 <!--com.atlassian.activeobjects.junit.OracleTest,-->
                                 com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
                         </configuration>
                     </plugin>
@@ -794,7 +794,7 @@
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 com.atlassian.activeobjects.junit.OracleTest,
                                 <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
-                                com.atlassian.activeobjects.junit.PostgresTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
                         </configuration>
                     </plugin>
