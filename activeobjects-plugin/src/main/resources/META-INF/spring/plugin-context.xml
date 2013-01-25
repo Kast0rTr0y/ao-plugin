@@ -80,6 +80,7 @@
             </bean>
         </constructor-arg>
         <constructor-arg ref="errorService"/>
+        <constructor-arg ref="eventPublisher"/>
     </bean>
 
     <bean id="errorService" class="com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl">
