@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.RestoreProgressMonitor;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.CleanupMode;
@@ -33,6 +34,7 @@ import com.atlassian.dbexporter.node.NodeStreamWriter;
 import com.atlassian.dbexporter.node.stax.StaxStreamReader;
 import com.atlassian.dbexporter.node.stax.StaxStreamWriter;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
+import com.atlassian.event.api.EventPublisher;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import net.java.ao.DatabaseProvider;
@@ -60,8 +62,9 @@ public final class ActiveObjectsBackup implements Backup
     private final Supplier<DatabaseProvider> databaseProviderSupplier;
     private final NameConverters nameConverters;
     private final ImportExportErrorService errorService;
+    private final EventPublisher eventPublisher;
 
-    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, NameConverters converters, ImportExportErrorService errorService)
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, NameConverters converters, ImportExportErrorService errorService, EventPublisher eventPublisher)
     {
         this(new Supplier<DatabaseProvider>()
         {
@@ -70,19 +73,20 @@ public final class ActiveObjectsBackup implements Backup
             {
                 return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
             }
-        }, converters, errorService);
+        }, converters, errorService, eventPublisher);
     }
 
-    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService)
+    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService, EventPublisher eventPublisher)
     {
-        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), converters, errorService);
+        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), converters, errorService, eventPublisher);
     }
 
-    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService)
+    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService, EventPublisher eventPublisher)
     {
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
         this.nameConverters = checkNotNull(converters);
         this.errorService = checkNotNull(errorService);
+        this.eventPublisher = checkNotNull(eventPublisher);
     }
 
     /**
@@ -160,6 +164,7 @@ public final class ActiveObjectsBackup implements Backup
         finally
         {
             closeCloseable(streamReader);
+            eventPublisher.publish(HotRestartEvent.INSTANCE);
         }
     }
 
