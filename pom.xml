@@ -54,7 +54,7 @@
         <spring.library.version>2.5.6</spring.library.version>
         <spring.osgi.version>1.2.0</spring.osgi.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>2.19.0-m5</refapp.version>
+        <refapp.version>2.12.0</refapp.version>
 
         <junit.version>4.10</junit.version>
         <mockito.version>1.8.4</mockito.version>
