@@ -1,14 +1,12 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.junit.*;
 import com.atlassian.activeobjects.test.model.Model;
-import com.google.common.collect.ImmutableList;
+import com.google
+        .common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.db.HSQLDatabaseProvider;
-import net.java.ao.db.MySQLDatabaseProvider;
-import net.java.ao.db.OracleDatabaseProvider;
-import net.java.ao.db.PostgreSQLDatabaseProvider;
-import net.java.ao.db.SQLServerDatabaseProvider;
+import net.java.ao.db.*;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -17,13 +15,14 @@ import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.sql.Types;
 
-import static org.custommonkey.xmlunit.XMLAssert.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertEquals;
 
 public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBackup
 {
@@ -39,6 +38,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(HsqlTest.class)
     public void testHsqlBackup() throws Exception
     {
         testBackup(HSQL, HSQL_DATA);
@@ -46,6 +46,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(HsqlTest.class)
     public void testHsqlEmptyBackup() throws Exception
     {
         String xmlBackup = read(HSQL_EMPTY);
@@ -55,6 +56,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(MySqlTest.class)
     public void testMySqlBackup() throws Exception
     {
         testBackup(MYSQL, MYSQL_DATA);
@@ -62,6 +64,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(PostgresTest.class)
     public void testPostgresBackup() throws Exception
     {
         testBackup(POSTGRES, POSTGRES_DATA);
@@ -69,6 +72,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(OracleTest.class)
     public void testOracleBackup() throws Exception
     {
         testBackup(ORACLE, ORACLE_DATA);
@@ -76,6 +80,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(OracleTest.class)
     public void testLegacyOracleBackup() throws Exception
     {
         testBackup(LEGACY_ORACLE, LEGACY_ORACLE_DATA);
@@ -83,6 +88,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
 
     @Test
     @NonTransactional
+    @Category(SqlServerTest.class)
     public void testSqlServerBackup() throws Exception
     {
         testBackup(SQLSERVER, SQL_SERVER_DATA);

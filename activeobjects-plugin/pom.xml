@@ -378,6 +378,19 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                <!--com.atlassian.activeobjects.junit.HsqlTest,-->
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest,
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -427,6 +440,19 @@
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                <!--com.atlassian.activeobjects.junit.MySqlTest,-->
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest,
+                            </excludedGroups>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -484,6 +510,20 @@
                             </dependency>
                         </dependencies>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                <!--com.atlassian.activeobjects.junit.PostgresTest,-->
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>
@@ -539,6 +579,19 @@
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest,
+                            </excludedGroups>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -597,6 +650,19 @@
                             </dependency>
                         </dependencies>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest,
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -654,6 +720,19 @@
                             </dependency>
                         </dependencies>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest,
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -705,6 +784,19 @@
                                 <version>${jtds.version}</version>
                             </dependency>
                         </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
+                                com.atlassian.activeobjects.junit.PostgresTest,
+                            </excludedGroups>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
