@@ -309,7 +309,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.LONGVARCHAR, Integer.MAX_VALUE)),
+            BOOK_ABSTRACT,
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
