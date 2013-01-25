@@ -125,13 +125,14 @@
                 <artifactId>database-maven-plugin</artifactId>
                 <version>0.10</version>
                 <configuration>
+                    <!--These comes from the individual database profiles-->
                     <skip>${db.skip}</skip>
                     <database>${ao.test.database}</database>
                     <schema>${db.schema}</schema>
                     <name>${db.name}</name>
                     <host>${db.host}</host>
-                    <username>${ao.test.db.username}</username>
-                    <password>${ao.test.db.password}</password>
+                    <username>${db.username}</username>
+                    <password>${db.password}</password>
                     <rootUsername>${db.system.username}</rootUsername>
                     <rootPassword>${db.system.password}</rootPassword>
                 </configuration>
@@ -360,8 +361,8 @@
             <properties>
                 <ao.test.database>hsql</ao.test.database>
                 <db.url>jdbc:hsqldb:mem:ao_test</db.url>
-                <ao.test.db.username>sa</ao.test.db.username>
-                <ao.test.db.password/>
+                <db.username>sa</db.username>
+                <db.password/>
                 <db.skip>true</db.skip>
             </properties>
             <build>
@@ -386,8 +387,8 @@
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
                 <db.sid>orcl</db.sid>
-                <ao.test.db.username>ao_user</ao.test.db.username>
-                <ao.test.db.password>ao_password</ao.test.db.password>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>mysql</ao.test.database>
                 <db.system.username>root</db.system.username>
@@ -421,8 +422,8 @@
                                 <ao.test.database>${ao.test.database}</ao.test.database>
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin
                                 </plugin.root.directories>
-                                <db.username>${ao.test.db.username}</db.username>
-                                <db.password>${ao.test.db.password}</db.password>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
@@ -437,8 +438,8 @@
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
                 <db.sid>orcl</db.sid>
-                <ao.test.db.username>ao_user</ao.test.db.username>
-                <ao.test.db.password>ao_password</ao.test.db.password>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>postgres</ao.test.database>
                 <db.system.username>postgres</db.system.username>
@@ -462,8 +463,8 @@
                                 <ao.test.database>${ao.test.database}</ao.test.database>
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin
                                 </plugin.root.directories>
-                                <db.username>${ao.test.db.username}</db.username>
-                                <db.password>${ao.test.db.password}</db.password>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
@@ -492,8 +493,8 @@
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
                 <db.sid>orcl</db.sid>
-                <ao.test.db.username>ao_user</ao.test.db.username>
-                <ao.test.db.password>ao_password</ao.test.db.password>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>oracle</ao.test.database>
                 <db.system.username>sys</db.system.username>
@@ -517,8 +518,8 @@
                                 <ao.test.database>${ao.test.database}</ao.test.database>
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin
                                 </plugin.root.directories>
-                                <db.username>${ao.test.db.username}</db.username>
-                                <db.password>${ao.test.db.password}</db.password>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
@@ -548,8 +549,8 @@
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
                 <db.sid>orcl</db.sid>
-                <ao.test.db.username>ao_user</ao.test.db.username>
-                <ao.test.db.password>ao_password</ao.test.db.password>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
@@ -574,8 +575,8 @@
                                 <ao.test.database>${ao.test.database}</ao.test.database>
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin
                                 </plugin.root.directories>
-                                <db.username>${ao.test.db.username}</db.username>
-                                <db.password>${ao.test.db.password}</db.password>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
@@ -605,8 +606,8 @@
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
                 <db.sid>orcl</db.sid>
-                <ao.test.db.username>ao_user</ao.test.db.username>
-                <ao.test.db.password>ao_password</ao.test.db.password>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
@@ -631,8 +632,8 @@
                                 <ao.test.database>${ao.test.database}</ao.test.database>
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin
                                 </plugin.root.directories>
-                                <db.username>${ao.test.db.username}</db.username>
-                                <db.password>${ao.test.db.password}</db.password>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
@@ -662,8 +663,8 @@
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
                 <db.sid>orcl</db.sid>
-                <ao.test.db.username>ao_user</ao.test.db.username>
-                <ao.test.db.password>ao_password</ao.test.db.password>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>sqlserver</ao.test.database>
                 <db.system.username>sa</db.system.username>
@@ -687,8 +688,8 @@
                                 <ao.test.database>${ao.test.database}</ao.test.database>
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin
                                 </plugin.root.directories>
-                                <db.username>${ao.test.db.username}</db.username>
-                                <db.password>${ao.test.db.password}</db.password>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>

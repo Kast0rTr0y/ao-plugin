@@ -132,6 +132,11 @@
             </dependency>
             <dependency>
                 <groupId>com.atlassian.activeobjects</groupId>
+                <artifactId>activeobjects-jira-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.activeobjects</groupId>
                 <artifactId>activeobjects-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
