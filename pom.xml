@@ -8,7 +8,7 @@
 
     <groupId>com.atlassian.activeobjects</groupId>
     <artifactId>activeobjects-plugin-parent-pom</artifactId>
-    <version>0.19.16.1</version>
+    <version>0.19.16.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
