@@ -18,7 +18,7 @@
         <db.skip>false</db.skip>
         <mysql.version>5.1.13</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
-        <oracle.version>10.2.0.4</oracle.version>
+        <oracle.version>11.2.0.7.0</oracle.version>
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.17</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
@@ -678,7 +678,6 @@
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
-                <oracle.version>11.2.0.2.0</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
