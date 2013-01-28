@@ -526,7 +526,7 @@
                         <configuration>
                             <schema>ao_schema</schema>
                             <sid>${db.sid}</sid>
-                        </configuration>/oracle
+                        </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
