@@ -124,7 +124,7 @@
                     <products>
                         <product>
                             <id>refapp</id>
-                            <version>2.12.0</version>
+                            <version>${refapp.version}</version>
                             <bundledArtifacts>
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>

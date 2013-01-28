@@ -6,13 +6,14 @@
     <osgi:service id="ao-module-descriptor-factory"
                   interface="com.atlassian.plugin.osgi.external.ListableModuleDescriptorFactory">
         <bean class="com.atlassian.activeobjects.plugin.ActiveObjectsModuleDescriptorFactory">
-            <constructor-arg index="0">
+            <constructor-arg index="0" ref="moduleFactory" />
+            <constructor-arg index="1" >
                 <bean class="com.atlassian.plugin.osgi.bridge.external.SpringHostContainer"/>
             </constructor-arg>
-            <constructor-arg index="1" ref="activeObjectsConfigurationFactory"/>
-            <constructor-arg index="2" ref="osgiUtils"/>
-            <constructor-arg index="3" ref="pluginToTablesMapping"/>
-            <constructor-arg index="4">
+            <constructor-arg index="2" ref="activeObjectsConfigurationFactory"/>
+            <constructor-arg index="3" ref="osgiUtils"/>
+            <constructor-arg index="4" ref="pluginToTablesMapping"/>
+            <constructor-arg index="5">
                 <bean class="com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator"/>
             </constructor-arg>
         </bean>

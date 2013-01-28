@@ -11,6 +11,7 @@ import com.atlassian.plugin.AutowireCapablePlugin;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
+import com.atlassian.plugin.module.ModuleFactory;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -56,11 +57,13 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private ActiveObjectsConfiguration configuration;
 
-    public ActiveObjectModuleDescriptor(ActiveObjectsConfigurationFactory configurationFactory,
+    public ActiveObjectModuleDescriptor(ModuleFactory moduleFactory,
+                                        ActiveObjectsConfigurationFactory configurationFactory,
                                         OsgiServiceUtils osgiUtils,
                                         PluginToTablesMapping pluginToTablesMapping,
                                         EntitiesValidator entitiesValidator)
     {
+        super(moduleFactory);
         this.configurationFactory = checkNotNull(configurationFactory);
         this.osgiUtils = checkNotNull(osgiUtils);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
