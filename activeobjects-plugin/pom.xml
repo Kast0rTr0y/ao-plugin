@@ -132,11 +132,12 @@
                 <configuration>
                     <skip>${db.skip}</skip>
                     <database>${ao.test.database}</database>
-                    <name>ao_test</name>
-                    <username>ao_user</username>
-                    <password>ao_password</password>
-                    <rootUsername>${db.username}</rootUsername>
-                    <rootPassword>${db.password}</rootPassword>
+                    <name>${db.name}</name>
+                    <host>${db.host}</host>
+                    <username>${db.username}</username>
+                    <password>${db.password}</password>
+                    <rootUsername>${db.system.username}</rootUsername>
+                    <rootPassword>${db.system.password}</rootPassword>
                 </configuration>
                 <executions>
                     <execution>
@@ -377,6 +378,7 @@
                     <groupId>mysql</groupId>
                     <artifactId>mysql-connector-java</artifactId>
                     <version>${mysql.version}</version>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -389,6 +391,7 @@
                                 <groupId>mysql</groupId>
                                 <artifactId>mysql-connector-java</artifactId>
                                 <version>${mysql.version}</version>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
