@@ -19,7 +19,7 @@
         <mysql.version>5.1.13</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <oracle.version>10.2.0.4</oracle.version>
-        <jtds.version>1.2.4</jtds.version>
+        <jtds.version> 1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.17</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
         <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
@@ -440,7 +440,7 @@
                 <dependency>
                     <groupId>com.oracle</groupId>
                     <artifactId>oracle-jdbc14</artifactId>
-                    <version>${oracle.version}</version>
+                    <version>10.2.0.4</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -451,12 +451,14 @@
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
                             <schema>ao_schema</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
                                 <artifactId>oracle-jdbc14</artifactId>
-                                <version>${oracle.version}</version>
+                                <version>10.2.0.4</version>
+                                <scope>test</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -486,12 +488,14 @@
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
                             <schema>ao_schema</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
                                 <artifactId>ojdbc5</artifactId>
                                 <version>${oracle.version}</version>
+                                <scope>test</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -521,12 +525,14 @@
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
                             <schema>ao_schema</schema>
-                        </configuration>
+                            <sid>${db.sid}</sid>
+                        </configuration>/oracle
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
                                 <artifactId>ojdbc6</artifactId>
                                 <version>${oracle.version}</version>
+                                <scope>test</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -537,8 +543,8 @@
             <id>sqlserver</id>
             <properties>
                 <ao.test.database>sqlserver</ao.test.database>
-                <db.username>sa</db.username>
-                <db.password>admin</db.password>
+                <db.system.username>sa</db.system.username>
+                <db.system.password>admin</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -553,14 +559,12 @@
                     <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
-                        <configuration>
-                            <schema>ao_schema</schema>
-                        </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>net.sourceforge.jtds</groupId>
                                 <artifactId>jtds</artifactId>
                                 <version>${jtds.version}</version>
+                                <scope>test</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
