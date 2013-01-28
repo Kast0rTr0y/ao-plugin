@@ -25,7 +25,7 @@
         <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
         <db.skip>false</db.skip>
         <db.host>localhost</db.host>
-        <db.name>ao_test</db.name>
+        <db.name>ao</db.name>
         <db.sid>orcl</db.sid>
         <db.username>ao_user</db.username>
         <db.password>ao_password</db.password>
@@ -410,7 +410,7 @@
                     <groupId>postgresql</groupId>
                     <artifactId>postgresql</artifactId>
                     <version>${postgres.version}</version>
-                    <scope>test</scope>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -418,14 +418,12 @@
                     <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
-                        <configuration>
-                            <schema>ao_schema</schema>
-                        </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>postgresql</groupId>
                                 <artifactId>postgresql</artifactId>
                                 <version>${postgres.version}</version>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -444,7 +442,7 @@
                     <groupId>com.oracle</groupId>
                     <artifactId>oracle-jdbc14</artifactId>
                     <version>10.2.0.4</version>
-                    <scope>test</scope>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -461,7 +459,7 @@
                                 <groupId>com.oracle</groupId>
                                 <artifactId>oracle-jdbc14</artifactId>
                                 <version>10.2.0.4</version>
-                                <scope>test</scope>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -481,7 +479,7 @@
                     <groupId>com.oracle</groupId>
                     <artifactId>ojdbc5</artifactId>
                     <version>${oracle.version}</version>
-                    <scope>test</scope>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -498,7 +496,7 @@
                                 <groupId>com.oracle</groupId>
                                 <artifactId>ojdbc5</artifactId>
                                 <version>${oracle.version}</version>
-                                <scope>test</scope>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -518,7 +516,7 @@
                     <groupId>com.oracle</groupId>
                     <artifactId>ojdbc6</artifactId>
                     <version>${oracle.version}</version>
-                    <scope>test</scope>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -535,7 +533,7 @@
                                 <groupId>com.oracle</groupId>
                                 <artifactId>ojdbc6</artifactId>
                                 <version>${oracle.version}</version>
-                                <scope>test</scope>
+                                <scope>runtime</scope>
                             </dependency>
                         </dependencies>
                     </plugin>
