@@ -23,6 +23,13 @@
         <ao.spi.compatibility.version>0.17</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
         <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
+        <db.skip>false</db.skip>
+        <db.host>localhost</db.host>
+        <db.name>ao_test</db.name>
+        <db.sid>orcl</db.sid>
+        <db.username>ao_user</db.username>
+        <db.password>ao_password</db.password>
+        <db.schema>ao_schema</db.schema>
     </properties>
 
     <build>
@@ -362,8 +369,8 @@
             <id>mysql</id>
             <properties>
                 <ao.test.database>mysql</ao.test.database>
-                <db.username>root</db.username>
-                <db.password />
+                <db.system.username>root</db.system.username>
+                <db.system.password />
             </properties>
             <dependencies>
                 <dependency>
