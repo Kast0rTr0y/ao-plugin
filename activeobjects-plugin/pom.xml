@@ -25,12 +25,14 @@
         <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
         <db.skip>false</db.skip>
         <db.host>localhost</db.host>
-        <db.name>ao_test</db.name>
+        <db.name>ao_plugin_test</db.name>
         <db.sid>XE</db.sid>
-        <db.username>ao_user</db.username>
-        <db.password>ao_password</db.password>
+        <db.username>ao_plugin_user</db.username>
+        <db.password>ao_plugin_password</db.password>
         <db.schema>ao_schema</db.schema>
+        <db.url>jdbc:hsqldb:mem:${db.name}</db.url>
     </properties>
+
 
     <build>
         <plugins>
@@ -155,6 +157,18 @@
                         <phase>test</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <db.username>${db.username}</db.username>
+                        <db.password>${db.password}</db.password>
+                        <db.schema>${db.schema}</db.schema>
+                        <db.url>${db.url}</db.url>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>
