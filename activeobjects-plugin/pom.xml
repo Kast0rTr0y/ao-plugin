@@ -159,10 +159,13 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-refapp-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
+                        <ao.test.database>${ao.test.database}</ao.test.database>
+                        <plugin.root.directories>${basedir}/../activeobjects-test-plugin
+                        </plugin.root.directories>
                         <db.username>${db.username}</db.username>
                         <db.password>${db.password}</db.password>
                         <db.schema>${db.schema}</db.schema>
