@@ -28,7 +28,6 @@
         <db.name>ao_plugin_test</db.name>
         <db.sid>XE</db.sid>
         <db.username>ao_plugin_user</db.username>
-        <db.password>ao_plugin_password</db.password>
         <db.schema>ao_schema</db.schema>
         <db.url>jdbc:hsqldb:mem:${db.name}</db.url>
     </properties>
@@ -371,7 +370,6 @@
                 <ao.test.database>hsql</ao.test.database>
                 <db.url>jdbc:hsqldb:mem:ao_test</db.url>
                 <db.username>sa</db.username>
-                <db.password/>
                 <db.skip>true</db.skip>
             </properties>
         </profile>
