@@ -369,6 +369,9 @@
             </activation>
             <properties>
                 <ao.test.database>hsql</ao.test.database>
+                <db.url>jdbc:hsqldb:mem:ao_test</db.url>
+                <db.username>sa</db.username>
+                <db.password/>
                 <db.skip>true</db.skip>
             </properties>
         </profile>
