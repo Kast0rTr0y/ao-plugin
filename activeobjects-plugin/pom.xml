@@ -141,6 +141,13 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>drop-db</id>
+                        <goals>
+                            <goal>drop</goal>
+                        </goals>
+                        <phase>process-test-resources</phase>
+                    </execution>
+                    <execution>
                         <id>create-db</id>
                         <goals>
                             <goal>create</goal>
