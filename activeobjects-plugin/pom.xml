@@ -141,7 +141,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>drop-db</id>
+                        <id>drop-db-before</id>
                         <goals>
                             <goal>drop</goal>
                         </goals>
@@ -155,7 +155,7 @@
                         <phase>process-test-resources</phase>
                     </execution>
                     <execution>
-                        <id>drop-db</id>
+                        <id>drop-db-after</id>
                         <goals>
                             <goal>drop</goal>
                         </goals>
