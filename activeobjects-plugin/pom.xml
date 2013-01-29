@@ -529,12 +529,12 @@
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
-                <oracle.version>11.2.0.2.0</oracle.version>
+                <oracle.version>11.1.0.7.0</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>com.oracle</groupId>
-                    <artifactId>ojdbc6</artifactId>
+                    <artifactId>oracle-jdbc16</artifactId>
                     <version>${oracle.version}</version>
                     <scope>runtime</scope>
                 </dependency>
@@ -551,7 +551,7 @@
                         <dependencies>
                             <dependency>
                                 <groupId>com.oracle</groupId>
-                                <artifactId>ojdbc6</artifactId>
+                                <artifactId>oracle-jdbc16</artifactId>
                                 <version>${oracle.version}</version>
                                 <scope>runtime</scope>
                             </dependency>
