@@ -25,10 +25,10 @@
         <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
         <db.skip>false</db.skip>
         <db.host>localhost</db.host>
-        <db.name>ao-test</db.name>
+        <db.name>ao_test</db.name>
         <db.sid>orcl</db.sid>
-        <db.username>ao_user</db.username>
-        <db.password>ao_password</db.password>
+        <db.username>aopluginuser</db.username>
+        <db.password>aopluginpassword</db.password>
         <db.schema>ao_schema</db.schema>
     </properties>
 
