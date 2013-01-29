@@ -91,8 +91,8 @@ public final class CreateBackup
     private static JdbcConfiguration customJdbc() throws IOException
     {
         final String url = prompt("Url:");
-        final String username = prompt("Username:", "ao_user");
-        final String password = prompt("Password:", "ao_password");
+        final String username = prompt("Username:", "aopluginuser");
+        final String password = prompt("Password:", "aopluginpassword");
         final String schema = prompt("Schema:", "");
 
         return new JdbcConfiguration()
