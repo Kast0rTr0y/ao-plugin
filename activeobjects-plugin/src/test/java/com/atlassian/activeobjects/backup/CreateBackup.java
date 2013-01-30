@@ -5,7 +5,6 @@ import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
 import com.atlassian.dbexporter.ImportExportErrorService;
-import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.EntityManager;
@@ -49,10 +48,8 @@ public final class CreateBackup
         final Model model = new Model(entityManager);
         model.createData();
 
-        final EventPublisher eventPublisher = mock(EventPublisher.class);
-
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), errorService, eventPublisher).save(stream, NullBackupProgressMonitor.INSTANCE);
+        new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }
