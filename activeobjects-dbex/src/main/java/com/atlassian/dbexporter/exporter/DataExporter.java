@@ -135,6 +135,8 @@ public final class DataExporter implements Exporter
                     break;
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
+                case Types.NVARCHAR:
+                case Types.LONGNVARCHAR:
                     final String s = getString(table, result, col);
                     RowDataNode.append(node, wasNull(table, result) ? null : s);
                     break;
@@ -156,6 +158,7 @@ public final class DataExporter implements Exporter
                     break;
 
                 case Types.CLOB:
+                case Types.NCLOB:
                     final String c = getClobAsString(table, result, col);
                     RowDataNode.append(node, wasNull(table, result) ? null : c);
                     break;
