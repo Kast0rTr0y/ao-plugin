@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.atlassian.event.api.EventPublisher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +23,7 @@ import com.atlassian.activeobjects.spi.RestoreProgressMonitor;
 public class ActiveObjectsBackupRestoreProviderTest
 {
     @Mock private Backup aoBackup;
+    @Mock private EventPublisher eventPublisher;
     private ActiveObjectsBackupRestoreProvider provider;
 
     @Before
@@ -29,6 +31,7 @@ public class ActiveObjectsBackupRestoreProviderTest
     {
         provider = new ActiveObjectsBackupRestoreProvider();
         provider.setBackup(aoBackup);
+        provider.setEventPublisher(eventPublisher);
     }
 
     @Test
