@@ -47,6 +47,7 @@
                             com.atlassian.plugin;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.descriptors;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.hostcontainer;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.module;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.bridge.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.factory;version="${atlassian-plugins.version}",
@@ -109,13 +110,6 @@
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
-                    <pluginArtifacts>
-                        <pluginArtifact>
-                            <groupId>com.atlassian.activeobjects</groupId>
-                            <artifactId>activeobjects-refapp-spi</artifactId>
-                            <version>${project.version}</version>
-                        </pluginArtifact>
-                    </pluginArtifacts>
                 </configuration>
             </plugin>
             <!-- creates and drops databases before and after tests -->
