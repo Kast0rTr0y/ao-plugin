@@ -2,18 +2,19 @@ package com.atlassian.activeobjects.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.sql.SQLException;
-import java.util.Map;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import net.java.ao.DBParam;
 import net.java.ao.DefaultPolymorphicTypeMapper;
+import net.java.ao.Disposable;
 import net.java.ao.EntityManager;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * <p>Implementation of {@link com.atlassian.activeobjects.external.ActiveObjects} that mainly delegates to the
@@ -22,7 +23,7 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
  *
  * @see net.java.ao.EntityManager
  */
-public class EntityManagedActiveObjects implements ActiveObjects
+public class EntityManagedActiveObjects implements ActiveObjects, Disposable
 {
     private final EntityManager entityManager;
     private final TransactionManager transactionManager;
@@ -254,5 +255,12 @@ public class EntityManagedActiveObjects implements ActiveObjects
     public final <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
         return transactionManager.doInTransaction(callback);
+    }
+
+    @Override
+    public void dispose()
+    {
+        flushAll();
+        entityManager.getProvider().dispose();
     }
 }
