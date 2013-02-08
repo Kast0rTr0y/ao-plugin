@@ -1,10 +1,12 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.EntityManagedActiveObjects;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import net.java.ao.DBParam;
+import net.java.ao.Disposable;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
@@ -156,7 +158,10 @@ final class DelegatingActiveObjects implements ActiveObjects
         {
             if (initialized)
             {
-                value.flushAll();
+                if (value instanceof Disposable)
+                {
+                    ((Disposable) value).dispose();
+                }
                 value = null;
                 initialized = false;
             }
