@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.19.20-SNAPSHOT</version>
+        <version>0.19.20</version>
     </parent>
 
     <artifactId>activeobjects-plugin</artifactId>
@@ -355,7 +355,7 @@
                 <ao.test.database>hsql</ao.test.database>
                 <db.url>jdbc:hsqldb:mem:ao_test</db.url>
                 <db.username>sa</db.username>
-                <db.password/>
+                <db.password />
                 <db.skip>true</db.skip>
             </properties>
             <build>
@@ -398,7 +398,7 @@
                 <db.schema>ao_schema</db.schema>
                 <ao.test.database>mysql</ao.test.database>
                 <db.system.username>root</db.system.username>
-                <db.system.password/>
+                <db.system.password />
             </properties>
             <dependencies>
                 <dependency>
