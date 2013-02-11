@@ -260,7 +260,13 @@ public class EntityManagedActiveObjects implements ActiveObjects, Disposable
     @Override
     public void dispose()
     {
-        flushAll();
-        entityManager.getProvider().dispose();
+        try
+        {
+            flushAll();
+        }
+        finally
+        {
+            entityManager.getProvider().dispose();
+        }
     }
 }
