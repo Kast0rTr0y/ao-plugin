@@ -1,8 +1,5 @@
 package com.atlassian.activeobjects.confluence.backup;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
