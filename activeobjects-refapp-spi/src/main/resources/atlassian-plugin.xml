@@ -15,5 +15,9 @@
         <interface>javax.sql.DataSource</interface>
     </component>
 
+    <component key="aoSynchronizationManager" class="com.atlassian.activeobjects.spi.NoOpTransactionSynchronisationManager" name="Synchonisation Manager" public="true">
+        <interface>com.atlassian.activeobjects.spi.TransactionSynchronisationManager</interface>
+    </component>
+
     <component-import name="Application Properties" key="application-properties" interface="com.atlassian.sal.api.ApplicationProperties"/>
 </atlassian-plugin>
