@@ -46,7 +46,7 @@
     </modules>
 
     <properties>
-        <plugin-sdk.version>3.6.3-SNAPSHOT</plugin-sdk.version>
+        <plugin-sdk.version>3.9.4-rc1</plugin-sdk.version>
         <ao.version>0.9.27</ao.version>
         <sal.version>2.4.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
