@@ -156,10 +156,6 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
             @Override
             public void dispose()
             {
-//                if(dataSource instanceof Disposable)
-//                {
-//                    ((Disposable) dataSource).dispose();
-//                }
             }
         });
     }

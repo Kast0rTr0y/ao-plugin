@@ -158,10 +158,7 @@ final class DelegatingActiveObjects implements ActiveObjects
         {
             if (initialized)
             {
-//                if (value instanceof Disposable)
-//                {
-//                    ((Disposable) value).dispose();
-//                }
+                value.flushAll();
                 value = null;
                 initialized = false;
             }

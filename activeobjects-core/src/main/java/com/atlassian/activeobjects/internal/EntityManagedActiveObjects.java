@@ -23,7 +23,7 @@ import java.util.Map;
  *
  * @see net.java.ao.EntityManager
  */
-public class EntityManagedActiveObjects implements ActiveObjects, Disposable
+public class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
     private final TransactionManager transactionManager;
@@ -255,18 +255,5 @@ public class EntityManagedActiveObjects implements ActiveObjects, Disposable
     public final <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
         return transactionManager.doInTransaction(callback);
-    }
-
-    @Override
-    public void dispose()
-    {
-        try
-        {
-            flushAll();
-        }
-        finally
-        {
-            entityManager.getProvider().dispose();
-        }
     }
 }
