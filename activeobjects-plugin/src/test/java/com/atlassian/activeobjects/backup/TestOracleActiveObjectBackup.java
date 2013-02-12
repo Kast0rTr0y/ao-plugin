@@ -1,11 +1,11 @@
 package com.atlassian.activeobjects.backup;
 
-import com.atlassian.activeobjects.junit.HsqlTest;
+import com.atlassian.activeobjects.junit.OracleTest;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(HsqlTest.class)
+@Category(OracleTest.class)
 public class TestOracleActiveObjectBackup extends ActiveObjectsBackupDataSetup
 {
 
