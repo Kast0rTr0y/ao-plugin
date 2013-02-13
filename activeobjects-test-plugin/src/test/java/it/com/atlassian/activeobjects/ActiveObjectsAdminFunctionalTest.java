@@ -2,6 +2,7 @@ package it.com.atlassian.activeobjects;
 
 import com.atlassian.activeobjects.pageobjects.ActiveObjectsAdminPage;
 import com.atlassian.activeobjects.pageobjects.ActiveObjectsBackupPage;
+import com.atlassian.activeobjects.pageobjects.ActiveObjectsDeleteDatabasePage;
 import com.atlassian.activeobjects.pageobjects.AoTable;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.TestedProduct;
@@ -30,6 +31,8 @@ public final class ActiveObjectsAdminFunctionalTest
     public final void setUp()
     {
         product = TestedProductFactory.create(System.getProperty("tested.app", RefappTestedProduct.class.getName()));
+        //delete the database before starting the test
+        loginAsSysAdmin(product, ActiveObjectsDeleteDatabasePage.class);
     }
 
     @Test
