@@ -128,6 +128,11 @@
                     <artifactId>maven-amps-dispatcher-plugin</artifactId>
                     <version>${plugin-sdk.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>com.atlassian.maven.plugins</groupId>
+                    <artifactId>maven-amps-plugin</artifactId>
+                    <version>${plugin-sdk.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
