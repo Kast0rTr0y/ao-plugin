@@ -119,7 +119,7 @@
                 <artifactId>maven-refapp-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <webdriver.browser>htmlunit</webdriver.browser>
+                        <webdriver.browser>firefox</webdriver.browser>
                     </systemPropertyVariables>
                     <products>
                         <product>
@@ -193,8 +193,8 @@
                                 </product>
                                 <product>
                                     <id>jira</id>
-                                    <version>4.4.2-279</version>
-                                    <productDataVersion>4.4.2-279</productDataVersion>
+                                    <version>${refapp.jira.version}</version>
+                                    <productDataVersion>${refapp.jira.version}</productDataVersion>
                                     <libArtifacts>
                                         <libArtifact>
                                             <groupId>com.atlassian.activeobjects</groupId>
