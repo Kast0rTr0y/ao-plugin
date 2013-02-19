@@ -366,15 +366,8 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
-                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
-                                </plugin.root.directories>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                             </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
                             <excludedGroups>
                                 <!--com.atlassian.activeobjects.junit.HsqlTest,-->
                                 com.atlassian.activeobjects.junit.MySqlTest,
@@ -426,19 +419,12 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
-                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
-                                </plugin.root.directories>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
                             <excludedGroups>
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 <!--com.atlassian.activeobjects.junit.MySqlTest,-->
@@ -487,6 +473,13 @@
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest
+                                <!--com.atlassian.activeobjects.junit.PostgresTest,-->
+                            </excludedGroups>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -503,20 +496,6 @@
                             </dependency>
                         </dependencies>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludedGroups>
-                                com.atlassian.activeobjects.junit.HsqlTest,
-                                com.atlassian.activeobjects.junit.MySqlTest,
-                                com.atlassian.activeobjects.junit.OracleTest,
-                                com.atlassian.activeobjects.junit.SqlServerTest
-                                <!--com.atlassian.activeobjects.junit.PostgresTest,-->
-                            </excludedGroups>
-                        </configuration>
-                    </plugin>
-
                 </plugins>
             </build>
         </profile>
@@ -550,13 +529,19 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
-                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
-                                </plugin.root.directories>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -573,19 +558,6 @@
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludedGroups>
-                                com.atlassian.activeobjects.junit.HsqlTest,
-                                com.atlassian.activeobjects.junit.MySqlTest,
-                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
-                                com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest
-                            </excludedGroups>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -620,13 +592,19 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
-                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
-                                </plugin.root.directories>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -643,19 +621,6 @@
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludedGroups>
-                                com.atlassian.activeobjects.junit.HsqlTest,
-                                com.atlassian.activeobjects.junit.MySqlTest,
-                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
-                                com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest
-                            </excludedGroups>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -690,13 +655,19 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
-                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
-                                </plugin.root.directories>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -713,19 +684,6 @@
                                 <version>${oracle.version}</version>
                             </dependency>
                         </dependencies>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludedGroups>
-                                com.atlassian.activeobjects.junit.HsqlTest,
-                                com.atlassian.activeobjects.junit.MySqlTest,
-                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
-                                com.atlassian.activeobjects.junit.SqlServerTest,
-                                com.atlassian.activeobjects.junit.PostgresTest
-                            </excludedGroups>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -759,13 +717,19 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
-                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
-                                </plugin.root.directories>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -778,19 +742,6 @@
                                 <version>${jtds.version}</version>
                             </dependency>
                         </dependencies>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludedGroups>
-                                com.atlassian.activeobjects.junit.HsqlTest,
-                                com.atlassian.activeobjects.junit.MySqlTest,
-                                com.atlassian.activeobjects.junit.OracleTest,
-                                <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
-                                com.atlassian.activeobjects.junit.PostgresTest
-                            </excludedGroups>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

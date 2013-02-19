@@ -9,7 +9,7 @@
     <meta key="driver.version" value="mysql-connector-java-5.1.13 ( Revision: ${bzr.revision-id} )"/>
   </database>
   <table name="AO_000000_BOOK">
-    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="-1" precision="65535"/>
+    <column name="ABSTRACT" primaryKey="false" autoIncrement="false" sqlType="-1" precision="2147483647"/>
     <column name="ISBN" primaryKey="true" autoIncrement="false" sqlType="-5" precision="20"/>
     <column name="IS_READ" primaryKey="false" autoIncrement="false" sqlType="-7" precision="1"/>
     <column name="NUMBER_OF_PAGES" primaryKey="false" autoIncrement="false" sqlType="4" precision="11"/>

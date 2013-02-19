@@ -18,8 +18,10 @@ public interface Book extends RawEntity<Long>
 
     void setIsbn(long isbn);
 
+    @StringLength(255)
     String getTitle();
 
+    @StringLength(255)
     void setTitle(String name);
 
     @StringLength(StringLength.UNLIMITED)
