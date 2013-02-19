@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.module.ModuleFactory;
 import com.atlassian.plugin.web.WebInterfaceManager;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -110,4 +111,7 @@ public abstract class BaseActiveObjectsIntegrationTest
     
     @MockHostComponent
     protected TransactionSynchronisationManager transactionSynchronizationManager;
+
+    @MockHostComponent
+    protected ModuleFactory moduleFactory;
 }

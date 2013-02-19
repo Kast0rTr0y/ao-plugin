@@ -47,7 +47,7 @@
     </modules>
 
     <properties>
-        <plugin-sdk.version>3.6</plugin-sdk.version>
+        <plugin-sdk.version>3.9.4-rc1</plugin-sdk.version>
         <ao.version>0.20</ao.version>
         <sal.version>2.4.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
@@ -55,10 +55,12 @@
         <spring.library.version>2.5.6</spring.library.version>
         <spring.osgi.version>1.2.0</spring.osgi.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
+        <refapp.version>2.19.0-m5</refapp.version>
 
-        <junit.version>4.10</junit.version>
+        <junit.version>4.8.1</junit.version>
         <mockito.version>1.8.4</mockito.version>
         <atlassian.selenium.version>2.0</atlassian.selenium.version>
+        <refapp.jira.version>4.4.5</refapp.jira.version>
     </properties>
 
     <build>
@@ -76,7 +78,9 @@
                     <version>1.0-beta-2-db2</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.12.4</version>
                     <configuration>
                         <excludes>
                             <exclude>it*/**</exclude>
@@ -114,6 +118,16 @@
                         <extractDependencies>true</extractDependencies>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>com.atlassian.maven.plugins</groupId>
+                    <artifactId>maven-amps-dispatcher-plugin</artifactId>
+                    <version>${plugin-sdk.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.atlassian.maven.plugins</groupId>
+                    <artifactId>maven-amps-plugin</artifactId>
+                    <version>${plugin-sdk.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -129,6 +143,11 @@
             <dependency>
                 <groupId>com.atlassian.activeobjects</groupId>
                 <artifactId>activeobjects-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.activeobjects</groupId>
+                <artifactId>activeobjects-jira-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

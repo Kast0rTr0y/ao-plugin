@@ -18,7 +18,6 @@
         <db.skip>false</db.skip>
         <mysql.version>5.1.13</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
-        <oracle.version>10.2.0.4</oracle.version>
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.17</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
@@ -31,10 +30,6 @@
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-refapp-plugin</artifactId>
                 <configuration>
-                    <systemPropertyVariables>
-                        <ao.test.database>${ao.test.database}</ao.test.database>
-                        <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
-                    </systemPropertyVariables>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>
@@ -52,6 +47,7 @@
                             com.atlassian.plugin;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.descriptors;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.hostcontainer;version="${atlassian-plugins.version}",
+                            com.atlassian.plugin.module;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.bridge.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.external;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.osgi.factory;version="${atlassian-plugins.version}",
@@ -114,28 +110,24 @@
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
-                    <pluginArtifacts>
-                        <pluginArtifact>
-                            <groupId>com.atlassian.activeobjects</groupId>
-                            <artifactId>activeobjects-refapp-spi</artifactId>
-                            <version>${project.version}</version>
-                        </pluginArtifact>
-                    </pluginArtifacts>
                 </configuration>
             </plugin>
             <!-- creates and drops databases before and after tests -->
             <plugin>
                 <groupId>org.leberrigaud.maven.plugins</groupId>
                 <artifactId>database-maven-plugin</artifactId>
-                <version>0.9.1</version>
+                <version>0.10</version>
                 <configuration>
+                    <!--These comes from the individual database profiles-->
                     <skip>${db.skip}</skip>
                     <database>${ao.test.database}</database>
-                    <name>ao_test</name>
-                    <username>ao_user</username>
-                    <password>ao_password</password>
-                    <rootUsername>${db.username}</rootUsername>
-                    <rootPassword>${db.password}</rootPassword>
+                    <schema>${db.schema}</schema>
+                    <name>${db.name}</name>
+                    <host>${db.host}</host>
+                    <username>${db.username}</username>
+                    <password>${db.password}</password>
+                    <rootUsername>${db.system.username}</rootUsername>
+                    <rootPassword>${db.system.password}</rootPassword>
                 </configuration>
                 <executions>
                     <execution>
@@ -361,15 +353,45 @@
             </activation>
             <properties>
                 <ao.test.database>hsql</ao.test.database>
+                <db.url>jdbc:hsqldb:mem:ao_test</db.url>
+                <db.username>sa</db.username>
+                <db.password />
                 <db.skip>true</db.skip>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                <!--com.atlassian.activeobjects.junit.HsqlTest,-->
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>mysql</id>
             <properties>
+                <db.host>localhost</db.host>
+                <db.name>ao_test</db.name>
+                <db.sid>orcl</db.sid>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
+                <db.schema>ao_schema</db.schema>
                 <ao.test.database>mysql</ao.test.database>
-                <db.username>root</db.username>
-                <db.password />
+                <db.system.username>root</db.system.username>
+                <db.system.password />
             </properties>
             <dependencies>
                 <dependency>
@@ -391,15 +413,42 @@
                             </dependency>
                         </dependencies>
                     </plugin>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.url>${db.url}</db.url>
+                                <db.schema>${db.schema}</db.schema>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                <!--com.atlassian.activeobjects.junit.MySqlTest,-->
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
         <profile>
             <id>postgres</id>
             <properties>
+                <db.host>localhost</db.host>
+                <db.name>ao_test</db.name>
+                <db.sid>orcl</db.sid>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
+                <db.schema>ao_schema</db.schema>
                 <ao.test.database>postgres</ao.test.database>
-                <db.username>postgres</db.username>
-                <db.password>postgres</db.password>
+                <db.system.username>postgres</db.system.username>
+                <db.system.password>postgres</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -412,10 +461,32 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin
+                                </plugin.root.directories>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.url>${db.url}</db.url>
+                                <db.schema>${db.schema}</db.schema>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest
+                                <!--com.atlassian.activeobjects.junit.PostgresTest,-->
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -431,9 +502,16 @@
         <profile>
             <id>oracle</id>
             <properties>
+                <db.host>localhost</db.host>
+                <db.name>ao_test</db.name>
+                <db.sid>orcl</db.sid>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
+                <db.schema>ao_schema</db.schema>
                 <ao.test.database>oracle</ao.test.database>
-                <db.username>sys</db.username>
-                <db.password>oracle</db.password>
+                <db.system.username>sys</db.system.username>
+                <db.system.password>oracle</db.system.password>
+                <oracle.version>10.2.0.4</oracle.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -446,10 +524,32 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.url>${db.url}</db.url>
+                                <db.schema>${db.schema}</db.schema>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -465,6 +565,12 @@
         <profile>
             <id>oracle5</id>
             <properties>
+                <db.host>localhost</db.host>
+                <db.name>ao_test</db.name>
+                <db.sid>orcl</db.sid>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
+                <db.schema>ao_schema</db.schema>
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
@@ -481,10 +587,32 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.url>${db.url}</db.url>
+                                <db.schema>${db.schema}</db.schema>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -500,6 +628,12 @@
         <profile>
             <id>oracle6</id>
             <properties>
+                <db.host>localhost</db.host>
+                <db.name>ao_test</db.name>
+                <db.sid>orcl</db.sid>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
+                <db.schema>ao_schema</db.schema>
                 <ao.test.database>oracle</ao.test.database>
                 <db.username>sys</db.username>
                 <db.password>oracle</db.password>
@@ -516,10 +650,32 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.url>${db.url}</db.url>
+                                <db.schema>${db.schema}</db.schema>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                <!--com.atlassian.activeobjects.junit.OracleTest,-->
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
                         <configuration>
-                            <schema>ao_schema</schema>
+                            <schema>${db.schema}</schema>
+                            <sid>${db.sid}</sid>
                         </configuration>
                         <dependencies>
                             <dependency>
@@ -535,9 +691,15 @@
         <profile>
             <id>sqlserver</id>
             <properties>
+                <db.host>localhost</db.host>
+                <db.name>ao_test</db.name>
+                <db.sid>orcl</db.sid>
+                <db.username>ao_user</db.username>
+                <db.password>ao_password</db.password>
+                <db.schema>ao_schema</db.schema>
                 <ao.test.database>sqlserver</ao.test.database>
-                <db.username>sa</db.username>
-                <db.password>admin</db.password>
+                <db.system.username>sa</db.system.username>
+                <db.system.password>password</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -550,11 +712,29 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.url>${db.url}</db.url>
+                                <db.schema>${db.schema}</db.schema>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.leberrigaud.maven.plugins</groupId>
                         <artifactId>database-maven-plugin</artifactId>
-                        <configuration>
-                            <schema>ao_schema</schema>
-                        </configuration>
                         <dependencies>
                             <dependency>
                                 <groupId>net.sourceforge.jtds</groupId>

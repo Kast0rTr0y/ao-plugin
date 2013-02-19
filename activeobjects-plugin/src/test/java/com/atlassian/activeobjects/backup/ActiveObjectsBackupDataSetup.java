@@ -9,86 +9,33 @@ import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
-import net.java.ao.test.jdbc.NonTransactional;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.sql.Types;
 
-import static org.custommonkey.xmlunit.XMLAssert.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertEquals;
 
-public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBackup
+public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObjectsBackup
 {
-    private static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
-    private static final String HSQL_EMPTY = "/com/atlassian/activeobjects/backup/hsql_empty.xml";
-    private static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
-    private static final String ORACLE = "/com/atlassian/activeobjects/backup/oracle.xml";
-    private static final String LEGACY_ORACLE = "/com/atlassian/activeobjects/backup/legacy_oracle.xml";
-    private static final String POSTGRES = "/com/atlassian/activeobjects/backup/postgres.xml";
-    private static final String SQLSERVER = "/com/atlassian/activeobjects/backup/sqlserver.xml";
+    protected static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
+    protected static final String HSQL_EMPTY = "/com/atlassian/activeobjects/backup/hsql_empty.xml";
+    protected static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
+    protected static final String ORACLE = "/com/atlassian/activeobjects/backup/oracle.xml";
+    protected static final String LEGACY_ORACLE = "/com/atlassian/activeobjects/backup/legacy_oracle.xml";
+    protected static final String POSTGRES = "/com/atlassian/activeobjects/backup/postgres.xml";
+    protected static final String SQLSERVER = "/com/atlassian/activeobjects/backup/sqlserver.xml";
 
     private Model model;
 
-    @Test
-    @NonTransactional
-    public void testHsqlBackup() throws Exception
-    {
-        testBackup(HSQL, HSQL_DATA);
-    }
-
-    @Test
-    @NonTransactional
-    public void testHsqlEmptyBackup() throws Exception
-    {
-        String xmlBackup = read(HSQL_EMPTY);
-        checkXmlBackup(xmlBackup, HSQL_DATA);
-        restore(xmlBackup);
-    }
-
-    @Test
-    @NonTransactional
-    public void testMySqlBackup() throws Exception
-    {
-        testBackup(MYSQL, MYSQL_DATA);
-    }
-
-    @Test
-    @NonTransactional
-    public void testPostgresBackup() throws Exception
-    {
-        testBackup(POSTGRES, POSTGRES_DATA);
-    }
-
-    @Test
-    @NonTransactional
-    public void testOracleBackup() throws Exception
-    {
-        testBackup(ORACLE, ORACLE_DATA);
-    }
-
-    @Test
-    @NonTransactional
-    public void testLegacyOracleBackup() throws Exception
-    {
-        testBackup(LEGACY_ORACLE, LEGACY_ORACLE_DATA);
-    }
-
-    @Test
-    @NonTransactional
-    public void testSqlServerBackup() throws Exception
-    {
-        testBackup(SQLSERVER, SQL_SERVER_DATA);
-    }
-
-    public final void testBackup(String xml, Iterable<BackupData> data) throws Exception
+    protected final void testBackup(String xml, Iterable<BackupData> data) throws Exception
     {
         final String xmlBackup = read(xml);
 
@@ -133,7 +80,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
         }
     }
 
-    private void checkXmlBackup(String xmlBackup, Iterable<BackupData> data) throws Exception
+    protected void checkXmlBackup(String xmlBackup, Iterable<BackupData> data) throws Exception
     {
         final XpathEngine engine = newXpathEngine();
         final Document doc = XMLUnit.buildControlDocument(xmlBackup);
@@ -266,22 +213,22 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
         }
     }
 
-    private static final BackupData AUTHORSHIP_AUTHOR_ID = BackupData.of("AO_000000_AUTHORSHIP", "AUTHOR_ID", SqlType.of(Types.INTEGER));
-    private static final BackupData AUTHORSHIP_BOOK_ID = BackupData.of("AO_000000_AUTHORSHIP", "BOOK_ID", SqlType.of(Types.BIGINT));
-    private static final BackupData AUTHORSHIP_ID = BackupData.of("AO_000000_AUTHORSHIP", "ID", SqlType.of(Types.INTEGER), true, true);
+    protected static final BackupData AUTHORSHIP_AUTHOR_ID = BackupData.of("AO_000000_AUTHORSHIP", "AUTHOR_ID", SqlType.of(Types.INTEGER));
+    protected static final BackupData AUTHORSHIP_BOOK_ID = BackupData.of("AO_000000_AUTHORSHIP", "BOOK_ID", SqlType.of(Types.BIGINT));
+    protected static final BackupData AUTHORSHIP_ID = BackupData.of("AO_000000_AUTHORSHIP", "ID", SqlType.of(Types.INTEGER), true, true);
 
-    private static final BackupData BOOK_ABSTRACT = BackupData.of("AO_000000_BOOK", "ABSTRACT", SqlType.of(Types.LONGVARCHAR));
-    private static final BackupData BOOK_ISBN = BackupData.of("AO_000000_BOOK", "ISBN", SqlType.of(Types.BIGINT), true, false);
-    private static final BackupData BOOK_READ = BackupData.of("AO_000000_BOOK", "IS_READ", SqlType.of(Types.BOOLEAN));
-    private static final BackupData BOOK_PAGES = BackupData.of("AO_000000_BOOK", "NUMBER_OF_PAGES", SqlType.of(Types.INTEGER));
-    private static final BackupData BOOK_PRICE = BackupData.of("AO_000000_BOOK", "PRICE", SqlType.of(Types.DOUBLE));
-    private static final BackupData BOOK_PUBLISHED = BackupData.of("AO_000000_BOOK", "PUBLISHED", SqlType.of(Types.TIMESTAMP));
-    private static final BackupData BOOK_TITLE = BackupData.of("AO_000000_BOOK", "TITLE", SqlType.of(Types.VARCHAR, 255));
+    protected static final BackupData BOOK_ABSTRACT = BackupData.of("AO_000000_BOOK", "ABSTRACT", SqlType.of(Types.LONGVARCHAR));
+    protected static final BackupData BOOK_ISBN = BackupData.of("AO_000000_BOOK", "ISBN", SqlType.of(Types.BIGINT), true, false);
+    protected static final BackupData BOOK_READ = BackupData.of("AO_000000_BOOK", "IS_READ", SqlType.of(Types.BOOLEAN));
+    protected static final BackupData BOOK_PAGES = BackupData.of("AO_000000_BOOK", "NUMBER_OF_PAGES", SqlType.of(Types.INTEGER));
+    protected static final BackupData BOOK_PRICE = BackupData.of("AO_000000_BOOK", "PRICE", SqlType.of(Types.DOUBLE));
+    protected static final BackupData BOOK_PUBLISHED = BackupData.of("AO_000000_BOOK", "PUBLISHED", SqlType.of(Types.TIMESTAMP));
+    protected static final BackupData BOOK_TITLE = BackupData.of("AO_000000_BOOK", "TITLE", SqlType.of(Types.VARCHAR, 255));
 
-    private static final BackupData AUTHOR_NAME = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "NAME", SqlType.of(Types.VARCHAR, 60));
-    private static final BackupData AUTHOR_ID = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "ID", SqlType.of(Types.INTEGER), true, true);
+    protected static final BackupData AUTHOR_NAME = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "NAME", SqlType.of(Types.VARCHAR, 60));
+    protected static final BackupData AUTHOR_ID = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "ID", SqlType.of(Types.INTEGER), true, true);
 
-    private static Iterable<BackupData> HSQL_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> HSQL_DATA = ImmutableList.of(
             AUTHORSHIP_AUTHOR_ID,
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
@@ -298,12 +245,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHOR_ID
     );
 
-    private static Iterable<BackupData> MYSQL_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> MYSQL_DATA = ImmutableList.of(
             AUTHORSHIP_AUTHOR_ID,
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BOOK_ABSTRACT,
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.LONGVARCHAR)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
@@ -315,12 +262,12 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHOR_ID
     );
 
-    private static Iterable<BackupData> POSTGRES_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> POSTGRES_DATA = ImmutableList.of(
             AUTHORSHIP_AUTHOR_ID,
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
-            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.VARCHAR, -1)),
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.VARCHAR)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,
@@ -332,7 +279,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             AUTHOR_ID
     );
 
-    private static Iterable<BackupData> ORACLE_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> ORACLE_DATA = ImmutableList.of(
             BackupData.of(AUTHORSHIP_AUTHOR_ID, SqlType.of(Types.NUMERIC, 11)),
             BackupData.of(AUTHORSHIP_BOOK_ID, SqlType.of(Types.NUMERIC, 20)),
             BackupData.of(AUTHORSHIP_ID, SqlType.of(Types.NUMERIC, 11)),
@@ -349,7 +296,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             BackupData.of(AUTHOR_ID, SqlType.of(Types.NUMERIC, 11))
     );
 
-    private static Iterable<BackupData> LEGACY_ORACLE_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> LEGACY_ORACLE_DATA = ImmutableList.of(
             BackupData.of(AUTHORSHIP_AUTHOR_ID, SqlType.of(Types.NUMERIC, 11)),
             BackupData.of(AUTHORSHIP_BOOK_ID, SqlType.of(Types.NUMERIC, 20)),
             BackupData.of(AUTHORSHIP_ID, SqlType.of(Types.NUMERIC, 11)),
@@ -366,7 +313,7 @@ public final class TestActiveObjectsBackup extends AbstractTestActiveObjectsBack
             BackupData.of(AUTHOR_ID, SqlType.of(Types.NUMERIC, 11))
     );
 
-    private static Iterable<BackupData> SQL_SERVER_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> SQL_SERVER_DATA = ImmutableList.of(
             AUTHORSHIP_AUTHOR_ID,
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,

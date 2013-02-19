@@ -177,7 +177,7 @@
                             <products>
                                 <product>
                                     <id>refapp</id>
-                                    <version>2.12.0</version>
+                                    <version>${refapp.version}</version>
                                     <bundledArtifacts>
                                         <bundledArtifact>
                                             <groupId>com.atlassian.activeobjects</groupId>
@@ -193,8 +193,8 @@
                                 </product>
                                 <product>
                                     <id>jira</id>
-                                    <version>4.4.2-279</version>
-                                    <productDataVersion>4.4.2-279</productDataVersion>
+                                    <version>${refapp.jira.version}</version>
+                                    <productDataVersion>${refapp.jira.version}</productDataVersion>
                                     <libArtifacts>
                                         <libArtifact>
                                             <groupId>com.atlassian.activeobjects</groupId>
