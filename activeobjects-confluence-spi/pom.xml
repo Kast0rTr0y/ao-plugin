@@ -47,6 +47,7 @@
                         	com.atlassian.confluence.importexport.plugin,
                             com.atlassian.hibernate,
                             com.atlassian.sal.api*,
+                            com.atlassian.event.api*,
                             com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,

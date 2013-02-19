@@ -22,6 +22,7 @@ public class BackupTestServlet extends HttpServlet
 {
     public static final String CREATE = "create";
     public static final String BACKUP = "backup";
+    public static final String DELETE = "delete";
 
     private final ActiveObjects ao;
     private final Backup backup;
@@ -39,6 +40,10 @@ public class BackupTestServlet extends HttpServlet
         if (Boolean.valueOf(req.getParameter(CREATE)))
         {
             new Model(ao).createData();
+        }
+        else if (Boolean.valueOf(req.getParameter(DELETE)))
+        {
+            new Model(ao).emptyDatabase();
         }
 
         resp.setContentType("application/xml");
