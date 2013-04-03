@@ -128,6 +128,11 @@ public final class DataExporter implements Exporter
                     {
                         appendDouble(table, result, col, node);
                     }
+                    // Oracle: NUMERIC with a precision of 1 indicates it is a boolean
+                    else if (precision(table, metaData, col) == 1)
+                    {
+                        appendBoolean(table, result, col, node);
+                    }
                     else
                     {
                         appendInteger(table, result, col, node);
@@ -141,8 +146,7 @@ public final class DataExporter implements Exporter
 
                 case Types.BOOLEAN:
                 case Types.BIT:
-                    final boolean b = getBoolean(table, result, col);
-                    RowDataNode.append(node, wasNull(table, result) ? null : b);
+                    appendBoolean(table, result, col, node);
                     break;
 
                 case Types.DOUBLE:
@@ -172,6 +176,12 @@ public final class DataExporter implements Exporter
 
         monitor.end(Task.TABLE_ROW);
         return node.closeEntity();
+    }
+
+    private void appendBoolean(String table, ResultSet result, int col, NodeCreator node)
+    {
+        final boolean b = getBoolean(table, result, col);
+        RowDataNode.append(node, wasNull(table, result) ? null : b);
     }
 
     private void appendInteger(String table, ResultSet result, int col, NodeCreator node)
