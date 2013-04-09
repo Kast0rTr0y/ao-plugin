@@ -348,13 +348,25 @@ public final class DataImporter extends AbstractSingleNodeImporter
                     // Oracle stores booleans as NUMERICs with a precision of 1
                     ps.setNull(col, Types.NUMERIC);
                 }
+                else if (databaseType == DatabaseInformations.Database.Type.MSSQL)
+                {
+                    // SQL Server stores booleans as BITs
+                    ps.setNull(col,  Types.BIT);
+                }
                 else
                 {
                     ps.setNull(col, Types.BOOLEAN);
                 }
+                // Derby stores booleans as SMALLINTs with a precision of 1 but is currently not being supported
             }
             else
             {
+                if (databaseType == DatabaseInformations.Database.Type.ORACLE)
+                {
+                    // Oracle stores booleans as NUMERICs with a precision of 1
+                    ps.setObject(col, value, Types.NUMERIC, 1);
+                }
+                // setBoolean also handles BITs which are used by SQL Server
                 ps.setBoolean(col, value);
             }
         }
