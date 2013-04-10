@@ -366,8 +366,11 @@ public final class DataImporter extends AbstractSingleNodeImporter
                     // Oracle stores booleans as NUMERICs with a precision of 1
                     ps.setObject(col, value, Types.NUMERIC, 1);
                 }
-                // setBoolean also handles BITs which are used by SQL Server
-                ps.setBoolean(col, value);
+                else
+                {
+                    // setBoolean also handles BITs which are used by SQL Server
+                    ps.setBoolean(col, value);
+                }
             }
         }
 
