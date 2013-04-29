@@ -2,6 +2,8 @@ package com.atlassian.dbexporter.importer;
 
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.Context;
+import com.atlassian.dbexporter.DatabaseInformation;
+import com.atlassian.dbexporter.DatabaseInformations;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.jdbc.JdbcUtils;
@@ -70,7 +72,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                         connection.setAutoCommit(false);
                         for (; TableDataNode.NAME.equals(node.getName()) && !node.isClosed(); node.getNextNode())
                         {
-                            importTable(node, configuration, context, connection);
+                            importTable(node, configuration, context, connection, configuration.getDatabaseInformation());
                         }
                         connection.commit();
                     }
@@ -89,7 +91,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         monitor.end(Task.TABLES_DATA);
     }
 
-    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Context context, Connection connection)
+    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Context context, Connection connection, DatabaseInformation databaseInformation)
     {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
@@ -120,7 +122,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 node = node.getNextNode();  // read the first field node
                 for (; !node.isClosed(); node = node.getNextNode())
                 {
-                    inserter.setValue(node);
+                    inserter.setValue(node, databaseInformation);
                 }
                 inserter.execute();
                 rowNum++;
@@ -143,7 +145,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
 
     private static interface Inserter
     {
-        void setValue(NodeParser node) throws SQLException;
+        void setValue(NodeParser node, DatabaseInformation databaseInformation) throws SQLException;
 
         void execute() throws SQLException;
 
@@ -337,15 +339,38 @@ public final class DataImporter extends AbstractSingleNodeImporter
             col = 1;
         }
 
-        private void setBoolean(Boolean value) throws SQLException
+        private void setBoolean(Boolean value, DatabaseInformations.Database.Type databaseType) throws SQLException
         {
             if (value == null)
             {
-                ps.setNull(col, Types.BOOLEAN);
+                if (databaseType == DatabaseInformations.Database.Type.ORACLE)
+                {
+                    // Oracle stores booleans as NUMERICs with a precision of 1
+                    ps.setNull(col, Types.NUMERIC);
+                }
+                else if (databaseType == DatabaseInformations.Database.Type.MSSQL)
+                {
+                    // SQL Server stores booleans as BITs
+                    ps.setNull(col,  Types.BIT);
+                }
+                else
+                {
+                    ps.setNull(col, Types.BOOLEAN);
+                }
+                // Derby stores booleans as SMALLINTs with a precision of 1 but is currently not being supported
             }
             else
             {
-                ps.setBoolean(col, value);
+                if (databaseType == DatabaseInformations.Database.Type.ORACLE)
+                {
+                    // Oracle stores booleans as NUMERICs with a precision of 1
+                    ps.setObject(col, value, Types.NUMERIC, 1);
+                }
+                else
+                {
+                    // setBoolean also handles BITs which are used by SQL Server
+                    ps.setBoolean(col, value);
+                }
             }
         }
 
@@ -402,15 +427,17 @@ public final class DataImporter extends AbstractSingleNodeImporter
             }
         }
 
-        public void setValue(NodeParser node) throws SQLException
+        public void setValue(NodeParser node, DatabaseInformation databaseInformation) throws SQLException
         {
+            DatabaseInformations.Database.Type databaseType = DatabaseInformations.database(databaseInformation).getType();
+
             if (RowDataNode.isString(node))
             {
                 setString(node.getContentAsString());
             }
             else if (RowDataNode.isBoolean(node))
             {
-                setBoolean(node.getContentAsBoolean());
+                setBoolean(node.getContentAsBoolean(), databaseType);
             }
             else if (RowDataNode.isInteger(node))
             {
@@ -419,7 +446,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
                 // this is actually a boolean that was stored as an Integer!
                 // Happens with legacy Oracle.
                 {
-                    setBoolean(bigInt.intValue() == 1);
+                    setBoolean((bigInt.intValue() == 1), databaseType);
                 }
                 else
                 {
