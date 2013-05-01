@@ -1,6 +1,7 @@
 package it.com.atlassian.activeobjects;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.httpclient.HttpClient;
@@ -13,6 +14,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.jaxen.SimpleNamespaceContext;
 import org.junit.Before;
@@ -26,7 +28,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 
-import static com.atlassian.activeobjects.testplugin.BackupTestServlet.*;
+import static com.atlassian.activeobjects.testplugin.BackupTestServlet.BACKUP;
+import static com.atlassian.activeobjects.testplugin.BackupTestServlet.CREATE;
 import static com.atlassian.dbexporter.node.NodeBackup.*;
 import static org.junit.Assert.*;
 
@@ -51,6 +54,34 @@ public final class BackupRestoreTest
     private static final String BASE_URL = System.getProperty("baseurl");
     private static final String AO_TEST = BASE_URL + "/plugins/servlet/ao-test";
 
+    private static final Predicate TEST_PLUGIN_TABLE_ELEMENTS = new Predicate()
+    {
+        @Override
+        public boolean apply(Object node)
+        {
+            if (node instanceof Element)
+            {
+                Element element = (Element) node;
+                return element.attributeValue("name").startsWith("AO_0F732C");
+            }
+            return false;
+        }
+    };
+
+    private static final Predicate TEST_PLUGIN_DATA_ELEMENTS = new Predicate()
+    {
+        @Override
+        public boolean apply(Object node)
+        {
+            if (node instanceof Element)
+            {
+                Element element = (Element) node;
+                return element.attributeValue("tableName").startsWith("AO_0F732C");
+            }
+            return false;
+        }
+    };
+
     private HttpClient client;
 
     @Test
@@ -73,16 +104,16 @@ public final class BackupRestoreTest
     {
         final Document doc = DocumentHelper.parseText(backup);
         assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
-        assertTrue(TABLE_XPATH.selectNodes(doc).isEmpty());
-        assertTrue(DATA_XPATH.selectNodes(doc).isEmpty());
+        assertTrue(Collections2.filter(TABLE_XPATH.selectNodes(doc), TEST_PLUGIN_TABLE_ELEMENTS).isEmpty());
+        assertTrue(Collections2.filter(DATA_XPATH.selectNodes(doc), TEST_PLUGIN_DATA_ELEMENTS).isEmpty());
     }
 
     private void assertBackupIsNotEmpty(String backup) throws DocumentException
     {
         final Document doc = DocumentHelper.parseText(backup);
         assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
-        assertFalse(TABLE_XPATH.selectNodes(doc).isEmpty());
-        assertFalse(DATA_XPATH.selectNodes(doc).isEmpty());
+        assertFalse(Collections2.filter(TABLE_XPATH.selectNodes(doc), TEST_PLUGIN_TABLE_ELEMENTS).isEmpty());
+        assertFalse(Collections2.filter(DATA_XPATH.selectNodes(doc), TEST_PLUGIN_DATA_ELEMENTS).isEmpty());
     }
 
     @Before
