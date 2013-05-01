@@ -21,6 +21,11 @@ public interface ActiveObjects
     public void migrate(Class<? extends RawEntity<?>>... entities);
 
     /**
+     * Create the schema for the specified entities, dropping columns and tables which are no longer required
+     */
+    public void migrateDestructively(Class<? extends RawEntity<?>>... entities);
+
+    /**
      * Flushes all value caches contained within entities controlled by this <code>EntityManager</code>
      * instance.  This does not actually remove the entities from the instance cache maintained
      * within this class.  Rather, it simply dumps all of the field values cached within the entities

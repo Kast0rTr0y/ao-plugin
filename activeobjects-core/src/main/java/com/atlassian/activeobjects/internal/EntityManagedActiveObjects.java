@@ -49,6 +49,19 @@ public class EntityManagedActiveObjects implements ActiveObjects
         }
     }
 
+    public void migrateDestructively(Class<? extends RawEntity<?>>... entities)
+    {
+        try
+        {
+            entityManager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(entities));
+            entityManager.migrateDestructively(entities);
+        }
+        catch (SQLException e)
+        {
+            throw new ActiveObjectsSqlException(entityManager, e);
+        }
+    }
+
     public final void flushAll()
     {
         entityManager.flushAll();

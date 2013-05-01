@@ -33,6 +33,11 @@ final class DelegatingActiveObjects implements ActiveObjects
         activeObjectsSupplier.get().migrate(entities);
     }
 
+    public void migrateDestructively(Class<? extends RawEntity<?>>... entities)
+    {
+        activeObjectsSupplier.get().migrateDestructively(entities);
+    }
+
     public void flushAll()
     {
         activeObjectsSupplier.get().flushAll();

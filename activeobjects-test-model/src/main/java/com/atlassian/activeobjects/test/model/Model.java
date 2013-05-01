@@ -86,7 +86,7 @@ public final class Model
     public void emptyDatabase()
     {
         logger.debug("Emptying the database!");
-        ao.migrate();
+        ao.migrateDestructively();
     }
 
     public void migrateEntities()
