@@ -41,10 +41,6 @@ public class BackupTestServlet extends HttpServlet
         {
             new Model(ao).createData();
         }
-        else if (Boolean.valueOf(req.getParameter(DELETE)))
-        {
-            new Model(ao).emptyDatabase();
-        }
 
         resp.setContentType("application/xml");
         resp.setCharacterEncoding("UTF-8");

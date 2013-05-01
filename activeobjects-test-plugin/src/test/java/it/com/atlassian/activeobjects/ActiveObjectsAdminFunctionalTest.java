@@ -2,7 +2,6 @@ package it.com.atlassian.activeobjects;
 
 import com.atlassian.activeobjects.pageobjects.ActiveObjectsAdminPage;
 import com.atlassian.activeobjects.pageobjects.ActiveObjectsBackupPage;
-import com.atlassian.activeobjects.pageobjects.ActiveObjectsDeleteDatabasePage;
 import com.atlassian.activeobjects.pageobjects.AoTable;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.TestedProduct;
@@ -17,9 +16,10 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.atlassian.activeobjects.pageobjects.AoTable.*;
+import static com.atlassian.activeobjects.pageobjects.AoTable.table;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 public final class ActiveObjectsAdminFunctionalTest
 {
@@ -31,15 +31,13 @@ public final class ActiveObjectsAdminFunctionalTest
     public final void setUp()
     {
         product = TestedProductFactory.create(System.getProperty("tested.app", RefappTestedProduct.class.getName()));
-        //delete the database before starting the test
-        loginAsSysAdmin(product, ActiveObjectsDeleteDatabasePage.class);
     }
 
     @Test
     public final void testAdmin()
     {
         final ActiveObjectsAdminPage admin = loginAsSysAdmin(product, ActiveObjectsAdminPage.class);
-        assertTrue(admin.getTitle().contains("Plugin Data Storage"));
+        assertThat(admin.getTitle(), containsString("Plugin Data Storage"));
 
         assertTables(Lists.<AoTable>newArrayList(), admin.getTables());
 

@@ -60,6 +60,7 @@
         <mockito.version>1.8.4</mockito.version>
         <atlassian.selenium.version>2.0</atlassian.selenium.version>
         <refapp.jira.version>4.4.5</refapp.jira.version>
+        <guava.version>10.0.1</guava.version>
     </properties>
 
     <build>
@@ -226,9 +227,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.google.collections</groupId>
-            <artifactId>google-collections</artifactId>
-            <version>1.0</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
