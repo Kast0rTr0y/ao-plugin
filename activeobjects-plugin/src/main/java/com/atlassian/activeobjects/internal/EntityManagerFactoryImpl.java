@@ -6,6 +6,8 @@ import net.java.ao.EntityManager;
 import net.java.ao.EntityManagerConfiguration;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.NameConverters;
+import net.java.ao.schema.info.CachingEntityInfoResolverFactory;
+import net.java.ao.schema.info.EntityInfoResolverFactory;
 
 import javax.sql.DataSource;
 
@@ -25,7 +27,8 @@ public final class EntityManagerFactoryImpl implements EntityManagerFactory
         final DataSourceEntityManagerConfiguration entityManagerConfiguration =
                 new DataSourceEntityManagerConfiguration(
                         configuration.getNameConverters(),
-                        configuration.getSchemaConfiguration());
+                        configuration.getSchemaConfiguration(),
+                        new CachingEntityInfoResolverFactory());
 
         return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType, schema), entityManagerConfiguration);
     }
@@ -34,11 +37,13 @@ public final class EntityManagerFactoryImpl implements EntityManagerFactory
     {
         private final NameConverters nameConverters;
         private final SchemaConfiguration schemaConfiguration;
+        private final EntityInfoResolverFactory entityInfoResolverFactory;
 
-        DataSourceEntityManagerConfiguration(NameConverters nameConverters, SchemaConfiguration schemaConfiguration)
+        DataSourceEntityManagerConfiguration(NameConverters nameConverters, SchemaConfiguration schemaConfiguration, EntityInfoResolverFactory entityInfoResolverFactory)
         {
             this.nameConverters = nameConverters;
             this.schemaConfiguration = schemaConfiguration;
+            this.entityInfoResolverFactory = entityInfoResolverFactory;
         }
 
         @Override
@@ -57,6 +62,12 @@ public final class EntityManagerFactoryImpl implements EntityManagerFactory
         public SchemaConfiguration getSchemaConfiguration()
         {
             return schemaConfiguration;
+        }
+
+        @Override
+        public EntityInfoResolverFactory getEntityInfoResolverFactory()
+        {
+            return entityInfoResolverFactory;
         }
     }
 }
