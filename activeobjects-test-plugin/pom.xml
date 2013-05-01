@@ -91,9 +91,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.selenium</groupId>
-            <artifactId>atlassian-webdriver-refapp</artifactId>
-            <version>${atlassian.selenium.version}</version>
+            <groupId>com.atlassian.refapp</groupId>
+            <artifactId>atlassian-refapp-pageobjects</artifactId>
+            <version>${refapp.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -105,9 +105,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.selenium</groupId>
-            <artifactId>atlassian-webdriver-jira</artifactId>
-            <version>${atlassian.selenium.version}</version>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>atlassian-jira-pageobjects</artifactId>
+            <version>${refapp.jira.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -238,7 +238,7 @@
                                         <include>it/**</include>
                                     </includes>
                                     <systemProperties>
-                                        <tested.app>com.atlassian.webdriver.jira.JiraTestedProduct</tested.app>
+                                        <tested.app>com.atlassian.jira.pageobjects.JiraTestedProduct</tested.app>
                                     </systemProperties>
                                 </testGroup>
                             </testGroups>
