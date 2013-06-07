@@ -81,6 +81,7 @@
                             org.springframework.beans;version="${spring.library.version}",
                             org.springframework.beans.factory;version="${spring.library.version}",
                             org.springframework.beans.factory.config;version="${spring.library.version}",
+                            org.springframework.beans.factory.support;version="${spring.library.version}",
                             org.springframework.beans.factory.xml;version="${spring.library.version}",
                             org.springframework.context*;version="${spring.library.version}",
                             org.springframework.context.support*;version="${spring.library.version}",
