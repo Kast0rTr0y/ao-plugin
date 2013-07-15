@@ -2,11 +2,14 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Suppliers;
+
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +35,7 @@ public class DelegatingActiveObjectsTest
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(Suppliers.ofInstance(delegateActiveObjects));
+        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects));
     }
 
     @Test

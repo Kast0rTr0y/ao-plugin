@@ -1,43 +1,53 @@
 package com.atlassian.activeobjects.osgi;
 
-import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
-import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
-import com.atlassian.activeobjects.internal.DataSourceType;
-import com.atlassian.activeobjects.config.PluginKey;
-import com.atlassian.activeobjects.internal.Prefix;
-import com.atlassian.activeobjects.spi.HotRestartEvent;
-import com.atlassian.event.api.EventListener;
-import com.atlassian.event.api.EventPublisher;
-import com.atlassian.plugin.PluginException;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.MapMaker;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Iterables.transform;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.NameConverters;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.transform;
+import com.atlassian.activeobjects.ActiveObjectsPluginException;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
+import com.atlassian.activeobjects.config.PluginKey;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
+import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.internal.DataSourceType;
+import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.spi.HotRestartEvent;
+import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.PluginException;
+import com.atlassian.util.concurrent.Promises;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.MapMaker;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * <p>This is the service factory that will create the {@link com.atlassian.activeobjects.external.ActiveObjects}
@@ -48,25 +58,33 @@ import static com.google.common.collect.Iterables.transform;
  * to the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration plugin configuration} and
  * the application configuration.</p>
  */
-public final class ActiveObjectsServiceFactory implements ServiceFactory
+public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    
+    private final ExecutorService ddlExecutor = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.ddl.threadpoolsize", 1),
+            new ThreadFactoryBuilder()
+                .setNameFormat("active-objects-ddl-%d")
+                .setDaemon(false)
+                .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the 
 
-    final Map<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = new MapMaker().makeComputingMap(new Function<ActiveObjectsKey, DelegatingActiveObjects>()
+    final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
     {
         @Override
         public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(new Supplier<ActiveObjects>()
+            return new DelegatingActiveObjects(Promises.forFuture(ddlExecutor.submit(new Callable<ActiveObjects>()
             {
                 @Override
-                public ActiveObjects get()
+                public ActiveObjects call() throws Exception
                 {
                     return createActiveObjects(key.bundle);
                 }
-            });
+            })));
         }
-    });
+    };
+    
+    final Map<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = new MapMaker().makeComputingMap(makeFromActiveObjectsKey);
 
     private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsFactory factory;
@@ -120,8 +138,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     {
         for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.values()))
         {
-            ao.removeDelegate();
+            ao.shutdown();
         }
+        aoInstances.clear();
     }
 
     /**
@@ -339,4 +358,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
             return getConfiguration(bundle);
         }
     }
+
+	@Override
+	public void destroy() throws Exception 
+	{
+		ddlExecutor.shutdown();	
+	}
 }

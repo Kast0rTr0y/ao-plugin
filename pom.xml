@@ -60,8 +60,8 @@
         <atlassian.selenium.version>2.1-m14</atlassian.selenium.version>
         <refapp.jira.version>5.0.7</refapp.jira.version>
         <guava.version>10.0.1</guava.version>
+        <atlassian.concurrent.version>2.4.1</atlassian.concurrent.version>
     </properties>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -159,6 +159,12 @@
                 <artifactId>activeobjects</artifactId>
                 <version>${ao.version}</version>
             </dependency>
+            <dependency>
+        		<groupId>com.atlassian.util.concurrent</groupId>
+        		<artifactId>atlassian-util-concurrent</artifactId>
+        		<version>${atlassian.concurrent.version}</version>
+        		<scope>provided</scope>
+        	</dependency>
             <dependency>
                 <groupId>com.atlassian.sal</groupId>
                 <artifactId>sal-api</artifactId>

@@ -1,174 +1,148 @@
 package com.atlassian.activeobjects.osgi;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.internal.EntityManagedActiveObjects;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import net.java.ao.DBParam;
-import net.java.ao.Disposable;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.*;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.util.concurrent.Promise;
+import com.google.common.base.Supplier;
 
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link Supplier}</p>
  */
 final class DelegatingActiveObjects implements ActiveObjects
 {
-    private final MemoizingSupplier activeObjectsSupplier;
+	private final Promise<ActiveObjects> promisedActiveObjects;
+	private AtomicBoolean isShutdown = new AtomicBoolean(false);
+//    private final MemoizingSupplier activeObjectsSupplier;
 
-    public DelegatingActiveObjects(Supplier<ActiveObjects> activeObjectsSupplier)
-    {
-        this.activeObjectsSupplier = new MemoizingSupplier(checkNotNull(activeObjectsSupplier));
-    }
+	public DelegatingActiveObjects(Promise<ActiveObjects> promise) 
+	{
+		promisedActiveObjects = promise;
+		
+	}
+	
+	private ActiveObjects getPromisedAO()
+	{
+	    if(!isShutdown.get())
+	        return promisedActiveObjects.claim();
+	    else
+	        throw new IllegalStateException("ActiveObjects has been shutdown.");
+	}
 
     public void migrate(Class<? extends RawEntity<?>>... entities)
     {
-        activeObjectsSupplier.get().migrate(entities);
+        getPromisedAO().migrate(entities);
     }
 
     public void migrateDestructively(Class<? extends RawEntity<?>>... entities)
     {
-        activeObjectsSupplier.get().migrateDestructively(entities);
+        getPromisedAO().migrateDestructively(entities);
     }
 
     public void flushAll()
     {
-        activeObjectsSupplier.get().flushAll();
+        getPromisedAO().flushAll();
     }
 
     public void flush(RawEntity<?>... entities)
     {
-        activeObjectsSupplier.get().flush(entities);
+        getPromisedAO().flush(entities);
     }
 
     public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys)
     {
-        return activeObjectsSupplier.get().get(type, keys);
+        return getPromisedAO().get(type, keys);
     }
 
     public <T extends RawEntity<K>, K> T get(Class<T> type, K key)
     {
-        return activeObjectsSupplier.get().get(type, key);
+        return getPromisedAO().get(type, key);
     }
 
     public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params)
     {
-        return activeObjectsSupplier.get().create(type, params);
+        return getPromisedAO().create(type, params);
     }
 
     public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params)
     {
-        return activeObjectsSupplier.get().create(type, params);
+        return getPromisedAO().create(type, params);
     }
 
     public void delete(RawEntity<?>... entities)
     {
-        activeObjectsSupplier.get().delete(entities);
+        getPromisedAO().delete(entities);
     }
 
     public <K> int deleteWithSQL(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
     {
-        return activeObjectsSupplier.get().deleteWithSQL(type, criteria, parameters);
+        return getPromisedAO().deleteWithSQL(type, criteria, parameters);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type)
     {
-        return activeObjectsSupplier.get().find(type);
+        return getPromisedAO().find(type);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters)
     {
-        return activeObjectsSupplier.get().find(type, criteria, parameters);
+        return getPromisedAO().find(type, criteria, parameters);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query)
     {
-        return activeObjectsSupplier.get().find(type, query);
+        return getPromisedAO().find(type, query);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query)
     {
-        return activeObjectsSupplier.get().find(type, field, query);
+        return getPromisedAO().find(type, field, query);
     }
 
     public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters)
     {
-        return activeObjectsSupplier.get().findWithSQL(type, keyField, sql, parameters);
+        return getPromisedAO().findWithSQL(type, keyField, sql, parameters);
     }
 
     public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
     {
-        activeObjectsSupplier.get().stream(type, query, streamCallback);
+        getPromisedAO().stream(type, query, streamCallback);
     }
 
     public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
     {
-        activeObjectsSupplier.get().stream(type, streamCallback);
+        getPromisedAO().stream(type, streamCallback);
     }
 
     public <K> int count(Class<? extends RawEntity<K>> type)
     {
-        return activeObjectsSupplier.get().count(type);
+        return getPromisedAO().count(type);
     }
 
     public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
     {
-        return activeObjectsSupplier.get().count(type, criteria, parameters);
+        return getPromisedAO().count(type, criteria, parameters);
     }
 
     public <K> int count(Class<? extends RawEntity<K>> type, Query query)
     {
-        return activeObjectsSupplier.get().count(type, query);
+        return getPromisedAO().count(type, query);
     }
 
     public <T> T executeInTransaction(TransactionCallback<T> callback)
     {
-        return activeObjectsSupplier.get().executeInTransaction(callback);
+        return getPromisedAO().executeInTransaction(callback);
     }
 
-    public void removeDelegate()
+    public void shutdown()
     {
-        activeObjectsSupplier.remove();
-    }
-
-    private static final class MemoizingSupplier implements Supplier<ActiveObjects>, Serializable
-    {
-        final Supplier<ActiveObjects> delegate;
-        transient boolean initialized;
-        transient ActiveObjects value;
-
-        MemoizingSupplier(Supplier<ActiveObjects> delegate)
-        {
-            this.delegate = delegate;
-        }
-
-        public synchronized ActiveObjects get()
-        {
-            if (!initialized)
-            {
-                value = delegate.get();
-                initialized = true;
-            }
-            return value;
-        }
-
-        public synchronized void remove()
-        {
-            if (initialized)
-            {
-                value.flushAll();
-                value = null;
-                initialized = false;
-            }
-        }
-
-        private static final long serialVersionUID = 0;
+        isShutdown.set(true);
     }
 }
