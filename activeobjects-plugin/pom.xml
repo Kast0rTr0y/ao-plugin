@@ -206,6 +206,12 @@
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-plugins-osgi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
@@ -822,6 +828,10 @@
                         <exclusion><!-- Provided by the host app -->
                             <groupId>com.google.guava</groupId>
                             <artifactId>guava</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>com.google</groupId>
+                            <artifactId>collections</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>
