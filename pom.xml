@@ -160,11 +160,11 @@
                 <version>${ao.version}</version>
             </dependency>
             <dependency>
-        		<groupId>com.atlassian.util.concurrent</groupId>
-        		<artifactId>atlassian-util-concurrent</artifactId>
-        		<version>${atlassian.concurrent.version}</version>
-        		<scope>provided</scope>
-        	</dependency>
+                <groupId>com.atlassian.util.concurrent</groupId>
+                <artifactId>atlassian-util-concurrent</artifactId>
+                <version>${atlassian.concurrent.version}</version>
+                <scope>provided</scope>
+             </dependency>
             <dependency>
                 <groupId>com.atlassian.sal</groupId>
                 <artifactId>sal-api</artifactId>

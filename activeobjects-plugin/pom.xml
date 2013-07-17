@@ -195,11 +195,11 @@
             <artifactId>activeobjects-spi</artifactId>
             <scope>provided</scope>
         </dependency>
-		<dependency>
-			<groupId>com.atlassian.util.concurrent</groupId>
-			<artifactId>atlassian-util-concurrent</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>com.atlassian.util.concurrent</groupId>
+            <artifactId>atlassian-util-concurrent</artifactId>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-api</artifactId>
