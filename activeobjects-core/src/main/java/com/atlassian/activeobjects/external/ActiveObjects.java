@@ -342,6 +342,22 @@ public interface ActiveObjects
      */
     public <K> int count(Class<? extends RawEntity<K>> type, Query query);
 
+    /**
+     * Execute the given callback within a transaction if the host supports transactions,
+     * otherwise executes the callback immediately.
+     * 
+     * @param callback
+     * @return the result of the transactionCallback
+     */
     public <T> T executeInTransaction(TransactionCallback<T> callback);
-    
+
+    /**
+     * Awaits initialization of the ActiveObjects model,this method will block until the
+     * active objects schema has been initialized.
+     * 
+     * This method cannot be called from within an UpgradeTask
+     * 
+     * @return the ModelVersion of the initialized ActiveObjects 
+     */
+    public void awaitModelInitialization() throws AOInitializationException;
 }

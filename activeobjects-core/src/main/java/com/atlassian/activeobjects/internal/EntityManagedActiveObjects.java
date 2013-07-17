@@ -2,7 +2,10 @@ package com.atlassian.activeobjects.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.atlassian.activeobjects.external.AOInitializationException;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsSystemState;
+import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import net.java.ao.DBParam;
@@ -268,5 +271,12 @@ public class EntityManagedActiveObjects implements ActiveObjects
     public final <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
         return transactionManager.doInTransaction(callback);
+    }
+
+    @Override
+    public void awaitModelInitialization() throws AOInitializationException
+    {
+        throw new UnsupportedOperationException("Cannot call awaitModelInitialization directly on EntityManagedActiveObjects.\n" +
+                "awaitModelInitialization should not be called from within an upgrade task");
     }
 }
