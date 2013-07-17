@@ -1,9 +1,14 @@
 package com.atlassian.activeobjects.osgi;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promises;
-import com.google.common.base.Suppliers;
 
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
@@ -15,11 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-
-import static org.mockito.Mockito.*;
+import org.osgi.framework.Bundle;
 
 /**
  * The main reason for this tests is to ensure that we use the  supplier.
@@ -31,11 +32,14 @@ public class DelegatingActiveObjectsTest
 
     @Mock
     private ActiveObjects delegateActiveObjects;
+    
+    @Mock
+    private Bundle bundle;
 
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects));
+        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle);
     }
 
     @Test

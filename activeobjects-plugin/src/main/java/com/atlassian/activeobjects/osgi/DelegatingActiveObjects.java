@@ -3,54 +3,45 @@ package com.atlassian.activeobjects.osgi;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import com.atlassian.activeobjects.external.AOInitializationException;
+import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.util.concurrent.Promise;
+import com.atlassian.util.concurrent.Promises;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
 
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import com.atlassian.activeobjects.external.AOInitializationException;
-import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.ModelVersion;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.atlassian.util.concurrent.Promise;
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
+import org.osgi.framework.Bundle;
 
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link Supplier}</p>
  */
 final class DelegatingActiveObjects implements ActiveObjects
 {
-    private final Promise<ActiveObjects> promisedActiveObjects;
-    private AtomicBoolean isShutdown = new AtomicBoolean(false);
-
-    public DelegatingActiveObjects(Promise<ActiveObjects> promise)
+    private final AtomicReference<Promise<ActiveObjects>> promisedAORef = new AtomicReference<Promise<ActiveObjects>>();
+    
+    private final Bundle bundle;
+    
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle)
     {
-        promisedActiveObjects = promise.recover(new Function<Throwable, ActiveObjects>()
-        {
-            @Override
-            public ActiveObjects apply(Throwable ex)
-            {
-                if (ex instanceof AOInitializationException)
-                {
-                    throw (AOInitializationException) ex;
-                }
-                else
-                {
-                    throw new AOInitializationException("Active Objects failed to initalize", ex);
-                }
-            }
-        });
+        this.bundle = bundle;
+        promisedAORef.set(promise);
     }
 
     private ActiveObjects getPromisedAO()
     {
-        if (!isShutdown.get())
-            return checkNotNull(promisedActiveObjects.claim());
-        else
-            throw new IllegalStateException("ActiveObjects has been shutdown.");
+        return checkNotNull(promisedAORef.get().claim());
     }
 
     public void migrate(Class<? extends RawEntity<?>>... entities)
@@ -158,9 +149,14 @@ final class DelegatingActiveObjects implements ActiveObjects
         return getPromisedAO().executeInTransaction(callback);
     }
 
-    public void shutdown()
+    public void restart(Promise<ActiveObjects> promise)
     {
-        isShutdown.set(true);
+        promisedAORef.set(promise);
+    }
+    
+    public Bundle getBundle()
+    {
+        return bundle;
     }
     
     @Override

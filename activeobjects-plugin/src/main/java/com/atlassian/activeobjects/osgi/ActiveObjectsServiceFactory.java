@@ -38,6 +38,7 @@ import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.config.PluginKey;
+import com.atlassian.activeobjects.external.AOInitializationException;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
@@ -52,6 +53,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -89,14 +91,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(Promises.forFuture(ddlExecutor.submit(new Callable<ActiveObjects>()
-            {
-                @Override
-                public ActiveObjects call() throws Exception
-                {
-                    return createActiveObjects(key.bundle);
-                }
-            })));
+            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle);
         }
     };
     
@@ -152,9 +147,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     {
         for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.values()))
         {
-            ao.shutdown();
+            ao.restart(submitCreateActiveObjects(ao.getBundle()));
         }
-        aoInstances.clear();
     }
 
     /**
@@ -166,21 +160,52 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private ActiveObjects createActiveObjects(final Bundle bundle)
     {
         return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
-        {   
+        {
             @Override
             public ActiveObjects doInTransaction()
             {
                 try
                 {
-                    logger.debug("Creating active object service for bundle {} [{}]", bundle.getSymbolicName(), bundle.getBundleId());
+                    logger.debug("Creating active object service for bundle {} [{}]", bundle.getSymbolicName(),
+                            bundle.getBundleId());
                     return factory.create(aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_TIMEOUT_MS));
                 }
-                catch(InterruptedException ie)
+                catch (InterruptedException ie)
                 {
                     throw new RuntimeException(ie);
                 }
             }
         });
+    };
+
+    private Promise<ActiveObjects> submitCreateActiveObjects(final Bundle bundle)
+    {
+        Promise<ActiveObjects> promise = Promises.forFuture(ddlExecutor.submit(new Callable<ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects call() throws Exception
+            {
+                if(ddlExecutor.isShutdown())
+                    throw new InterruptedException("ddlExecutor shutdown, not attempting creation of ActiveObjects for bundle : "+bundle);
+
+                return createActiveObjects(bundle);
+            }
+        })).recover(new Function<Throwable, ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects apply(final Throwable ex)
+            {
+                if (ex instanceof AOInitializationException)
+                {
+                    throw (AOInitializationException) ex;
+                }
+                else
+                {
+                    throw new AOInitializationException("Active Objects failed to initalize for bundle "+bundle.getSymbolicName(), ex);
+                }
+            }
+        });
+        return promise;
     }
 
     private static final class ActiveObjectsKey
@@ -216,9 +241,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         }
     }
 
-	@Override
-	public void destroy() throws Exception 
-	{
-		ddlExecutor.shutdown();	
-	}
+    @Override
+    public void destroy() throws Exception
+    {
+        ddlExecutor.shutdown();
+    }
 }
