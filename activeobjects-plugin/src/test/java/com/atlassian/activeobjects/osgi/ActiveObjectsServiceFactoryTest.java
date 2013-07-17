@@ -4,7 +4,10 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +35,7 @@ public final class ActiveObjectsServiceFactoryTest
     private ActiveObjects activeObjects;
 
     @Mock
-    private ActiveObjectsConfigurationFactory configurationFactory;
+    private ActiveObjectsConfigurationServiceProvider configurationProvider;
 
     @Mock
     private ActiveObjectsConfiguration configuration;
@@ -46,10 +49,13 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private Bundle bundle;
 
+    @Mock
+    private TransactionTemplate template;
+    
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(applicationContext, osgiUtils, factory, configurationFactory, eventPublisher);
+        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher, template);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
         when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);

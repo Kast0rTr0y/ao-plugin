@@ -1,5 +1,7 @@
 package com.atlassian.activeobjects.osgi;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -8,9 +10,12 @@ import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
+import com.atlassian.activeobjects.external.AOInitializationException;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 
 /**
@@ -18,23 +23,35 @@ import com.google.common.base.Supplier;
  */
 final class DelegatingActiveObjects implements ActiveObjects
 {
-	private final Promise<ActiveObjects> promisedActiveObjects;
-	private AtomicBoolean isShutdown = new AtomicBoolean(false);
-//    private final MemoizingSupplier activeObjectsSupplier;
+    private final Promise<ActiveObjects> promisedActiveObjects;
+    private AtomicBoolean isShutdown = new AtomicBoolean(false);
 
-	public DelegatingActiveObjects(Promise<ActiveObjects> promise) 
-	{
-		promisedActiveObjects = promise;
-		
-	}
-	
-	private ActiveObjects getPromisedAO()
-	{
-	    if(!isShutdown.get())
-	        return promisedActiveObjects.claim();
-	    else
-	        throw new IllegalStateException("ActiveObjects has been shutdown.");
-	}
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise)
+    {
+        promisedActiveObjects = promise.recover(new Function<Throwable, ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects apply(Throwable ex)
+            {
+                if (ex instanceof AOInitializationException)
+                {
+                    throw (AOInitializationException) ex;
+                }
+                else
+                {
+                    throw new AOInitializationException("Active Objects failed to initalize", ex);
+                }
+            }
+        });
+    }
+
+    private ActiveObjects getPromisedAO()
+    {
+        if (!isShutdown.get())
+            return checkNotNull(promisedActiveObjects.claim());
+        else
+            throw new IllegalStateException("ActiveObjects has been shutdown.");
+    }
 
     public void migrate(Class<? extends RawEntity<?>>... entities)
     {
@@ -144,5 +161,11 @@ final class DelegatingActiveObjects implements ActiveObjects
     public void shutdown()
     {
         isShutdown.set(true);
+    }
+    
+    @Override
+    public void awaitModelInitialization() throws AOInitializationException
+    {
+        getPromisedAO();
     }
 }

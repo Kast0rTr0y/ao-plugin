@@ -48,14 +48,19 @@
         </constructor-arg>
     </bean>
 
-    <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
-        <constructor-arg index="0">
+	<bean id="activeObjectsConfigurationServiceProvider" class="com.atlassian.activeobjects.osgi.AOConfigurationServiceProviderImpl">
+		<constructor-arg index="0" ref="osgiUtils"/>
+		<constructor-arg index="1" ref="activeObjectsConfigurationFactory" />
+		<constructor-arg index="2">
             <bean class="com.atlassian.activeobjects.spring.ApplicationContextFactoryBean"/>
         </constructor-arg>
-        <constructor-arg index="1" ref="osgiUtils"/>
-        <constructor-arg index="2" ref="activeObjectsFactory"/>
-        <constructor-arg index="3" ref="activeObjectsConfigurationFactory" />
-        <constructor-arg index="4" ref="eventPublisher"/>
+	</bean>
+	
+    <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
+        <constructor-arg index="0" ref="activeObjectsFactory"/>
+        <constructor-arg index="1" ref="activeObjectsConfigurationServiceProvider"/>
+        <constructor-arg index="2" ref="eventPublisher"/>
+        <constructor-arg index="3" ref="transactionTemplate"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>

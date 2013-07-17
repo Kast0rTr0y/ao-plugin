@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
@@ -19,11 +21,16 @@ import net.java.ao.schema.NameConverters;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -36,12 +43,18 @@ import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.internal.TransactionManager;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
+import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
+import com.atlassian.activeobjects.util.ServiceTrackerHolder;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginException;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -60,13 +73,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
+    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 10000);
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
-    private final ExecutorService ddlExecutor = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.ddl.threadpoolsize", 1),
-            new ThreadFactoryBuilder()
-                .setNameFormat("active-objects-ddl-%d")
-                .setDaemon(false)
-                .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the 
+    private final ExecutorService ddlExecutor = Executors
+            .newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
+                new ThreadFactoryBuilder()
+                    .setNameFormat("active-objects-ddl-%d")
+                    .setDaemon(false)
+                    .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the 
 
     final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
     {
@@ -86,17 +102,15 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     
     final Map<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = new MapMaker().makeComputingMap(makeFromActiveObjectsKey);
 
-    private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsFactory factory;
-    private final ActiveObjectsConfigurationFactory configurationFactory;
-    private final ApplicationContext applicationContext;
-
-    public ActiveObjectsServiceFactory(ApplicationContext applicationContext, OsgiServiceUtils osgiUtils, ActiveObjectsFactory factory, ActiveObjectsConfigurationFactory configurationFactory, EventPublisher eventPublisher)
+    private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
+    private final TransactionTemplate transactionTemplate;
+    
+    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionTemplate transactionTemplate)
     {
-        this.applicationContext = checkNotNull(applicationContext);
-        this.osgiUtils = checkNotNull(osgiUtils);
         this.factory = checkNotNull(factory);
-        this.configurationFactory = checkNotNull(configurationFactory);
+        this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
+        this.transactionTemplate = checkNotNull(transactionTemplate);
         checkNotNull(eventPublisher).register(this);
     }
 
@@ -149,92 +163,24 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
      * @param bundle the bundle for which to create the {@link com.atlassian.activeobjects.external.ActiveObjects}
      * @return an {@link com.atlassian.activeobjects.external.ActiveObjects} instance
      */
-    private ActiveObjects createActiveObjects(Bundle bundle)
+    private ActiveObjects createActiveObjects(final Bundle bundle)
     {
-        logger.debug("Creating active object service for bundle {} [{}]", bundle.getSymbolicName(), bundle.getBundleId());
-        return factory.create(new LazyActiveObjectConfiguration(bundle));
-    }
-
-    /**
-     * Retrieves the active objects configuration which should be exposed as a service or if none is found will scan for
-     * well known packages for entity classes and upgrade classes to create an appropriate configuration.
-     *
-     * @param bundle the bundle for which to find the active objects configuration.
-     * @return the found {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration}, can't be {@code null}
-     * @throws PluginException if no configuration OSGi service is found and no classes were found scanning the well known packages.
-     */
-    private ActiveObjectsConfiguration getConfiguration(Bundle bundle)
-    {
-        try
-        {
-            return osgiUtils.getService(bundle, ActiveObjectsConfiguration.class);
-        }
-        catch (TooManyServicesFoundException e)
-        {
-            logger.error("Found multiple active objects configurations for bundle " + bundle.getSymbolicName() + ". Only one active objects module descriptor (ao) allowed per plugin!");
-            throw new PluginException(e);
-        }
-        catch (NoServicesFoundException e)
-        {
-            logger.debug("Didn't find any active objects configuration service for bundle " + bundle.getSymbolicName() + ".  Will scan for AO classes in default packages of bundle.");
-
-            final Set<Class<? extends RawEntity<?>>> entities = scanEntities(bundle);
-            if (!entities.isEmpty())
-            {
-                return  configurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities, scanUpgradeTask(bundle));
-            }
-            else
-            {
-                final String msg = "Didn't find any configuration service for bundle " + bundle.getSymbolicName() + " nor any entities scanning for default AO packages.";
-                logger.error(msg);
-                throw new PluginException(msg, e);
-            }
-        }
-    }
-
-    private Set<Class<? extends RawEntity<?>>> scanEntities(Bundle bundle)
-    {
-        final BundleContext bundleContext = bundle.getBundleContext();
-
-        // not typing the iterable here, because of the cast afterward, which wouldn't compile otherwise!
-        final Iterable entityClasses =
-                new BundleContextScanner().findClasses(
-                        bundleContext,
-                        "ao.model",
-                        new LoadClassFromBundleFunction(bundleContext.getBundle()),
-                        new IsAoEntityPredicate()
-                );
-
-        @SuppressWarnings("unchecked") // we're filtering to get what we want!
-        final Iterable<Class<? extends RawEntity<?>>> entities = (Iterable<Class<? extends RawEntity<?>>>) entityClasses;
-        return ImmutableSet.copyOf(entities);
-    }
-
-    private List<ActiveObjectsUpgradeTask> scanUpgradeTask(Bundle bundle)
-    {
-        final BundleContext bundleContext = bundle.getBundleContext();
-
-        // not typing the iterable here, because of the cast afterward, which wouldn't compile otherwise!
-        final Iterable upgradeClasses =
-                new BundleContextScanner().findClasses(
-                        bundleContext,
-                        "ao.upgrade",
-                        new LoadClassFromBundleFunction(bundleContext.getBundle()),
-                        new IsAoUpgradeTaskPredicate()
-                );
-
-        @SuppressWarnings("unchecked") // we're filtering to get what we want!
-        final Iterable<Class<? extends ActiveObjectsUpgradeTask>> upgrades = (Iterable<Class<? extends ActiveObjectsUpgradeTask>>) upgradeClasses;
-
-        return copyOf(transform(upgrades, new Function<Class<? extends ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>()
-        {
+        return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
+        {   
             @Override
-            public ActiveObjectsUpgradeTask apply(Class<? extends ActiveObjectsUpgradeTask> input)
+            public ActiveObjects doInTransaction()
             {
-                return (ActiveObjectsUpgradeTask) applicationContext.getAutowireCapableBeanFactory()
-                        .createBean(input, AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT, true);
+                try
+                {
+                    logger.debug("Creating active object service for bundle {} [{}]", bundle.getSymbolicName(), bundle.getBundleId());
+                    return factory.create(aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_TIMEOUT_MS));
+                }
+                catch(InterruptedException ie)
+                {
+                    throw new RuntimeException(ie);
+                }
             }
-        }));
+        });
     }
 
     private static final class ActiveObjectsKey
@@ -267,95 +213,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         public int hashCode()
         {
             return ((Long) bundle.getBundleId()).hashCode();
-        }
-    }
-
-    private static class IsAoEntityPredicate implements Predicate<Class>
-    {
-        @Override
-        public boolean apply(Class clazz)
-        {
-            return RawEntity.class.isAssignableFrom(clazz);
-        }
-    }
-
-    private static class IsAoUpgradeTaskPredicate implements Predicate<Class>
-    {
-        @Override
-        public boolean apply(Class clazz)
-        {
-            return ActiveObjectsUpgradeTask.class.isAssignableFrom(clazz);
-        }
-    }
-
-    final class LazyActiveObjectConfiguration implements ActiveObjectsConfiguration
-    {
-        private final Bundle bundle;
-
-        public LazyActiveObjectConfiguration(Bundle bundle)
-        {
-            this.bundle = checkNotNull(bundle);
-        }
-
-        @Override
-        public PluginKey getPluginKey()
-        {
-            return getDelegate().getPluginKey();
-        }
-
-        @Override
-        public DataSourceType getDataSourceType()
-        {
-            return getDelegate().getDataSourceType();
-        }
-
-        @Override
-        public Prefix getTableNamePrefix()
-        {
-            return getDelegate().getTableNamePrefix();
-        }
-
-        @Override
-        public NameConverters getNameConverters()
-        {
-            return getDelegate().getNameConverters();
-        }
-
-        @Override
-        public SchemaConfiguration getSchemaConfiguration()
-        {
-            return getDelegate().getSchemaConfiguration();
-        }
-
-        @Override
-        public Set<Class<? extends RawEntity<?>>> getEntities()
-        {
-            return getDelegate().getEntities();
-        }
-
-        @Override
-        public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
-        {
-            return getDelegate().getUpgradeTasks();
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return getDelegate().hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return obj != null
-                    && obj instanceof LazyActiveObjectConfiguration
-                    && bundle.getBundleId() == ((LazyActiveObjectConfiguration) obj).bundle.getBundleId();
-        }
-
-        ActiveObjectsConfiguration getDelegate()
-        {
-            return getConfiguration(bundle);
         }
     }
 
