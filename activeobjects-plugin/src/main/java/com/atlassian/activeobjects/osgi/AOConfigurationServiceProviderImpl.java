@@ -1,15 +1,14 @@
 package com.atlassian.activeobjects.osgi;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.transform;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
+import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
+import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
+import com.atlassian.plugin.PluginException;
+import com.atlassian.util.concurrent.BlockingReference;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 
 import net.java.ao.RawEntity;
 
@@ -26,16 +25,16 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.osgi.context.BundleContextAware;
 
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
-import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
-import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
-import com.atlassian.plugin.PluginException;
-import com.atlassian.util.concurrent.BlockingReference;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Iterables.transform;
 
 public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigurationServiceProvider, BundleContextAware, InitializingBean
 {

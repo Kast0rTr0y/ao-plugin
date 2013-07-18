@@ -1,14 +1,10 @@
 package com.atlassian.activeobjects.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import net.java.ao.DBParam;
 import net.java.ao.DefaultPolymorphicTypeMapper;
-import net.java.ao.Disposable;
 import net.java.ao.EntityManager;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -16,6 +12,8 @@ import net.java.ao.RawEntity;
 
 import java.sql.SQLException;
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>Implementation of {@link com.atlassian.activeobjects.external.ActiveObjects} that mainly delegates to the

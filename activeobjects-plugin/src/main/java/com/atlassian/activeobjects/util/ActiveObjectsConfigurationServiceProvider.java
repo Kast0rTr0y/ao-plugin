@@ -1,8 +1,8 @@
 package com.atlassian.activeobjects.util;
 
-import org.osgi.framework.Bundle;
-
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+
+import org.osgi.framework.Bundle;
 
 /**
  * Interface to await the availability of an ActiveObjectsConfiguration service for a

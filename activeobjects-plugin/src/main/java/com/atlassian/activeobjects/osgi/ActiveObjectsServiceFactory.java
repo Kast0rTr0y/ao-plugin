@@ -1,18 +1,10 @@
 package com.atlassian.activeobjects.osgi;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
@@ -35,6 +27,13 @@ import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>This is the service factory that will create the {@link com.atlassian.activeobjects.external.ActiveObjects}

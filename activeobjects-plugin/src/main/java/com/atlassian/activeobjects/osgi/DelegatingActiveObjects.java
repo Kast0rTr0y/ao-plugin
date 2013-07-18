@@ -1,24 +1,10 @@
 package com.atlassian.activeobjects.osgi;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
-import com.atlassian.util.concurrent.Promises;
-import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 
 import net.java.ao.DBParam;
@@ -27,6 +13,11 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
 import org.osgi.framework.Bundle;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link Supplier}</p>

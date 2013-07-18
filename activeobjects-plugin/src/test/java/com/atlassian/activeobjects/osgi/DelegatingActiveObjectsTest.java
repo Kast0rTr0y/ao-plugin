@@ -1,12 +1,5 @@
 package com.atlassian.activeobjects.osgi;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
@@ -25,6 +18,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
+
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * The main reason for this tests is to ensure that we use the  supplier.
@@ -201,7 +201,7 @@ public class DelegatingActiveObjectsTest
         activeObjects.executeInTransaction(callback);
         verify(delegateActiveObjects).executeInTransaction(callback);
     }
-    
+
     @Test(expected=ActiveObjectsInitException.class)
     public void testDoesNotWaitWithinTransaction() throws Exception
     {
@@ -211,6 +211,7 @@ public class DelegatingActiveObjectsTest
         
         activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager);
         activeObjects.awaitModelInitialization();
+
     }
 
     ///CLOVER:OFF

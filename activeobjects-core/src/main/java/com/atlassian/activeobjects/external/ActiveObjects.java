@@ -1,7 +1,5 @@
 package com.atlassian.activeobjects.external;
 
-import java.util.Map;
-
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import net.java.ao.Accessor;
@@ -9,6 +7,8 @@ import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
+
+import java.util.Map;
 
 /**
  * Interface to the active objects framework.  Instance is threadsafe.
