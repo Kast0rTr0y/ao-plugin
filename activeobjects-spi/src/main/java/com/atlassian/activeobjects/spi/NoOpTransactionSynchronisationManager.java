@@ -16,4 +16,10 @@ public final class NoOpTransactionSynchronisationManager implements TransactionS
     {
         return false;
     }
+
+    @Override
+    public boolean isActiveTransaction()
+    {
+        return false;
+    }
 }

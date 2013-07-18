@@ -17,4 +17,10 @@ public interface TransactionSynchronisationManager
      *  false if there was no transaction to synchronise with
      */
     public boolean runOnSuccessfulCommit(Runnable callback);
+    
+    /**
+     * 
+     * @return true if there is a current active transaction
+     */
+    public boolean isActiveTransaction();
 }
