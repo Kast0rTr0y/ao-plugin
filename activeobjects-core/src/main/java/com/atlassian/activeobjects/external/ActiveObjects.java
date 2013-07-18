@@ -358,7 +358,6 @@ public interface ActiveObjects
      * This method cannot be called from within an UpgradeTask
      * 
      * @throws ActiveObjectsPluginException - if an exception occurred during initializations
-     * @return the ModelVersion of the initialized ActiveObjects 
      */
     public void awaitModelInitialization();
 }
