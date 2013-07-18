@@ -2,13 +2,16 @@ package com.atlassian.activeobjects.osgi;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 
 import net.java.ao.DBParam;
@@ -197,6 +200,17 @@ public class DelegatingActiveObjectsTest
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
         verify(delegateActiveObjects).executeInTransaction(callback);
+    }
+    
+    @Test(expected=ActiveObjectsInitException.class)
+    public void testDoesNotWaitWithinTransaction() throws Exception
+    {
+        when(tranSyncManager.isActiveTransaction()).thenReturn(true);
+        Promise<ActiveObjects> promise = mock(Promise.class);
+        when(promise.isDone()).thenReturn(false);
+        
+        activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager);
+        activeObjects.awaitModelInitialization();
     }
 
     ///CLOVER:OFF
