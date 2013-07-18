@@ -2,13 +2,13 @@ package com.atlassian.activeobjects.external;
 
 import java.util.Map;
 
+import com.atlassian.sal.api.transaction.TransactionCallback;
+
 import net.java.ao.Accessor;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
-
-import com.atlassian.sal.api.transaction.TransactionCallback;
 
 /**
  * Interface to the active objects framework.  Instance is threadsafe.
@@ -357,7 +357,8 @@ public interface ActiveObjects
      * 
      * This method cannot be called from within an UpgradeTask
      * 
+     * @throws ActiveObjectsPluginException - if an exception occurred during initializations
      * @return the ModelVersion of the initialized ActiveObjects 
      */
-    public void awaitModelInitialization() throws AOInitializationException;
+    public void awaitModelInitialization();
 }
