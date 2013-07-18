@@ -33,6 +33,7 @@ import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvide
 import com.atlassian.plugin.PluginException;
 import com.atlassian.util.concurrent.BlockingReference;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
@@ -40,7 +41,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
 {
     private static Logger log = LoggerFactory.getLogger(AOConfigurationServiceProviderImpl.class);
 
-    private BlockingReferenceMap<Long, Boolean> bundleKeyToAOConfigurationGate = new BlockingReferenceMap<Long, Boolean>();
+    private BlockingReferenceMap<Long, ActiveObjectsConfiguration> bundleKeyToAOConfiguration = new BlockingReferenceMap<Long, ActiveObjectsConfiguration>();
 
     private BundleContext bundleContext;
     private final OsgiServiceUtils osgiUtils;
@@ -73,28 +74,16 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
     {
         try
         {
-            bundleKeyToAOConfigurationGate.getAndWait(bundle.getBundleId(), timeMs);
-            return checkNotNull(getConfiguration(bundle));
+            return checkNotNull(bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), timeMs));
         }
         catch (TimeoutException e)
         {
             log.warn("Timeout ({}ms) waiting for ActiveObjectConfiguration for Bundle : {}.  To avoid this warning add an ao configuration module to your plugin", bundle, timeMs);
             log.debug("Stacktrace: ", e);
-            // Since the configuration object is optional we cannot just thruw a timeout, attempt classpath scanning
-            ActiveObjectsConfiguration configuration = createConfigurationByScanningEntities(bundle);
-            if (configuration == null)
-            {
-                final String msg = "Timed out waiting for configuration service for bundle " + bundle.getSymbolicName() +
-                        " and didn't find any entities scanning for default AO packages.";
-                log.error(msg);
-                throw new PluginException(msg, e);
-            }
-            else
-            {
-                return configuration;
-            }
+            ActiveObjectsConfiguration configuration = getConfiguration(bundle);
+            bundleKeyToAOConfiguration.put(bundle.getBundleId(), configuration);
+            return configuration;
         }
-
     }
 
     /**
@@ -121,36 +110,23 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         }
         catch (NoServicesFoundException e)
         {
-            ActiveObjectsConfiguration configuration = createConfigurationByScanningEntities(bundle);
-            if (configuration == null)
+            log.debug("Didn't find any active objects configuration service for bundle " + bundle.getSymbolicName() +
+                    ".  Will scan for AO classes in default packages of bundle.");
+
+            final Set<Class<? extends RawEntity<?>>> entities = scanEntities(bundle);
+            if (!entities.isEmpty())
+            {
+                return aoConfigurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities,
+                        scanUpgradeTask(bundle));
+            }
+            else
             {
                 final String msg = "Didn't find any configuration service for bundle " + bundle.getSymbolicName() +
                         " nor any entities scanning for default AO packages.";
                 log.error(msg);
                 throw new PluginException(msg, e);
             }
-            else
-            {
-                return configuration;
-            }
         }
-    }
-    
-    private ActiveObjectsConfiguration createConfigurationByScanningEntities(Bundle bundle)
-    {
-        log.debug("Didn't find any active objects configuration service for bundle " + bundle.getSymbolicName() +
-                ".  Will scan for AO classes in default packages of bundle.");
-
-        final Set<Class<? extends RawEntity<?>>> entities = scanEntities(bundle);
-        if (!entities.isEmpty())
-        {
-            return aoConfigurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities,
-                    scanUpgradeTask(bundle));
-        }
-        else
-        {
-            return null;
-        }        
     }
 
     private List<ActiveObjectsUpgradeTask> scanUpgradeTask(Bundle bundle)
@@ -221,11 +197,11 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
                 switch (event.getType())
                 {
                 case ServiceEvent.REGISTERED:
-                    bundleKeyToAOConfigurationGate.putIfAbsent(serviceReference.getBundle().getBundleId(), Boolean.TRUE);
+                    bundleKeyToAOConfiguration.put(serviceReference.getBundle().getBundleId(), bundleContext.getService(serviceReference));
                     break;
 
                 case ServiceEvent.UNREGISTERING:
-                    bundleKeyToAOConfigurationGate.remove(serviceReference.getBundle().getBundleId());
+                    bundleKeyToAOConfiguration.remove(serviceReference.getBundle().getBundleId());
                     break;
                     
                 default:
@@ -260,11 +236,11 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
             return safeGetReference(key).get(waitMs, TimeUnit.MILLISECONDS);
         }
 
-        public void putIfAbsent(K key, V config)
+        public void put(K key, V value)
         {
             BlockingReference<V> reference = safeGetReference(key);
             checkArgument(reference.isEmpty());
-            safeGetReference(key).set(config);
+            safeGetReference(key).set(value);
         }
 
         public void remove(K key)
