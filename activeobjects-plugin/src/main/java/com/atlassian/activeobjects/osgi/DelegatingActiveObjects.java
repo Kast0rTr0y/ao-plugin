@@ -4,13 +4,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.atlassian.activeobjects.external.AOInitializationException;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
@@ -33,15 +37,26 @@ final class DelegatingActiveObjects implements ActiveObjects
     
     private final Bundle bundle;
     
-    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle)
+    private final TransactionSynchronisationManager tranSyncManager;
+    
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager)
     {
         this.bundle = bundle;
         promisedAORef.set(promise);
+        this.tranSyncManager = tranSyncManager;
     }
 
     private ActiveObjects getPromisedAO()
     {
-        return checkNotNull(promisedAORef.get().claim());
+        Promise<ActiveObjects> promise = promisedAORef.get();
+        if(tranSyncManager.isActiveTransaction())
+        {
+            if(!promise.isDone())
+                throw new ActiveObjectsInitException("ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks.\n" +
+                        "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, " +
+                        "call ActiveObjects.awaitInitialization from outside of a transcation in response to a PluginEnabledEvent.");
+        }
+        return checkNotNull(promise.claim());
     }
 
     public void migrate(Class<? extends RawEntity<?>>... entities)
@@ -160,7 +175,7 @@ final class DelegatingActiveObjects implements ActiveObjects
     }
     
     @Override
-    public void awaitModelInitialization() throws AOInitializationException
+    public void awaitModelInitialization() throws ActiveObjectsInitException
     {
         getPromisedAO();
     }
