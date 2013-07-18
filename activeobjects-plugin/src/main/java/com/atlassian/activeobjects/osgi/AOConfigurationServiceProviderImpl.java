@@ -197,7 +197,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
                 switch (event.getType())
                 {
                 case ServiceEvent.REGISTERED:
-                    bundleKeyToAOConfiguration.put(serviceReference.getBundle().getBundleId(), bundleContext.getService(serviceReference));
+                    bundleKeyToAOConfiguration.put(serviceReference.getBundle().getBundleId(), (ActiveObjectsConfiguration)bundleContext.getService(serviceReference));
                     break;
 
                 case ServiceEvent.UNREGISTERING:
