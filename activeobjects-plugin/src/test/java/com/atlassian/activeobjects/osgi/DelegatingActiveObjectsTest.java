@@ -7,6 +7,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promises;
 
@@ -36,10 +37,13 @@ public class DelegatingActiveObjectsTest
     @Mock
     private Bundle bundle;
 
+    @Mock
+    private TransactionSynchronisationManager tranSyncManager;
+    
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle);
+        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager);
     }
 
     @Test
