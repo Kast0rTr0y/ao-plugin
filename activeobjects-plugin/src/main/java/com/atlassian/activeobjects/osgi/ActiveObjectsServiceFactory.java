@@ -165,6 +165,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
                 {
                     throw (ActiveObjectsPluginException) ex;
                 }
+                else if (ex instanceof Error)
+                {
+                    throw (Error)ex;
+                }
                 else
                 {
                     throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+bundle.getSymbolicName(), ex);
