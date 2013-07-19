@@ -40,9 +40,8 @@ final class DelegatingActiveObjects implements ActiveObjects
     private ActiveObjects getPromisedAO()
     {
         Promise<ActiveObjects> promise = promisedAORef.get();
-        if(tranSyncManager.isActiveTransaction())
+        if(tranSyncManager.isActiveTransaction() && !promise.isDone())
         {
-            if(!promise.isDone())
                 throw new ActiveObjectsInitException("ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks.\n" +
                         "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, " +
                         "call ActiveObjects.awaitInitialization from outside of a transcation in response to a PluginEnabledEvent.");
