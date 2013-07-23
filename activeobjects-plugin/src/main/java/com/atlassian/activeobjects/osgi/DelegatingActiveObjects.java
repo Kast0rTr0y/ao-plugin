@@ -2,6 +2,8 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
@@ -30,19 +32,24 @@ final class DelegatingActiveObjects implements ActiveObjects
     
     private final TransactionSynchronisationManager tranSyncManager;
     
-    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager)
+    private final DataSourceProvider dataSourceProvider;
+    
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
     {
         this.bundle = bundle;
         promisedAORef.set(promise);
         this.tranSyncManager = tranSyncManager;
+        this.dataSourceProvider = dataSourceProvider;
     }
 
     private ActiveObjects getPromisedAO()
     {
         Promise<ActiveObjects> promise = promisedAORef.get();
-        if(tranSyncManager.isActiveTransaction() && !promise.isDone())
+        if(dataSourceProvider.getDatabaseType().equals(DatabaseType.HSQL) 
+                && tranSyncManager.isActiveSynchronisedTransaction() 
+                && !promise.isDone())
         {
-                throw new ActiveObjectsInitException("ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks.\n" +
+                throw new ActiveObjectsInitException("ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks in HSQL.\n" +
                         "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, " +
                         "call ActiveObjects.awaitInitialization from outside of a transcation in response to a PluginEnabledEvent.");
         }

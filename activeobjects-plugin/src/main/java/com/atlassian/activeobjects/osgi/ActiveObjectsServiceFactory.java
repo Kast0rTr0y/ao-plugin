@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
@@ -50,19 +51,21 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
+    private final DataSourceProvider dataSourceProvider;
+    
     private final ExecutorService ddlExecutor = Executors
             .newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
                 new ThreadFactoryBuilder()
                     .setNameFormat("active-objects-ddl-%d")
                     .setDaemon(false)
-                    .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the 
+                    .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the potential to block other threads 
 
     final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
     {
         @Override
         public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager);
+            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, dataSourceProvider);
         }
     };
     
@@ -79,12 +82,13 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final TransactionTemplate transactionTemplate;
     private final TransactionSynchronisationManager tranSyncManager;
     
-    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionTemplate transactionTemplate, TransactionSynchronisationManager tranSyncManager)
+    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionTemplate transactionTemplate, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
     {
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tranSyncManager = checkNotNull(tranSyncManager);
+        this.dataSourceProvider = checkNotNull(dataSourceProvider);
         checkNotNull(eventPublisher).register(this);
     }
 
