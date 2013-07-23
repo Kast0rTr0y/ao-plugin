@@ -205,7 +205,7 @@ public class DelegatingActiveObjectsTest
     @Test(expected=ActiveObjectsInitException.class)
     public void testDoesNotWaitWithinTransaction() throws Exception
     {
-        when(tranSyncManager.isActiveTransaction()).thenReturn(true);
+        when(tranSyncManager.isActiveSynchronisedTransaction()).thenReturn(true);
         Promise<ActiveObjects> promise = mock(Promise.class);
         when(promise.isDone()).thenReturn(false);
         

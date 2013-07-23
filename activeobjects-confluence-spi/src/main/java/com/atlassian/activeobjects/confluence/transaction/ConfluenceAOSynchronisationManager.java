@@ -59,7 +59,7 @@ public class ConfluenceAOSynchronisationManager implements TransactionSynchronis
     }
 
     @Override
-    public boolean isActiveTransaction()
+    public boolean isActiveSynchronisedTransaction()
     {
         return synchronisationManager.isTransactionActive();
     }

@@ -22,5 +22,5 @@ public interface TransactionSynchronisationManager
      * 
      * @return true if there is a current active transaction
      */
-    public boolean isActiveTransaction();
+    public boolean isActiveSynchronisedTransaction();
 }
