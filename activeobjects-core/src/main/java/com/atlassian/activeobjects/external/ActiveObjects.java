@@ -359,5 +359,5 @@ public interface ActiveObjects
      * 
      * @throws ActiveObjectsPluginException - if an exception occurred during initializations
      */
-    public void awaitModelInitialization();
+    public void awaitInitialization();
 }

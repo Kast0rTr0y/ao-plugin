@@ -45,7 +45,7 @@ final class DelegatingActiveObjects implements ActiveObjects
     private ActiveObjects getPromisedAO()
     {
         Promise<ActiveObjects> promise = promisedAORef.get();
-        if(dataSourceProvider.getDatabaseType().equals(DatabaseType.HSQL) 
+        if(DatabaseType.HSQL.equals(dataSourceProvider.getDatabaseType()) 
                 && tranSyncManager.isActiveSynchronisedTransaction() 
                 && !promise.isDone())
         {
@@ -172,7 +172,7 @@ final class DelegatingActiveObjects implements ActiveObjects
     }
     
     @Override
-    public void awaitModelInitialization() throws ActiveObjectsInitException
+    public void awaitInitialization() throws ActiveObjectsInitException
     {
         getPromisedAO();
     }

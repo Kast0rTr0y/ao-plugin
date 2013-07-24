@@ -136,6 +136,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
      */
     private ActiveObjects createActiveObjects(final ActiveObjectsConfiguration config)
     {
+        
         return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
         {
             @Override

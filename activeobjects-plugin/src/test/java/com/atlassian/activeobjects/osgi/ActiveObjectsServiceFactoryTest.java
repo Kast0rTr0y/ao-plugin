@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventPublisher;
@@ -56,10 +57,13 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private TransactionSynchronisationManager tranSyncManager;
     
+    @Mock
+    private DataSourceProvider dataSourceProvider;
+    
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher, template, tranSyncManager);
+        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher, template, tranSyncManager, dataSourceProvider);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
         when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);

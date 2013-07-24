@@ -270,7 +270,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
     }
 
     @Override
-    public void awaitModelInitialization()
+    public void awaitInitialization()
     {
         throw new UnsupportedOperationException("Cannot call awaitModelInitialization directly on EntityManagedActiveObjects.\n" +
                 "awaitModelInitialization should not be called from within an upgrade task");
