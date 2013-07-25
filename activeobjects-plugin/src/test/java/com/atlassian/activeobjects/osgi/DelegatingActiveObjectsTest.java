@@ -216,7 +216,7 @@ public class DelegatingActiveObjectsTest
         when(dsProvider.getDatabaseType()).thenReturn(DatabaseType.HSQL);
         
         activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, dsProvider);
-        activeObjects.awaitInitialization();
+        activeObjects.moduleMetaData().awaitInitialization();
     }
 
     ///CLOVER:OFF

@@ -81,6 +81,12 @@
             <artifactId>atlassian-pageobjects-api</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- refapp -->
@@ -109,6 +115,12 @@
             <artifactId>atlassian-jira-pageobjects</artifactId>
             <version>${refapp.jira.version}</version>
             <scope>test</scope>
+            <exclusions>
+                 <exclusion>
+                     <groupId>com.google.collections</groupId>
+                     <artifactId>google-collections</artifactId>
+                 </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
