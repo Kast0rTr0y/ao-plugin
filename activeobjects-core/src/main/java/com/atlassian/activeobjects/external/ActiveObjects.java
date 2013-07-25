@@ -355,6 +355,7 @@ public interface ActiveObjects
      * Provides information about the state of the ActiveObjects module
      * 
      * @return activeObjectsModuleMetaData
+     * @since 0.24
      */
     public ActiveObjectsModuleMetaData moduleMetaData();
 }

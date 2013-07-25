@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.external;
 /**
  * This interface provides information about the state of the active objects module itself.
  *
+ * @since 0.24
  */
 public interface ActiveObjectsModuleMetaData
 {
