@@ -352,12 +352,9 @@ public interface ActiveObjects
     public <T> T executeInTransaction(TransactionCallback<T> callback);
 
     /**
-     * Awaits initialization of the ActiveObjects model,this method will block until the
-     * active objects schema has been initialized.
+     * Provides information about the state of the ActiveObjects module
      * 
-     * This method cannot be called from within an UpgradeTask
-     * 
-     * @throws ActiveObjectsPluginException - if an exception occurred during initializations
+     * @return activeObjectsModuleMetaData
      */
-    public void awaitInitialization();
+    public ActiveObjectsModuleMetaData moduleMetaData();
 }

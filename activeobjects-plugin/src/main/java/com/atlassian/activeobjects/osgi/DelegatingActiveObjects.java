@@ -1,6 +1,8 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
+import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
@@ -172,8 +174,31 @@ final class DelegatingActiveObjects implements ActiveObjects
     }
     
     @Override
-    public void awaitInitialization() throws ActiveObjectsInitException
+    public ActiveObjectsModuleMetaData moduleMetaData()
     {
-        getPromisedAO();
+        return new ActiveObjectsModuleMetaData()
+        {
+            @Override
+            public boolean isInitialized()
+            {
+                try
+                {
+                    if (!promisedAORef.get().isDone())
+                        return false;
+                    getPromisedAO();
+                    return true;
+                }
+                catch (ActiveObjectsInitException ex)
+                {
+                    return false;
+                }
+            }
+
+            @Override
+            public void awaitInitialization() throws ActiveObjectsInitException
+            {
+                getPromisedAO();
+            }
+        };
     }
 }
