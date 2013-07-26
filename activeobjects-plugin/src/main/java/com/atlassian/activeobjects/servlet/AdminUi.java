@@ -3,7 +3,6 @@ package com.atlassian.activeobjects.servlet;
 import com.google.common.base.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.osgi.service.ServiceUnavailableException;
 
 import java.util.Map;
 
@@ -47,13 +46,17 @@ public final class AdminUi
                 entry.getValue().toString(); // try toString as it shouldn't have side effects
                 return false;
             }
-            catch (ServiceUnavailableException e)
+            catch (RuntimeException e)
             {
-                if (isDevModeEnabled())
+                if (e.getClass().getSimpleName().equals("ServiceUnavailableException"))
                 {
-                    log.warn("Service is unavailable, admin UI will be disabled.", e);
+                    if (isDevModeEnabled())
+                    {
+                        log.warn("Service is unavailable, admin UI will be disabled.", e);
+                    }
+                    return true;
                 }
-                return true;
+                throw e;
             }
         }
     }

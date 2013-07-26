@@ -51,7 +51,6 @@
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.6.5</atlassian-plugins.version>
         <spring.library.version>2.5.6</spring.library.version>
-        <spring.osgi.version>1.2.0</spring.osgi.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
         <refapp.version>2.19.0</refapp.version>
 
@@ -187,12 +186,6 @@
                 <groupId>com.atlassian.plugins</groupId>
                 <artifactId>atlassian-plugins-webfragment</artifactId>
                 <version>${atlassian-plugins.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.osgi</groupId>
-                <artifactId>spring-osgi-core</artifactId>
-                <version>${spring.osgi.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.spring;
 
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.osgi.service.ServiceUnavailableException;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -26,9 +25,13 @@ public final class OptionalServiceFactoryBean<T> implements FactoryBean
             service.toString();
             return service;
         }
-        catch (ServiceUnavailableException e)
+        catch (RuntimeException e)
         {
-            return defaultValue;
+            if (e.getClass().getSimpleName().equals("ServiceUnavailableException"))
+            {
+               return defaultValue;
+            }
+            throw e;
         }
     }
 

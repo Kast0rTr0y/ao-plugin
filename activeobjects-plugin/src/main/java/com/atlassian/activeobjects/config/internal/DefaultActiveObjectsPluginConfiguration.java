@@ -3,7 +3,6 @@ package com.atlassian.activeobjects.config.internal;
 import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.osgi.service.ServiceUnavailableException;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -31,10 +30,14 @@ public final class DefaultActiveObjectsPluginConfiguration implements ActiveObje
         {
             return delegate.getDatabaseBaseDirectory();
         }
-        catch (ServiceUnavailableException e)
+        catch (RuntimeException e)
         {
-            logger.debug("Active objects plugin configuration service not present, so using default base directory <{}>", DEFAULT_BASE_DIR);
-            return DEFAULT_BASE_DIR;
+            if (e.getClass().getSimpleName().equals("ServiceUnavailableException"))
+            {
+                logger.debug("Active objects plugin configuration service not present, so using default base directory <{}>", DEFAULT_BASE_DIR);
+                return DEFAULT_BASE_DIR;
+            }
+            throw e;
         }
     }
 }
