@@ -53,14 +53,14 @@
         <spring.library.version>2.5.6</spring.library.version>
         <spring.osgi.version>1.2.0</spring.osgi.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>2.19.0</refapp.version>
+        <refapp.version>2.20.0-m4</refapp.version>
 
         <junit.version>4.10</junit.version>
         <mockito.version>1.8.4</mockito.version>
-        <atlassian.selenium.version>2.1-m14</atlassian.selenium.version>
-        <refapp.jira.version>5.0.7</refapp.jira.version>
+        <atlassian.selenium.version>2.1-m22</atlassian.selenium.version>
+        <refapp.jira.version>6.0-OD-05</refapp.jira.version>
         <guava.version>10.0.1</guava.version>
-        <atlassian.concurrent.version>2.4.1</atlassian.concurrent.version>
+        <atlassian.concurrent.version>2.4.0</atlassian.concurrent.version>
     </properties>
     <build>
         <pluginManagement>

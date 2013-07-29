@@ -54,9 +54,7 @@ public final class ActiveObjectsAdminFunctionalTest
         final ActiveObjectsAdminPage admin = loginAsSysAdmin(product, ActiveObjectsAdminPage.class);
         assertThat(admin.getTitle(), containsString("Plugin Data Storage"));
 
-        assertTables(Lists.<AoTable>newArrayList(), Lists.newArrayList(Collections2.filter(admin.getTables(), MATCHES_TEST_PLUGIN)));
-
-        // this will create the tables
+        // this will create the data
         product.visit(ActiveObjectsBackupPage.class);
 
         assertTables(

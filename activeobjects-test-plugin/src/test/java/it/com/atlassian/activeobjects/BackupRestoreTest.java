@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
@@ -11,6 +12,12 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.ElementNameAndAttributeQualifier;
+import org.custommonkey.xmlunit.ElementNameAndTextQualifier;
+import org.custommonkey.xmlunit.ElementNameQualifier;
+import org.custommonkey.xmlunit.ElementQualifier;
+import org.custommonkey.xmlunit.XMLAssert;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -97,7 +104,10 @@ public final class BackupRestoreTest
         post(AO_TEST, parameters(BACKUP, backup));  // restoring
 
         final String backupAfterRestore = get(AO_TEST, parameters(CREATE, false));
-        assertEquals(backup, backupAfterRestore);
+        Diff diff = new Diff(backup, backupAfterRestore);
+        // we don't care about ordering
+        diff.overrideElementQualifier(new ElementNameAndAttributeQualifier());
+        XMLAssert.assertXMLEqual("BackupAfterRestore is substantially different\n"+backup+"\nAfter: "+backupAfterRestore, diff, true);
     }
 
     private void assertBackupIsEmpty(String backup) throws DocumentException

@@ -88,6 +88,24 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-visual-comparison</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-webdriver-core</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.4</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- refapp -->
         <dependency>
@@ -119,6 +137,10 @@
                  <exclusion>
                      <groupId>com.google.collections</groupId>
                      <artifactId>google-collections</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.slf4j</groupId>
+                     <artifactId>slf4j-simple</artifactId>
                  </exclusion>
             </exclusions>
         </dependency>
@@ -227,6 +249,7 @@
                                             <artifactId>activeobjects-spi</artifactId>
                                             <version>${project.version}</version>
                                         </libArtifact>
+
                                     </libArtifacts>
                                     <bundledArtifacts>
                                         <bundledArtifact>
