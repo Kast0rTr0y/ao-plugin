@@ -149,6 +149,13 @@
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                    <version>${atlassian.concurrent.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
                         </product>
                     </products>
                     <testGroups>
@@ -202,6 +209,13 @@
                                             <version>${project.version}</version>
                                         </bundledArtifact>
                                     </bundledArtifacts>
+                                    <libArtifacts>
+                                        <libArtifact>
+                                            <groupId>com.atlassian.util.concurrent</groupId>
+                                            <artifactId>atlassian-util-concurrent</artifactId>
+                                            <version>${atlassian.concurrent.version}</version>
+                                        </libArtifact>
+                                    </libArtifacts>
                                 </product>
                                 <product>
                                     <id>jira</id>
