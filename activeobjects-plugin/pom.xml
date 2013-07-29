@@ -56,6 +56,7 @@
                             com.atlassian.plugin.web;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.webresource;version="${atlassian-plugins.version}",
                             com.atlassian.security.random;version="1.0",
+                            com.atlassian.util.concurrent;version="${atlassian.concurrent.version}",
                             com.google.common*,
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.naming;version="0.0.0",
