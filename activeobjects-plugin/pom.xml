@@ -111,6 +111,12 @@
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
+                    <libArtifacts>
+                        <libArtifact>
+                            <groupId>com.atlassian.util.concurrent</groupId>
+                            <artifactId>atlassian-util-concurrent</artifactId>
+                        </libArtifact>
+                    </libArtifacts>
                 </configuration>
             </plugin>
             <!-- creates and drops databases before and after tests -->
@@ -198,7 +204,6 @@
         <dependency>
             <groupId>com.atlassian.util.concurrent</groupId>
             <artifactId>atlassian-util-concurrent</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>
