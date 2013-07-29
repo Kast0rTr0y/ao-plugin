@@ -16,6 +16,7 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
+import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -166,18 +167,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
             @Override
             public ActiveObjects apply(final Throwable ex)
             {
-                if (ex instanceof ActiveObjectsPluginException)
-                {
-                    throw (ActiveObjectsPluginException) ex;
-                }
-                else if (ex instanceof Error)
-                {
-                    throw (Error)ex;
-                }
-                else
-                {
-                    throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+bundle.getSymbolicName(), ex);
-                }
+                Throwables.propagateIfInstanceOf(ex, Error.class);
+                Throwables.propagateIfInstanceOf(ex, ActiveObjectsPluginException.class);
+                throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+bundle.getSymbolicName(), ex);
             }
         });
         return promise;
