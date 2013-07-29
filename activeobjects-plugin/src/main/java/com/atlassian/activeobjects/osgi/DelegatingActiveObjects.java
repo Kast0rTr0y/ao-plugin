@@ -47,6 +47,7 @@ final class DelegatingActiveObjects implements ActiveObjects
     private ActiveObjects getPromisedAO()
     {
         Promise<ActiveObjects> promise = promisedAORef.get();
+        // HSQLDB requires a write lock to perform DDL, existing transactions holding a read lock will prevent the acquisition of this lock causing a deadlock
         if(DatabaseType.HSQL.equals(dataSourceProvider.getDatabaseType()) 
                 && tranSyncManager.isActiveSynchronisedTransaction() 
                 && !promise.isDone())

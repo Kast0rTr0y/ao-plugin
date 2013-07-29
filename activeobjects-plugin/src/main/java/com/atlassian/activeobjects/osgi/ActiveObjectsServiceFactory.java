@@ -33,6 +33,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -47,7 +48,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
-    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 10000);
+    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 20000);
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
@@ -104,7 +105,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
             if(ActiveObjectsInitException.class.isAssignableFrom(e.getCause().getClass()))
             {
                 throw (ActiveObjectsInitException)e.getCause();
-                
             }
             throw new ActiveObjectsInitException("Error retrieving active objects for bundle "+bundle.getSymbolicName(),e);
         }
@@ -158,7 +158,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
                 if(ddlExecutor.isShutdown())
                     throw new InterruptedException("ddlExecutor shutdown, not attempting creation of ActiveObjects for bundle : "+bundle);
 
-                ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_TIMEOUT_MS);
+                ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 return createActiveObjects(configuration);
             }
         })).recover(new Function<Throwable, ActiveObjects>()

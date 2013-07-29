@@ -20,6 +20,7 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -36,16 +37,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 
-public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigurationServiceProvider, BundleContextAware, InitializingBean
+public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigurationServiceProvider, BundleContextAware, InitializingBean, DisposableBean
 {
     private static Logger log = LoggerFactory.getLogger(AOConfigurationServiceProviderImpl.class);
 
     private BlockingReferenceMap<Long, ActiveObjectsConfiguration> bundleKeyToAOConfiguration = new BlockingReferenceMap<Long, ActiveObjectsConfiguration>();
 
-    private BundleContext bundleContext;
     private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsConfigurationFactory aoConfigurationFactory;
     private final ApplicationContext applicationContext;
+    private BundleContext bundleContext;
+    private ServiceListener serviceListener; 
+
 
     public AOConfigurationServiceProviderImpl(OsgiServiceUtils osgiUtils,
             ActiveObjectsConfigurationFactory aoConfigurationFactory, ApplicationContext applicationContext)
@@ -55,7 +58,6 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         this.applicationContext = checkNotNull(applicationContext);
     }
 
-    // TODO implement a BundleContextFactoryBean, similar to ApplicationContextFactoryBean
     @Override
     public void setBundleContext(BundleContext bundleContext)
     {
@@ -65,19 +67,25 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        checkNotNull(bundleContext);
-        initServiceListener();
+        ServiceListener serviceListener = createServiceListener();
+        initServiceListener(bundleContext, serviceListener);
     }
 
-    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long timeMs) throws InterruptedException
+    @Override
+    public void destroy() throws Exception
+    {
+        bundleContext.removeServiceListener(serviceListener);
+    }
+
+    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException
     {
         try
         {
-            return checkNotNull(bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), timeMs));
+            return checkNotNull(bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), waitTime, unit));
         }
         catch (TimeoutException e)
         {
-            log.warn("Timeout ({}ms) waiting for ActiveObjectConfiguration for Bundle : {}.  To avoid this warning add an ao configuration module to your plugin", bundle, timeMs);
+            log.warn("Timeout ({}{}) waiting for ActiveObjectConfiguration for Bundle : {}.\nTo avoid this warning add an ao configuration module to your plugin", new Object[]{waitTime, unit, bundle});
             log.debug("Stacktrace: ", e);
             ActiveObjectsConfiguration configuration = getConfiguration(bundle);
             bundleKeyToAOConfiguration.put(bundle.getBundleId(), configuration);
@@ -184,37 +192,46 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         return ImmutableSet.copyOf(entities);
     }
 
-    private void initServiceListener()
+    private ServiceListener createServiceListener()
     {
-        String filter = "(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")";
-        ServiceListener serviceListener = new ServiceListener()
+        return new ServiceListener()
         {
             @Override
             public void serviceChanged(ServiceEvent event)
             {
-                final ServiceReference serviceReference = event.getServiceReference();
+                final ServiceReference serviceRef = event.getServiceReference();
+
                 switch (event.getType())
                 {
                 case ServiceEvent.REGISTERED:
-                    bundleKeyToAOConfiguration.put(serviceReference.getBundle().getBundleId(), (ActiveObjectsConfiguration)bundleContext.getService(serviceReference));
+                    bundleKeyToAOConfiguration.put(serviceRef.getBundle().getBundleId(),
+                            (ActiveObjectsConfiguration) serviceRef.getBundle().getBundleContext()
+                                    .getService(serviceRef));
                     break;
 
                 case ServiceEvent.UNREGISTERING:
-                    bundleKeyToAOConfiguration.remove(serviceReference.getBundle().getBundleId());
+                    bundleKeyToAOConfiguration.remove(serviceRef.getBundle().getBundleId());
+                    // serviceRef.getBundle().getBundleContext().ungetService(serviceRef);
                     break;
-                    
+
                 default:
                     break;
                 }
             }
         };
+    }
+
+    private void initServiceListener(final BundleContext bundleContext, ServiceListener serviceListener)
+    {
+        final String serviceFilter = "(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")";
+     
         try
         {
-            bundleContext.addServiceListener(serviceListener, filter);
-            ServiceReference[] serviceReferences = bundleContext.getServiceReferences(null, filter);
+            bundleContext.addServiceListener(serviceListener, serviceFilter);
+            ServiceReference[] serviceReferences = bundleContext.getServiceReferences(null, serviceFilter);
             if (serviceReferences != null)
             {
-                for (ServiceReference reference : bundleContext.getServiceReferences(null, filter))
+                for (ServiceReference reference : bundleContext.getServiceReferences(null, serviceFilter))
                 {
                     serviceListener.serviceChanged(new ServiceEvent(ServiceEvent.REGISTERED, reference));
                 }
@@ -230,9 +247,9 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
     {
         private ConcurrentHashMap<K, BlockingReference<V>> innerConcurrentMap = new ConcurrentHashMap<K, BlockingReference<V>>();
 
-        public V getAndWait(K key, long waitMs) throws TimeoutException, InterruptedException
+        public V getAndWait(K key, long waitTime, TimeUnit unit) throws TimeoutException, InterruptedException
         {
-            return safeGetReference(key).get(waitMs, TimeUnit.MILLISECONDS);
+            return safeGetReference(key).get(waitTime, unit);
         }
 
         public void put(K key, V value)
@@ -249,7 +266,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
 
         private BlockingReference<V> safeGetReference(K key)
         {
-            BlockingReference<V> newReference = BlockingReference.newSRSW();
+            BlockingReference<V> newReference = BlockingReference.newMRSW();
             BlockingReference<V> existingRef = innerConcurrentMap.putIfAbsent(key, newReference);
             if (existingRef != null)
                 return existingRef;

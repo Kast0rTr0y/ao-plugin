@@ -100,4 +100,5 @@ public class OsgiServiceUtilsImpl implements OsgiServiceUtils
     {
         return bundle.getBundleContext();
     }
+
 }
