@@ -56,6 +56,7 @@
                             com.atlassian.plugin.web;version="${atlassian-plugins.version}",
                             com.atlassian.plugin.webresource;version="${atlassian-plugins.version}",
                             com.atlassian.security.random;version="1.0",
+                            com.atlassian.util.concurrent;version="${atlassian.concurrent.version}",
                             com.google.common*,
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.naming;version="0.0.0",
@@ -115,6 +116,12 @@
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
+                    <libArtifacts>
+                        <libArtifact>
+                            <groupId>com.atlassian.util.concurrent</groupId>
+                            <artifactId>atlassian-util-concurrent</artifactId>
+                        </libArtifact>
+                    </libArtifacts>
                 </configuration>
             </plugin>
             <!-- creates and drops databases before and after tests -->
@@ -200,12 +207,22 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.util.concurrent</groupId>
+            <artifactId>atlassian-util-concurrent</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-plugins-osgi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
@@ -376,6 +393,12 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -433,6 +456,12 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -481,6 +510,12 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest
                                 <!--com.atlassian.activeobjects.junit.PostgresTest,-->
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -543,6 +578,12 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -606,6 +647,12 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -669,6 +716,12 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -731,6 +784,12 @@
                                 <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                </libArtifact>
+                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -822,6 +881,10 @@
                         <exclusion><!-- Provided by the host app -->
                             <groupId>com.google.guava</groupId>
                             <artifactId>guava</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>com.google</groupId>
+                            <artifactId>collections</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>

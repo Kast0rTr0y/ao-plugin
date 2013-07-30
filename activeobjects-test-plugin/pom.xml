@@ -81,6 +81,30 @@
             <artifactId>atlassian-pageobjects-api</artifactId>
             <version>${atlassian.selenium.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-visual-comparison</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.selenium</groupId>
+            <artifactId>atlassian-webdriver-core</artifactId>
+            <version>${atlassian.selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.4</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- refapp -->
@@ -109,6 +133,16 @@
             <artifactId>atlassian-jira-pageobjects</artifactId>
             <version>${refapp.jira.version}</version>
             <scope>test</scope>
+            <exclusions>
+                 <exclusion>
+                     <groupId>com.google.collections</groupId>
+                     <artifactId>google-collections</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.slf4j</groupId>
+                     <artifactId>slf4j-simple</artifactId>
+                 </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -137,6 +171,13 @@
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.util.concurrent</groupId>
+                                    <artifactId>atlassian-util-concurrent</artifactId>
+                                    <version>${atlassian.concurrent.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
                         </product>
                     </products>
                     <testGroups>
@@ -190,6 +231,13 @@
                                             <version>${project.version}</version>
                                         </bundledArtifact>
                                     </bundledArtifacts>
+                                    <libArtifacts>
+                                        <libArtifact>
+                                            <groupId>com.atlassian.util.concurrent</groupId>
+                                            <artifactId>atlassian-util-concurrent</artifactId>
+                                            <version>${atlassian.concurrent.version}</version>
+                                        </libArtifact>
+                                    </libArtifacts>
                                 </product>
                                 <product>
                                     <id>jira</id>
@@ -201,6 +249,7 @@
                                             <artifactId>activeobjects-spi</artifactId>
                                             <version>${project.version}</version>
                                         </libArtifact>
+
                                     </libArtifacts>
                                     <bundledArtifacts>
                                         <bundledArtifact>

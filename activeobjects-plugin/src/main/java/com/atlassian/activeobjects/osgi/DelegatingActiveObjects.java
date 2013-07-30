@@ -1,174 +1,205 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.internal.EntityManagedActiveObjects;
+import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
+import com.atlassian.activeobjects.external.ModelVersion;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.annotations.VisibleForTesting;
+import com.atlassian.util.concurrent.Promise;
 import com.google.common.base.Supplier;
+
 import net.java.ao.DBParam;
-import net.java.ao.Disposable;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import java.io.Serializable;
-import java.util.Map;
+import org.osgi.framework.Bundle;
 
-import static com.google.common.base.Preconditions.*;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>This is a delegating ActiveObjects that will request the delegate from the given {@link Supplier}</p>
  */
 final class DelegatingActiveObjects implements ActiveObjects
 {
-    private final MemoizingSupplier activeObjectsSupplier;
-
-    public DelegatingActiveObjects(Supplier<ActiveObjects> activeObjectsSupplier)
+    private final AtomicReference<Promise<ActiveObjects>> promisedAORef = new AtomicReference<Promise<ActiveObjects>>();
+    
+    private final Bundle bundle;
+    
+    private final TransactionSynchronisationManager tranSyncManager;
+    
+    private final DataSourceProvider dataSourceProvider;
+    
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
     {
-        this.activeObjectsSupplier = new MemoizingSupplier(checkNotNull(activeObjectsSupplier));
+        this.bundle = bundle;
+        promisedAORef.set(promise);
+        this.tranSyncManager = tranSyncManager;
+        this.dataSourceProvider = dataSourceProvider;
+    }
+
+    private ActiveObjects getPromisedAO()
+    {
+        Promise<ActiveObjects> promise = promisedAORef.get();
+        // HSQLDB requires a write lock to perform DDL, existing transactions holding a read lock will prevent the acquisition of this lock causing a deadlock
+        if(DatabaseType.HSQL.equals(dataSourceProvider.getDatabaseType()) 
+                && tranSyncManager.isActiveSynchronisedTransaction() 
+                && !promise.isDone())
+        {
+                throw new ActiveObjectsInitException("ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks in HSQL.\n" +
+                        "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, " +
+                        "call ActiveObjects.awaitInitialization from outside of a transcation in response to a PluginEnabledEvent.");
+        }
+        return checkNotNull(promise.claim());
     }
 
     public void migrate(Class<? extends RawEntity<?>>... entities)
     {
-        activeObjectsSupplier.get().migrate(entities);
+        getPromisedAO().migrate(entities);
     }
 
     public void migrateDestructively(Class<? extends RawEntity<?>>... entities)
     {
-        activeObjectsSupplier.get().migrateDestructively(entities);
+        getPromisedAO().migrateDestructively(entities);
     }
 
     public void flushAll()
     {
-        activeObjectsSupplier.get().flushAll();
+        getPromisedAO().flushAll();
     }
 
     public void flush(RawEntity<?>... entities)
     {
-        activeObjectsSupplier.get().flush(entities);
+        getPromisedAO().flush(entities);
     }
 
     public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys)
     {
-        return activeObjectsSupplier.get().get(type, keys);
+        return getPromisedAO().get(type, keys);
     }
 
     public <T extends RawEntity<K>, K> T get(Class<T> type, K key)
     {
-        return activeObjectsSupplier.get().get(type, key);
+        return getPromisedAO().get(type, key);
     }
 
     public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params)
     {
-        return activeObjectsSupplier.get().create(type, params);
+        return getPromisedAO().create(type, params);
     }
 
     public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params)
     {
-        return activeObjectsSupplier.get().create(type, params);
+        return getPromisedAO().create(type, params);
     }
 
     public void delete(RawEntity<?>... entities)
     {
-        activeObjectsSupplier.get().delete(entities);
+        getPromisedAO().delete(entities);
     }
 
     public <K> int deleteWithSQL(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
     {
-        return activeObjectsSupplier.get().deleteWithSQL(type, criteria, parameters);
+        return getPromisedAO().deleteWithSQL(type, criteria, parameters);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type)
     {
-        return activeObjectsSupplier.get().find(type);
+        return getPromisedAO().find(type);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters)
     {
-        return activeObjectsSupplier.get().find(type, criteria, parameters);
+        return getPromisedAO().find(type, criteria, parameters);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query)
     {
-        return activeObjectsSupplier.get().find(type, query);
+        return getPromisedAO().find(type, query);
     }
 
     public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query)
     {
-        return activeObjectsSupplier.get().find(type, field, query);
+        return getPromisedAO().find(type, field, query);
     }
 
     public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters)
     {
-        return activeObjectsSupplier.get().findWithSQL(type, keyField, sql, parameters);
+        return getPromisedAO().findWithSQL(type, keyField, sql, parameters);
     }
 
     public <T extends RawEntity<K>, K> void stream(Class<T> type, Query query, EntityStreamCallback<T, K> streamCallback)
     {
-        activeObjectsSupplier.get().stream(type, query, streamCallback);
+        getPromisedAO().stream(type, query, streamCallback);
     }
 
     public <T extends RawEntity<K>, K> void stream(Class<T> type, EntityStreamCallback<T, K> streamCallback)
     {
-        activeObjectsSupplier.get().stream(type, streamCallback);
+        getPromisedAO().stream(type, streamCallback);
     }
 
     public <K> int count(Class<? extends RawEntity<K>> type)
     {
-        return activeObjectsSupplier.get().count(type);
+        return getPromisedAO().count(type);
     }
 
     public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters)
     {
-        return activeObjectsSupplier.get().count(type, criteria, parameters);
+        return getPromisedAO().count(type, criteria, parameters);
     }
 
     public <K> int count(Class<? extends RawEntity<K>> type, Query query)
     {
-        return activeObjectsSupplier.get().count(type, query);
+        return getPromisedAO().count(type, query);
     }
 
     public <T> T executeInTransaction(TransactionCallback<T> callback)
     {
-        return activeObjectsSupplier.get().executeInTransaction(callback);
+        return getPromisedAO().executeInTransaction(callback);
     }
 
-    public void removeDelegate()
+    public void restart(Promise<ActiveObjects> promise)
     {
-        activeObjectsSupplier.remove();
+        promisedAORef.set(promise);
     }
-
-    private static final class MemoizingSupplier implements Supplier<ActiveObjects>, Serializable
+    
+    public Bundle getBundle()
     {
-        final Supplier<ActiveObjects> delegate;
-        transient boolean initialized;
-        transient ActiveObjects value;
-
-        MemoizingSupplier(Supplier<ActiveObjects> delegate)
+        return bundle;
+    }
+    
+    @Override
+    public ActiveObjectsModuleMetaData moduleMetaData()
+    {
+        return new ActiveObjectsModuleMetaData()
         {
-            this.delegate = delegate;
-        }
-
-        public synchronized ActiveObjects get()
-        {
-            if (!initialized)
+            @Override
+            public boolean isInitialized()
             {
-                value = delegate.get();
-                initialized = true;
+                try
+                {
+                    if (!promisedAORef.get().isDone())
+                        return false;
+                    getPromisedAO();
+                    return true;
+                }
+                catch (ActiveObjectsInitException ex)
+                {
+                    return false;
+                }
             }
-            return value;
-        }
 
-        public synchronized void remove()
-        {
-            if (initialized)
+            @Override
+            public void awaitInitialization() throws ActiveObjectsInitException
             {
-                value.flushAll();
-                value = null;
-                initialized = false;
+                getPromisedAO();
             }
-        }
-
-        private static final long serialVersionUID = 0;
+        };
     }
 }

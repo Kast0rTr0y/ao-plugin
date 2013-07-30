@@ -1,5 +1,11 @@
 package it.com.atlassian.activeobjects;
 
+import com.atlassian.activeobjects.junit.AtlassianPluginsContainer;
+import com.atlassian.activeobjects.junit.AtlassianPluginsJUnitRunner;
+import com.atlassian.activeobjects.junit.ConfigurableTemporaryFolder;
+import com.atlassian.activeobjects.junit.Host;
+import com.atlassian.activeobjects.junit.MockHostComponent;
+import com.atlassian.activeobjects.junit.PackageVersion;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
@@ -13,13 +19,19 @@ import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.sal.api.message.HelpPathResolver;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-import com.atlassian.activeobjects.junit.*;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.websudo.WebSudoManager;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * <p>This configures the basics of the system on which the Active Objects plugin can run.</p>
@@ -114,4 +126,17 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected ModuleFactory moduleFactory;
+    
+    @Before
+    public void initHostComponents()
+    {
+        Mockito.when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                return ((TransactionCallback<?>)invocation.getArguments()[0]).doInTransaction();
+            }
+        });
+    }
 }

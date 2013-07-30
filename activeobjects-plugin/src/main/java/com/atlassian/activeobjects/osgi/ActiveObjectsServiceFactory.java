@@ -2,42 +2,41 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
-import com.atlassian.activeobjects.internal.DataSourceType;
-import com.atlassian.activeobjects.config.PluginKey;
-import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.plugin.PluginException;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.util.concurrent.Promise;
+import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.MapMaker;
-import net.java.ao.RawEntity;
-import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.NameConverters;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.DisposableBean;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.transform;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>This is the service factory that will create the {@link com.atlassian.activeobjects.external.ActiveObjects}
@@ -48,68 +47,74 @@ import static com.google.common.collect.Iterables.transform;
  * to the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration plugin configuration} and
  * the application configuration.</p>
  */
-public final class ActiveObjectsServiceFactory implements ServiceFactory
+public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 20000);
 
-    final Map<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = new MapMaker().makeComputingMap(new Function<ActiveObjectsKey, DelegatingActiveObjects>()
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    
+    private final DataSourceProvider dataSourceProvider;
+    
+    private final ExecutorService ddlExecutor = Executors
+            .newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
+                new ThreadFactoryBuilder()
+                    .setNameFormat("active-objects-ddl-%d")
+                    .setDaemon(false)
+                    .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the potential to block other threads 
+
+    final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
     {
         @Override
         public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(new Supplier<ActiveObjects>()
-            {
-                @Override
-                public ActiveObjects get()
-                {
-                    return createActiveObjects(key.bundle);
-                }
-            });
+            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, dataSourceProvider);
         }
+    };
+    
+    final Cache<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsKey, DelegatingActiveObjects>()
+    {
+        public DelegatingActiveObjects load(ActiveObjectsKey key) throws Exception 
+        {
+            return makeFromActiveObjectsKey.apply(key);
+        };
     });
 
-    private final OsgiServiceUtils osgiUtils;
     private final ActiveObjectsFactory factory;
-    private final ActiveObjectsConfigurationFactory configurationFactory;
-    private final ApplicationContext applicationContext;
-
-    public ActiveObjectsServiceFactory(ApplicationContext applicationContext, OsgiServiceUtils osgiUtils, ActiveObjectsFactory factory, ActiveObjectsConfigurationFactory configurationFactory, EventPublisher eventPublisher)
+    private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
+    private final TransactionTemplate transactionTemplate;
+    private final TransactionSynchronisationManager tranSyncManager;
+    
+    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionTemplate transactionTemplate, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
     {
-        this.applicationContext = checkNotNull(applicationContext);
-        this.osgiUtils = checkNotNull(osgiUtils);
         this.factory = checkNotNull(factory);
-        this.configurationFactory = checkNotNull(configurationFactory);
+        this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
+        this.transactionTemplate = checkNotNull(transactionTemplate);
+        this.tranSyncManager = checkNotNull(tranSyncManager);
+        this.dataSourceProvider = checkNotNull(dataSourceProvider);
         checkNotNull(eventPublisher).register(this);
     }
 
     @Override
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
-        return aoInstances.get(new ActiveObjectsKey(bundle));
+        try
+        {
+            return aoInstances.get(new ActiveObjectsKey(bundle));
+        }
+        catch (ExecutionException e)
+        {
+            if(ActiveObjectsInitException.class.isAssignableFrom(e.getCause().getClass()))
+            {
+                throw (ActiveObjectsInitException)e.getCause();
+            }
+            throw new ActiveObjectsInitException("Error retrieving active objects for bundle "+bundle.getSymbolicName(),e);
+        }
     }
 
     @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
-        try
-        {
-            final ActiveObjects removed = aoInstances.remove(new ActiveObjectsKey(bundle));
-            if (removed != null)
-            {
-                checkState(ao == removed);
-
-                //we can't flush cache because some dependencies may have been de-registered already.
-                //removed.flushAll(); // clear all caches for good measure
-            }
-            else
-            {
-                logger.warn("Didn't find Active Objects instance matching {}, this shouldn't be happening!", bundle);
-            }
-        }
-        catch (Exception e)
-        {
-            throw new ActiveObjectsPluginException("An exception occurred un-getting the AO service for bundle " + bundle + ". This could lead to memory leaks!", e);
-        }
+        aoInstances.invalidate(new ActiveObjectsKey(bundle));
     }
 
     /**
@@ -118,9 +123,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
     @EventListener
     public void onHotRestart(HotRestartEvent hotRestartEvent)
     {
-        for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.values()))
+        for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.asMap().values()))
         {
-            ao.removeDelegate();
+            ao.restart(submitCreateActiveObjects(ao.getBundle()));
         }
     }
 
@@ -130,92 +135,44 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
      * @param bundle the bundle for which to create the {@link com.atlassian.activeobjects.external.ActiveObjects}
      * @return an {@link com.atlassian.activeobjects.external.ActiveObjects} instance
      */
-    private ActiveObjects createActiveObjects(Bundle bundle)
+    private ActiveObjects createActiveObjects(final ActiveObjectsConfiguration config)
     {
-        logger.debug("Creating active object service for bundle {} [{}]", bundle.getSymbolicName(), bundle.getBundleId());
-        return factory.create(new LazyActiveObjectConfiguration(bundle));
-    }
-
-    /**
-     * Retrieves the active objects configuration which should be exposed as a service or if none is found will scan for
-     * well known packages for entity classes and upgrade classes to create an appropriate configuration.
-     *
-     * @param bundle the bundle for which to find the active objects configuration.
-     * @return the found {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration}, can't be {@code null}
-     * @throws PluginException if no configuration OSGi service is found and no classes were found scanning the well known packages.
-     */
-    private ActiveObjectsConfiguration getConfiguration(Bundle bundle)
-    {
-        try
-        {
-            return osgiUtils.getService(bundle, ActiveObjectsConfiguration.class);
-        }
-        catch (TooManyServicesFoundException e)
-        {
-            logger.error("Found multiple active objects configurations for bundle " + bundle.getSymbolicName() + ". Only one active objects module descriptor (ao) allowed per plugin!");
-            throw new PluginException(e);
-        }
-        catch (NoServicesFoundException e)
-        {
-            logger.debug("Didn't find any active objects configuration service for bundle " + bundle.getSymbolicName() + ".  Will scan for AO classes in default packages of bundle.");
-
-            final Set<Class<? extends RawEntity<?>>> entities = scanEntities(bundle);
-            if (!entities.isEmpty())
-            {
-                return  configurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities, scanUpgradeTask(bundle));
-            }
-            else
-            {
-                final String msg = "Didn't find any configuration service for bundle " + bundle.getSymbolicName() + " nor any entities scanning for default AO packages.";
-                logger.error(msg);
-                throw new PluginException(msg, e);
-            }
-        }
-    }
-
-    private Set<Class<? extends RawEntity<?>>> scanEntities(Bundle bundle)
-    {
-        final BundleContext bundleContext = bundle.getBundleContext();
-
-        // not typing the iterable here, because of the cast afterward, which wouldn't compile otherwise!
-        final Iterable entityClasses =
-                new BundleContextScanner().findClasses(
-                        bundleContext,
-                        "ao.model",
-                        new LoadClassFromBundleFunction(bundleContext.getBundle()),
-                        new IsAoEntityPredicate()
-                );
-
-        @SuppressWarnings("unchecked") // we're filtering to get what we want!
-        final Iterable<Class<? extends RawEntity<?>>> entities = (Iterable<Class<? extends RawEntity<?>>>) entityClasses;
-        return ImmutableSet.copyOf(entities);
-    }
-
-    private List<ActiveObjectsUpgradeTask> scanUpgradeTask(Bundle bundle)
-    {
-        final BundleContext bundleContext = bundle.getBundleContext();
-
-        // not typing the iterable here, because of the cast afterward, which wouldn't compile otherwise!
-        final Iterable upgradeClasses =
-                new BundleContextScanner().findClasses(
-                        bundleContext,
-                        "ao.upgrade",
-                        new LoadClassFromBundleFunction(bundleContext.getBundle()),
-                        new IsAoUpgradeTaskPredicate()
-                );
-
-        @SuppressWarnings("unchecked") // we're filtering to get what we want!
-        final Iterable<Class<? extends ActiveObjectsUpgradeTask>> upgrades = (Iterable<Class<? extends ActiveObjectsUpgradeTask>>) upgradeClasses;
-
-        return copyOf(transform(upgrades, new Function<Class<? extends ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>()
+        
+        return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
         {
             @Override
-            public ActiveObjectsUpgradeTask apply(Class<? extends ActiveObjectsUpgradeTask> input)
+            public ActiveObjects doInTransaction()
             {
-                return (ActiveObjectsUpgradeTask) applicationContext.getAutowireCapableBeanFactory()
-                        .createBean(input, AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT, true);
+                logger.debug("Creating active object service for plugin {} [{}]", config.getPluginKey());
+                return factory.create(config);
             }
-        }));
+        });
+    };
+
+    private Promise<ActiveObjects> submitCreateActiveObjects(final Bundle bundle)
+    {
+        Promise<ActiveObjects> promise = Promises.forFuture(ddlExecutor.submit(new Callable<ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects call() throws Exception
+            {
+                if(ddlExecutor.isShutdown())
+                    throw new InterruptedException("ddlExecutor shutdown, not attempting creation of ActiveObjects for bundle : "+bundle);
+
+                ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                return createActiveObjects(configuration);
+            }
+        })).recover(new Function<Throwable, ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects apply(final Throwable ex)
+            {
+                Throwables.propagateIfInstanceOf(ex, Error.class);
+                Throwables.propagateIfInstanceOf(ex, ActiveObjectsPluginException.class);
+                throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+bundle.getSymbolicName(), ex);
+            }
+        });
+        return promise;
     }
 
     private static final class ActiveObjectsKey
@@ -251,92 +208,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
         }
     }
 
-    private static class IsAoEntityPredicate implements Predicate<Class>
+    @Override
+    public void destroy() throws Exception
     {
-        @Override
-        public boolean apply(Class clazz)
-        {
-            return RawEntity.class.isAssignableFrom(clazz);
-        }
-    }
-
-    private static class IsAoUpgradeTaskPredicate implements Predicate<Class>
-    {
-        @Override
-        public boolean apply(Class clazz)
-        {
-            return ActiveObjectsUpgradeTask.class.isAssignableFrom(clazz);
-        }
-    }
-
-    final class LazyActiveObjectConfiguration implements ActiveObjectsConfiguration
-    {
-        private final Bundle bundle;
-
-        public LazyActiveObjectConfiguration(Bundle bundle)
-        {
-            this.bundle = checkNotNull(bundle);
-        }
-
-        @Override
-        public PluginKey getPluginKey()
-        {
-            return getDelegate().getPluginKey();
-        }
-
-        @Override
-        public DataSourceType getDataSourceType()
-        {
-            return getDelegate().getDataSourceType();
-        }
-
-        @Override
-        public Prefix getTableNamePrefix()
-        {
-            return getDelegate().getTableNamePrefix();
-        }
-
-        @Override
-        public NameConverters getNameConverters()
-        {
-            return getDelegate().getNameConverters();
-        }
-
-        @Override
-        public SchemaConfiguration getSchemaConfiguration()
-        {
-            return getDelegate().getSchemaConfiguration();
-        }
-
-        @Override
-        public Set<Class<? extends RawEntity<?>>> getEntities()
-        {
-            return getDelegate().getEntities();
-        }
-
-        @Override
-        public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
-        {
-            return getDelegate().getUpgradeTasks();
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return getDelegate().hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return obj != null
-                    && obj instanceof LazyActiveObjectConfiguration
-                    && bundle.getBundleId() == ((LazyActiveObjectConfiguration) obj).bundle.getBundleId();
-        }
-
-        ActiveObjectsConfiguration getDelegate()
-        {
-            return getConfiguration(bundle);
-        }
+        ddlExecutor.shutdown();
     }
 }

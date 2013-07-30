@@ -1,22 +1,32 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Suppliers;
+import com.atlassian.util.concurrent.Promise;
+import com.atlassian.util.concurrent.Promises;
+
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.osgi.framework.Bundle;
 
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * The main reason for this tests is to ensure that we use the  supplier.
@@ -28,11 +38,20 @@ public class DelegatingActiveObjectsTest
 
     @Mock
     private ActiveObjects delegateActiveObjects;
+    
+    @Mock
+    private Bundle bundle;
+
+    @Mock
+    private TransactionSynchronisationManager tranSyncManager;
+    
+    @Mock
+    private DataSourceProvider dsProvider; 
 
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(Suppliers.ofInstance(delegateActiveObjects));
+        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager, dsProvider);
     }
 
     @Test
@@ -186,6 +205,18 @@ public class DelegatingActiveObjectsTest
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
         verify(delegateActiveObjects).executeInTransaction(callback);
+    }
+
+    @Test(expected=ActiveObjectsInitException.class)
+    public void testDoesNotWaitWithinTransactionWithHsqlDB() throws Exception
+    {
+        when(tranSyncManager.isActiveSynchronisedTransaction()).thenReturn(true);
+        Promise<ActiveObjects> promise = mock(Promise.class);
+        when(promise.isDone()).thenReturn(false);
+        when(dsProvider.getDatabaseType()).thenReturn(DatabaseType.HSQL);
+        
+        activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, dsProvider);
+        activeObjects.moduleMetaData().awaitInitialization();
     }
 
     ///CLOVER:OFF

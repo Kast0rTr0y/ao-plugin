@@ -1,6 +1,6 @@
 package com.atlassian.activeobjects.external;
 
-import java.util.Map;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import net.java.ao.Accessor;
 import net.java.ao.DBParam;
@@ -8,7 +8,7 @@ import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 
-import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.util.Map;
 
 /**
  * Interface to the active objects framework.  Instance is threadsafe.
@@ -342,6 +342,20 @@ public interface ActiveObjects
      */
     public <K> int count(Class<? extends RawEntity<K>> type, Query query);
 
+    /**
+     * Execute the given callback within a transaction if the host supports transactions,
+     * otherwise executes the callback immediately.
+     * 
+     * @param callback
+     * @return the result of the transactionCallback
+     */
     public <T> T executeInTransaction(TransactionCallback<T> callback);
-    
+
+    /**
+     * Provides information about the state of the ActiveObjects module
+     * 
+     * @return activeObjectsModuleMetaData
+     * @since 0.24
+     */
+    public ActiveObjectsModuleMetaData moduleMetaData();
 }
