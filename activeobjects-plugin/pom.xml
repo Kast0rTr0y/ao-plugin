@@ -95,7 +95,6 @@
                             org.springframework.web*;version="${spring.library.version}",
                             org.springframework.web.context.support*;version="${spring.library.version}",
                             org.springframework.web.util*;version="${spring.library.version}",
-                            org.springframework.osgi.context;version="${spring.osgi.version}",
                             snaq.db;resolution:=optional;version="4.9",
                             org.xml.sax
                         </Import-Package>
@@ -201,10 +200,6 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.osgi</groupId>
-            <artifactId>spring-osgi-core</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>

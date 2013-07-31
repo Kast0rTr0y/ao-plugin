@@ -24,7 +24,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.osgi.context.BundleContextAware;
 
 import java.util.List;
 import java.util.Set;
@@ -37,7 +36,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 
-public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigurationServiceProvider, BundleContextAware, InitializingBean, DisposableBean
+public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigurationServiceProvider, InitializingBean, DisposableBean
 {
     private static Logger log = LoggerFactory.getLogger(AOConfigurationServiceProviderImpl.class);
 
@@ -51,23 +50,18 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
 
 
     public AOConfigurationServiceProviderImpl(OsgiServiceUtils osgiUtils,
-            ActiveObjectsConfigurationFactory aoConfigurationFactory, ApplicationContext applicationContext)
+            ActiveObjectsConfigurationFactory aoConfigurationFactory, ApplicationContext applicationContext, BundleContext bundleContext)
     {
         this.osgiUtils = checkNotNull(osgiUtils);
         this.aoConfigurationFactory = checkNotNull(aoConfigurationFactory);
         this.applicationContext = checkNotNull(applicationContext);
-    }
-
-    @Override
-    public void setBundleContext(BundleContext bundleContext)
-    {
-        this.bundleContext = bundleContext;
+        this.bundleContext= bundleContext;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        ServiceListener serviceListener = createServiceListener();
+        serviceListener = createServiceListener();
         initServiceListener(bundleContext, serviceListener);
     }
 
