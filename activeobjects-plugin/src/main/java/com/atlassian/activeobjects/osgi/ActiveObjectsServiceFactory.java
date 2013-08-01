@@ -11,8 +11,6 @@ import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
@@ -81,14 +79,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
     private final ActiveObjectsFactory factory;
     private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
-    private final TransactionTemplate transactionTemplate;
     private final TransactionSynchronisationManager tranSyncManager;
     
-    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionTemplate transactionTemplate, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
+    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
     {
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
-        this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tranSyncManager = checkNotNull(tranSyncManager);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         checkNotNull(eventPublisher).register(this);
@@ -137,16 +133,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
      */
     private ActiveObjects createActiveObjects(final ActiveObjectsConfiguration config)
     {
-        
-        return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
-        {
-            @Override
-            public ActiveObjects doInTransaction()
-            {
-                logger.debug("Creating active object service for plugin {} [{}]", config.getPluginKey());
-                return factory.create(config);
-            }
-        });
+        logger.debug("Creating active object service for plugin {} [{}]", config.getPluginKey());
+        return factory.create(config);
     };
 
     private Promise<ActiveObjects> submitCreateActiveObjects(final Bundle bundle)

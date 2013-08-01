@@ -50,9 +50,6 @@ public final class ActiveObjectsServiceFactoryTest
 
     @Mock
     private Bundle bundle;
-
-    @Mock
-    private TransactionTemplate template;
     
     @Mock
     private TransactionSynchronisationManager tranSyncManager;
@@ -63,7 +60,7 @@ public final class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher, template, tranSyncManager, dataSourceProvider);
+        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher, tranSyncManager, dataSourceProvider);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
         when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);
