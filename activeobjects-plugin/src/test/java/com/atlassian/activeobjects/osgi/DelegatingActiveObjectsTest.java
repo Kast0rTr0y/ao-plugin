@@ -44,14 +44,11 @@ public class DelegatingActiveObjectsTest
 
     @Mock
     private TransactionSynchronisationManager tranSyncManager;
-    
-    @Mock
-    private DataSourceProvider dsProvider; 
 
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager, dsProvider);
+        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager, DatabaseType.UNKNOWN);
     }
 
     @Test
@@ -213,9 +210,8 @@ public class DelegatingActiveObjectsTest
         when(tranSyncManager.isActiveSynchronisedTransaction()).thenReturn(true);
         Promise<ActiveObjects> promise = mock(Promise.class);
         when(promise.isDone()).thenReturn(false);
-        when(dsProvider.getDatabaseType()).thenReturn(DatabaseType.HSQL);
         
-        activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, dsProvider);
+        activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, DatabaseType.HSQL);
         activeObjects.moduleMetaData().awaitInitialization();
     }
 

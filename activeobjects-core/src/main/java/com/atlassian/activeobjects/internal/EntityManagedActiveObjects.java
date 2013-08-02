@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.external.ModelVersion;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
 import net.java.ao.DBParam;
@@ -28,11 +29,13 @@ public class EntityManagedActiveObjects implements ActiveObjects
 {
     private final EntityManager entityManager;
     private final TransactionManager transactionManager;
+    private final DatabaseType dbType;
 
-    protected EntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
+    protected EntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager, DatabaseType dbType)
     {
         this.entityManager = checkNotNull(entityManager);
         this.transactionManager = checkNotNull(transactionManager);
+        this.dbType = checkNotNull(dbType);
     }
 
     ///CLOVER:OFF
@@ -274,8 +277,13 @@ public class EntityManagedActiveObjects implements ActiveObjects
     @Override
     public ActiveObjectsModuleMetaData moduleMetaData()
     {
-        return new ActiveObjectsModuleMetaData()
+        class EntityAOModuleMetaData extends AbstractActiveObjectsMetaData
         {
+            EntityAOModuleMetaData()
+            {
+                super(dbType);
+            }
+
             @Override
             public boolean isInitialized()
             {
@@ -290,5 +298,7 @@ public class EntityManagedActiveObjects implements ActiveObjects
                                 + "awaitModelInitialization should not be called from within an upgrade task");
             }
         };
+
+        return new EntityAOModuleMetaData();
     }
 }

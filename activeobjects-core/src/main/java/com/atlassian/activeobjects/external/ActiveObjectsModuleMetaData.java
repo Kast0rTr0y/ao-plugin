@@ -1,5 +1,7 @@
 package com.atlassian.activeobjects.external;
 
+import com.atlassian.activeobjects.spi.DatabaseType;
+
 /**
  * This interface provides information about the state of the active objects module itself.
  *
@@ -24,4 +26,10 @@ public interface ActiveObjectsModuleMetaData
      * @return true if initialized, false otherwise
      */
     boolean isInitialized();
+
+    /**
+     * 
+     * @return the configured database type that active objects is using
+     */
+    DatabaseType getDatabaseType();
 }

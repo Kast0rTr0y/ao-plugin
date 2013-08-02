@@ -2,7 +2,9 @@ package com.atlassian.activeobjects.test;
 
 import com.atlassian.activeobjects.internal.EntityManagedActiveObjects;
 import com.atlassian.activeobjects.internal.TransactionManager;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+
 import net.java.ao.ActiveObjectsException;
 import net.java.ao.EntityManager;
 import net.java.ao.Transaction;
@@ -32,6 +34,6 @@ public final class TestActiveObjects extends EntityManagedActiveObjects
                     throw new ActiveObjectsException(e);
                 }
             }
-        });
+        }, DatabaseType.HSQL);
     }
 }

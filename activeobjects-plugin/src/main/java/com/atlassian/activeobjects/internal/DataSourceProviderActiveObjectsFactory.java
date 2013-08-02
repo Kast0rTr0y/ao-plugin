@@ -16,6 +16,7 @@ import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
@@ -53,13 +54,13 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
      * is {@code null}
      */
     @Override
-    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration)
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType)
     {
         // the data source from the application
         final DataSource dataSource = getDataSource();
         final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema(), configuration);
         return new EntityManagedActiveObjects(entityManager, 
-                new SalTransactionManager(transactionTemplate, entityManager, transactionSynchronizationManager));
+                new SalTransactionManager(transactionTemplate, entityManager, transactionSynchronizationManager), dbType);
     }
 
     private DataSource getDataSource()

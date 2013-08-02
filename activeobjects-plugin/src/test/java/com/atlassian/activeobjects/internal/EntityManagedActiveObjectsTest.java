@@ -1,10 +1,13 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Sets;
+
 import net.java.ao.DatabaseProvider;
 import net.java.ao.DisposableDataSource;
 import net.java.ao.EntityManager;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +35,7 @@ public class EntityManagedActiveObjectsTest
     @Before
     public void setUp()
     {
-        activeObjects = new EntityManagedActiveObjects(entityManager, transactionManager);
+        activeObjects = new EntityManagedActiveObjects(entityManager, transactionManager, DatabaseType.HSQL);
     }
 
     @Test

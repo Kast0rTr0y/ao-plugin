@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.google.common.base.Supplier;
 
 import net.java.ao.RawEntity;
@@ -38,16 +39,16 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
     }
 
     @Override
-    public final ActiveObjects create(final ActiveObjectsConfiguration configuration)
+    public final ActiveObjects create(final ActiveObjectsConfiguration configuration, DatabaseType dbType)
     {
         if (!accept(configuration))
         {
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        upgrade(configuration);
+        upgrade(configuration, dbType);
 
-        final ActiveObjects ao = doCreate(configuration);
+        final ActiveObjects ao = doCreate(configuration, dbType);
 
         final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
         logger.debug("Created active objects instance with configuration {}, now migrating entities {}", configuration, entitiesToMigrate);
@@ -55,16 +56,16 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         return ao;
     }
 
-    private void upgrade(final ActiveObjectsConfiguration configuration)
+    private void upgrade(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)
     {
         aoUpgradeManager.upgrade(configuration.getTableNamePrefix(), configuration.getUpgradeTasks(), new Supplier<ActiveObjects>()
-        {
-            @Override
-            public ActiveObjects get()
             {
-                return doCreate(configuration);
-            }
-        });
+                @Override
+                public ActiveObjects get()
+                {
+                    return doCreate(configuration, dbType);
+                }
+            });
     }
 
     @SuppressWarnings("unchecked")
@@ -80,5 +81,5 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
      * @param configuration the configuration to work with
      * @return the new {@link com.atlassian.activeobjects.external.ActiveObjects}
      */
-    protected abstract ActiveObjects doCreate(ActiveObjectsConfiguration configuration);
+    protected abstract ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType);
 }

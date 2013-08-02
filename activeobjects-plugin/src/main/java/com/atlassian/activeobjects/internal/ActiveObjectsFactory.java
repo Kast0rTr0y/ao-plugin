@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 
 /**
@@ -26,5 +27,5 @@ public interface ActiveObjectsFactory
      * @throws IllegalStateException is the type of configuration is not supported by this factory
      * @see #accept(ActiveObjectsConfiguration)
      */
-    ActiveObjects create(ActiveObjectsConfiguration configuration);
+    ActiveObjects create(ActiveObjectsConfiguration configuration, DatabaseType dbType);
 }

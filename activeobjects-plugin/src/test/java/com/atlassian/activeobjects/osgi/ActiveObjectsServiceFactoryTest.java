@@ -1,10 +1,10 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventPublisher;
@@ -13,14 +13,16 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.springframework.context.ApplicationContext;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public final class ActiveObjectsServiceFactoryTest
@@ -57,13 +59,17 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private DataSourceProvider dataSourceProvider;
     
+    @Mock
+    private TransactionTemplate transactionTemplate;
+
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher, tranSyncManager, dataSourceProvider);
+        serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher,
+                tranSyncManager, dataSourceProvider, transactionTemplate);
 
         when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
-        when(factory.create(Matchers.<ActiveObjectsConfiguration>any())).thenReturn(activeObjects);
+        when(factory.create(any(ActiveObjectsConfiguration.class), any(DatabaseType.class))).thenReturn(activeObjects);
     }
 
     @Test

@@ -2,9 +2,8 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
-import com.atlassian.activeobjects.external.ModelVersion;
+import com.atlassian.activeobjects.internal.AbstractActiveObjectsMetaData;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -34,27 +33,28 @@ final class DelegatingActiveObjects implements ActiveObjects
     
     private final TransactionSynchronisationManager tranSyncManager;
     
-    private final DataSourceProvider dataSourceProvider;
+    private final DatabaseType databaseType;
     
-    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager, DatabaseType databaseType)
     {
         this.bundle = bundle;
         promisedAORef.set(promise);
         this.tranSyncManager = tranSyncManager;
-        this.dataSourceProvider = dataSourceProvider;
+        this.databaseType = databaseType;
     }
 
     private ActiveObjects getPromisedAO()
     {
         Promise<ActiveObjects> promise = promisedAORef.get();
-        // HSQLDB requires a write lock to perform DDL, existing transactions holding a read lock will prevent the acquisition of this lock causing a deadlock
-        if(DatabaseType.HSQL.equals(dataSourceProvider.getDatabaseType()) 
-                && tranSyncManager.isActiveSynchronisedTransaction() 
-                && !promise.isDone())
+        // HSQLDB requires a write lock to perform DDL, existing transactions holding a read lock will prevent the
+        // acquisition of this lock causing a deadlock
+        if (DatabaseType.HSQL.equals(databaseType) && tranSyncManager.isActiveSynchronisedTransaction() &&
+                !promise.isDone())
         {
-                throw new ActiveObjectsInitException("ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks in HSQL.\n" +
-                        "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, " +
-                        "call ActiveObjects.awaitInitialization from outside of a transcation in response to a PluginEnabledEvent.");
+            throw new ActiveObjectsInitException(
+                    "ActiveObjects was called from within a transaction before initialization had complete, this can cause deadlocks in HSQL.\n"
+                            + "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, "
+                            + "call ActiveObjects.awaitInitialization from outside of a transcation in response to a PluginEnabledEvent.");
         }
         return checkNotNull(promise.claim());
     }
@@ -173,12 +173,17 @@ final class DelegatingActiveObjects implements ActiveObjects
     {
         return bundle;
     }
-    
+
     @Override
     public ActiveObjectsModuleMetaData moduleMetaData()
     {
-        return new ActiveObjectsModuleMetaData()
+        class DelegatingAOModuleMetaData extends AbstractActiveObjectsMetaData
         {
+            public DelegatingAOModuleMetaData()
+            {
+                super(databaseType);
+            }
+
             @Override
             public boolean isInitialized()
             {
@@ -201,5 +206,6 @@ final class DelegatingActiveObjects implements ActiveObjects
                 getPromisedAO();
             }
         };
+        return new DelegatingAOModuleMetaData();
     }
 }

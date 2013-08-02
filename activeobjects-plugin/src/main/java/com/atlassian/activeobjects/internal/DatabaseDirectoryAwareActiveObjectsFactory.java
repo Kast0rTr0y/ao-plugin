@@ -5,15 +5,18 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.ApplicationProperties;
+
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractActiveObjectsFactory
 {
@@ -33,7 +36,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     }
 
     @Override
-    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration)
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType)
     {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), configuration.getPluginKey());
         final EntityManager entityManager = getEntityManager(dbDir, configuration);
@@ -113,7 +116,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     {
         DatabaseDirectoryAwareEntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
         {
-            super(entityManager, transactionManager);
+            super(entityManager, transactionManager, DatabaseType.HSQL);
         }
     }
 }

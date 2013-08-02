@@ -72,7 +72,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         try
         {
-            activeObjectsFactory.create(configuration);
+            activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
         }
         catch (ActiveObjectsPluginException e)
@@ -91,7 +91,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
 
-        assertNotNull(activeObjectsFactory.create(configuration));
+        assertNotNull(activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
     }
 

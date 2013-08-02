@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.junit.Host;
 import com.atlassian.activeobjects.junit.MockHostComponent;
 import com.atlassian.activeobjects.junit.PackageVersion;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.event.api.EventPublisher;
@@ -29,7 +30,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -130,13 +131,15 @@ public abstract class BaseActiveObjectsIntegrationTest
     @Before
     public void initHostComponents()
     {
-        Mockito.when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
             {
-                return ((TransactionCallback<?>)invocation.getArguments()[0]).doInTransaction();
+                return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
             }
         });
+
+        when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.UNKNOWN);
     }
 }

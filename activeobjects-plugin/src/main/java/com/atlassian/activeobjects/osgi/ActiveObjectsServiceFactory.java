@@ -6,11 +6,14 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
@@ -50,9 +53,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 20000);
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    
-    private final DataSourceProvider dataSourceProvider;
-    
+
     private final ExecutorService ddlExecutor = Executors
             .newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
                 new ThreadFactoryBuilder()
@@ -60,12 +61,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
                     .setDaemon(false)
                     .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the potential to block other threads 
 
-    final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
+    private final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
     {
         @Override
         public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, dataSourceProvider);
+            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, getDatabaseType());
         }
     };
     
@@ -80,13 +81,16 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final ActiveObjectsFactory factory;
     private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
     private final TransactionSynchronisationManager tranSyncManager;
+    private final DataSourceProvider dataSourceProvider;
+    private final TransactionTemplate transactionTemplate;
     
-    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider)
+    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
     {
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.tranSyncManager = checkNotNull(tranSyncManager);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.transactionTemplate = checkNotNull(transactionTemplate);
         checkNotNull(eventPublisher).register(this);
     }
 
@@ -134,8 +138,27 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private ActiveObjects createActiveObjects(final ActiveObjectsConfiguration config)
     {
         logger.debug("Creating active object service for plugin {} [{}]", config.getPluginKey());
-        return factory.create(config);
+        return factory.create(config, getDatabaseType());
     };
+
+    /**
+     * This is executed in a transaction as some providers create a hibernate session which can only be done in a
+     * transaction
+     * 
+     * @return an enum representing the underlying database type
+     */
+    private DatabaseType getDatabaseType()
+    {
+        return transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+        {
+            @Override
+            public DatabaseType doInTransaction()
+            {
+                return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider +
+                        " returned null for dbType");
+            }
+        });
+    }
 
     private Promise<ActiveObjects> submitCreateActiveObjects(final Bundle bundle)
     {
