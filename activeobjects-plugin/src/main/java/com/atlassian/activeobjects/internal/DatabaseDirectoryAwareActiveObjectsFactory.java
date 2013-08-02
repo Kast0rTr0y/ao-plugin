@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
@@ -28,9 +29,10 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private final ApplicationProperties applicationProperties;
     private final ActiveObjectsPluginConfiguration dbConfiguration;
 
-    public DatabaseDirectoryAwareActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration)
+    public DatabaseDirectoryAwareActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager,
+            ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration, TransactionTemplate transactionTemplate)
     {
-        super(DataSourceType.HSQLDB, aoUpgradeManager);
+        super(DataSourceType.HSQLDB, aoUpgradeManager,transactionTemplate);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.dbConfiguration = checkNotNull(dbConfiguration);
     }

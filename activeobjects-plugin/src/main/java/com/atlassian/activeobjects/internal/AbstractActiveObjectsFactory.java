@@ -3,6 +3,8 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.google.common.base.Supplier;
 
 import net.java.ao.RawEntity;
@@ -25,11 +27,13 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
+    protected final TransactionTemplate transactionTemplate;
 
-    AbstractActiveObjectsFactory(DataSourceType dataSourceType, ActiveObjectUpgradeManager aoUpgradeManager)
+    AbstractActiveObjectsFactory(DataSourceType dataSourceType, ActiveObjectUpgradeManager aoUpgradeManager, TransactionTemplate transactionTemplate)
     {
         this.supportedDataSourceType = checkNotNull(dataSourceType);
         this.aoUpgradeManager = checkNotNull(aoUpgradeManager);
+        this.transactionTemplate = checkNotNull(transactionTemplate);
     }
 
     @Override
@@ -39,7 +43,7 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
     }
 
     @Override
-    public final ActiveObjects create(final ActiveObjectsConfiguration configuration, DatabaseType dbType)
+    public final ActiveObjects create(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)
     {
         if (!accept(configuration))
         {
@@ -49,11 +53,19 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         upgrade(configuration, dbType);
 
         final ActiveObjects ao = doCreate(configuration, dbType);
-
         final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
-        logger.debug("Created active objects instance with configuration {}, now migrating entities {}", configuration, entitiesToMigrate);
-        ao.migrate(asArray(entitiesToMigrate));
-        return ao;
+
+        return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects doInTransaction()
+            {
+                logger.debug("Created active objects instance with configuration {}, now migrating entities {}",
+                        configuration, entitiesToMigrate);
+                ao.migrate(asArray(entitiesToMigrate));
+                return ao;
+            }
+        });
     }
 
     private void upgrade(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)

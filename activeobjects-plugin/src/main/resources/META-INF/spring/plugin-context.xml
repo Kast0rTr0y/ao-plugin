@@ -121,6 +121,7 @@
                     <constructor-arg index="0" ref="aoUpgradeManager"/>
                     <constructor-arg index="1" ref="applicationProperties"/>
                     <constructor-arg index="2" ref="aoPluginConfiguration"/>
+                    <constructor-arg index="3" ref="transactionTemplate"/>
                 </bean>
                 <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory" autowire="byName">
                     <constructor-arg index="0" ref="aoUpgradeManager"/>

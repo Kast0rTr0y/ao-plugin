@@ -18,6 +18,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
 /**
@@ -27,16 +28,15 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
 {
     private final EntityManagerFactory entityManagerFactory;
     private final DataSourceProvider dataSourceProvider;
-    private final TransactionTemplate transactionTemplate;
+    
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, 
             EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
     {
-        super(DataSourceType.APPLICATION, aoUpgradeManager);
+        super(DataSourceType.APPLICATION, aoUpgradeManager,transactionTemplate);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
-        this.transactionTemplate = checkNotNull(transactionTemplate);
     }
     
     public void setTransactionSynchronizationManager(TransactionSynchronisationManager transactionSynchronizationManager)
@@ -54,13 +54,19 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
      * is {@code null}
      */
     @Override
-    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType)
+    protected ActiveObjects doCreate(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)
     {
-        // the data source from the application
-        final DataSource dataSource = getDataSource();
-        final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema(), configuration);
-        return new EntityManagedActiveObjects(entityManager, 
-                new SalTransactionManager(transactionTemplate, entityManager, transactionSynchronizationManager), dbType);
+        return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects doInTransaction()
+            {
+                final DataSource dataSource = getDataSource();
+                final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dbType, dataSourceProvider.getSchema(), configuration);
+                return new EntityManagedActiveObjects(entityManager, 
+                        new SalTransactionManager(transactionTemplate, entityManager, transactionSynchronizationManager), dbType);
+            }
+        });
     }
 
     private DataSource getDataSource()
