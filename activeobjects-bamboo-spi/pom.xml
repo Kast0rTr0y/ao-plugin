@@ -3,7 +3,7 @@
   <parent>
       <groupId>com.atlassian.activeobjects</groupId>
       <artifactId>activeobjects-plugin-parent-pom</artifactId>
-      <version>0.24-m1-confluence</version>
+      <version>0.24-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
