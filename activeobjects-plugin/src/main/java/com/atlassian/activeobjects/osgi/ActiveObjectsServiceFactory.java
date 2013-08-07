@@ -127,6 +127,24 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         {
             ao.restart(submitCreateActiveObjects(ao.getBundle()));
         }
+        try
+        {
+            // wait for the hot restart to complete, this allows callers to know that the restart has complete
+            // when the event publisher returns, also helps avoid ddl deadlocks in HSQLDB whilst also staying off
+            // the same thread and joining any existing transactions
+            ddlExecutor.submit(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    logger.info("Completed active objects hot restart");
+                }
+            }).get();
+        }
+        catch(Exception ex)
+        {
+            logger.warn("Exception waiting for hot restart to complete", ex);
+        }
     }
 
     /**
