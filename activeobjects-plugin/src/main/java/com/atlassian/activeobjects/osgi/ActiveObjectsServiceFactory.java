@@ -131,7 +131,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         {
             // wait for the hot restart to complete, this allows callers to know that the restart has complete
             // when the event publisher returns, also helps avoid ddl deadlocks in HSQLDB whilst also staying off
-            // the same thread and joining any existing transactions
+            // the same thread and not joining any existing transactions
             ddlExecutor.submit(new Runnable()
             {
                 @Override
