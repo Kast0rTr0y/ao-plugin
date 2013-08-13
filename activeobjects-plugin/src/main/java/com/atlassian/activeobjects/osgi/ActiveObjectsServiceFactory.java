@@ -50,7 +50,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
-    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 20000);
+    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 60000);
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
