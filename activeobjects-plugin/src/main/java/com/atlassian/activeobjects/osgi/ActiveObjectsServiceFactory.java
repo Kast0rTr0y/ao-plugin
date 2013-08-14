@@ -50,7 +50,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
-    private final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 60000);
+    private final long CONFIGURATION_SHORT_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.short.timeout", 15000);
+    private final long CONFIGURATION_LONG_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.long.timeout",120000);
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -180,7 +181,38 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
     private Promise<ActiveObjects> submitCreateActiveObjects(final Bundle bundle)
     {
-        Promise<ActiveObjects> promise = Promises.forFuture(ddlExecutor.submit(new Callable<ActiveObjects>()
+        final Promise<ActiveObjects> promise = Promises.forFuture(
+                ddlExecutor.submit(getCreateAOCallable(bundle, CONFIGURATION_SHORT_TIMEOUT_MS, TimeUnit.MILLISECONDS)))
+                .recover(new Function<Throwable, ActiveObjects>()
+                {
+                    @Override
+                    public ActiveObjects apply(Throwable ex)
+                    {
+                        try
+                        {
+                            if (ex instanceof NoServicesFoundException)
+                            {
+                                logger.warn("Resubmitting AO bundle with longer timeout {} ms for bundle : {}", CONFIGURATION_LONG_TIMEOUT_MS, bundle);
+                                // submit a new callable with a longer timeout
+                                return ddlExecutor.submit(getCreateAOCallable(bundle, CONFIGURATION_LONG_TIMEOUT_MS, TimeUnit.MILLISECONDS)).get();
+                            }
+                        }
+                        catch (Exception ex2)
+                        {
+                            ex = ex2;
+                        }
+
+                        Throwables.propagateIfInstanceOf(ex, Error.class);
+                        Throwables.propagateIfInstanceOf(ex, ActiveObjectsPluginException.class);
+                        throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+ bundle.getSymbolicName(), ex);
+                    }
+                });
+        return promise;
+    }
+    
+    private Callable<ActiveObjects> getCreateAOCallable(final Bundle bundle, final long timeout, final TimeUnit unit)
+    {
+        return new Callable<ActiveObjects>()
         {
             @Override
             public ActiveObjects call() throws Exception
@@ -188,20 +220,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
                 if(ddlExecutor.isShutdown())
                     throw new InterruptedException("ddlExecutor shutdown, not attempting creation of ActiveObjects for bundle : "+bundle);
 
-                ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, timeout, unit);
                 return createActiveObjects(configuration);
             }
-        })).recover(new Function<Throwable, ActiveObjects>()
-        {
-            @Override
-            public ActiveObjects apply(final Throwable ex)
-            {
-                Throwables.propagateIfInstanceOf(ex, Error.class);
-                Throwables.propagateIfInstanceOf(ex, ActiveObjectsPluginException.class);
-                throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+bundle.getSymbolicName(), ex);
-            }
-        });
-        return promise;
+        };
     }
 
     private static final class ActiveObjectsKey

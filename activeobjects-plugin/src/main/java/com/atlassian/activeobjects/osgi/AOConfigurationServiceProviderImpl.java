@@ -71,7 +71,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         bundleContext.removeServiceListener(serviceListener);
     }
 
-    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException
+    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException, NoServicesFoundException
     {
         try
         {
@@ -79,7 +79,8 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         }
         catch (TimeoutException e)
         {
-            log.warn("Timeout ({}{}) waiting for ActiveObjectConfiguration for Bundle : {}.\nTo avoid this warning add an ao configuration module to your plugin", new Object[]{waitTime, unit, bundle});
+            log.warn("Timeout ({} {}) waiting for ActiveObjectConfiguration for Bundle : {}.\nTo avoid this warning add an ao " +
+                    "configuration module to your plugin", new Object[]{waitTime, unit, bundle});
             log.debug("Stacktrace: ", e);
             ActiveObjectsConfiguration configuration = getConfiguration(bundle);
             bundleKeyToAOConfiguration.put(bundle.getBundleId(), configuration);
@@ -97,7 +98,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
      * @throws PluginException
      *             if no configuration OSGi service is found and no classes were found scanning the well known packages.
      */
-    private ActiveObjectsConfiguration getConfiguration(Bundle bundle)
+    private ActiveObjectsConfiguration getConfiguration(Bundle bundle) throws NoServicesFoundException
     {
         try
         {
@@ -122,10 +123,9 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
             }
             else
             {
-                final String msg = "Didn't find any configuration service for bundle " + bundle.getSymbolicName() +
-                        " nor any entities scanning for default AO packages.";
-                log.error(msg);
-                throw new PluginException(msg, e);
+                log.warn("Didn't find any configuration service for bundle {}" + 
+                      " nor any entities scanning for default AO packages.", bundle.getSymbolicName());
+                throw e;
             }
         }
     }

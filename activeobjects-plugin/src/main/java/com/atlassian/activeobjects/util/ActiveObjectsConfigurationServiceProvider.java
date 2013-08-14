@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.util;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.osgi.NoServicesFoundException;
 import com.atlassian.plugin.PluginException;
 
 import org.osgi.framework.Bundle;
@@ -26,7 +27,7 @@ public interface ActiveObjectsConfigurationServiceProvider
      * @param waitTime - the amount of time to wait for the ActiveObjectsConfiguration service to become available
      * @param unit - the unit of waitTime
      * @return the ActiveObjectsConfiguration service for the given bundle, cannot be null
-     * @throws PluginException if no configuration OSGi service is found and no classes were found scanning the well known packages.
+     * @throws NoServicesFoundException if no configuration OSGi service is found and no classes were found scanning the well known packages.
      */
-    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException;
+    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException, NoServicesFoundException;
 }
