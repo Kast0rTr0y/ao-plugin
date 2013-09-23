@@ -87,6 +87,24 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
             return configuration;
         }
     }
+    
+    public boolean hasConfiguration(Bundle bundle)
+    {
+        try
+        {
+            return bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), 0, TimeUnit.MILLISECONDS) != null;
+        }
+        catch (TimeoutException e)
+        {
+            return false;
+        }
+        catch (InterruptedException e)
+        {
+            Thread.interrupted();
+            return false;
+        }
+    }
+    
 
     /**
      * Retrieves the active objects configuration which should be exposed as a service or if none is found will scan for

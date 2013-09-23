@@ -6,6 +6,7 @@ import com.atlassian.activeobjects.internal.AbstractActiveObjectsMetaData;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
 import com.google.common.base.Supplier;
@@ -35,12 +36,19 @@ final class DelegatingActiveObjects implements ActiveObjects
     
     private final DatabaseType databaseType;
     
-    public DelegatingActiveObjects(Promise<ActiveObjects> promise, Bundle bundle, TransactionSynchronisationManager tranSyncManager, DatabaseType databaseType)
+    private final ActiveObjectsConfigurationServiceProvider configurationProvider;
+    
+    public DelegatingActiveObjects(Promise<ActiveObjects> promise, 
+            Bundle bundle, 
+            TransactionSynchronisationManager tranSyncManager,
+            ActiveObjectsConfigurationServiceProvider configurationProvider,
+            DatabaseType databaseType)
     {
         this.bundle = bundle;
         promisedAORef.set(promise);
         this.tranSyncManager = tranSyncManager;
         this.databaseType = databaseType;
+        this.configurationProvider = configurationProvider;
     }
 
     private ActiveObjects waitForPromisedAO()
@@ -69,15 +77,16 @@ final class DelegatingActiveObjects implements ActiveObjects
         Promise<ActiveObjects> promise = promisedAORef.get();
 
         // waiting for AO on the thread that publishes OSGi services will block the publication of the AO Configuration Service that AO
-        // needs to complete its promise, this will lead to timeouts in AO.  This is why we don't wait for the promise to complete by default.
-        if (!promise.isDone())
+        // needs to complete its promise, this will lead to timeouts in AO.  This is why we don't wait for the promise to complete if
+        // an AOConfiguration is not available.
+        if (!promise.isDone() && !configurationProvider.hasConfiguration(bundle))
         {
             throw new ActiveObjectsInitException(
-                    "ActiveObjects was called before initialization had complete.\n"
-                            + "Not waiting for ActiveObjects to complete migration.  To avoid this error and wait for initialization to be complete, "
-                            + "call ActiveObjects.moduleMetaData().awaitInitialization() from outside of a transaction.\n" +
-                            "Do NOT call awaitInitialization from within the thread responsible for publishing OSGi services, " +
-                            "this can block service publication and cause AO to time out whilst waiting for the configuration to be published.");
+                "ActiveObjects was called before initialization had complete.\n"
+                    + "Not waiting for an ActiveObjectsConfiguration to become available.  To avoid this error and wait for initialization to be complete, "
+                    + "call ActiveObjects.moduleMetaData().awaitInitialization() from outside of a transaction.\n"
+                    + "Do NOT call awaitInitialization from within the thread responsible for publishing OSGi services, "
+                    + "this can block service publication and cause AO to time out whilst waiting for the configuration to be published.");
         }
         else
         {
