@@ -2,9 +2,9 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
@@ -45,10 +45,14 @@ public class DelegatingActiveObjectsTest
     @Mock
     private TransactionSynchronisationManager tranSyncManager;
 
+    @Mock
+    private ActiveObjectsConfigurationServiceProvider configurationProvider;
+    
     @Before
     public void setUp() throws Exception
     {
-        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager, DatabaseType.UNKNOWN);
+        when(configurationProvider.hasConfiguration(bundle)).thenReturn(true);
+        activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager, configurationProvider, DatabaseType.UNKNOWN);
     }
 
     @Test
@@ -211,7 +215,7 @@ public class DelegatingActiveObjectsTest
         Promise<ActiveObjects> promise = mock(Promise.class);
         when(promise.isDone()).thenReturn(false);
         
-        activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, DatabaseType.HSQL);
+        activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, configurationProvider, DatabaseType.HSQL);
         activeObjects.moduleMetaData().awaitInitialization();
     }
 

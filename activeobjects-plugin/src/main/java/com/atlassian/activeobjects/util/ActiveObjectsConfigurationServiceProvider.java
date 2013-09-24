@@ -30,4 +30,11 @@ public interface ActiveObjectsConfigurationServiceProvider
      * @throws NoServicesFoundException if no configuration OSGi service is found and no classes were found scanning the well known packages.
      */
     public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException, NoServicesFoundException;
+    
+    /**
+     * If this method returns true getAndWait will not need to wait for an AOConfiguration to become available
+     * @param bundle - the bundle to check configuration for
+     * @return true if there is configuration currently present for the bundle.
+     */
+    public boolean hasConfiguration(Bundle bundle);
 }

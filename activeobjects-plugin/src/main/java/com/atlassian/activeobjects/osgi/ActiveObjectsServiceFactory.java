@@ -67,7 +67,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public DelegatingActiveObjects apply(final ActiveObjectsKey key)
         {
-            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, getDatabaseType());
+            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, aoConfigurationResolver, getDatabaseType());
         }
     };
     
