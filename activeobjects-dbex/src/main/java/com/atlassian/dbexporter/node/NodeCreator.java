@@ -81,6 +81,15 @@ public interface NodeCreator
     NodeCreator setContentAsBoolean(Boolean bool);
 
     /**
+     * Similar to {@link NodeCreator#setContentAsString(String)}, but sets the
+     * content to the specified {@link byte[]} instance.
+     *
+     * @param bytes
+     * @return a reference to the current node.
+     */
+    NodeCreator setContentAsBinary(byte[] bytes);
+
+    /**
      * Similar to {@link NodeCreator#setContentAsString(String)}, but passes the
      * content to the {@link NodeCreator} as a {@link java.io.Reader} instance. Use this
      * to encode large chunks of content in a memory-efficient way.
