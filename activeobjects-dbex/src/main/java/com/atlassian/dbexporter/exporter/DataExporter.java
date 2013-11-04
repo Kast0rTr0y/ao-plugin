@@ -141,6 +141,7 @@ public final class DataExporter implements Exporter
                     }
                     break;
                 case Types.CHAR:
+                case Types.NCHAR:
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
                 case Types.NVARCHAR:
