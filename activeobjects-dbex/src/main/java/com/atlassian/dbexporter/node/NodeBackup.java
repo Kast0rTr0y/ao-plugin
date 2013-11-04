@@ -250,6 +250,7 @@ public final class NodeBackup
         private static final String INTEGER = "integer";
         private static final String DOUBLE = "double";
         private static final String DATE = "timestamp";
+        private static final String BINARY = "binary";
 
         public static NodeCreator add(NodeCreator node)
         {
@@ -281,6 +282,11 @@ public final class NodeBackup
             return node.addNode(DATE).setContentAsDate(value).closeEntity();
         }
 
+        public static NodeCreator append(NodeCreator node, byte[] value)
+        {
+            return node.addNode(BINARY).setContentAsBinary(value).closeEntity();
+        }
+
         public static boolean isString(NodeParser node)
         {
             return STRING.equals(node.getName());
@@ -304,6 +310,11 @@ public final class NodeBackup
         public static boolean isDate(NodeParser node)
         {
             return DATE.equals(node.getName());
+        }
+
+        public static boolean isBinary(NodeParser node)
+        {
+            return BINARY.equals(node.getName());
         }
     }
 }

@@ -5,6 +5,7 @@ import com.atlassian.dbexporter.node.NodeCreator;
 import com.atlassian.dbexporter.node.NodeStreamWriter;
 import javanet.staxutils.IndentingXMLStreamWriter;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.Reader;
@@ -121,6 +122,13 @@ public final class StaxStreamWriter implements NodeStreamWriter
                     public NodeCreator setContentAsBoolean(Boolean bool)
                     {
                         return setContentAsString(bool == null ? null : Boolean.toString(bool));
+                    }
+
+                    @Override
+                    public NodeCreator setContentAsBinary(byte[] bytes)
+                    {
+
+                        return setContentAsString(bytes == null ? null : DatatypeConverter.printBase64Binary(bytes));
                     }
 
                     public NodeCreator setContentAsString(String value)

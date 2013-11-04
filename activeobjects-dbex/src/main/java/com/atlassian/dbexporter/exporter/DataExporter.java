@@ -118,6 +118,8 @@ public final class DataExporter implements Exporter
         {
             switch (columnType(table, metaData, col))
             {
+                case Types.TINYINT:
+                case Types.SMALLINT:
                 case Types.BIGINT:
                 case Types.INTEGER:
                     appendInteger(table, result, col, node);
@@ -138,6 +140,7 @@ public final class DataExporter implements Exporter
                         appendInteger(table, result, col, node);
                     }
                     break;
+                case Types.CHAR:
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
                 case Types.NVARCHAR:
@@ -165,6 +168,14 @@ public final class DataExporter implements Exporter
                 case Types.NCLOB:
                     final String c = getClobAsString(table, result, col);
                     RowDataNode.append(node, wasNull(table, result) ? null : c);
+                    break;
+
+                case Types.BLOB:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                    final byte[] b = getBinary(table, result, col);
+                    RowDataNode.append(node, wasNull(table, result) ? null : b);
                     break;
 
                 default:
@@ -363,6 +374,18 @@ public final class DataExporter implements Exporter
         catch (SQLException e)
         {
             throw errorService.newImportExportSqlException(table, "Could not get clob value for col #" + col, e);
+        }
+    }
+
+    private byte[] getBinary(String table, ResultSet result, int col)
+    {
+        try
+        {
+            return result.getBytes(col);
+        }
+        catch (SQLException e)
+        {
+            throw errorService.newImportExportSqlException(table, "Could not get binary value for col #" + col, e);
         }
     }
 
