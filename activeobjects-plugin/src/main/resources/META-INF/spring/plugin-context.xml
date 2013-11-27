@@ -72,21 +72,21 @@
     <bean id="indexNameConverter" class="net.java.ao.atlassian.AtlassianIndexNameConverter"/>
     <bean id="uniqueNameConverter" class="net.java.ao.atlassian.AtlassianUniqueNameConverter"/>
 
+    <bean id="simpleNameConverters" class="net.java.ao.builder.SimpleNameConverters">
+        <constructor-arg index="0">
+            <bean class="com.atlassian.activeobjects.backup.ExceptionThrowingTableNameConverter"/>
+        </constructor-arg>
+        <constructor-arg index="1" ref="fieldNameConverter"/>
+        <constructor-arg index="2" ref="sequenceNameConverter"/>
+        <constructor-arg index="3" ref="triggerNameConverter"/>
+        <constructor-arg index="4" ref="indexNameConverter"/>
+        <constructor-arg index="5" ref="uniqueNameConverter"/>
+    </bean>
+
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="dataSourceProvider"/>
-        <constructor-arg>
-            <bean class="net.java.ao.builder.SimpleNameConverters">
-                <constructor-arg index="0">
-                    <bean class="com.atlassian.activeobjects.backup.ExceptionThrowingTableNameConverter"/>
-                </constructor-arg>
-                <constructor-arg index="1" ref="fieldNameConverter"/>
-                <constructor-arg index="2" ref="sequenceNameConverter"/>
-                <constructor-arg index="3" ref="triggerNameConverter"/>
-                <constructor-arg index="4" ref="indexNameConverter"/>
-                <constructor-arg index="5" ref="uniqueNameConverter"/>
-            </bean>
-        </constructor-arg>
+        <constructor-arg ref="simpleNameConverters"/>
         <constructor-arg ref="errorService"/>
     </bean>
 
