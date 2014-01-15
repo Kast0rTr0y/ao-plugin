@@ -48,7 +48,6 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private EntityManager getEntityManager(File dbDirectory, ActiveObjectsConfiguration configuration)
     {
         return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto()
-                .useWeakCache()
                 .tableNameConverter(configuration.getNameConverters().getTableNameConverter())
                 .fieldNameConverter(configuration.getNameConverters().getFieldNameConverter())
                 .sequenceNameConverter(configuration.getNameConverters().getSequenceNameConverter())
