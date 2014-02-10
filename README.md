@@ -7,6 +7,10 @@ Active Objects is an ORM (object relational mapping) layer in Atlassian products
 
 ## Atlassian Developer?
 
+### Internal Documentation
+
+[Development and maintenance documentation](https://ecosystem.atlassian.net/wiki/display/AO/Home)
+
 ### Committing Guidelines
 
 Please see [the following guide](https://extranet.atlassian.com/x/Uouvdg) for committing to this module.
