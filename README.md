@@ -17,7 +17,7 @@ Please see [the following guide](https://extranet.atlassian.com/x/Uouvdg) for co
 
 ### Builds
 
-The Bamboo builds for this project are on [BEAC](https://bamboo.extranet.atlassian.com/browse/AO)
+The Bamboo builds for this project are on [BEAC](https://extranet-bamboo.internal.atlassian.com/browse/AO)
 
 ## External User?
 
