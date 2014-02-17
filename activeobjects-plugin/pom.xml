@@ -115,13 +115,15 @@
                         </Export-Package>
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
-                    <noWebapp>true</noWebapp>
-                    <libArtifacts>
-                        <libArtifact>
-                            <groupId>com.atlassian.util.concurrent</groupId>
-                            <artifactId>atlassian-util-concurrent</artifactId>
-                        </libArtifact>
-                    </libArtifacts>
+                    <noWebapp>false</noWebapp>
+                    <log4jProperties>src/test/resources/log4j.properties</log4jProperties>
+                    <bundledArtifacts>
+                        <bundledArtifact>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>activeobjects-refapp-spi</artifactId>
+                            <version>${project.version}</version>
+                        </bundledArtifact>
+                    </bundledArtifacts>
                 </configuration>
             </plugin>
             <!-- creates and drops databases before and after tests -->
@@ -393,12 +395,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -456,12 +452,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -510,12 +500,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest
                                 <!--com.atlassian.activeobjects.junit.PostgresTest,-->
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -578,12 +562,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -647,12 +625,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -716,12 +688,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -784,12 +750,6 @@
                                 <!--com.atlassian.activeobjects.junit.SqlServerTest,-->
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                </libArtifact>
-                            </libArtifacts>
                         </configuration>
                     </plugin>
                     <plugin>

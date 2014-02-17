@@ -2,8 +2,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.pom</groupId>
-        <artifactId>atlassian-public-pom</artifactId>
-        <version>29.6</version>
+        <artifactId>public-pom</artifactId>
+        <version>3.0.3</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -32,27 +32,27 @@
 
     <modules>
         <module>activeobjects-core</module>
-        <module>activeobjects-plugin</module>
         <module>activeobjects-spi</module>
         <module>activeobjects-dbex</module>
         <module>activeobjects-bamboo-spi</module>
         <module>activeobjects-refapp-spi</module>
         <module>activeobjects-confluence-spi</module>
         <module>activeobjects-jira-spi</module>
+        <module>activeobjects-plugin</module>
         <module>activeobjects-test</module>
         <module>activeobjects-test-model</module>
         <module>activeobjects-test-plugin</module>
     </modules>
 
     <properties>
-        <plugin-sdk.version>3.9.4-rc1</plugin-sdk.version>
+        <amps.version>4.2.13</amps.version>
         <ao.version>0.25.0</ao.version>
         <sal.version>2.4.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.6.5</atlassian-plugins.version>
         <spring.library.version>2.5.6</spring.library.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>2.20.0-m4</refapp.version>
+        <refapp.version>2.20.0</refapp.version>
 
         <junit.version>4.10</junit.version>
         <mockito.version>1.8.4</mockito.version>
@@ -109,9 +109,15 @@
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-refapp-plugin</artifactId>
-                    <version>${plugin-sdk.version}</version>
+                    <version>${amps.version}</version>
                     <extensions>true</extensions>
                     <configuration>
+                        <products>
+                            <product>
+                                <id>refapp</id>
+                                <version>${refapp.version}</version>
+                            </product>
+                        </products>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
                     </configuration>
@@ -119,12 +125,12 @@
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-amps-dispatcher-plugin</artifactId>
-                    <version>${plugin-sdk.version}</version>
+                    <version>${amps.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-amps-plugin</artifactId>
-                    <version>${plugin-sdk.version}</version>
+                    <version>${amps.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
