@@ -115,6 +115,7 @@
                         </Export-Package>
                         <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
+                    <!-- change to true (server not needed for integration tests) when AMPS-1095 is resolved -->
                     <noWebapp>false</noWebapp>
                     <log4jProperties>src/test/resources/log4j.properties</log4jProperties>
                     <bundledArtifacts>
