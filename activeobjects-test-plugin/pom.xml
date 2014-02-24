@@ -158,7 +158,6 @@
                     <products>
                         <product>
                             <id>refapp</id>
-                            <version>${refapp.version}</version>
                             <bundledArtifacts>
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
@@ -171,13 +170,6 @@
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                    <version>${atlassian.concurrent.version}</version>
-                                </libArtifact>
-                            </libArtifacts>
                         </product>
                     </products>
                     <testGroups>
@@ -218,7 +210,6 @@
                             <products>
                                 <product>
                                     <id>refapp</id>
-                                    <version>${refapp.version}</version>
                                     <bundledArtifacts>
                                         <bundledArtifact>
                                             <groupId>com.atlassian.activeobjects</groupId>
@@ -231,13 +222,6 @@
                                             <version>${project.version}</version>
                                         </bundledArtifact>
                                     </bundledArtifacts>
-                                    <libArtifacts>
-                                        <libArtifact>
-                                            <groupId>com.atlassian.util.concurrent</groupId>
-                                            <artifactId>atlassian-util-concurrent</artifactId>
-                                            <version>${atlassian.concurrent.version}</version>
-                                        </libArtifact>
-                                    </libArtifacts>
                                 </product>
                                 <product>
                                     <id>jira</id>
