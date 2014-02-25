@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.3</version>
+        <version>3.0.4</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -45,15 +45,15 @@
     </modules>
 
     <properties>
-        <amps.version>4.2.13</amps.version>
-        <ao.version>0.25.0</ao.version>
+        <amps.version>4.2.17</amps.version>
+        <ao.version>0.25.1</ao.version>
         <slf4j.version>1.5.8</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
         <refapp.version>2.20.0</refapp.version>
 
         <plugins.libversion>2.6.5</plugins.libversion>
-        <guava.libversion>10.0.1</guava.libversion>
+        <guava.libversion>11.0.2</guava.libversion>
         <sal.libversion>2.4.0</sal.libversion>
 
         <junit.version>4.10</junit.version>
@@ -121,6 +121,13 @@
                         </products>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
+                        <libArtifacts>
+                            <libArtifact>
+                                <groupId>com.google.guava</groupId>
+                                <artifactId>guava</artifactId>
+                                <version>11.0.2-atlassian-01</version>
+                            </libArtifact>
+                        </libArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>
