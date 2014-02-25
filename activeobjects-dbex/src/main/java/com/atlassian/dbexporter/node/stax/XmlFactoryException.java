@@ -11,7 +11,7 @@ public final class XmlFactoryException extends RuntimeException
     public XmlFactoryException(String s, Throwable... throwables)
     {
         super(s, throwables[throwables.length - 1]);
-        this.throwables = ImmutableList.of(throwables);
+        this.throwables = ImmutableList.copyOf(throwables);
     }
 
     public List<Throwable> getThrowables()
