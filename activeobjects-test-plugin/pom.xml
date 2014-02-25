@@ -154,6 +154,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <webdriver.browser>firefox</webdriver.browser>
+                        <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
                     <products>
                         <product>
@@ -233,7 +234,11 @@
                                             <artifactId>activeobjects-spi</artifactId>
                                             <version>${project.version}</version>
                                         </libArtifact>
-
+                                        <libArtifact>
+                                            <groupId>com.google.guava</groupId>
+                                            <artifactId>guava</artifactId>
+                                            <version>11.0.2-atlassian-01</version>
+                                        </libArtifact>
                                     </libArtifacts>
                                     <bundledArtifacts>
                                         <bundledArtifact>
