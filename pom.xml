@@ -58,7 +58,7 @@
         <mockito.version>1.8.4</mockito.version>
         <atlassian.selenium.version>2.1-m22</atlassian.selenium.version>
         <refapp.jira.version>6.0-OD-05</refapp.jira.version>
-        <guava.version>10.0.1</guava.version>
+        <guava.version>11.0.2</guava.version>
         <atlassian.concurrent.version>2.4.0</atlassian.concurrent.version>
     </properties>
     <build>
@@ -114,6 +114,13 @@
                     <configuration>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
+                        <libArtifacts>
+                            <libArtifact>
+                                <groupId>com.google.guava</groupId>
+                                <artifactId>guava</artifactId>
+                                <version>11.0.2-atlassian-01</version>
+                            </libArtifact>
+                        </libArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -312,9 +319,6 @@
     <profiles>
         <profile>
             <id>release</id>
-            <properties>
-                <skipTests>true</skipTests>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
