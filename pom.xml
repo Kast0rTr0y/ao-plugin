@@ -46,7 +46,7 @@
 
     <properties>
         <plugin-sdk.version>3.9.4-rc1</plugin-sdk.version>
-        <ao.version>0.23.2</ao.version>
+        <ao.version>0.23.3</ao.version>
         <sal.version>2.4.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.6.5</atlassian-plugins.version>
@@ -58,7 +58,7 @@
         <mockito.version>1.8.4</mockito.version>
         <atlassian.selenium.version>2.1-m14</atlassian.selenium.version>
         <refapp.jira.version>5.0.7</refapp.jira.version>
-        <guava.version>10.0.1</guava.version>
+        <guava.version>11.0.2</guava.version>
     </properties>
 
     <build>
@@ -114,6 +114,13 @@
                     <configuration>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
+                        <libArtifacts>
+                            <libArtifact>
+                                <groupId>com.google.guava</groupId>
+                                <artifactId>guava</artifactId>
+                                <version>11.0.2-atlassian-01</version>
+                            </libArtifact>
+                        </libArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>
