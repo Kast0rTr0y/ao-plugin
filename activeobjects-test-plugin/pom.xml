@@ -120,6 +120,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <webdriver.browser>firefox</webdriver.browser>
+                        <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
                     <products>
                         <product>
