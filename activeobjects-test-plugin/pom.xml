@@ -178,6 +178,11 @@
                                     <artifactId>atlassian-util-concurrent</artifactId>
                                     <version>${atlassian.concurrent.version}</version>
                                 </libArtifact>
+                                <libArtifact>
+                                    <groupId>com.google.guava</groupId>
+                                    <artifactId>guava</artifactId>
+                                    <version>11.0.2-atlassian-01</version>
+                                </libArtifact>
                             </libArtifacts>
                         </product>
                     </products>
@@ -237,6 +242,11 @@
                                             <groupId>com.atlassian.util.concurrent</groupId>
                                             <artifactId>atlassian-util-concurrent</artifactId>
                                             <version>${atlassian.concurrent.version}</version>
+                                        </libArtifact>
+                                        <libArtifact>
+                                            <groupId>com.google.guava</groupId>
+                                            <artifactId>guava</artifactId>
+                                            <version>11.0.2-atlassian-01</version>
                                         </libArtifact>
                                     </libArtifacts>
                                 </product>
