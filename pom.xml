@@ -48,12 +48,14 @@
     <properties>
         <amps.version>4.2.17</amps.version>
         <ao.version>0.25.1</ao.version>
-        <slf4j.version>1.5.8</slf4j.version>
+        <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
         <refapp.version>2.20.0</refapp.version>
 
-        <plugins.libversion>2.6.5</plugins.libversion>
+        <plugins.libversion>3.0.8</plugins.libversion>
+        <webresource.libversion>3.0.2</webresource.libversion>
+        <webfragments.libversion>3.0.0</webfragments.libversion>
         <guava.libversion>11.0.2</guava.libversion>
         <sal.libversion>2.4.0</sal.libversion>
 
@@ -226,13 +228,13 @@
             <dependency>
                 <groupId>com.atlassian.plugins</groupId>
                 <artifactId>atlassian-plugins-webresource</artifactId>
-                <version>${plugins.libversion}</version>
+                <version>${webresource.libversion}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.plugins</groupId>
                 <artifactId>atlassian-plugins-webfragment</artifactId>
-                <version>${plugins.libversion}</version>
+                <version>${webfragments.libversion}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
