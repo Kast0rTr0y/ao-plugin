@@ -1,29 +1,23 @@
 package com.atlassian.activeobjects.osgi;
 
-import com.atlassian.activeobjects.ActiveObjectsPluginException;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
-import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-import com.atlassian.util.concurrent.Promise;
-import com.atlassian.util.concurrent.Promises;
+import com.atlassian.tenancy.api.TenantAccessor;
+import com.atlassian.tenancy.api.event.TenantArrivedEvent;
 import com.google.common.base.Function;
-import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -31,11 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,54 +44,69 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ActiveObjectsServiceFactory implements ServiceFactory, DisposableBean
 {
-    private final long CONFIGURATION_SHORT_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.short.timeout", 30000);
-    private final long CONFIGURATION_LONG_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.long.timeout",180000);
+    private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final ExecutorService ddlExecutor = Executors
-            .newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
-                new ThreadFactoryBuilder()
-                    .setNameFormat("active-objects-ddl-%d")
-                    .setDaemon(false)
-                    .setPriority(Thread.NORM_PRIORITY + 1).build()); //increased priority as this has the potential to block other threads 
-
-    private final Function<ActiveObjectsKey, DelegatingActiveObjects> makeFromActiveObjectsKey = new Function<ActiveObjectsKey, DelegatingActiveObjects>()
-    {
-        @Override
-        public DelegatingActiveObjects apply(final ActiveObjectsKey key)
-        {
-            return new DelegatingActiveObjects(submitCreateActiveObjects(key.bundle), key.bundle, tranSyncManager, aoConfigurationResolver, getDatabaseType());
-        }
-    };
-    
-    final Cache<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsKey, DelegatingActiveObjects>()
-    {
-        public DelegatingActiveObjects load(ActiveObjectsKey key) throws Exception 
-        {
-            return makeFromActiveObjectsKey.apply(key);
-        };
-    });
+    private final SettableFuture<Void> dbAvailableFuture = SettableFuture.create();
 
     private final ActiveObjectsFactory factory;
     private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
-    private final TransactionSynchronisationManager tranSyncManager;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
-    
-    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, TransactionSynchronisationManager tranSyncManager, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
+    private final EventPublisher eventPublisher;
+    private final TenantAccessor tenantAccessor;
+
+    // all DDL and upgrade tasks will execute in this single thread
+    private final ExecutorService initExecutor = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
+            new ThreadFactoryBuilder()
+                    .setNameFormat("active-objects-init-%d")
+                    .setDaemon(false)
+                    .setPriority(Thread.NORM_PRIORITY + 1).build()
+    );;
+
+    final LoadingCache<ActiveObjectsKey, BabyBearActiveObjectsDelegate> aoInstances = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsKey, BabyBearActiveObjectsDelegate>()
+    {
+        @Override
+        public BabyBearActiveObjectsDelegate load(final ActiveObjectsKey key) throws Exception
+        {
+            return new BabyBearActiveObjectsDelegate(checkDbAvailability, dbAvailableFuture, key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, initExecutor);
+        }
+    });
+
+    private final Function<Void, Boolean> checkDbAvailability = new Function<Void, Boolean>()
+    {
+        @Override
+        public Boolean apply(@Nullable final Void input)
+        {
+            boolean tenantAvailable = tenantAccessor.getAvailableTenants().iterator().hasNext();
+            if (tenantAvailable)
+            {
+                dbAvailableFuture.set(null);
+            }
+            return tenantAvailable;
+        }
+    };
+
+    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate, TenantAccessor tenantAccessor)
     {
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
-        this.tranSyncManager = checkNotNull(tranSyncManager);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
-        checkNotNull(eventPublisher).register(this);
+        this.eventPublisher = checkNotNull(eventPublisher);
+        this.tenantAccessor = checkNotNull(tenantAccessor);
+
+        // check if the DB is available right now
+        boolean dbAvailable = checkDbAvailability.apply(null);
+        logger.debug("dbAvailable={}", dbAvailable);
+
+        // we want tenant arrival and hot restart event notifications
+        eventPublisher.register(this);
     }
 
     @Override
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
+        logger.debug("bundle [{}]", bundle.getSymbolicName());
         try
         {
             return aoInstances.get(new ActiveObjectsKey(bundle));
@@ -119,111 +128,27 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     }
 
     /**
-     * Listens for {@link HotRestartEvent} and releases all {@link ActiveObjects instances} flushing their caches.
+     * Listens for {@link TenantArrivedEvent} and allows initialisation of any uninitialised instances
+     */
+    @EventListener
+    public void onTenantArrived(TenantArrivedEvent event)
+    {
+        logger.debug("making DB available to instances");
+        checkDbAvailability.apply(null);
+    }
+
+    /**
+     * Listens for {@link HotRestartEvent} and recreate all {@link ActiveObjects} instances within the delegates with
+     * the new configuration and data source
      */
     @EventListener
     public void onHotRestart(HotRestartEvent hotRestartEvent)
     {
-        for (DelegatingActiveObjects ao : ImmutableList.copyOf(aoInstances.asMap().values()))
+        for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
         {
-            ao.restart(submitCreateActiveObjects(ao.getBundle()));
+            logger.debug("restarting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
+            aoInstance.restart();
         }
-        try
-        {
-            // wait for the hot restart to complete, this allows callers to know that the restart has complete
-            // when the event publisher returns, also helps avoid ddl deadlocks in HSQLDB whilst also staying off
-            // the same thread and not joining any existing transactions
-            ddlExecutor.submit(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    logger.info("Completed active objects hot restart");
-                }
-            }).get();
-        }
-        catch(Exception ex)
-        {
-            logger.warn("Exception waiting for hot restart to complete", ex);
-        }
-    }
-
-    /**
-     * Creates a delegating active objects that will lazily create the properly configured active objects.
-     *
-     * @param bundle the bundle for which to create the {@link com.atlassian.activeobjects.external.ActiveObjects}
-     * @return an {@link com.atlassian.activeobjects.external.ActiveObjects} instance
-     */
-    private ActiveObjects createActiveObjects(final ActiveObjectsConfiguration config)
-    {
-        logger.debug("Creating active object service for plugin {} [{}]", config.getPluginKey());
-        return factory.create(config, getDatabaseType());
-    };
-
-    /**
-     * This is executed in a transaction as some providers create a hibernate session which can only be done in a
-     * transaction
-     * 
-     * @return an enum representing the underlying database type
-     */
-    private DatabaseType getDatabaseType()
-    {
-        return transactionTemplate.execute(new TransactionCallback<DatabaseType>()
-        {
-            @Override
-            public DatabaseType doInTransaction()
-            {
-                return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider +
-                        " returned null for dbType");
-            }
-        });
-    }
-
-    private Promise<ActiveObjects> submitCreateActiveObjects(final Bundle bundle)
-    {
-        final Promise<ActiveObjects> promise = Promises.forFuture(
-                ddlExecutor.submit(getCreateAOCallable(bundle, CONFIGURATION_SHORT_TIMEOUT_MS, TimeUnit.MILLISECONDS)))
-                .recover(new Function<Throwable, ActiveObjects>()
-                {
-                    @Override
-                    public ActiveObjects apply(Throwable ex)
-                    {
-                        try
-                        {
-                            if (ex instanceof NoServicesFoundException)
-                            {
-                                logger.warn("Resubmitting AO bundle with longer timeout {} ms for bundle : {}", CONFIGURATION_LONG_TIMEOUT_MS, bundle);
-                                // submit a new callable with a longer timeout
-                                return ddlExecutor.submit(getCreateAOCallable(bundle, CONFIGURATION_LONG_TIMEOUT_MS, TimeUnit.MILLISECONDS)).get();
-                            }
-                        }
-                        catch (Exception ex2)
-                        {
-                            ex = ex2;
-                        }
-
-                        Throwables.propagateIfInstanceOf(ex, Error.class);
-                        Throwables.propagateIfInstanceOf(ex, ActiveObjectsPluginException.class);
-                        throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle "+ bundle.getSymbolicName(), ex);
-                    }
-                });
-        return promise;
-    }
-    
-    private Callable<ActiveObjects> getCreateAOCallable(final Bundle bundle, final long timeout, final TimeUnit unit)
-    {
-        return new Callable<ActiveObjects>()
-        {
-            @Override
-            public ActiveObjects call() throws Exception
-            {
-                if(ddlExecutor.isShutdown())
-                    throw new InterruptedException("ddlExecutor shutdown, not attempting creation of ActiveObjects for bundle : "+bundle);
-
-                ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, timeout, unit);
-                return createActiveObjects(configuration);
-            }
-        };
     }
 
     private static final class ActiveObjectsKey
@@ -262,6 +187,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     @Override
     public void destroy() throws Exception
     {
-        ddlExecutor.shutdown();
+        logger.debug("destroying");
+        eventPublisher.unregister(this);
     }
 }

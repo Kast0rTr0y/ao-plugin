@@ -55,6 +55,7 @@
                             com.atlassian.plugin.predicate;version="${plugins.libversion}",
                             com.atlassian.plugin.web;version="${webfragments.libversion}",
                             com.atlassian.plugin.webresource;version="${webresource.libversion}",
+                            com.atlassian.tenancy.api*;version="${tenancy.libversion}",
                             com.atlassian.security.random;version="1.0",
                             com.atlassian.util.concurrent;version="${atlassian.concurrent.version}",
                             com.google.common*,
@@ -237,6 +238,10 @@
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-plugins-webfragment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

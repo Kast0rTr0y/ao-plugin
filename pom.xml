@@ -53,6 +53,7 @@
         <hsqldb.version>1.8.0.7</hsqldb.version>
         <refapp.version>2.20.0</refapp.version>
 
+        <tenancy.libversion>1.1</tenancy.libversion>
         <plugins.libversion>3.0.8</plugins.libversion>
         <webresource.libversion>3.0.2</webresource.libversion>
         <webfragments.libversion>3.0.0</webfragments.libversion>
@@ -247,6 +248,12 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>2.4</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.tenancy</groupId>
+                <artifactId>atlassian-tenancy-api</artifactId>
+                <version>${tenancy.libversion}</version>
                 <scope>provided</scope>
             </dependency>
 

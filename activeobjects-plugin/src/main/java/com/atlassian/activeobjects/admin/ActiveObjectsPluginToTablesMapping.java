@@ -30,7 +30,6 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
     public ActiveObjectsPluginToTablesMapping(PluginSettingsFactory factory)
     {
         this.settings = checkNotNull(factory).createGlobalSettings();
-        this.mappings = getMappingFromSettings();
     }
 
     @Override
@@ -63,6 +62,7 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
 
     private void doAdd(PluginInfo pluginInfo, List<String> tableNames)
     {
+        lazyInitMappings();
         final Map<String, PluginInfo> newMappings = Maps.newHashMap(mappings);
         for (String tableName : tableNames)
         {
@@ -74,6 +74,7 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
 
     private PluginInfo doGet(String tableName)
     {
+        lazyInitMappings();
         return mappings.get(tableName);
     }
 
@@ -82,17 +83,12 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
         settings.put(KEY, new Gson().toJson(newMappings));
     }
 
-    public Map<String, PluginInfo> getMappingFromSettings()
+    private void lazyInitMappings()
     {
-        lock.readLock().lock();
-        try
+        if (mappings == null)
         {
             final Map<String, PluginInfo> map = new Gson().fromJson((String) settings.get(KEY), MAPPINGS_TYPE);
-            return map != null ? map : Maps.<String, PluginInfo>newHashMap();
-        }
-        finally
-        {
-            lock.readLock().unlock();
+            mappings = map != null ? map : Maps.<String, PluginInfo>newHashMap();
         }
     }
 }

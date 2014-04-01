@@ -4,12 +4,12 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.DatabaseType;
-import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-
+import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantAccessor;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,22 +53,21 @@ public final class ActiveObjectsServiceFactoryTest
     private Bundle bundle;
     
     @Mock
-    private TransactionSynchronisationManager tranSyncManager;
-    
-    @Mock
     private DataSourceProvider dataSourceProvider;
     
     @Mock
     private TransactionTemplate transactionTemplate;
 
+    @Mock
+    private TenantAccessor tenantAccessor;
+
     @Before
     public void setUp() throws Exception
     {
         serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher,
-                tranSyncManager, dataSourceProvider, transactionTemplate);
+                dataSourceProvider, transactionTemplate, tenantAccessor);
 
-        when(osgiUtils.getService(bundle, ActiveObjectsConfiguration.class)).thenReturn(configuration);
-        when(factory.create(any(ActiveObjectsConfiguration.class), any(DatabaseType.class))).thenReturn(activeObjects);
+        when(tenantAccessor.getAvailableTenants()).thenReturn(ImmutableList.of(new Tenant()));
     }
 
     @Test
@@ -77,7 +75,7 @@ public final class ActiveObjectsServiceFactoryTest
     {
         final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
         assertNotNull(ao);
-        assertTrue(ao instanceof DelegatingActiveObjects);
+        assertTrue(ao instanceof BabyBearActiveObjectsDelegate);
     }
 
     @Test

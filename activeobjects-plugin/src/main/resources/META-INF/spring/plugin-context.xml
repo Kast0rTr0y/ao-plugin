@@ -61,9 +61,9 @@
         <constructor-arg index="0" ref="activeObjectsFactory"/>
         <constructor-arg index="1" ref="activeObjectsConfigurationServiceProvider"/>
         <constructor-arg index="2" ref="eventPublisher"/>
-        <constructor-arg index="3" ref="aoSynchronizationManager"/>
-        <constructor-arg index="4" ref="dataSourceProvider"/>
-        <constructor-arg index="5" ref="transactionTemplate"/>
+        <constructor-arg index="3" ref="dataSourceProvider"/>
+        <constructor-arg index="4" ref="transactionTemplate"/>
+        <constructor-arg index="5" ref="tenantAccessor"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
