@@ -9,10 +9,8 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesMapping
 {
@@ -22,10 +20,7 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
     {
     }.getType();
 
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
     private final PluginSettings settings;
-    private Map<String, PluginInfo> mappings;
 
     public ActiveObjectsPluginToTablesMapping(PluginSettingsFactory factory)
     {
@@ -35,47 +30,18 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
     @Override
     public void add(PluginInfo pluginInfo, List<String> tableNames)
     {
-        lock.writeLock().lock();
-        try
+        final Map<String, PluginInfo> mappings = getMappingFromSettings();
+        for (String tableName : tableNames)
         {
-            doAdd(pluginInfo, tableNames);
+            mappings.put(tableName, pluginInfo);
         }
-        finally
-        {
-            lock.writeLock().unlock();
-        }
+        putMapInSettings(mappings);
     }
 
     @Override
     public PluginInfo get(String tableName)
     {
-        lock.readLock().lock();
-        try
-        {
-            return doGet(tableName);
-        }
-        finally
-        {
-            lock.readLock().unlock();
-        }
-    }
-
-    private void doAdd(PluginInfo pluginInfo, List<String> tableNames)
-    {
-        lazyInitMappings();
-        final Map<String, PluginInfo> newMappings = Maps.newHashMap(mappings);
-        for (String tableName : tableNames)
-        {
-            newMappings.put(tableName, pluginInfo);
-        }
-        putMapInSettings(newMappings);
-        this.mappings = newMappings;
-    }
-
-    private PluginInfo doGet(String tableName)
-    {
-        lazyInitMappings();
-        return mappings.get(tableName);
+        return getMappingFromSettings().get(tableName);
     }
 
     private void putMapInSettings(Map<String, PluginInfo> newMappings)
@@ -83,12 +49,9 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
         settings.put(KEY, new Gson().toJson(newMappings));
     }
 
-    private void lazyInitMappings()
+    public Map<String, PluginInfo> getMappingFromSettings()
     {
-        if (mappings == null)
-        {
-            final Map<String, PluginInfo> map = new Gson().fromJson((String) settings.get(KEY), MAPPINGS_TYPE);
-            mappings = map != null ? map : Maps.<String, PluginInfo>newHashMap();
-        }
+        final Map<String, PluginInfo> map = new Gson().fromJson((String) settings.get(KEY), MAPPINGS_TYPE);
+        return map != null ? map : Maps.<String, PluginInfo>newHashMap();
     }
 }
