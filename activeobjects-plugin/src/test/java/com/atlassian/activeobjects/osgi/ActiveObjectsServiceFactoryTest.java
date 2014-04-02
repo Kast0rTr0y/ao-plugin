@@ -64,10 +64,10 @@ public final class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
+        when(tenantAccessor.getAvailableTenants()).thenReturn(ImmutableList.of(new Tenant()));
+
         serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher,
                 dataSourceProvider, transactionTemplate, tenantAccessor);
-
-        when(tenantAccessor.getAvailableTenants()).thenReturn(ImmutableList.of(new Tenant()));
     }
 
     @Test
