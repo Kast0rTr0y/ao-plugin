@@ -117,6 +117,8 @@
                     <version>${amps.version}</version>
                     <extensions>true</extensions>
                     <configuration>
+                        <!-- TODO: Alex needs to take this out when refapp is capable of running tenant aware -->
+                        <skipITs>true</skipITs>
                         <products>
                             <product>
                                 <id>refapp</id>
