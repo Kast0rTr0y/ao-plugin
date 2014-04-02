@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.26.0-m01-AO-507</version>
+        <version>0.26.0-m02-AO-507-SNAPSHOT</version>
     </parent>
 
     <artifactId>activeobjects-test</artifactId>
