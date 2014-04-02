@@ -16,6 +16,8 @@
             <constructor-arg index="5">
                 <bean class="com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator"/>
             </constructor-arg>
+            <constructor-arg index="6" ref="tenantAccessor"/>
+            <constructor-arg index="7" ref="eventPublisher"/>
         </bean>
     </osgi:service>
 
