@@ -1,9 +1,11 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
@@ -12,6 +14,7 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
+import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.SettableFuture;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
@@ -86,26 +89,39 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
                     @Override
                     public ActiveObjects call() throws Exception
                     {
-                        logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
-
-                        // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
-                        databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
-                        {
-                            @Override
-                            public DatabaseType doInTransaction()
-                            {
-                                return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
-                            }
-                        });
-
                         try
                         {
-                            ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_SHORT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                            logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
+
+                            // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
+                            databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+                            {
+                                @Override
+                                public DatabaseType doInTransaction()
+                                {
+                                    return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
+                                }
+                            });
+
+                            ActiveObjectsConfiguration configuration;
+                            try
+                            {
+                                // try to resolve the configuration
+                                configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_SHORT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                            }
+                            catch (NoServicesFoundException e)
+                            {
+                                // try again with a longer timeout
+                                logger.debug("no services found when creating ActiveObjects configuration for bundle [{}], trying again with longer timeout", bundle.getSymbolicName());
+                                configuration = aoConfigurationResolver.getAndWait(bundle, CONFIGURATION_LONG_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                            }
                             return factory.create(configuration, databaseType);
                         }
-                        catch (NoServicesFoundException e)
+                        catch (Exception e)
                         {
-                            throw new UnsupportedOperationException("baby bear needs to handle missing services during config resolution");
+                            Throwables.propagateIfInstanceOf(e, Error.class);
+                            Throwables.propagateIfInstanceOf(e, ActiveObjectsPluginException.class);
+                            throw new ActiveObjectsInitException("Active Objects failed to initalize for bundle [" + bundle.getSymbolicName() + "]", e);
                         }
                     }
                 }));
