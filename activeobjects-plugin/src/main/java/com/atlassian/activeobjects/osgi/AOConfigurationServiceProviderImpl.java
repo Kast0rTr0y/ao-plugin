@@ -40,6 +40,10 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
 {
     private static Logger log = LoggerFactory.getLogger(AOConfigurationServiceProviderImpl.class);
 
+    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger("activeobjects.servicefactory.config.timeout", 180000);
+
+    private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
+
     private BlockingReferenceMap<Long, ActiveObjectsConfiguration> bundleKeyToAOConfiguration = new BlockingReferenceMap<Long, ActiveObjectsConfiguration>();
 
     private final OsgiServiceUtils osgiUtils;
@@ -71,40 +75,20 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         bundleContext.removeServiceListener(serviceListener);
     }
 
-    public ActiveObjectsConfiguration getAndWait(Bundle bundle, long waitTime, TimeUnit unit) throws InterruptedException, NoServicesFoundException
+    public ActiveObjectsConfiguration getAndWait(Bundle bundle) throws InterruptedException, NoServicesFoundException
     {
         try
         {
-            return checkNotNull(bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), waitTime, unit));
+            return checkNotNull(bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         }
         catch (TimeoutException e)
         {
-            log.warn("Timeout ({} {}) waiting for ActiveObjectConfiguration for Bundle : {}.\nTo avoid this warning add an ao " +
-                    "configuration module to your plugin", new Object[]{waitTime, unit, bundle});
-            log.debug("Stacktrace: ", e);
+            log.warn("Timeout {}ms waiting for ActiveObjectConfiguration for Bundle [{}], attempting default resolution of AO configuration", new Object[]{CONFIGURATION_TIMEOUT_MS, bundle});
             ActiveObjectsConfiguration configuration = getConfiguration(bundle);
             bundleKeyToAOConfiguration.put(bundle.getBundleId(), configuration);
             return configuration;
         }
     }
-    
-    public boolean hasConfiguration(Bundle bundle)
-    {
-        try
-        {
-            return bundleKeyToAOConfiguration.getAndWait(bundle.getBundleId(), 0, TimeUnit.MILLISECONDS) != null;
-        }
-        catch (TimeoutException e)
-        {
-            return false;
-        }
-        catch (InterruptedException e)
-        {
-            Thread.interrupted();
-            return false;
-        }
-    }
-    
 
     /**
      * Retrieves the active objects configuration which should be exposed as a service or if none is found will scan for
@@ -125,7 +109,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         catch (TooManyServicesFoundException e)
         {
             log.error("Found multiple active objects configurations for bundle " + bundle.getSymbolicName() +
-                    ". Only one active objects module descriptor (ao) allowed per plugin!");
+                    ". Only one active objects module descriptor <ao> allowed per plugin!");
             throw new PluginException(e);
         }
         catch (NoServicesFoundException e)
@@ -136,13 +120,19 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
             final Set<Class<? extends RawEntity<?>>> entities = scanEntities(bundle);
             if (!entities.isEmpty())
             {
+                log.warn("Using entities from default package {} for bundle [{}], you should define an <ao> module"
+                                + " descriptor to avoid the {} ms timeout.",
+                        new Object[] { ENTITY_DEFAULT_PACKAGE, bundle.getSymbolicName(), CONFIGURATION_TIMEOUT_MS }
+                );
                 return aoConfigurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities,
                         scanUpgradeTask(bundle));
             }
             else
             {
-                log.warn("Didn't find any configuration service for bundle {}" + 
-                      " nor any entities scanning for default AO packages.", bundle.getSymbolicName());
+                log.error("Didn't find any configuration service for bundle [{}], nor any entities scanning the default"
+                        + " AO package {}. You should add an <ao> module descriptor to your plugin.",
+                        bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE
+                );
                 throw e;
             }
         }
@@ -195,7 +185,7 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
         final BundleContext bundleContext = bundle.getBundleContext();
 
         // not typing the iterable here, because of the cast afterward, which wouldn't compile otherwise!
-        final Iterable entityClasses = new BundleContextScanner().findClasses(bundleContext, "ao.model",
+        final Iterable entityClasses = new BundleContextScanner().findClasses(bundleContext, ENTITY_DEFAULT_PACKAGE,
                 new LoadClassFromBundleFunction(bundleContext.getBundle()), new IsAoEntityPredicate());
 
         @SuppressWarnings("unchecked")
@@ -216,12 +206,14 @@ public class AOConfigurationServiceProviderImpl implements ActiveObjectsConfigur
                 switch (event.getType())
                 {
                 case ServiceEvent.REGISTERED:
+                    log.debug("registered AO configuration for bundle [{}]", serviceRef.getBundle().getSymbolicName());
                     bundleKeyToAOConfiguration.put(serviceRef.getBundle().getBundleId(),
                             (ActiveObjectsConfiguration) serviceRef.getBundle().getBundleContext()
                                     .getService(serviceRef));
                     break;
 
                 case ServiceEvent.UNREGISTERING:
+                    log.debug("unregistering AO configuration for bundle [{}]", serviceRef.getBundle().getSymbolicName());
                     bundleKeyToAOConfiguration.remove(serviceRef.getBundle().getBundleId());
                     // serviceRef.getBundle().getBundleContext().ungetService(serviceRef);
                     break;
