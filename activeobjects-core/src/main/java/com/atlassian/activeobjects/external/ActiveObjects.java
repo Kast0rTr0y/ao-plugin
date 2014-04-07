@@ -356,6 +356,7 @@ public interface ActiveObjects
      * 
      * @return activeObjectsModuleMetaData
      * @since 0.24
+     * @deprecated since 0.26 @see ActiveObjectsModuleMetaData
      */
     public ActiveObjectsModuleMetaData moduleMetaData();
 }

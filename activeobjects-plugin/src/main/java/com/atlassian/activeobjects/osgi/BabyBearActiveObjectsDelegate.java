@@ -11,8 +11,10 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
-import com.google.common.base.Function;
-import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.base.Supplier;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -24,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,93 +36,83 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
 {
     private static final Logger logger = LoggerFactory.getLogger(BabyBearActiveObjectsDelegate.class);
 
-    private final Function<Void, Boolean> checkDbAvailability;
-
-    private final SettableFuture<Void> dbAvailableFuture;
-
-    private Promise<ActiveObjects> promisedActiveObjects;
-
-    private DatabaseType databaseType = DatabaseType.UNKNOWN;
-
     private final Bundle bundle;
     private final ActiveObjectsFactory factory;
     private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
-    private final ExecutorService initExecutor;
+    private final Supplier<ActiveObjectsServiceFactory.DataSource> dataSourceSupplier;
+    private final Supplier<ExecutorService> initExecutorSupplier;
 
-    BabyBearActiveObjectsDelegate(final Function<Void, Boolean> checkDbAvailability, final SettableFuture<Void> dbAvailableFuture, final Bundle bundle, final ActiveObjectsFactory factory, final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, final DataSourceProvider dataSourceProvider, final TransactionTemplate transactionTemplate, final ExecutorService initExecutor)
+    BabyBearActiveObjectsDelegate(final Bundle bundle,
+            final ActiveObjectsFactory factory,
+            final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
+            final DataSourceProvider dataSourceProvider,
+            final TransactionTemplate transactionTemplate,
+            final Supplier<ActiveObjectsServiceFactory.DataSource> dataSourceSupplier,
+            final Supplier<ExecutorService> initExecutorSupplier)
     {
-        this.checkDbAvailability = checkNotNull(checkDbAvailability);
-        this.dbAvailableFuture = checkNotNull(dbAvailableFuture);
         this.bundle = checkNotNull(bundle);
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
-        this.initExecutor = checkNotNull(initExecutor);
-
-        logger.debug("bundle [{}]", bundle.getSymbolicName());
-
-        // AO creation delayed until dbAvailableFuture fulfilled
-        promisedActiveObjects = createAOPromise();
+        this.dataSourceSupplier = checkNotNull(dataSourceSupplier);
+        this.initExecutorSupplier = checkNotNull(initExecutorSupplier);
     }
 
-    /**
-     * Promise will not be fultilled until dbAvailableFuture is fulfilled
-     */
-    private Promise<ActiveObjects> createAOPromise()
+    private final LoadingCache<ActiveObjectsServiceFactory.DataSource, Promise<ActiveObjects>> promisedActiveObjectses = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsServiceFactory.DataSource, Promise<ActiveObjects>>()
     {
-        return Promises.forFuture(dbAvailableFuture).flatMap(new Function<Void, Promise<ActiveObjects>>()
+        @Override
+        public Promise<ActiveObjects> load(final ActiveObjectsServiceFactory.DataSource key) throws Exception
         {
-            @Override
-            public Promise<ActiveObjects> apply(@Nullable final Void input)
+            logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), key);
+
+            return Promises.forFuture(initExecutorSupplier.get().submit(new Callable<ActiveObjects>()
             {
-                return Promises.forFuture(initExecutor.submit(new Callable<ActiveObjects>()
+                @Override
+                public ActiveObjects call() throws Exception
                 {
-                    @Override
-                    public ActiveObjects call() throws Exception
+                    logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
+
+                    // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
+                    DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
                     {
-                        logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
-
-                        // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
-                        databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+                        @Override
+                        public DatabaseType doInTransaction()
                         {
-                            @Override
-                            public DatabaseType doInTransaction()
-                            {
-                                return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
-                            }
-                        });
-                        logger.debug("retrieved databaseType={} for bundle [{}]", databaseType, bundle.getSymbolicName());
+                            return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
+                        }
+                    });
+                    logger.debug("retrieved databaseType={} for bundle [{}]", databaseType, bundle.getSymbolicName());
 
-                        ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle);
-                        logger.debug("retrieved AO configuration for bundle [{}]", bundle.getSymbolicName());
+                    ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle);
+                    logger.debug("retrieved AO configuration for bundle [{}]", bundle.getSymbolicName());
 
-                        return factory.create(configuration, databaseType);
-                    }
-                }));
-            }
-        });
+                    return factory.create(configuration, databaseType);
+                }
+            }));
+        }
+    });
+
+    void startActiveObjects(ActiveObjectsServiceFactory.DataSource dataSource)
+    {
+        promisedActiveObjectses.getUnchecked(dataSource);
     }
 
-    void restart()
+    void restartActiveObjects(ActiveObjectsServiceFactory.DataSource dataSource)
     {
-        // this should run immediately if there is a DB connection
-        promisedActiveObjects = createAOPromise();
-    }
-
-    Bundle getBundle()
-    {
-        return bundle;
+        promisedActiveObjectses.invalidate(dataSource);
+        startActiveObjects(dataSource);
     }
 
     private ActiveObjects delegate()
     {
-        if (checkDbAvailability.apply(null))
+        ActiveObjectsServiceFactory.DataSource dataSource = dataSourceSupplier.get();
+        if (dataSource != null)
         {
             // wait for the promise which may have just started
-            return promisedActiveObjects.claim();
+            return promisedActiveObjectses.getUnchecked(dataSource).claim();
         }
         else
         {
@@ -142,7 +133,7 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
             @Override
             public void awaitInitialization()
             {
-                promisedActiveObjects.claim();
+                logger.warn("ActiveObjectsModuleMetaData is deprecated; doing nothing");
             }
 
             /**
@@ -153,7 +144,8 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
             @Override
             public boolean isInitialized()
             {
-                return promisedActiveObjects.isDone();
+                logger.warn("ActiveObjectsModuleMetaData is deprecated; returning true");
+                return true;
             }
 
             /**
@@ -164,7 +156,8 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
             @Override
             public DatabaseType getDatabaseType()
             {
-                return databaseType;
+                logger.warn("ActiveObjectsModuleMetaData is deprecated; returning DatabaseType.UNKNOWN");
+                return DatabaseType.UNKNOWN;
             }
         };
     }
@@ -293,5 +286,10 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
     public <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
         return delegate().executeInTransaction(callback);
+    }
+
+    public Bundle getBundle()
+    {
+        return bundle;
     }
 }
