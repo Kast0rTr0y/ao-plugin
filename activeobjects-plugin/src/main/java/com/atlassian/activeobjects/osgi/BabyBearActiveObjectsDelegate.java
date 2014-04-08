@@ -12,9 +12,9 @@ import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvide
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.util.concurrent.Function;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
-import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -46,7 +46,7 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
     private final TenantProvider tenantProvider;
-    private final Supplier<ExecutorService> initExecutorSupplier;
+    private final Function<Tenant, ExecutorService> initExecutorFunction;
 
     BabyBearActiveObjectsDelegate(@Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
@@ -54,7 +54,7 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
             @Nonnull final DataSourceProvider dataSourceProvider,
             @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
-            @Nonnull final Supplier<ExecutorService> initExecutorSupplier)
+            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction)
     {
         this.bundle = checkNotNull(bundle);
         this.factory = checkNotNull(factory);
@@ -62,7 +62,7 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tenantProvider = checkNotNull(tenantProvider);
-        this.initExecutorSupplier = checkNotNull(initExecutorSupplier);
+        this.initExecutorFunction = checkNotNull(initExecutorFunction);
 
         // start things up now if we have a tenant
         Tenant tenant = tenantProvider.getTenant();
@@ -79,7 +79,7 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
         {
             logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
-            return Promises.forFuture(initExecutorSupplier.get().submit(new Callable<ActiveObjects>()
+            return Promises.forFuture(initExecutorFunction.get(tenant).submit(new Callable<ActiveObjects>()
             {
                 @Override
                 public ActiveObjects call() throws Exception

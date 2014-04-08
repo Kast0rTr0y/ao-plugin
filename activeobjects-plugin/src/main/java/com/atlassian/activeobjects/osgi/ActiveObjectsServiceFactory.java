@@ -12,7 +12,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
-import com.google.common.base.Supplier;
+import com.atlassian.util.concurrent.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -86,12 +86,13 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         }
     });
 
-    private final Supplier<ExecutorService> initExecutorSupplier = new Supplier<ExecutorService>()
+    private final Function<Tenant, ExecutorService> initExecutorFunction = new Function<Tenant, ExecutorService>()
     {
         @Override
-        public ExecutorService get()
+        public ExecutorService get(final Tenant tenant)
         {
-            return initExecutors.getUnchecked(tenantProvider.getTenant());
+            checkNotNull(tenant);
+            return initExecutors.getUnchecked(tenant);
         }
     };
 
@@ -100,7 +101,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public BabyBearActiveObjectsDelegate load(final ActiveObjectsKey key) throws Exception
         {
-            return new BabyBearActiveObjectsDelegate(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorSupplier);
+            return new BabyBearActiveObjectsDelegate(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction);
         }
     });
 
