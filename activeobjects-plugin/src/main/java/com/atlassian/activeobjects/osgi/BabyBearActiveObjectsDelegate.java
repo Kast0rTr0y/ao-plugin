@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
+import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
@@ -89,7 +90,10 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
                     ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle);
                     logger.debug("retrieved AO configuration for bundle [{}]", bundle.getSymbolicName());
 
-                    return factory.create(configuration, databaseType);
+                    ActiveObjects activeObjects = factory.create(configuration, databaseType);
+                    logger.debug("created AO for bundle [{}]", bundle.getSymbolicName());
+
+                    return activeObjects;
                 }
             }));
         }
@@ -106,17 +110,16 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
         startActiveObjects(dataSource);
     }
 
-    private ActiveObjects delegate()
+    private Promise<ActiveObjects> delegate()
     {
         ActiveObjectsServiceFactory.DataSource dataSource = dataSourceSupplier.get();
         if (dataSource != null)
         {
-            // wait for the promise which may have just started
-            return promisedActiveObjectses.getUnchecked(dataSource).claim();
+            return promisedActiveObjectses.getUnchecked(dataSource);
         }
         else
         {
-            throw new IllegalStateException("Baby Bear has no database... be patient...");
+            throw new NoDataSourceException();
         }
     }
 
@@ -125,39 +128,22 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
     {
         return new ActiveObjectsModuleMetaData()
         {
-            /**
-             * Block until promisedAORef is fulfilled
-             *
-             * @throws com.atlassian.activeobjects.internal.ActiveObjectsInitException on issues during the execution of the promise
-             */
             @Override
             public void awaitInitialization()
             {
-                logger.warn("ActiveObjectsModuleMetaData is deprecated; doing nothing");
+                delegate().claim();
             }
 
-            /**
-             * Immediately return the state
-             *
-             * @return true if promisedAORef has been fulfilled
-             */
             @Override
             public boolean isInitialized()
             {
-                logger.warn("ActiveObjectsModuleMetaData is deprecated; returning true");
-                return true;
+                return delegate().isDone();
             }
 
-            /**
-             * Database type that AO was last initialised with
-             *
-             * @return possibly UNKNOWN
-             */
             @Override
             public DatabaseType getDatabaseType()
             {
-                logger.warn("ActiveObjectsModuleMetaData is deprecated; returning DatabaseType.UNKNOWN");
-                return DatabaseType.UNKNOWN;
+                return delegate().claim().moduleMetaData().getDatabaseType();
             }
         };
     }
@@ -165,127 +151,127 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
     @Override
     public void migrate(final Class<? extends RawEntity<?>>... entities)
     {
-        delegate().migrate(entities);
+        delegate().claim().migrate(entities);
     }
 
     @Override
     public void migrateDestructively(final Class<? extends RawEntity<?>>... entities)
     {
-        delegate().migrateDestructively(entities);
+        delegate().claim().migrateDestructively(entities);
     }
 
     @Override
     public void flushAll()
     {
-        delegate().flushAll();
+        delegate().claim().flushAll();
     }
 
     @Override
     public void flush(final RawEntity<?>... entities)
     {
-        delegate().flush(entities);
+        delegate().claim().flush(entities);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] get(final Class<T> type, final K... keys)
     {
-        return delegate().get(type, keys);
+        return delegate().claim().get(type, keys);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T get(final Class<T> type, final K key)
     {
-        return delegate().get(type, key);
+        return delegate().claim().get(type, key);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T create(final Class<T> type, final DBParam... params)
     {
-        return delegate().create(type, params);
+        return delegate().claim().create(type, params);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T create(final Class<T> type, final Map<String, Object> params)
     {
-        return delegate().create(type, params);
+        return delegate().claim().create(type, params);
     }
 
     @Override
     public void delete(final RawEntity<?>... entities)
     {
-        delegate().delete(entities);
+        delegate().claim().delete(entities);
     }
 
     @Override
     public <K> int deleteWithSQL(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
     {
-        return delegate().deleteWithSQL(type, criteria, parameters);
+        return delegate().claim().deleteWithSQL(type, criteria, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type)
     {
-        return delegate().find(type);
+        return delegate().claim().find(type);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String criteria, final Object... parameters)
     {
-        return delegate().find(type, criteria, parameters);
+        return delegate().claim().find(type, criteria, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final Query query)
     {
-        return delegate().find(type, query);
+        return delegate().claim().find(type, query);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String field, final Query query)
     {
-        return delegate().find(type, field, query);
+        return delegate().claim().find(type, field, query);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] findWithSQL(final Class<T> type, final String keyField, final String sql, final Object... parameters)
     {
-        return delegate().findWithSQL(type, keyField, sql, parameters);
+        return delegate().claim().findWithSQL(type, keyField, sql, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> void stream(final Class<T> type, final EntityStreamCallback<T, K> streamCallback)
     {
-        delegate().stream(type, streamCallback);
+        delegate().claim().stream(type, streamCallback);
     }
 
     @Override
     public <T extends RawEntity<K>, K> void stream(final Class<T> type, final Query query, final EntityStreamCallback<T, K> streamCallback)
     {
-        delegate().stream(type, query, streamCallback);
+        delegate().claim().stream(type, query, streamCallback);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type)
     {
-        return delegate().count(type);
+        return delegate().claim().count(type);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
     {
-        return delegate().count(type, criteria, parameters);
+        return delegate().claim().count(type, criteria, parameters);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type, final Query query)
     {
-        return delegate().count(type, query);
+        return delegate().claim().count(type, query);
     }
 
     @Override
     public <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
-        return delegate().executeInTransaction(callback);
+        return delegate().claim().executeInTransaction(callback);
     }
 
     public Bundle getBundle()
