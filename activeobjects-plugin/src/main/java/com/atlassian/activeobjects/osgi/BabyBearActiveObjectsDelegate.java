@@ -5,11 +5,13 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Supplier;
@@ -27,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import javax.annotation.Nonnull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -42,32 +45,39 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
     private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
-    private final Supplier<ActiveObjectsServiceFactory.DataSource> dataSourceSupplier;
+    private final TenantProvider tenantProvider;
     private final Supplier<ExecutorService> initExecutorSupplier;
 
-    BabyBearActiveObjectsDelegate(final Bundle bundle,
-            final ActiveObjectsFactory factory,
-            final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
-            final DataSourceProvider dataSourceProvider,
-            final TransactionTemplate transactionTemplate,
-            final Supplier<ActiveObjectsServiceFactory.DataSource> dataSourceSupplier,
-            final Supplier<ExecutorService> initExecutorSupplier)
+    BabyBearActiveObjectsDelegate(@Nonnull final Bundle bundle,
+            @Nonnull final ActiveObjectsFactory factory,
+            @Nonnull final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
+            @Nonnull final DataSourceProvider dataSourceProvider,
+            @Nonnull final TransactionTemplate transactionTemplate,
+            @Nonnull final TenantProvider tenantProvider,
+            @Nonnull final Supplier<ExecutorService> initExecutorSupplier)
     {
         this.bundle = checkNotNull(bundle);
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
-        this.dataSourceSupplier = checkNotNull(dataSourceSupplier);
+        this.tenantProvider = checkNotNull(tenantProvider);
         this.initExecutorSupplier = checkNotNull(initExecutorSupplier);
+
+        // start things up now if we have a tenant
+        Tenant tenant = tenantProvider.getTenant();
+        if (tenant != null)
+        {
+            startActiveObjects(tenant);
+        }
     }
 
-    private final LoadingCache<ActiveObjectsServiceFactory.DataSource, Promise<ActiveObjects>> promisedActiveObjectses = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsServiceFactory.DataSource, Promise<ActiveObjects>>()
+    private final LoadingCache<Tenant, Promise<ActiveObjects>> aoPromises = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
     {
         @Override
-        public Promise<ActiveObjects> load(final ActiveObjectsServiceFactory.DataSource key) throws Exception
+        public Promise<ActiveObjects> load(final Tenant tenant) throws Exception
         {
-            logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), key);
+            logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
             return Promises.forFuture(initExecutorSupplier.get().submit(new Callable<ActiveObjects>()
             {
@@ -99,23 +109,25 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
         }
     });
 
-    void startActiveObjects(ActiveObjectsServiceFactory.DataSource dataSource)
+    void startActiveObjects(@Nonnull final Tenant tenant)
     {
-        promisedActiveObjectses.getUnchecked(dataSource);
+        checkNotNull(tenant);
+        aoPromises.getUnchecked(tenant);
     }
 
-    void restartActiveObjects(ActiveObjectsServiceFactory.DataSource dataSource)
+    void restartActiveObjects(@Nonnull final Tenant tenant)
     {
-        promisedActiveObjectses.invalidate(dataSource);
-        startActiveObjects(dataSource);
+        checkNotNull(tenant);
+        aoPromises.invalidate(tenant);
+        aoPromises.getUnchecked(tenant);
     }
 
     private Promise<ActiveObjects> delegate()
     {
-        ActiveObjectsServiceFactory.DataSource dataSource = dataSourceSupplier.get();
-        if (dataSource != null)
+        Tenant tenant = tenantProvider.getTenant();
+        if (tenant != null)
         {
-            return promisedActiveObjectses.getUnchecked(dataSource);
+            return aoPromises.getUnchecked(tenant);
         }
         else
         {

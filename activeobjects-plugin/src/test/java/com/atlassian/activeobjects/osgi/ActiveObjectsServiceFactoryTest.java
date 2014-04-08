@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventPublisher;
@@ -59,15 +60,15 @@ public final class ActiveObjectsServiceFactoryTest
     private TransactionTemplate transactionTemplate;
 
     @Mock
-    private TenantAccessor tenantAccessor;
+    private TenantProvider tenantProvider;
 
     @Before
     public void setUp() throws Exception
     {
-        when(tenantAccessor.getAvailableTenants()).thenReturn(ImmutableList.of(new Tenant()));
+        when(tenantProvider.getTenant()).thenReturn(new Tenant());
 
         serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher,
-                dataSourceProvider, transactionTemplate, tenantAccessor);
+                dataSourceProvider, transactionTemplate, tenantProvider);
     }
 
     @Test

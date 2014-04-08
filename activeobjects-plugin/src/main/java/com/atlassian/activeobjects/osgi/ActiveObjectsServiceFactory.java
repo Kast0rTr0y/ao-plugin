@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
@@ -10,7 +11,6 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
-import com.atlassian.tenancy.api.TenantAccessor;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
 import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.DisposableBean;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.annotation.Nonnull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -49,48 +50,36 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
     private final EventPublisher eventPublisher;
-    private final TenantAccessor tenantAccessor;
+    private final TenantProvider tenantProvider;
 
-    public ActiveObjectsServiceFactory(ActiveObjectsFactory factory, ActiveObjectsConfigurationServiceProvider aoConfigurationResolver, EventPublisher eventPublisher, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate, TenantAccessor tenantAccessor)
+    public ActiveObjectsServiceFactory(
+            @Nonnull ActiveObjectsFactory factory,
+            @Nonnull ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
+            @Nonnull EventPublisher eventPublisher,
+            @Nonnull DataSourceProvider dataSourceProvider,
+            @Nonnull TransactionTemplate transactionTemplate,
+            @Nonnull TenantProvider tenantProvider)
     {
         this.factory = checkNotNull(factory);
         this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.eventPublisher = checkNotNull(eventPublisher);
-        this.tenantAccessor = checkNotNull(tenantAccessor);
+        this.tenantProvider = checkNotNull(tenantProvider);
 
         // we want tenant arrival and hot restart event notifications
         eventPublisher.register(this);
     }
 
-    final Supplier<DataSource> dataSourceSupplier = new Supplier<DataSource>()
+    private final LoadingCache<Tenant, ExecutorService> initExecutors = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
     {
         @Override
-        public DataSource get()
+        public ExecutorService load(final Tenant tenant) throws Exception
         {
-
-            // stubbed until this is available from {@link com.atlassian.tenancy.api.TenantAccessor}
-            if (tenantAccessor.getAvailableTenants().iterator().hasNext())
-            {
-                return new DataSource(tenantAccessor.getAvailableTenants().iterator().next());
-            }
-            else
-            {
-                return null;
-            }
-        }
-    };
-
-    private final LoadingCache<DataSource, ExecutorService> initExecutors = CacheBuilder.newBuilder().build(new CacheLoader<DataSource, ExecutorService>()
-    {
-        @Override
-        public ExecutorService load(final DataSource key) throws Exception
-        {
-            logger.debug("loading new init executor for {}", key);
+            logger.debug("loading new init executor for {}", tenant);
             return Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
                     new ThreadFactoryBuilder()
-                            .setNameFormat("active-objects-init-" + key.toString() + "-%d")
+                            .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
                             .setDaemon(false)
                             .setPriority(Thread.NORM_PRIORITY + 1).build()
             );
@@ -102,7 +91,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public ExecutorService get()
         {
-            return initExecutors.getUnchecked(dataSourceSupplier.get());
+            return initExecutors.getUnchecked(tenantProvider.getTenant());
         }
     };
 
@@ -111,7 +100,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public BabyBearActiveObjectsDelegate load(final ActiveObjectsKey key) throws Exception
         {
-            return new BabyBearActiveObjectsDelegate(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, dataSourceSupplier, initExecutorSupplier);
+            return new BabyBearActiveObjectsDelegate(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorSupplier);
         }
     });
 
@@ -145,11 +134,16 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     @EventListener
     public void onTenantArrived(TenantArrivedEvent event)
     {
-        logger.debug("event={}", event);
-        for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
+        Tenant tenant = event.getTenant();
+        logger.debug("tenant arrived {}", tenant);
+
+        if (tenant != null)
         {
-            logger.debug("starting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
-            aoInstance.startActiveObjects(dataSourceSupplier.get());
+            for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
+            {
+                logger.debug("starting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
+                aoInstance.startActiveObjects(tenant);
+            }
         }
     }
 
@@ -160,10 +154,16 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     @EventListener
     public void onHotRestart(HotRestartEvent hotRestartEvent)
     {
-        for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
+        Tenant tenant = tenantProvider.getTenant();
+        logger.debug("performing hot restart with tenant {}", tenant);
+
+        if (tenant != null)
         {
-            logger.debug("restarting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
-            aoInstance.restartActiveObjects(dataSourceSupplier.get());
+            for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
+            {
+                logger.debug("restarting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
+                aoInstance.restartActiveObjects(tenant);
+            }
         }
     }
 
@@ -209,42 +209,5 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
             initExecutor.shutdown();
         }
         eventPublisher.unregister(this);
-    }
-
-    class DataSource
-    {
-        private final Tenant tenant;
-
-        DataSource(final Tenant tenant)
-        {
-            this.tenant = tenant;
-        }
-
-        @Override
-        public String toString()
-        {
-            return "DataSource{" +
-                    "tenant=" + tenant +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(final Object o)
-        {
-            if (this == o) { return true; }
-            if (o == null || getClass() != o.getClass()) { return false; }
-
-            final DataSource that = (DataSource) o;
-
-            if (tenant != null ? !tenant.equals(that.tenant) : that.tenant != null) { return false; }
-
-            return true;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return tenant != null ? tenant.hashCode() : 0;
-        }
     }
 }

@@ -65,7 +65,7 @@
         <constructor-arg index="2" ref="eventPublisher"/>
         <constructor-arg index="3" ref="dataSourceProvider"/>
         <constructor-arg index="4" ref="transactionTemplate"/>
-        <constructor-arg index="5" ref="tenantAccessor"/>
+        <constructor-arg index="5" ref="tenantProvider"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
@@ -157,5 +157,9 @@
         <constructor-arg>
             <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
         </constructor-arg>
+    </bean>
+
+    <bean id="tenantProvider" class="com.atlassian.activeobjects.internal.TenantProviderImpl">
+        <constructor-arg index="0" ref="tenantAccessor"/>
     </bean>
 </beans>
