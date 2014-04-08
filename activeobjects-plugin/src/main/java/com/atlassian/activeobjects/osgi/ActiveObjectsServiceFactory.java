@@ -96,12 +96,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         }
     };
 
-    final LoadingCache<ActiveObjectsKey, BabyBearActiveObjectsDelegate> aoInstances = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsKey, BabyBearActiveObjectsDelegate>()
+    final LoadingCache<ActiveObjectsKey, DelegatingActiveObjects> aoInstances = CacheBuilder.newBuilder().build(new CacheLoader<ActiveObjectsKey, DelegatingActiveObjects>()
     {
         @Override
-        public BabyBearActiveObjectsDelegate load(final ActiveObjectsKey key) throws Exception
+        public DelegatingActiveObjects load(final ActiveObjectsKey key) throws Exception
         {
-            return new BabyBearActiveObjectsDelegate(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction);
+            return new DelegatingActiveObjects(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction);
         }
     });
 
@@ -140,7 +140,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
         if (tenant != null)
         {
-            for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
+            for (DelegatingActiveObjects aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
             {
                 logger.debug("starting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
                 aoInstance.startActiveObjects(tenant);
@@ -160,7 +160,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
         if (tenant != null)
         {
-            for (BabyBearActiveObjectsDelegate aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
+            for (DelegatingActiveObjects aoInstance : ImmutableList.copyOf(aoInstances.asMap().values()))
             {
                 logger.debug("restarting AO delegate for bundle [{}]", aoInstance.getBundle().getSymbolicName());
                 aoInstance.restartActiveObjects(tenant);

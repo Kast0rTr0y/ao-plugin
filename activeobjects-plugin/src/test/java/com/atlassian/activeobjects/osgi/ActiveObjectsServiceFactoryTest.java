@@ -9,8 +9,6 @@ import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvide
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
-import com.atlassian.tenancy.api.TenantAccessor;
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,7 +74,7 @@ public final class ActiveObjectsServiceFactoryTest
     {
         final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
         assertNotNull(ao);
-        assertTrue(ao instanceof BabyBearActiveObjectsDelegate);
+        assertTrue(ao instanceof DelegatingActiveObjects);
     }
 
     @Test

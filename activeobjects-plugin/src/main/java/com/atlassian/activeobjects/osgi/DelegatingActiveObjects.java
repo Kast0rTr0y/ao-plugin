@@ -36,9 +36,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-final class BabyBearActiveObjectsDelegate implements ActiveObjects
+final class DelegatingActiveObjects implements ActiveObjects
 {
-    private static final Logger logger = LoggerFactory.getLogger(BabyBearActiveObjectsDelegate.class);
+    private static final Logger logger = LoggerFactory.getLogger(DelegatingActiveObjects.class);
 
     private final Bundle bundle;
     private final ActiveObjectsFactory factory;
@@ -48,7 +48,7 @@ final class BabyBearActiveObjectsDelegate implements ActiveObjects
     private final TenantProvider tenantProvider;
     private final Function<Tenant, ExecutorService> initExecutorFunction;
 
-    BabyBearActiveObjectsDelegate(@Nonnull final Bundle bundle,
+    DelegatingActiveObjects(@Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
             @Nonnull final DataSourceProvider dataSourceProvider,
