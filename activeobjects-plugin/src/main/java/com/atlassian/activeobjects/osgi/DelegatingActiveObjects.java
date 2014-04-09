@@ -8,21 +8,24 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
-import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
-import com.atlassian.util.concurrent.Function;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
+import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.SettableFuture;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,35 +33,35 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
  */
-final class DelegatingActiveObjects implements ActiveObjects
+final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
 {
     private static final Logger logger = LoggerFactory.getLogger(DelegatingActiveObjects.class);
 
     private final Bundle bundle;
     private final ActiveObjectsFactory factory;
-    private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
     private final TenantProvider tenantProvider;
     private final Function<Tenant, ExecutorService> initExecutorFunction;
 
+    private final SettableFuture<ActiveObjectsConfiguration> aoConfigFuture = SettableFuture.create();
+
     DelegatingActiveObjects(@Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
-            @Nonnull final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
             @Nonnull final DataSourceProvider dataSourceProvider,
             @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
-            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction)
+            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction) throws InvalidSyntaxException
     {
         this.bundle = checkNotNull(bundle);
         this.factory = checkNotNull(factory);
-        this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tenantProvider = checkNotNull(tenantProvider);
@@ -70,6 +73,32 @@ final class DelegatingActiveObjects implements ActiveObjects
         {
             startActiveObjects(tenant);
         }
+
+        // listen to service registrations for ActiveObjectsConfiguration from this bundle only
+        bundle.getBundleContext().addServiceListener(this, "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))");
+    }
+
+    @Override
+    public void serviceChanged(final ServiceEvent event)
+    {
+        // todo: check for UNREGISTERING and warn?
+        if (event.getType() == ServiceEvent.REGISTERED)
+        {
+            Object aoConfig = bundle.getBundleContext().getService(event.getServiceReference());
+
+            if (!(aoConfig instanceof ActiveObjectsConfiguration))
+            {
+                throw new IllegalStateException("bleh");
+            }
+
+            if (this.aoConfigFuture.isDone())
+            {
+                throw new IllegalStateException("myaaarghg!");
+            }
+
+            this.aoConfigFuture.set((ActiveObjectsConfiguration) aoConfig);
+            logger.debug("bundle [{}] retrieved ActiveObjectsConfiguration", bundle.getSymbolicName());
+        }
     }
 
     private final LoadingCache<Tenant, Promise<ActiveObjects>> aoPromises = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
@@ -79,33 +108,37 @@ final class DelegatingActiveObjects implements ActiveObjects
         {
             logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
-            return Promises.forFuture(initExecutorFunction.get(tenant).submit(new Callable<ActiveObjects>()
+            return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
             {
                 @Override
-                public ActiveObjects call() throws Exception
+                public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig)
                 {
-                    logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
-
-                    // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
-                    DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+                    return Promises.forFuture(initExecutorFunction.apply(tenant).submit(new Callable<ActiveObjects>()
                     {
                         @Override
-                        public DatabaseType doInTransaction()
+                        public ActiveObjects call() throws Exception
                         {
-                            return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
+                            logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
+
+                            // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
+                            DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+                            {
+                                @Override
+                                public DatabaseType doInTransaction()
+                                {
+                                    return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
+                                }
+                            });
+                            logger.debug("retrieved databaseType={} for bundle [{}]", databaseType, bundle.getSymbolicName());
+
+                            ActiveObjects activeObjects = factory.create(aoConfig, databaseType);
+                            logger.debug("created ActiveObjects for bundle [{}]", bundle.getSymbolicName());
+
+                            return activeObjects;
                         }
-                    });
-                    logger.debug("retrieved databaseType={} for bundle [{}]", databaseType, bundle.getSymbolicName());
-
-                    ActiveObjectsConfiguration configuration = aoConfigurationResolver.getAndWait(bundle);
-                    logger.debug("retrieved AO configuration for bundle [{}]", bundle.getSymbolicName());
-
-                    ActiveObjects activeObjects = factory.create(configuration, databaseType);
-                    logger.debug("created AO for bundle [{}]", bundle.getSymbolicName());
-
-                    return activeObjects;
+                    }));
                 }
-            }));
+            });
         }
     });
 

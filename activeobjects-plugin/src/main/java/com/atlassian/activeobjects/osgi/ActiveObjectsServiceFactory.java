@@ -6,13 +6,12 @@ import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
-import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
-import com.atlassian.util.concurrent.Function;
+import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -29,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -46,7 +46,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
 
     private final ActiveObjectsFactory factory;
-    private final ActiveObjectsConfigurationServiceProvider aoConfigurationResolver;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
     private final EventPublisher eventPublisher;
@@ -54,14 +53,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
     public ActiveObjectsServiceFactory(
             @Nonnull ActiveObjectsFactory factory,
-            @Nonnull ActiveObjectsConfigurationServiceProvider aoConfigurationResolver,
             @Nonnull EventPublisher eventPublisher,
             @Nonnull DataSourceProvider dataSourceProvider,
             @Nonnull TransactionTemplate transactionTemplate,
             @Nonnull TenantProvider tenantProvider)
     {
         this.factory = checkNotNull(factory);
-        this.aoConfigurationResolver = checkNotNull(aoConfigurationResolver);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.eventPublisher = checkNotNull(eventPublisher);
@@ -89,7 +86,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final Function<Tenant, ExecutorService> initExecutorFunction = new Function<Tenant, ExecutorService>()
     {
         @Override
-        public ExecutorService get(final Tenant tenant)
+        public ExecutorService apply(@Nullable final Tenant tenant)
         {
             checkNotNull(tenant);
             return initExecutors.getUnchecked(tenant);
@@ -101,7 +98,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public DelegatingActiveObjects load(final ActiveObjectsKey key) throws Exception
         {
-            return new DelegatingActiveObjects(key.bundle, factory, aoConfigurationResolver, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction);
+            return new DelegatingActiveObjects(key.bundle, factory, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction);
         }
     });
 
