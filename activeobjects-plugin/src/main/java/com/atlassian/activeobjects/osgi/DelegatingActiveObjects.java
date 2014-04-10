@@ -18,7 +18,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,17 +59,17 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
     private final TransactionTemplate transactionTemplate;
     private final TenantProvider tenantProvider;
     private final Function<Tenant, ExecutorService> initExecutorFunction;
+    private final ScheduledExecutorService configExecutor;
 
     private final AtomicReference<SettableFuture<ActiveObjectsConfiguration>> aoConfigFutureRef = new AtomicReference<SettableFuture<ActiveObjectsConfiguration>>(SettableFuture.<ActiveObjectsConfiguration>create());
-
-    private final ScheduledExecutorService configExecutor;
 
     DelegatingActiveObjects(@Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final DataSourceProvider dataSourceProvider,
             @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
-            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction) throws InvalidSyntaxException
+            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
+            @Nonnull final ScheduledExecutorService configExecutor) throws InvalidSyntaxException
     {
         this.bundle = checkNotNull(bundle);
         this.factory = checkNotNull(factory);
@@ -79,6 +77,7 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tenantProvider = checkNotNull(tenantProvider);
         this.initExecutorFunction = checkNotNull(initExecutorFunction);
+        this.configExecutor = checkNotNull(configExecutor);
 
         // start things up now if we have a tenant
         Tenant tenant = tenantProvider.getTenant();
@@ -91,12 +90,6 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         final String configFilter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
         bundle.getBundleContext().addServiceListener(this, configFilter);
         logger.debug("bundle [{}] listening for configuration with filter {}", bundle.getSymbolicName(), configFilter);
-
-        configExecutor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat("active-objects-config-" + bundle.getSymbolicName())
-                        .setDaemon(false).build()
-        );
 
         configExecutor.schedule(new Runnable()
         {

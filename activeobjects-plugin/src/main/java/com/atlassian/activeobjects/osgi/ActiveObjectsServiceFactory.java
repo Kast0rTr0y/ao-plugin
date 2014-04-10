@@ -27,6 +27,7 @@ import org.springframework.beans.factory.DisposableBean;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -51,6 +52,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final EventPublisher eventPublisher;
     private final TenantProvider tenantProvider;
 
+    private final ScheduledExecutorService configExecutor;
+
     public ActiveObjectsServiceFactory(
             @Nonnull ActiveObjectsFactory factory,
             @Nonnull EventPublisher eventPublisher,
@@ -66,6 +69,13 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
 
         // we want tenant arrival and hot restart event notifications
         eventPublisher.register(this);
+
+        // config scheduled single thread pool for use by AO plugins waiting for config modules
+        configExecutor = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("active-objects-config")
+                        .setDaemon(false).build()
+        );
     }
 
     private final LoadingCache<Tenant, ExecutorService> initExecutors = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
@@ -98,7 +108,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public DelegatingActiveObjects load(final ActiveObjectsKey key) throws Exception
         {
-            return new DelegatingActiveObjects(key.bundle, factory, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction);
+            return new DelegatingActiveObjects(key.bundle, factory, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction, configExecutor);
         }
     });
 
@@ -202,6 +212,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     public void destroy() throws Exception
     {
         logger.debug("destroying");
+        configExecutor.shutdown();
         for (ExecutorService initExecutor : ImmutableList.copyOf(initExecutors.asMap().values()))
         {
             initExecutor.shutdown();
