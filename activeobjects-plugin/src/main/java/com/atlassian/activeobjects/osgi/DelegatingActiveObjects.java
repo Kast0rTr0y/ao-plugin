@@ -18,6 +18,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.java.ao.DBParam;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -32,6 +33,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -44,6 +49,12 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
 {
     private static final Logger logger = LoggerFactory.getLogger(DelegatingActiveObjects.class);
 
+    private static final String CONFIGURATION_TIMEOUT_MS_PROPERTY = "activeobjects.servicefactory.config.timeout";
+
+    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
+
+    private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
+
     private final Bundle bundle;
     private final ActiveObjectsFactory factory;
     private final DataSourceProvider dataSourceProvider;
@@ -51,7 +62,9 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
     private final TenantProvider tenantProvider;
     private final Function<Tenant, ExecutorService> initExecutorFunction;
 
-    private final SettableFuture<ActiveObjectsConfiguration> aoConfigFuture = SettableFuture.create();
+    private final AtomicReference<SettableFuture<ActiveObjectsConfiguration>> aoConfigFutureRef = new AtomicReference<SettableFuture<ActiveObjectsConfiguration>>(SettableFuture.<ActiveObjectsConfiguration>create());
+
+    private final ScheduledExecutorService configExecutor;
 
     DelegatingActiveObjects(@Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
@@ -75,29 +88,70 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         }
 
         // listen to service registrations for ActiveObjectsConfiguration from this bundle only
-        bundle.getBundleContext().addServiceListener(this, "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))");
+        final String configFilter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
+        bundle.getBundleContext().addServiceListener(this, configFilter);
+        logger.debug("bundle [{}] listening for configuration with filter {}", bundle.getSymbolicName(), configFilter);
+
+        configExecutor = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("active-objects-config-" + bundle.getSymbolicName())
+                        .setDaemon(false).build()
+        );
+
+        configExecutor.schedule(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (!aoConfigFutureRef.get().isDone())
+                {
+                    logger.warn("bundle [{}] hasn't found an active objects configuration after {}ms; scanning default package '{}' for entities; note that this delay is configurable via the system property '{}'", new Object[] {bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE, CONFIGURATION_TIMEOUT_MS_PROPERTY});
+
+                    // todo: implement the default package scan
+
+                    RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
+                    aoConfigFutureRef.get().setException(e);
+                }
+                configExecutor.shutdown();
+            }
+        }, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void serviceChanged(final ServiceEvent event)
     {
-        // todo: check for UNREGISTERING and warn?
-        if (event.getType() == ServiceEvent.REGISTERED)
+        switch (event.getType())
         {
-            Object aoConfig = bundle.getBundleContext().getService(event.getServiceReference());
-
-            if (!(aoConfig instanceof ActiveObjectsConfiguration))
+            case ServiceEvent.REGISTERED:
             {
-                throw new IllegalStateException("bleh");
+                if (aoConfigFutureRef.get().isDone())
+                {
+                    // the plugin has defined multiple <ao> configurations defined; blow up here and cause any future calls to the config to blow up
+                    RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
+
+                    SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
+                    exceptionalAoConfigFuture.setException(e);
+                    aoConfigFutureRef.set(exceptionalAoConfigFuture);
+
+                    throw e;
+                }
+                else
+                {
+                    // good case - one configuration registered
+                    Object aoConfig = bundle.getBundleContext().getService(event.getServiceReference());
+                    aoConfigFutureRef.get().set((ActiveObjectsConfiguration) aoConfig);
+                    logger.debug("bundle [{}] got service ActiveObjectsConfiguration", bundle.getSymbolicName());
+                }
+                break;
             }
 
-            if (this.aoConfigFuture.isDone())
+            case ServiceEvent.UNREGISTERING:
             {
-                throw new IllegalStateException("myaaarghg!");
+                // dutifully unregister and start a new future for when configuration is next needed
+                bundle.getBundleContext().ungetService(event.getServiceReference());
+                aoConfigFutureRef.set(SettableFuture.<ActiveObjectsConfiguration>create());
+                logger.debug("bundle [{}] ungot service ActiveObjectsConfiguration", bundle.getSymbolicName());
             }
-
-            this.aoConfigFuture.set((ActiveObjectsConfiguration) aoConfig);
-            logger.debug("bundle [{}] retrieved ActiveObjectsConfiguration", bundle.getSymbolicName());
         }
     }
 
@@ -108,17 +162,19 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         {
             logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
-            return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
+            return Promises.forFuture(aoConfigFutureRef.get()).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
             {
                 @Override
                 public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig)
                 {
+                    logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
+
                     return Promises.forFuture(initExecutorFunction.apply(tenant).submit(new Callable<ActiveObjects>()
                     {
                         @Override
                         public ActiveObjects call() throws Exception
                         {
-                            logger.debug("creating ActiveObjects for bundle [{}]", bundle.getSymbolicName());
+                            logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
 
                             // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
                             DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
@@ -129,10 +185,10 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
                                     return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
                                 }
                             });
-                            logger.debug("retrieved databaseType={} for bundle [{}]", databaseType, bundle.getSymbolicName());
+                            logger.debug("bundle [{}] retrieved databaseType={}", databaseType, bundle.getSymbolicName());
 
                             ActiveObjects activeObjects = factory.create(aoConfig, databaseType);
-                            logger.debug("created ActiveObjects for bundle [{}]", bundle.getSymbolicName());
+                            logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());
 
                             return activeObjects;
                         }
