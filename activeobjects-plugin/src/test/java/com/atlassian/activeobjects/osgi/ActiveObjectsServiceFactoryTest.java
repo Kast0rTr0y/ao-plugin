@@ -9,6 +9,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -65,20 +66,22 @@ public final class ActiveObjectsServiceFactoryTest
                 dataSourceProvider, transactionTemplate, tenantProvider);
     }
 
-//    @Test
-//    public void testGetService()
-//    {
-//        final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
-//        assertNotNull(ao);
-//        assertTrue(ao instanceof DelegatingActiveObjects);
-//    }
-//
-//    @Test
-//    public void testUnGetService()
-//    {
-//        Object ao = serviceFactory.getService(bundle, null);
-//        assertEquals(1, serviceFactory.aoInstances.size());
-//        serviceFactory.ungetService(bundle, null, ao);
-//        assertEquals(0, serviceFactory.aoInstances.size());
-//    }
+    @Ignore
+    @Test
+    public void testGetService()
+    {
+        final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
+        assertNotNull(ao);
+        assertTrue(ao instanceof DelegatingActiveObjects);
+    }
+
+    @Ignore
+    @Test
+    public void testUnGetService()
+    {
+        Object ao = serviceFactory.getService(bundle, null);
+        assertEquals(1, serviceFactory.aoInstances.size());
+        serviceFactory.ungetService(bundle, null, ao);
+        assertEquals(0, serviceFactory.aoInstances.size());
+    }
 }
