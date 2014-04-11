@@ -79,7 +79,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         aoContextThreadFactory = new ContextClassLoaderThreadFactory(bundleContextClassLoader);
 
         // scheduled single thread pool for use by AO plugins waiting for config modules
-        final ThreadFactory threadFactory = new ThreadFactoryBuilder().setThreadFactory(aoContextThreadFactory).setNameFormat("active-objects-config").build();
+        final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setThreadFactory(aoContextThreadFactory)
+                .setNameFormat("active-objects-config")
+                .build();
         final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor(threadFactory);
         configExecutor = threadLocalDelegateExecutorFactory.createScheduledExecutorService(delegate);
 
