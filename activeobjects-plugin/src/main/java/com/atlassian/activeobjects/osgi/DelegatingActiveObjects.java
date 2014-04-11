@@ -59,7 +59,6 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
     private final TransactionTemplate transactionTemplate;
     private final TenantProvider tenantProvider;
     private final Function<Tenant, ExecutorService> initExecutorFunction;
-    private final ScheduledExecutorService configExecutor;
 
     private final AtomicReference<SettableFuture<ActiveObjectsConfiguration>> aoConfigFutureRef = new AtomicReference<SettableFuture<ActiveObjectsConfiguration>>(SettableFuture.<ActiveObjectsConfiguration>create());
 
@@ -77,7 +76,7 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tenantProvider = checkNotNull(tenantProvider);
         this.initExecutorFunction = checkNotNull(initExecutorFunction);
-        this.configExecutor = checkNotNull(configExecutor);
+        checkNotNull(configExecutor);
 
         // start things up now if we have a tenant
         Tenant tenant = tenantProvider.getTenant();
@@ -105,7 +104,6 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
                     RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
                     aoConfigFutureRef.get().setException(e);
                 }
-                configExecutor.shutdown();
             }
         }, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
