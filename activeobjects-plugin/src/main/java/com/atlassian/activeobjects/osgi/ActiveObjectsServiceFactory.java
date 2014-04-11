@@ -8,6 +8,7 @@ import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
@@ -28,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -51,6 +53,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final TransactionTemplate transactionTemplate;
     private final EventPublisher eventPublisher;
     private final TenantProvider tenantProvider;
+    private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
     private final ScheduledExecutorService configExecutor;
 
@@ -59,23 +62,23 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
             @Nonnull EventPublisher eventPublisher,
             @Nonnull DataSourceProvider dataSourceProvider,
             @Nonnull TransactionTemplate transactionTemplate,
-            @Nonnull TenantProvider tenantProvider)
+            @Nonnull TenantProvider tenantProvider,
+            @Nonnull ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory)
     {
         this.factory = checkNotNull(factory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantProvider = checkNotNull(tenantProvider);
+        this.threadLocalDelegateExecutorFactory = checkNotNull(threadLocalDelegateExecutorFactory);
 
         // we want tenant arrival and hot restart event notifications
         eventPublisher.register(this);
 
-        // config scheduled single thread pool for use by AO plugins waiting for config modules
-        configExecutor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat("active-objects-config")
-                        .setDaemon(false).build()
-        );
+        // scheduled single thread pool for use by AO plugins waiting for config modules
+        final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("active-objects-config").build();
+        final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        configExecutor = threadLocalDelegateExecutorFactory.createScheduledExecutorService(delegate);
     }
 
     private final LoadingCache<Tenant, ExecutorService> initExecutors = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
@@ -84,12 +87,11 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         public ExecutorService load(final Tenant tenant) throws Exception
         {
             logger.debug("loading new init executor for {}", tenant);
-            return Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1),
-                    new ThreadFactoryBuilder()
-                            .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
-                            .setDaemon(false)
-                            .setPriority(Thread.NORM_PRIORITY + 1).build()
-            );
+
+            final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("active-objects-init-" + tenant.toString() + "-%d").build();
+            final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
+
+            return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
         }
     });
 

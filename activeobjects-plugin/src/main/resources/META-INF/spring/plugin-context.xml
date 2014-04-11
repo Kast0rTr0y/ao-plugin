@@ -56,6 +56,7 @@
         <constructor-arg index="2" ref="dataSourceProvider"/>
         <constructor-arg index="3" ref="transactionTemplate"/>
         <constructor-arg index="4" ref="tenantProvider"/>
+        <constructor-arg index="5" ref="threadLocalDelegateExecutorFactory"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
