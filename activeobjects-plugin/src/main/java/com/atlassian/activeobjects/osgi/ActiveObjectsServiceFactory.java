@@ -55,6 +55,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final TenantProvider tenantProvider;
     private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
+    private final ThreadFactory aoContextThreadFactory;
+
     private final ScheduledExecutorService configExecutor;
 
     public ActiveObjectsServiceFactory(
@@ -72,13 +74,17 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         this.tenantProvider = checkNotNull(tenantProvider);
         this.threadLocalDelegateExecutorFactory = checkNotNull(threadLocalDelegateExecutorFactory);
 
-        // we want tenant arrival and hot restart event notifications
-        eventPublisher.register(this);
+        // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
+        ClassLoader bundleContextClassLoader = Thread.currentThread().getContextClassLoader();
+        aoContextThreadFactory = new ContextClassLoaderThreadFactory(bundleContextClassLoader);
 
         // scheduled single thread pool for use by AO plugins waiting for config modules
-        final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("active-objects-config").build();
+        final ThreadFactory threadFactory = new ThreadFactoryBuilder().setThreadFactory(aoContextThreadFactory).setNameFormat("active-objects-config").build();
         final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor(threadFactory);
         configExecutor = threadLocalDelegateExecutorFactory.createScheduledExecutorService(delegate);
+
+        // we want tenant arrival and hot restart event notifications
+        eventPublisher.register(this);
     }
 
     private final LoadingCache<Tenant, ExecutorService> initExecutors = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
@@ -88,7 +94,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         {
             logger.debug("loading new init executor for {}", tenant);
 
-            final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("active-objects-init-" + tenant.toString() + "-%d").build();
+            final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                    .setThreadFactory(aoContextThreadFactory)
+                    .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
+                    .build();
             final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
 
             return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
