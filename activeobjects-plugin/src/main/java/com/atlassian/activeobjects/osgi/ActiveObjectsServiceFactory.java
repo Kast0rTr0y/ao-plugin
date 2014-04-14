@@ -53,6 +53,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final TransactionTemplate transactionTemplate;
     private final EventPublisher eventPublisher;
     private final TenantProvider tenantProvider;
+    private final AOConfigurationServiceProvider configurationServiceProvider;
     private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
     private final ThreadFactory aoContextThreadFactory;
@@ -60,18 +61,20 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final ScheduledExecutorService configExecutor;
 
     public ActiveObjectsServiceFactory(
-            @Nonnull ActiveObjectsFactory factory,
-            @Nonnull EventPublisher eventPublisher,
-            @Nonnull DataSourceProvider dataSourceProvider,
-            @Nonnull TransactionTemplate transactionTemplate,
-            @Nonnull TenantProvider tenantProvider,
-            @Nonnull ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory)
+            @Nonnull final ActiveObjectsFactory factory,
+            @Nonnull final EventPublisher eventPublisher,
+            @Nonnull final DataSourceProvider dataSourceProvider,
+            @Nonnull final TransactionTemplate transactionTemplate,
+            @Nonnull final TenantProvider tenantProvider,
+            @Nonnull final AOConfigurationServiceProvider configurationServiceProvider,
+            @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory)
     {
         this.factory = checkNotNull(factory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantProvider = checkNotNull(tenantProvider);
+        this.configurationServiceProvider = checkNotNull(configurationServiceProvider);
         this.threadLocalDelegateExecutorFactory = checkNotNull(threadLocalDelegateExecutorFactory);
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
@@ -122,7 +125,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         @Override
         public DelegatingActiveObjects load(final ActiveObjectsKey key) throws Exception
         {
-            return new DelegatingActiveObjects(key.bundle, factory, dataSourceProvider, transactionTemplate, tenantProvider, initExecutorFunction, configExecutor);
+            return new DelegatingActiveObjects(key.bundle, factory, dataSourceProvider, transactionTemplate, tenantProvider, configurationServiceProvider, initExecutorFunction, configExecutor);
         }
     });
 

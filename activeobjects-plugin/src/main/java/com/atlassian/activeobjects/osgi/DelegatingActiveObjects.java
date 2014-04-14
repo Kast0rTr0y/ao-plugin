@@ -51,13 +51,12 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
 
     private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
 
-    private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
-
     private final Bundle bundle;
     private final ActiveObjectsFactory factory;
     private final DataSourceProvider dataSourceProvider;
     private final TransactionTemplate transactionTemplate;
     private final TenantProvider tenantProvider;
+    private final AOConfigurationServiceProvider configurationServiceProvider;
     private final Function<Tenant, ExecutorService> initExecutorFunction;
 
     private final AtomicReference<SettableFuture<ActiveObjectsConfiguration>> aoConfigFutureRef = new AtomicReference<SettableFuture<ActiveObjectsConfiguration>>(SettableFuture.<ActiveObjectsConfiguration>create());
@@ -67,6 +66,7 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
             @Nonnull final DataSourceProvider dataSourceProvider,
             @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
+            @Nonnull final AOConfigurationServiceProvider configurationServiceProvider,
             @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
             @Nonnull final ScheduledExecutorService configExecutor) throws InvalidSyntaxException
     {
@@ -75,6 +75,7 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
         this.tenantProvider = checkNotNull(tenantProvider);
+        this.configurationServiceProvider = checkNotNull(configurationServiceProvider);
         this.initExecutorFunction = checkNotNull(initExecutorFunction);
         checkNotNull(configExecutor);
 
@@ -90,22 +91,8 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
         bundle.getBundleContext().addServiceListener(this, configFilter);
         logger.debug("bundle [{}] listening for configuration with filter {}", bundle.getSymbolicName(), configFilter);
 
-        configExecutor.schedule(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                if (!aoConfigFutureRef.get().isDone())
-                {
-                    logger.warn("bundle [{}] hasn't found an active objects configuration after {}ms; scanning default package '{}' for entities; note that this delay is configurable via the system property '{}'", new Object[] {bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE, CONFIGURATION_TIMEOUT_MS_PROPERTY});
-
-                    // todo: implement the default package scan
-
-                    RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
-                    aoConfigFutureRef.get().setException(e);
-                }
-            }
-        }, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        // check that we have actually received registration of ActiveObjectsConfiguration
+        configExecutor.schedule(configCheckRunnable, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -138,13 +125,41 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
 
             case ServiceEvent.UNREGISTERING:
             {
-                // dutifully unregister and start a new future for when configuration is next needed
+                // dutifully unregister
                 bundle.getBundleContext().ungetService(event.getServiceReference());
-                aoConfigFutureRef.set(SettableFuture.<ActiveObjectsConfiguration>create());
                 logger.debug("bundle [{}] ungot service ActiveObjectsConfiguration", bundle.getSymbolicName());
+
+                // have a new future throw an exception on resolution
+                SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
+                exceptionalAoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has had its configuration service unregistered"));
+                aoConfigFutureRef.set(exceptionalAoConfigFuture);
             }
         }
     }
+
+    private Runnable configCheckRunnable = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if (!aoConfigFutureRef.get().isDone())
+            {
+                logger.warn("bundle [{}] hasn't found an active objects configuration after {}ms; scanning default package '{}' for entities; note that this delay is configurable via the system property '{}'",
+                        new Object[] { bundle.getSymbolicName(), CONFIGURATION_TIMEOUT_MS, configurationServiceProvider.getEntityDefaultPackage(), CONFIGURATION_TIMEOUT_MS_PROPERTY });
+
+                ActiveObjectsConfiguration configuration = configurationServiceProvider.generateScannedConfiguration(bundle);
+                if (configuration != null)
+                {
+                    aoConfigFutureRef.get().set(configuration);
+                }
+                else
+                {
+                    RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
+                    aoConfigFutureRef.get().setException(e);
+                }
+            }
+        }
+    };
 
     private final LoadingCache<Tenant, Promise<ActiveObjects>> aoPromises = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
     {
