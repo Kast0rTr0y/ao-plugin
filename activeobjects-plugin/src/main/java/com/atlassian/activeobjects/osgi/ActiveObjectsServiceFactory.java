@@ -17,6 +17,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
@@ -100,13 +101,15 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         {
             logger.debug("loading new init executor for {}", tenant);
 
-            final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                    .setThreadFactory(aoContextThreadFactory)
-                    .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
-                    .build();
-            final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
-
-            return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
+//            final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+//                    .setThreadFactory(aoContextThreadFactory)
+//                    .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
+//                    .build();
+//            final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
+//
+//            return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
+            // FIXME: piggy back on the caller's transaction (if possible) in case of HSQLDB in order to workaround IO deadlock
+            return MoreExecutors.sameThreadExecutor();
         }
     });
 
