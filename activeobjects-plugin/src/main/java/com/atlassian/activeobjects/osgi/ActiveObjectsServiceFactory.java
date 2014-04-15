@@ -5,10 +5,12 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
@@ -101,15 +103,32 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         {
             logger.debug("loading new init executor for {}", tenant);
 
-//            final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-//                    .setThreadFactory(aoContextThreadFactory)
-//                    .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
-//                    .build();
-//            final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
-//
-//            return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
-            // FIXME: piggy back on the caller's transaction (if possible) in case of HSQLDB in order to workaround IO deadlock
-            return MoreExecutors.sameThreadExecutor();
+            // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
+            DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+            {
+                @Override
+                public DatabaseType doInTransaction()
+                {
+                    return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
+                }
+            });
+            if (DatabaseType.HSQL.equals(databaseType))
+            {
+                // HSQL is a snowflake; have it execute its DDL (and update) in the same thread as this is called from
+                logger.debug("using snowflake executor for HSQL");
+                return MoreExecutors.sameThreadExecutor();
+            }
+            else {
+
+                // create a thread pool just for DDL, update etc.
+                final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                        .setThreadFactory(aoContextThreadFactory)
+                        .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
+                        .build();
+                final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
+
+                return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
+            }
         }
     });
 
@@ -162,7 +181,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     @EventListener
     public void onTenantArrived(TenantArrivedEvent event)
     {
-        Tenant tenant = event.getTenant();
+        Tenant tenant = tenantProvider.getTenant();
         logger.debug("tenant arrived {}", tenant);
 
         if (tenant != null)
