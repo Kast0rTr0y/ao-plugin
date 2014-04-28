@@ -10,6 +10,10 @@
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
     </component>
 
+    <component key="executorServiceProvider" class="com.atlassian.activeobjects.refapp.RefappExecutorServiceProvider" name="Executor Service Provider" public="true">
+        <interface>com.atlassian.activeobjects.spi.ExecutorServiceProvider</interface>
+    </component>
+
     <component name="Refapp Data Source" key="refapp-datasource"
                class="com.atlassian.activeobjects.refapp.RefappDataSource" public="false">
         <interface>javax.sql.DataSource</interface>

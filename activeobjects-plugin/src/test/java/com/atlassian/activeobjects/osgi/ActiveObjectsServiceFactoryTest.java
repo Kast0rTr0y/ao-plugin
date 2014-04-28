@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.ExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
@@ -64,13 +65,17 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
+    @Mock
+    private ExecutorServiceProvider executorServiceProvider;
+
     @Before
     public void setUp() throws Exception
     {
         when(tenantProvider.getTenant()).thenReturn(new Tenant());
 
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher,
-                dataSourceProvider, transactionTemplate, tenantProvider, configurationServiceProvider, threadLocalDelegateExecutorFactory);
+                dataSourceProvider, transactionTemplate, tenantProvider, configurationServiceProvider,
+                threadLocalDelegateExecutorFactory, executorServiceProvider);
     }
 
     @Ignore

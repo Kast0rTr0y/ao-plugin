@@ -8,6 +8,7 @@ import com.atlassian.activeobjects.junit.MockHostComponent;
 import com.atlassian.activeobjects.junit.PackageVersion;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.ExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.event.api.EventPublisher;
@@ -137,6 +138,9 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
+
+    @MockHostComponent
+    protected ExecutorServiceProvider executorServiceProvider;
 
     @MockHostComponent
     protected TenantAccessor tenantAccessor;

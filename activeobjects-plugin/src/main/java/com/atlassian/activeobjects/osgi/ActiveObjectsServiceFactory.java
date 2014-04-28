@@ -6,6 +6,7 @@ import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.ExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
@@ -58,6 +59,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
     private final TenantProvider tenantProvider;
     private final AOConfigurationServiceProvider configurationServiceProvider;
     private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
+    private final ExecutorServiceProvider executorServiceProvider;
 
     private final ThreadFactory aoContextThreadFactory;
 
@@ -70,7 +72,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
             @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationServiceProvider configurationServiceProvider,
-            @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory)
+            @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
+            @Nonnull final ExecutorServiceProvider executorServiceProvider)
     {
         this.factory = checkNotNull(factory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
@@ -79,6 +82,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         this.tenantProvider = checkNotNull(tenantProvider);
         this.configurationServiceProvider = checkNotNull(configurationServiceProvider);
         this.threadLocalDelegateExecutorFactory = checkNotNull(threadLocalDelegateExecutorFactory);
+        this.executorServiceProvider = checkNotNull(executorServiceProvider);
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
         ClassLoader bundleContextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -103,32 +107,23 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
         {
             logger.debug("loading new init executor for {}", tenant);
 
-            // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
-            DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
+            ExecutorService snowflakeExecutorService = executorServiceProvider.initExecutorService();
+            if (snowflakeExecutorService != null)
             {
-                @Override
-                public DatabaseType doInTransaction()
-                {
-                    return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
-                }
-            });
-            if (DatabaseType.HSQL.equals(databaseType))
-            {
-                // HSQL is a snowflake; have it execute its DDL (and update) in the same thread as this is called from
-                logger.debug("using snowflake executor for HSQL");
-                return MoreExecutors.sameThreadExecutor();
+                logger.debug("using snowflake executor service provided by the application");
+                return snowflakeExecutorService;
             }
-            else {
 
-                // create a thread pool just for DDL, update etc.
-                final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                        .setThreadFactory(aoContextThreadFactory)
-                        .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
-                        .build();
-                final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
+            logger.debug("creating new init thread pool and executor service");
 
-                return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
-            }
+            // create a thread pool just for DDL, update etc.
+            final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                    .setThreadFactory(aoContextThreadFactory)
+                    .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
+                    .build();
+            final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
+
+            return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
         }
     });
 
