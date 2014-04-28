@@ -51,7 +51,7 @@
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>2.20.0</refapp.version>
+        <refapp.version>2.21.1</refapp.version>
 
         <tenancy.libversion>1.3.1</tenancy.libversion>
         <plugins.libversion>3.0.8</plugins.libversion>
@@ -117,8 +117,6 @@
                     <version>${amps.version}</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <!-- TODO: Alex needs to take this out when refapp is capable of running tenant aware -->
-                        <skipITs>true</skipITs>
                         <products>
                             <product>
                                 <id>refapp</id>

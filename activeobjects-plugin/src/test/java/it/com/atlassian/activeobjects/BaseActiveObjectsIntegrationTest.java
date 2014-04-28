@@ -17,6 +17,7 @@ import com.atlassian.plugin.web.WebInterfaceManager;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.auth.LoginUriProvider;
+import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.sal.api.message.HelpPathResolver;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -25,6 +26,9 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.websudo.WebSudoManager;
 
+import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantAccessor;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -33,6 +37,9 @@ import org.mockito.Matchers;
 import static org.mockito.Mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * <p>This configures the basics of the system on which the Active Objects plugin can run.</p>
@@ -127,6 +134,16 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected ModuleFactory moduleFactory;
+
+    @MockHostComponent
+    protected ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
+
+    @MockHostComponent
+    protected TenantAccessor tenantAccessor;
+
+    private final Tenant tenant = new Tenant();
+
+    private final Iterable<Tenant> availableTenants = ImmutableList.of(tenant);
     
     @Before
     public void initHostComponents()
@@ -141,5 +158,25 @@ public abstract class BaseActiveObjectsIntegrationTest
         });
 
         when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.UNKNOWN);
+
+        when(threadLocalDelegateExecutorFactory.createScheduledExecutorService(Matchers.any(ScheduledExecutorService.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return invocation.getArguments()[0];
+            }
+        });
+
+        when(threadLocalDelegateExecutorFactory.createExecutorService(Matchers.any(ExecutorService.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return invocation.getArguments()[0];
+            }
+        });
+
+        when(tenantAccessor.getAvailableTenants()).thenReturn(availableTenants);
     }
 }
