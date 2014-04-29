@@ -191,7 +191,7 @@ final class DelegatingActiveObjects implements ActiveObjects, ServiceListener
                                     return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
                                 }
                             });
-                            logger.debug("bundle [{}] retrieved databaseType={}", databaseType, bundle.getSymbolicName());
+                            logger.debug("bundle [{}] retrieved databaseType={}", bundle.getSymbolicName(), databaseType);
 
                             ActiveObjects activeObjects = factory.create(aoConfig, databaseType);
                             logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());

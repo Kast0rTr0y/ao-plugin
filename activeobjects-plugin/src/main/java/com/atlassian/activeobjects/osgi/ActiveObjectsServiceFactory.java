@@ -113,17 +113,19 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Dispos
                 logger.debug("using snowflake executor service provided by the application");
                 return snowflakeExecutorService;
             }
+            else
+            {
+                logger.debug("creating new init thread pool and executor service");
 
-            logger.debug("creating new init thread pool and executor service");
+                // create a thread pool just for DDL, update etc.
+                final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                        .setThreadFactory(aoContextThreadFactory)
+                        .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
+                        .build();
+                final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
 
-            // create a thread pool just for DDL, update etc.
-            final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                    .setThreadFactory(aoContextThreadFactory)
-                    .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
-                    .build();
-            final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
-
-            return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
+                return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
+            }
         }
     });
 
