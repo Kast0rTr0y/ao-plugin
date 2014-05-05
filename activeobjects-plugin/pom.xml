@@ -38,13 +38,7 @@
                             !org.apache.velocity.tools*,
                             com.atlassian.activeobjects.spi;version="${ao.spi.compatibility.version}",
                             com.atlassian.event.api*;version="2.0",
-                            com.atlassian.sal.api;version="${sal.api.compatibility.version}",
-                            com.atlassian.sal.api.auth;version="${sal.api.compatibility.version}",
-                            com.atlassian.sal.api.message;version="${sal.api.compatibility.version}",
-                            com.atlassian.sal.api.pluginsettings;version="${sal.api.compatibility.version}",
-                            com.atlassian.sal.api.transaction;version="${sal.api.compatibility.version}",
-                            com.atlassian.sal.api.user;version="${sal.api.compatibility.version}",
-                            com.atlassian.sal.api.websudo;version="${sal.api.compatibility.version}",
+                            com.atlassian.sal.api*;version="${sal.api.compatibility.version}",
                             com.atlassian.plugin;version="${plugins.libversion}",
                             com.atlassian.plugin.descriptors;version="${plugins.libversion}",
                             com.atlassian.plugin.hostcontainer;version="${plugins.libversion}",
@@ -55,6 +49,7 @@
                             com.atlassian.plugin.predicate;version="${plugins.libversion}",
                             com.atlassian.plugin.web;version="${webfragments.libversion}",
                             com.atlassian.plugin.webresource;version="${webresource.libversion}",
+                            com.atlassian.tenancy.api*;version="${tenancy.libversion}",
                             com.atlassian.security.random;version="1.0",
                             com.atlassian.util.concurrent;version="${atlassian.concurrent.version}",
                             com.google.common*,
@@ -160,6 +155,16 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- don't forget to update BabyBearActiveObjectsDelegateTest -->
+                        <activeobjects.servicefactory.config.timeout>999</activeobjects.servicefactory.config.timeout>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -237,6 +242,10 @@
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-plugins-webfragment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

@@ -7,4 +7,9 @@
     
     <!-- Make this an optional service to avoid circular dependency with active objects plugin -->
     <osgi:reference id="backup" interface="com.atlassian.activeobjects.spi.Backup" cardinality='0..1'/>
+
+    <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="2000" cardinality="0..1"/>
+    <osgi:reference id="threadLocalDelegateExecutorFactory" interface="com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory" timeout="2000" cardinality="0..1"/>
+    <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
+
 </beans>

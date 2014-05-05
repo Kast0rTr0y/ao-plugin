@@ -7,12 +7,15 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.AutowireCapablePlugin;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.module.ModuleFactory;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
+import com.atlassian.tenancy.api.TenantAccessor;
+import com.atlassian.tenancy.api.helper.PerTenantInitialiser;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -50,6 +53,8 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     private final OsgiServiceUtils osgiUtils;
     private final EntitiesValidator entitiesValidator;
     private final PluginToTablesMapping pluginToTablesMapping;
+    private final TenantAccessor tenantAccessor;
+    private final EventPublisher eventPublisher;
 
     /**
      * The service registration for the active objects configuration, defined by this plugin.
@@ -63,13 +68,17 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
                                         ActiveObjectsConfigurationFactory configurationFactory,
                                         OsgiServiceUtils osgiUtils,
                                         PluginToTablesMapping pluginToTablesMapping,
-                                        EntitiesValidator entitiesValidator)
+                                        EntitiesValidator entitiesValidator,
+                                        TenantAccessor tenantAccessor,
+                                        EventPublisher eventPublisher)
     {
         super(moduleFactory);
         this.configurationFactory = checkNotNull(configurationFactory);
         this.osgiUtils = checkNotNull(osgiUtils);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
         this.entitiesValidator = checkNotNull(entitiesValidator);
+        this.tenantAccessor = checkNotNull(tenantAccessor);
+        this.eventPublisher = checkNotNull(eventPublisher);
     }
 
     @Override
@@ -82,7 +91,15 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         configuration = getActiveObjectsConfiguration(getNameSpace(element), entities, upgradeTasks);
 
         final Set<Class<? extends RawEntity<?>>> entityClasses = entitiesValidator.check(entities, configuration.getNameConverters());
-        recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
+
+        new PerTenantInitialiser(eventPublisher, tenantAccessor, new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
+            }
+        }).init();
     }
 
     private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element)
