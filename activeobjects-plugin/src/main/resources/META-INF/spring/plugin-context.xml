@@ -50,7 +50,7 @@
         </constructor-arg>
     </bean>
 
-    <bean id="aoConfigurationGenerator" class="com.atlassian.activeobjects.osgi.AOConfigurationServiceProviderImpl">
+    <bean id="aoConfigurationGenerator" class="com.atlassian.activeobjects.osgi.AOConfigurationGeneratorImpl">
         <constructor-arg index="0" ref="activeObjectsConfigurationFactory" />
         <constructor-arg index="1">
             <bean class="com.atlassian.activeobjects.spring.ApplicationContextFactoryBean"/>

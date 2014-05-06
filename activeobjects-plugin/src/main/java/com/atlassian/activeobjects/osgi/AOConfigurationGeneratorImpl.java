@@ -23,14 +23,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 
-public class AOConfigurationServiceProviderImpl implements AOConfigurationGenerator
+public class AOConfigurationGeneratorImpl implements AOConfigurationGenerator
 {
-    private static Logger log = LoggerFactory.getLogger(AOConfigurationServiceProviderImpl.class);
+    private static Logger log = LoggerFactory.getLogger(AOConfigurationGeneratorImpl.class);
 
     private final ActiveObjectsConfigurationFactory aoConfigurationFactory;
     private final ApplicationContext applicationContext;
 
-    public AOConfigurationServiceProviderImpl(ActiveObjectsConfigurationFactory aoConfigurationFactory, ApplicationContext applicationContext)
+    public AOConfigurationGeneratorImpl(ActiveObjectsConfigurationFactory aoConfigurationFactory, ApplicationContext applicationContext)
     {
         this.aoConfigurationFactory = checkNotNull(aoConfigurationFactory);
         this.applicationContext = checkNotNull(applicationContext);
