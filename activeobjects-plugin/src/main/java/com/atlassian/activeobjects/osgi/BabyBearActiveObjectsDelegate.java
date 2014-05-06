@@ -27,11 +27,13 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -174,6 +176,24 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
         // check that we actually receive the above registration
         configExecutor.schedule(configCheckRunnable, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
+        // attempt to get the configuration service now - it may already have been registered
+        ServiceReference[] serviceReferences = bundle.getBundleContext().getServiceReferences(ActiveObjectsConfiguration.class.getName(), configFilter);
+        if (serviceReferences != null)
+        {
+            if (serviceReferences.length == 1)
+            {
+                // got the one and only
+                logger.debug("bundle [{}] init registered existing ActiveObjectsConfiguration", bundle.getSymbolicName());
+                Object aoConfig = bundle.getBundleContext().getService(serviceReferences[0]);
+                aoConfigFutureRef.get().set((ActiveObjectsConfiguration) aoConfig);
+            }
+            else if (serviceReferences.length > 1)
+            {
+                // multiple configurations registered already...
+                throwMultipleAoConfigurationsException();
+            }
+        }
+
         // start things up now if we have a tenant
         Tenant tenant = tenantProvider.getTenant();
         if (tenant != null)
@@ -183,29 +203,26 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
     }
 
     @Override
-    public void serviceChanged(final ServiceEvent event)
+    public synchronized void serviceChanged(final ServiceEvent event)
     {
         switch (event.getType())
         {
             case ServiceEvent.REGISTERED:
             {
+                Object registeredService = bundle.getBundleContext().getService(event.getServiceReference());
                 if (aoConfigFutureRef.get().isDone())
                 {
-                    // the plugin has defined multiple <ao> configurations defined; blow up here and cause any future calls to the config to blow up
-                    RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
-
-                    SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
-                    exceptionalAoConfigFuture.setException(e);
-                    aoConfigFutureRef.set(exceptionalAoConfigFuture);
-
-                    throw e;
+                    if (registeredService == getAoConfig())
+                    {
+                        // bad case - a different configuration has been registered
+                        throwMultipleAoConfigurationsException();
+                    }
                 }
                 else
                 {
                     // good case - one configuration registered
-                    Object aoConfig = bundle.getBundleContext().getService(event.getServiceReference());
-                    aoConfigFutureRef.get().set((ActiveObjectsConfiguration) aoConfig);
-                    logger.debug("bundle [{}] got service ActiveObjectsConfiguration", bundle.getSymbolicName());
+                    aoConfigFutureRef.get().set((ActiveObjectsConfiguration) registeredService);
+                    logger.debug("bundle [{}] registered service ActiveObjectsConfiguration", bundle.getSymbolicName());
                 }
                 break;
             }
@@ -214,7 +231,7 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
             {
                 // dutifully unregister
                 bundle.getBundleContext().ungetService(event.getServiceReference());
-                logger.debug("bundle [{}] ungot service ActiveObjectsConfiguration", bundle.getSymbolicName());
+                logger.debug("bundle [{}] unregistered service ActiveObjectsConfiguration", bundle.getSymbolicName());
 
                 // have a new future throw an exception on resolution
                 SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
@@ -223,6 +240,45 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
 
                 break;
             }
+        }
+    }
+
+    /**
+     * the plugin has multiple <ao> configurations defined; blow up here and cause any future calls to the config to blow up
+     */
+    void throwMultipleAoConfigurationsException()
+    {
+        RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
+
+        SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
+        exceptionalAoConfigFuture.setException(e);
+        aoConfigFutureRef.set(exceptionalAoConfigFuture);
+
+        throw e;
+    }
+
+    /**
+     * Danger! Danger Will Robinson!
+     *
+     * Convenience method purely to make calling code more readable.
+     *
+     * Pulls the value out of the future. It will block if the future isn't done.
+     *
+     * @throws java.lang.RuntimeException at the drop of a hat
+     */
+    ActiveObjectsConfiguration getAoConfig()
+    {
+        try
+        {
+            return aoConfigFutureRef.get().get();
+        }
+        catch (InterruptedException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (ExecutionException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 
