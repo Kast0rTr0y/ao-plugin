@@ -23,6 +23,16 @@ public class TenantProviderImpl implements TenantProvider
         this.tenantAccessor = checkNotNull(tenantAccessor);
     }
 
+    /**
+     * Retrieve the current tenant.
+     *
+     * Hacky as hell for now; it just retrieves the first of the available tenants.
+     *
+     * We don't really know, yet, how we're going to identify the current tenant when there are multiple available,
+     * however it can be done in this one and only one place. Probably going to be a thread local...
+     *
+     * @return null if no tenant present
+     */
     @Nullable
     @Override
     public Tenant getTenant()
