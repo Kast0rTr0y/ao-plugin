@@ -35,7 +35,7 @@ public class ActiveObjectsPluginToTablesMapping implements PluginToTablesMapping
         {
             mappings.put(tableName, pluginInfo);
         }
-        settings.put(KEY, mappings);
+        settings.put(KEY, new Gson().toJson(mappings));
     }
 
     @Override
