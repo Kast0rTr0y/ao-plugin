@@ -171,7 +171,7 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
         // listen to service registrations for ActiveObjectsConfiguration from this bundle only
         final String configFilter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
         bundle.getBundleContext().addServiceListener(this, configFilter);
-        logger.debug("bundle [{}] listening for configuration with filter {}", bundle.getSymbolicName(), configFilter);
+        logger.info("bundle [{}] listening for {}ms for <ao> configuration service with filter {}; note that this period is configurable via the system property '{}'", new Object[] { bundle.getSymbolicName(), CONFIGURATION_TIMEOUT_MS_PROPERTY, configFilter, CONFIGURATION_TIMEOUT_MS_PROPERTY });
 
         // check that we actually receive the above registration
         configExecutor.schedule(configCheckRunnable, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
