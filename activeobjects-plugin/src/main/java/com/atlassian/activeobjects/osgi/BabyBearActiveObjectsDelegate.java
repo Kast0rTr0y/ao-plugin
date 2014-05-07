@@ -212,7 +212,7 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
                 Object registeredService = bundle.getBundleContext().getService(event.getServiceReference());
                 if (aoConfigFutureRef.get().isDone())
                 {
-                    if (registeredService == getAoConfig())
+                    if (registeredService != getAoConfig())
                     {
                         // bad case - a different configuration has been registered
                         throwMultipleAoConfigurationsException();
