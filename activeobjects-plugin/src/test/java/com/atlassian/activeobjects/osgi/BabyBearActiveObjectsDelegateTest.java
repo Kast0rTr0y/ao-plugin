@@ -14,7 +14,6 @@ import com.google.common.base.Function;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,6 +38,9 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -106,7 +108,6 @@ public class BabyBearActiveObjectsDelegateTest
         when(serviceEvent.getServiceReference()).thenReturn(serviceReference);
     }
 
-    @Ignore
     @Test
     public void init() throws InvalidSyntaxException
     {
@@ -114,10 +115,47 @@ public class BabyBearActiveObjectsDelegateTest
 
         babyBear.init();
 
-        verify(bundle).getBundleContext();
+        verify(bundle, times(2)).getBundleContext();
         verify(bundleContext).addServiceListener(babyBear, filter);
 
         verify(configExecutor).schedule(babyBear.configCheckRunnable, 999, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void initOnePresent() throws InvalidSyntaxException, ExecutionException, InterruptedException
+    {
+        final String filter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
+
+        final ServiceReference[] serviceReferences = new ServiceReference[] { mock(ServiceReference.class) };
+
+        when(bundleContext.getServiceReferences(ActiveObjectsConfiguration.class.getName(), filter)).thenReturn(serviceReferences);
+        when(bundleContext.getService(serviceReferences[0])).thenReturn(aoConfig);
+
+        babyBear.init();
+
+        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
+        assertThat(babyBear.aoConfigFutureRef.get().get(), is(aoConfig));
+
+        verify(bundle, times(3)).getBundleContext();
+        verify(bundleContext).addServiceListener(babyBear, filter);
+        verify(bundleContext).getServiceReferences(any(String.class), any(String.class));
+        verify(bundleContext).getService(serviceReferences[0]);
+
+        verify(configExecutor).schedule(babyBear.configCheckRunnable, 999, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void initManyPresent() throws InvalidSyntaxException
+    {
+        final String filter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
+
+        final ServiceReference[] serviceReferences = new ServiceReference[] { mock(ServiceReference.class), mock(ServiceReference.class) };
+
+        when(bundleContext.getServiceReferences(ActiveObjectsConfiguration.class.getName(), filter)).thenReturn(serviceReferences);
+
+        expectedException.expect(IllegalStateException.class);
+
+        babyBear.init();
     }
 
     @Test
@@ -135,7 +173,7 @@ public class BabyBearActiveObjectsDelegateTest
     public void serviceChangedRegisteredMultiple()
     {
         final SettableFuture<ActiveObjectsConfiguration> existingAoConfigFutureRef = SettableFuture.create();
-        existingAoConfigFutureRef.set(aoConfig);
+        existingAoConfigFutureRef.set(mock(ActiveObjectsConfiguration.class));
         babyBear.aoConfigFutureRef.set(existingAoConfigFutureRef);
 
         when(serviceEvent.getType()).thenReturn(ServiceEvent.REGISTERED);

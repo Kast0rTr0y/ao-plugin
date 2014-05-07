@@ -60,7 +60,7 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
 
     static final String CONFIGURATION_TIMEOUT_MS_PROPERTY = "activeobjects.servicefactory.config.timeout";
 
-    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
+    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 180000);
 
     private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
 
