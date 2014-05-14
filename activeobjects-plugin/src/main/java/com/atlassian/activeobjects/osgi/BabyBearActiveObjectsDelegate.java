@@ -52,7 +52,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * Delegate calls will block when DDL / updgrade tasks are running.
  *
- * DDL / upgrade tasks will be initiated by the first call to the delegate or by a call to #startActiveObjects.
+ * DDL / upgrade tasks will be initiated by the first call to the delegate or by a call to {@link #startActiveObjects}
  */
 class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
 {
