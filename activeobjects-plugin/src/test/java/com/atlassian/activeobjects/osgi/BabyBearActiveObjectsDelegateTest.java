@@ -6,7 +6,6 @@ import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
@@ -59,8 +58,6 @@ public class BabyBearActiveObjectsDelegateTest
     @Mock
     private DataSourceProvider dataSourceProvider;
     @Mock
-    private TransactionTemplate transactionTemplate;
-    @Mock
     private TenantProvider tenantProvider;
     @Mock
     private AOConfigurationGenerator aoConfigurationGenerator;
@@ -97,8 +94,8 @@ public class BabyBearActiveObjectsDelegateTest
     @Before
     public void before()
     {
-        babyBear = new BabyBearActiveObjectsDelegate(bundle, factory, dataSourceProvider, transactionTemplate,
-                tenantProvider, aoConfigurationGenerator, initExecutorFunction, configExecutor);
+        babyBear = new BabyBearActiveObjectsDelegate(bundle, factory, dataSourceProvider, tenantProvider,
+                aoConfigurationGenerator, initExecutorFunction, configExecutor);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
         when(bundle.getBundleContext()).thenReturn(bundleContext);

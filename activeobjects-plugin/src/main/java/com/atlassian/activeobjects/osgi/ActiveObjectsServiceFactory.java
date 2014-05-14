@@ -5,12 +5,11 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
+import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
 import com.google.common.annotations.VisibleForTesting;
@@ -72,7 +71,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final EventPublisher eventPublisher,
             @Nonnull final DataSourceProvider dataSourceProvider,
-            @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
@@ -82,7 +80,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         this.tenantProvider = checkNotNull(tenantProvider);
         checkNotNull(factory);
         checkNotNull(dataSourceProvider);
-        checkNotNull(transactionTemplate);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
         checkNotNull(initExecutorServiceProvider);
@@ -128,7 +125,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public BabyBearActiveObjectsDelegate load(@Nonnull final Bundle bundle) throws Exception
             {
-                BabyBearActiveObjectsDelegate delegate = new BabyBearActiveObjectsDelegate(bundle, factory, dataSourceProvider, transactionTemplate, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
+                BabyBearActiveObjectsDelegate delegate = new BabyBearActiveObjectsDelegate(bundle, factory, dataSourceProvider, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
                 delegate.init();
                 return delegate;
             }

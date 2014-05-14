@@ -9,7 +9,6 @@ import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
@@ -81,7 +80,6 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
             @Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final DataSourceProvider dataSourceProvider,
-            @Nonnull final TransactionTemplate transactionTemplate,
             @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
@@ -92,7 +90,6 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
         this.configExecutor = checkNotNull(configExecutor);
         checkNotNull(factory);
         checkNotNull(dataSourceProvider);
-        checkNotNull(transactionTemplate);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(initExecutorFunction);
 
@@ -118,15 +115,8 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
                             {
                                 logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
 
-                                // This is executed in a transaction as some providers create a hibernate session which can only be done in a transaction
-                                DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
-                                {
-                                    @Override
-                                    public DatabaseType doInTransaction()
-                                    {
-                                        return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
-                                    }
-                                });
+                                DatabaseType databaseType = dataSourceProvider.getDatabaseType();
+                                checkNotNull(databaseType, dataSourceProvider + " returned null for dbType");
                                 logger.debug("bundle [{}] retrieved databaseType={}", bundle.getSymbolicName(), databaseType);
 
                                 ActiveObjects activeObjects = factory.create(aoConfig, databaseType);

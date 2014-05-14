@@ -12,4 +12,7 @@
     <osgi:reference id="threadLocalDelegateExecutorFactory" interface="com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory" timeout="2000" cardinality="0..1"/>
     <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
 
+    <bean id="defaultInitExecutorServiceProvider" class="com.atlassian.activeobjects.spi.DefaultInitExecutorServiceProvider">
+        <constructor-arg index="0" ref="threadLocalDelegateExecutorFactory"/>
+    </bean>
 </beans>

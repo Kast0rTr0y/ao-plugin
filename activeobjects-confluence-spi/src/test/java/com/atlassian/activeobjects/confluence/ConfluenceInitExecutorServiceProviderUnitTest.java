@@ -31,9 +31,6 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     private InitExecutorServiceProvider defaultInitExecutorServiceProvider;
 
     @Mock
-    private TransactionTemplate transactionTemplate;
-
-    @Mock
     private DataSourceProvider dataSourceProvider;
 
     @Mock
@@ -42,16 +39,8 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     @Before
     public void setUp() throws Exception
     {
-        confluenceInitExecutorServiceProvider = new ConfluenceInitExecutorServiceProvider(threadLocalDelegateExecutorFactory, dataSourceProvider, transactionTemplate, defaultInitExecutorServiceProvider);
+        confluenceInitExecutorServiceProvider = new ConfluenceInitExecutorServiceProvider(threadLocalDelegateExecutorFactory, dataSourceProvider, defaultInitExecutorServiceProvider);
 
-        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
-            }
-        });
         when(threadLocalDelegateExecutorFactory.createExecutorService(Matchers.any(ExecutorService.class))).thenAnswer(new Answer<Object>()
         {
             @Override

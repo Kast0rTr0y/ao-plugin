@@ -5,8 +5,6 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.DefaultInitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
@@ -20,7 +18,6 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
 {
     private static final Logger logger = LoggerFactory.getLogger(DefaultInitExecutorServiceProvider.class);
 
-    private final TransactionTemplate transactionTemplate;
     private final DataSourceProvider dataSourceProvider;
     private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
@@ -30,12 +27,10 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
     public ConfluenceInitExecutorServiceProvider(
             final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
             final DataSourceProvider dataSourceProvider,
-            final TransactionTemplate transactionTemplate,
             final InitExecutorServiceProvider defaultInitExecutorServiceProvider)
     {
         this.threadLocalDelegateExecutorFactory = checkNotNull(threadLocalDelegateExecutorFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
-        this.transactionTemplate = checkNotNull(transactionTemplate);
         this.defaultInitExecutorServiceProvider = checkNotNull(defaultInitExecutorServiceProvider);
     }
 
@@ -51,15 +46,7 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
     @Override
     public ExecutorService initExecutorService(String name)
     {
-        DatabaseType databaseType = transactionTemplate.execute(new TransactionCallback<DatabaseType>()
-        {
-            @Override
-            public DatabaseType doInTransaction()
-            {
-                return checkNotNull(dataSourceProvider.getDatabaseType(), dataSourceProvider + " returned null for dbType");
-            }
-        });
-
+        DatabaseType databaseType = dataSourceProvider.getDatabaseType();
         if (DatabaseType.HSQL.equals(databaseType))
         {
             logger.debug("creating HSQL snowflake init executor");

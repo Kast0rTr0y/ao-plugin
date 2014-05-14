@@ -69,9 +69,6 @@ public final class ActiveObjectsServiceFactoryTest
     private DataSourceProvider dataSourceProvider;
     
     @Mock
-    private TransactionTemplate transactionTemplate;
-
-    @Mock
     private TenantProvider tenantProvider;
 
     @Mock
@@ -105,7 +102,7 @@ public final class ActiveObjectsServiceFactoryTest
         });
 
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, dataSourceProvider,
-                transactionTemplate, tenantProvider, aoConfigurationGenerator, threadLocalDelegateExecutorFactory,
+                tenantProvider, aoConfigurationGenerator, threadLocalDelegateExecutorFactory,
                 initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));

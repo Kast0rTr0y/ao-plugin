@@ -61,11 +61,10 @@
         <constructor-arg index="0" ref="activeObjectsFactory"/>
         <constructor-arg index="1" ref="eventPublisher"/>
         <constructor-arg index="2" ref="dataSourceProvider"/>
-        <constructor-arg index="3" ref="transactionTemplate"/>
-        <constructor-arg index="4" ref="tenantProvider"/>
-        <constructor-arg index="5" ref="aoConfigurationGenerator"/>
-        <constructor-arg index="6" ref="threadLocalDelegateExecutorFactory"/>
-        <constructor-arg index="7" ref="initExecutorServiceProvider"/>
+        <constructor-arg index="3" ref="tenantProvider"/>
+        <constructor-arg index="4" ref="aoConfigurationGenerator"/>
+        <constructor-arg index="5" ref="threadLocalDelegateExecutorFactory"/>
+        <constructor-arg index="6" ref="initExecutorServiceProvider"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
