@@ -3,8 +3,9 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
+import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.ExecutorServiceProvider;
+import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
@@ -75,7 +76,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
-            @Nonnull final ExecutorServiceProvider executorServiceProvider)
+            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantProvider = checkNotNull(tenantProvider);
@@ -84,7 +85,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         checkNotNull(transactionTemplate);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
-        checkNotNull(executorServiceProvider);
+        checkNotNull(initExecutorServiceProvider);
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
         ClassLoader bundleContextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -104,27 +105,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public ExecutorService load(@Nonnull final Tenant tenant) throws Exception
             {
-                logger.debug("loading new init executor for {}", tenant);
-
-                ExecutorService snowflakeExecutorService = executorServiceProvider.initExecutorService();
-                if (snowflakeExecutorService != null)
-                {
-                    logger.debug("using snowflake executor service provided by the application");
-                    return snowflakeExecutorService;
-                }
-                else
-                {
-                    logger.debug("creating new init thread pool and executor service");
-
-                    // create a thread pool just for DDL, update etc.
-                    final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                            .setThreadFactory(aoContextThreadFactory)
-                            .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
-                            .build();
-                    final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);
-
-                    return threadLocalDelegateExecutorFactory.createExecutorService(delegate);
-                }
+                logger.debug("creating new init executor for {}", tenant);
+                return initExecutorServiceProvider.initExecutorService(tenant.toString());
             }
         });
 

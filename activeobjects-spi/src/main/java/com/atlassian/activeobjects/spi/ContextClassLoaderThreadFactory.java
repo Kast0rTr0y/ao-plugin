@@ -1,4 +1,4 @@
-package com.atlassian.activeobjects.osgi;
+package com.atlassian.activeobjects.spi;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -27,7 +27,7 @@ public class ContextClassLoaderThreadFactory implements ThreadFactory
     }
 
     @VisibleForTesting
-    ClassLoader getContextClassLoader()
+    public ClassLoader getContextClassLoader()
     {
         return contextClassLoader;
     }

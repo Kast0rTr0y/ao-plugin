@@ -4,8 +4,9 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
+import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.ExecutorServiceProvider;
+import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
@@ -80,7 +81,7 @@ public final class ActiveObjectsServiceFactoryTest
     private ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
     @Mock
-    private ExecutorServiceProvider executorServiceProvider;
+    private InitExecutorServiceProvider initExecutorServiceProvider;
 
     private final Tenant tenant1 = mock(Tenant.class);
     private final Tenant tenant2 = mock(Tenant.class);
@@ -105,7 +106,7 @@ public final class ActiveObjectsServiceFactoryTest
 
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, dataSourceProvider,
                 transactionTemplate, tenantProvider, aoConfigurationGenerator, threadLocalDelegateExecutorFactory,
-                executorServiceProvider);
+                initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertSame(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), Thread.currentThread().getContextClassLoader());
@@ -144,35 +145,6 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
 
         assertSame(serviceFactory.initExecutorFn.apply(tenant1), executorService1);
-    }
-
-    @Test
-    public void initExecutorsLoading()
-    {
-        when(threadLocalDelegateExecutorFactory.createExecutorService(any(ExecutorService.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return invocation.getArguments()[0];
-            }
-        });
-
-        assertThat(serviceFactory.initExecutorFn.apply(tenant1), is(ExecutorService.class));
-
-        verify(threadLocalDelegateExecutorFactory).createExecutorService(any(ExecutorService.class));
-    }
-
-    @Test
-    public void initExecutorsLoadingSnowflake()
-    {
-        final ExecutorService snowflakeExecutorService = mock(ExecutorService.class);
-
-        when(executorServiceProvider.initExecutorService()).thenReturn(snowflakeExecutorService);
-
-        assertSame(serviceFactory.initExecutorFn.apply(tenant1), snowflakeExecutorService);
-
-        verify(executorServiceProvider).initExecutorService();
     }
 
     @Test

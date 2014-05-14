@@ -11,10 +11,6 @@
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
     </component>
 
-    <component key="executorServiceProvider" class="com.atlassian.activeobjects.jira.JiraExecutorServiceProvider" name="Executor Service Provider" public="true">
-        <interface>com.atlassian.activeobjects.spi.ExecutorServiceProvider</interface>
-    </component>
-
     <component key="ofBizConnectionFactory" name="OfBiz Connection factory"
                class="com.atlassian.jira.ofbiz.DefaultOfBizConnectionFactory"/>
 

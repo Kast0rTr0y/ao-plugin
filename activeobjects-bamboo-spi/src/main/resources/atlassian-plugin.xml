@@ -9,10 +9,6 @@
     <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
   </component>
 
-  <component key="executorServiceProvider" class="com.atlassian.activeobjects.bamboo.BambooExecutorServiceProvider" name="Executor Service Provider" public="true">
-    <interface>com.atlassian.activeobjects.spi.ExecutorServiceProvider</interface>
-  </component>
-
   <component key="dialectExtractor" class="com.atlassian.activeobjects.bamboo.hibernate.HibernateSessionDialectExtractor" name="Dialect Extractor"/>
 
   <component-import key="hibernateSessionFactory" interface="com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>

@@ -8,7 +8,7 @@ import com.atlassian.activeobjects.junit.MockHostComponent;
 import com.atlassian.activeobjects.junit.PackageVersion;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
-import com.atlassian.activeobjects.spi.ExecutorServiceProvider;
+import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.event.api.EventPublisher;
@@ -30,6 +30,7 @@ import com.atlassian.sal.api.websudo.WebSudoManager;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantAccessor;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -140,7 +141,7 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
     @MockHostComponent
-    protected ExecutorServiceProvider executorServiceProvider;
+    protected InitExecutorServiceProvider initExecutorServiceProvider;
 
     @MockHostComponent
     protected TenantAccessor tenantAccessor;
@@ -182,5 +183,7 @@ public abstract class BaseActiveObjectsIntegrationTest
         });
 
         when(tenantAccessor.getAvailableTenants()).thenReturn(availableTenants);
+
+        when(initExecutorServiceProvider.initExecutorService(anyString())).thenReturn(MoreExecutors.sameThreadExecutor());
     }
 }

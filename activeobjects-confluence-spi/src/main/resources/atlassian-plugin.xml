@@ -10,8 +10,8 @@
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
     </component>
 
-    <component key="executorServiceProvider" class="com.atlassian.activeobjects.confluence.ConfluenceExecutorServiceProvider" name="Executor Service Provider" public="true">
-        <interface>com.atlassian.activeobjects.spi.ExecutorServiceProvider</interface>
+    <component key="initExecutorServiceProvider" class="com.atlassian.activeobjects.confluence.ConfluenceInitExecutorServiceProvider" name="Confluence Init Executor Service Provider" public="true">
+        <interface>com.atlassian.activeobjects.spi.InitExecutorServiceProvider</interface>
     </component>
 
     <component key="aoSynchronizationManager" class="com.atlassian.activeobjects.confluence.transaction.ConfluenceAOSynchronisationManager"

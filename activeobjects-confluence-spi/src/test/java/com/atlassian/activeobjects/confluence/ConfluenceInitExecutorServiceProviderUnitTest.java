@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.confluence;
 
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
@@ -17,14 +18,17 @@ import org.mockito.stubbing.Answer;
 import java.util.concurrent.ExecutorService;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith (MockitoJUnitRunner.class)
-public class ConfluenceExecutorServiceProviderUnitTest
+public class ConfluenceInitExecutorServiceProviderUnitTest
 {
-    private ConfluenceExecutorServiceProvider executorServiceProvider;
+    private ConfluenceInitExecutorServiceProvider confluenceInitExecutorServiceProvider;
+
+    @Mock
+    private InitExecutorServiceProvider defaultInitExecutorServiceProvider;
 
     @Mock
     private TransactionTemplate transactionTemplate;
@@ -38,7 +42,7 @@ public class ConfluenceExecutorServiceProviderUnitTest
     @Before
     public void setUp() throws Exception
     {
-        executorServiceProvider = new ConfluenceExecutorServiceProvider(threadLocalDelegateExecutorFactory, dataSourceProvider, transactionTemplate);
+        confluenceInitExecutorServiceProvider = new ConfluenceInitExecutorServiceProvider(threadLocalDelegateExecutorFactory, dataSourceProvider, transactionTemplate, defaultInitExecutorServiceProvider);
 
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
@@ -63,7 +67,7 @@ public class ConfluenceExecutorServiceProviderUnitTest
     {
         when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.HSQL);
 
-        assertThat(executorServiceProvider.initExecutorService(), is(ExecutorService.class));
+        assertThat(confluenceInitExecutorServiceProvider.initExecutorService("clarence"), is(ExecutorService.class));
     }
 
     @Test
@@ -71,6 +75,9 @@ public class ConfluenceExecutorServiceProviderUnitTest
     {
         when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.POSTGRESQL);
 
-        assertThat(executorServiceProvider.initExecutorService(), nullValue());
+        final ExecutorService executorService = mock(ExecutorService.class);
+        when(defaultInitExecutorServiceProvider.initExecutorService("joe")).thenReturn(executorService);
+
+        assertThat(confluenceInitExecutorServiceProvider.initExecutorService("joe"), is(executorService));
     }
 }
