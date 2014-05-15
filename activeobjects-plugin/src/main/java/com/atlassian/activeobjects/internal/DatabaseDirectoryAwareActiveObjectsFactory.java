@@ -9,6 +9,7 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
+import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
 
@@ -38,7 +39,7 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     }
 
     @Override
-    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType)
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, Tenant tenant)
     {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), configuration.getPluginKey());
         final EntityManager entityManager = getEntityManager(dbDir, configuration);

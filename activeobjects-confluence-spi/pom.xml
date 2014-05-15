@@ -47,11 +47,13 @@
                         	com.atlassian.confluence.importexport.plugin,
                             com.atlassian.hibernate,
                             com.atlassian.sal.api*,
+                            com.atlassian.tenancy.api*,
                             com.atlassian.event.api*,
                             com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,
                             javax.sql,
+                            javax.annotation*,
                             net.sf.hibernate*,
                             org.slf4j*,
                         </Import-Package>
@@ -73,6 +75,11 @@
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.confluence</groupId>

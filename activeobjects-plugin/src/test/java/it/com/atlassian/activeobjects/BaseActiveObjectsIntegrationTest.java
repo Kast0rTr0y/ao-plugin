@@ -162,7 +162,7 @@ public abstract class BaseActiveObjectsIntegrationTest
             }
         });
 
-        when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.UNKNOWN);
+        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.UNKNOWN);
 
         when(threadLocalDelegateExecutorFactory.createScheduledExecutorService(Matchers.any(ScheduledExecutorService.class))).thenAnswer(new Answer<Object>()
         {
@@ -184,6 +184,6 @@ public abstract class BaseActiveObjectsIntegrationTest
 
         when(tenantAccessor.getAvailableTenants()).thenReturn(availableTenants);
 
-        when(initExecutorServiceProvider.initExecutorService(anyString())).thenReturn(MoreExecutors.sameThreadExecutor());
+        when(initExecutorServiceProvider.initExecutorService(tenant)).thenReturn(MoreExecutors.sameThreadExecutor());
     }
 }

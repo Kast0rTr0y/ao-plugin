@@ -76,6 +76,7 @@
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg ref="tenantProvider"/>
         <constructor-arg>
             <bean class="net.java.ao.builder.SimpleNameConverters">
                 <constructor-arg index="0">

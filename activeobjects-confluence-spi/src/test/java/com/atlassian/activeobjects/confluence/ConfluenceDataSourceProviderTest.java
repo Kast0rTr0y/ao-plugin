@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.confluence;
 import com.atlassian.activeobjects.confluence.hibernate.DialectExtractor;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.hibernate.PluginHibernateSessionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import net.sf.hibernate.dialect.DB2390Dialect;
 import net.sf.hibernate.dialect.DB2400Dialect;
 import net.sf.hibernate.dialect.DB2Dialect;
@@ -37,6 +38,9 @@ public class ConfluenceDataSourceProviderTest
 
     @Mock
     private DialectExtractor dialectExtrator;
+
+    @Mock
+    private Tenant tenant;
 
     @Before
     public void setUp() throws Exception
@@ -101,6 +105,6 @@ public class ConfluenceDataSourceProviderTest
     private void assertDatabaseTypeForDialect(DatabaseType databaseType, Class<? extends Dialect> dialect)
     {
         doReturn(dialect).when(dialectExtrator).getDialect();
-        assertEquals(databaseType, dataSourceProvider.getDatabaseType());
+        assertEquals(databaseType, dataSourceProvider.getDatabaseType(tenant));
     }
 }

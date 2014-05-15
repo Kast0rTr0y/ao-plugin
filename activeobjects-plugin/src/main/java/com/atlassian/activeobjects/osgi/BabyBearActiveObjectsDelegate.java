@@ -114,15 +114,7 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
                             public ActiveObjects call() throws Exception
                             {
                                 logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
-
-                                DatabaseType databaseType = dataSourceProvider.getDatabaseType();
-                                checkNotNull(databaseType, dataSourceProvider + " returned null for dbType");
-                                logger.debug("bundle [{}] retrieved databaseType={}", bundle.getSymbolicName(), databaseType);
-
-                                ActiveObjects activeObjects = factory.create(aoConfig, databaseType);
-                                logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());
-
-                                return activeObjects;
+                                return factory.create(aoConfig, tenant);
                             }
                         }));
                     }

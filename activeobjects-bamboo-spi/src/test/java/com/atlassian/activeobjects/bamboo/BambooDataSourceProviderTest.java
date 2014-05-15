@@ -3,6 +3,7 @@ package com.atlassian.activeobjects.bamboo;
 import com.atlassian.activeobjects.bamboo.hibernate.DialectExtractor;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import net.sf.hibernate.dialect.DB2390Dialect;
 import net.sf.hibernate.dialect.DB2400Dialect;
 import net.sf.hibernate.dialect.DB2Dialect;
@@ -36,6 +37,9 @@ public class BambooDataSourceProviderTest
 
     @Mock
     private DialectExtractor dialectExtractor;
+
+    @Mock
+    private Tenant tenant;
 
     @Before
     public void setUp() throws Exception
@@ -99,6 +103,6 @@ public class BambooDataSourceProviderTest
     private void assertDatabaseTypeForDialect(DatabaseType databaseType, Class<? extends Dialect> dialect)
     {
         doReturn(dialect).when(dialectExtractor).getDialect();
-        assertEquals(databaseType, dataSourceProvider.getDatabaseType());
+        assertEquals(databaseType, dataSourceProvider.getDatabaseType(tenant));
     }
 }

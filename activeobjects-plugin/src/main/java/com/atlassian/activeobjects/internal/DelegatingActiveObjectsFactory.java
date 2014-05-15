@@ -1,8 +1,8 @@
 package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.tenancy.api.Tenant;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Collection;
@@ -31,13 +31,13 @@ public final class DelegatingActiveObjectsFactory implements ActiveObjectsFactor
         return false;
     }
 
-    public ActiveObjects create(ActiveObjectsConfiguration configuration, DatabaseType dbType)
+    public ActiveObjects create(ActiveObjectsConfiguration configuration, Tenant tenant)
     {
         for (ActiveObjectsFactory factory : factories)
         {
             if (factory.accept(configuration))
             {
-                return factory.create(configuration, dbType);
+                return factory.create(configuration, tenant);
             }
         }
         throw new IllegalStateException("Could not find a factory for this configuration, " + configuration + ", " +

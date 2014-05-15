@@ -2,7 +2,9 @@ package com.atlassian.activeobjects.refapp;
 
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.tenancy.api.Tenant;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import static com.google.common.base.Preconditions.*;
@@ -19,12 +21,16 @@ public class RefappDataSourceProvider extends AbstractDataSourceProvider
         this.dataSource = checkNotNull(dataSource);
     }
 
-    public DataSource getDataSource()
+    @Nonnull
+    @Override
+    public DataSource getDataSource(@Nonnull final Tenant tenant)
     {
         return dataSource;
     }
 
-    public DatabaseType getDatabaseType()
+    @Nonnull
+    @Override
+    public DatabaseType getDatabaseType(@Nonnull final Tenant tenant)
     {
         return DatabaseType.HSQL;
     }

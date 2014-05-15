@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.spi;
 
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
+import com.atlassian.tenancy.api.Tenant;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import javax.annotation.Nonnull;
 
 public class DefaultInitExecutorServiceProvider implements InitExecutorServiceProvider
 {
@@ -35,16 +37,17 @@ public class DefaultInitExecutorServiceProvider implements InitExecutorServicePr
      *
      * Runs in the same thread local context as the calling code.
      *
-     * @param name active-objects-init-<name>-%d
+     * @param tenant active-objects-init-<tenant.toString()>-%d
      */
+    @Nonnull
     @Override
-    public ExecutorService initExecutorService(String name)
+    public ExecutorService initExecutorService(@Nonnull Tenant tenant)
     {
         logger.debug("creating default init executor");
 
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setThreadFactory(aoContextThreadFactory)
-                .setNameFormat("active-objects-init-" + name + "-%d")
+                .setNameFormat("active-objects-init-" + tenant.toString() + "-%d")
                 .build();
 
         final ExecutorService delegate = Executors.newFixedThreadPool(Integer.getInteger("activeobjects.servicefactory.ddl.threadpoolsize", 1), threadFactory);

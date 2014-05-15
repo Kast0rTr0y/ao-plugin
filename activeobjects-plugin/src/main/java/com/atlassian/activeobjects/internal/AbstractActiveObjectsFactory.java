@@ -2,9 +2,9 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.tenancy.api.Tenant;
 import com.google.common.base.Supplier;
 
 import net.java.ao.RawEntity;
@@ -43,16 +43,16 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
     }
 
     @Override
-    public final ActiveObjects create(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)
+    public final ActiveObjects create(final ActiveObjectsConfiguration configuration, final Tenant tenant)
     {
         if (!accept(configuration))
         {
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        upgrade(configuration, dbType);
+        upgrade(configuration, tenant);
 
-        final ActiveObjects ao = doCreate(configuration, dbType);
+        final ActiveObjects ao = doCreate(configuration, tenant);
         final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
 
         return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
@@ -68,14 +68,14 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         });
     }
 
-    private void upgrade(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)
+    private void upgrade(final ActiveObjectsConfiguration configuration, final Tenant tenant)
     {
         aoUpgradeManager.upgrade(configuration.getTableNamePrefix(), configuration.getUpgradeTasks(), new Supplier<ActiveObjects>()
             {
                 @Override
                 public ActiveObjects get()
                 {
-                    return doCreate(configuration, dbType);
+                    return doCreate(configuration, tenant);
                 }
             });
     }
@@ -93,5 +93,5 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
      * @param configuration the configuration to work with
      * @return the new {@link com.atlassian.activeobjects.external.ActiveObjects}
      */
-    protected abstract ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType);
+    protected abstract ActiveObjects doCreate(ActiveObjectsConfiguration configuration, Tenant tenant);
 }

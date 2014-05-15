@@ -5,12 +5,15 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.DefaultInitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
+import com.atlassian.tenancy.api.Tenant;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
+
+import javax.annotation.Nonnull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -43,10 +46,11 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
      *
      * @return same thread executor for HSQL
      */
+    @Nonnull
     @Override
-    public ExecutorService initExecutorService(String name)
+    public ExecutorService initExecutorService(@Nonnull Tenant tenant)
     {
-        DatabaseType databaseType = dataSourceProvider.getDatabaseType();
+        DatabaseType databaseType = dataSourceProvider.getDatabaseType(tenant);
         if (DatabaseType.HSQL.equals(databaseType))
         {
             logger.debug("creating HSQL snowflake init executor");
@@ -54,7 +58,7 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
         }
         else
         {
-            return defaultInitExecutorServiceProvider.initExecutorService(name);
+            return defaultInitExecutorServiceProvider.initExecutorService(tenant);
         }
     }
 }

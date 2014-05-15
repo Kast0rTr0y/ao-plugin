@@ -18,5 +18,9 @@
             <artifactId>sal-api</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
+       </dependency>
     </dependencies>
 </project>

@@ -4,8 +4,7 @@ import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
-import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.tenancy.api.Tenant;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +35,9 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     @Mock
     private ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
+    @Mock
+    private Tenant tenant;
+
     @Before
     public void setUp() throws Exception
     {
@@ -54,19 +56,19 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     @Test
     public void hsqlSnowflake()
     {
-        when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.HSQL);
+        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.HSQL);
 
-        assertThat(confluenceInitExecutorServiceProvider.initExecutorService("clarence"), is(ExecutorService.class));
+        assertThat(confluenceInitExecutorServiceProvider.initExecutorService(tenant), is(ExecutorService.class));
     }
 
     @Test
     public void realDatabase()
     {
-        when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.POSTGRESQL);
+        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.POSTGRESQL);
 
         final ExecutorService executorService = mock(ExecutorService.class);
-        when(defaultInitExecutorServiceProvider.initExecutorService("joe")).thenReturn(executorService);
+        when(defaultInitExecutorServiceProvider.initExecutorService(tenant)).thenReturn(executorService);
 
-        assertThat(confluenceInitExecutorServiceProvider.initExecutorService("joe"), is(executorService));
+        assertThat(confluenceInitExecutorServiceProvider.initExecutorService(tenant), is(executorService));
     }
 }

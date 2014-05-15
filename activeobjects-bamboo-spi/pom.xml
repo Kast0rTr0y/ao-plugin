@@ -46,8 +46,10 @@
                             com.atlassian.bamboo*,
                             com.atlassian.hibernate,
                             com.atlassian.activeobjects.spi*;version="${project.version}",
+                            com.atlassian.tenancy.api*,
                             com.google.common*,
                             java.sql,
+                            javax.annotation*,
                             javax.naming;resolution:=optional,
                             javax.sql,
                             net.sf.hibernate*
@@ -69,6 +71,11 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

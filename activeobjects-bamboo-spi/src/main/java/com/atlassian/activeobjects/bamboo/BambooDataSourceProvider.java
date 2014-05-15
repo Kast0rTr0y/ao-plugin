@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
 import com.atlassian.activeobjects.spi.ConnectionHandler;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import com.google.common.collect.ImmutableMap;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.Session;
@@ -16,6 +17,7 @@ import net.sf.hibernate.dialect.Oracle9Dialect;
 import net.sf.hibernate.dialect.PostgreSQLDialect;
 import net.sf.hibernate.dialect.SQLServerIntlDialect;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -46,13 +48,16 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
         this.dialectExtractor = checkNotNull(dialectExtractor);
     }
 
-    public DataSource getDataSource()
+    @Nonnull
+    @Override
+    public DataSource getDataSource(@Nonnull final Tenant tenant)
     {
         return dataSource;
     }
 
+    @Nonnull
     @Override
-    public DatabaseType getDatabaseType()
+    public DatabaseType getDatabaseType(@Nonnull final Tenant tenant)
     {
         final Class<? extends Dialect> dialect = dialectExtractor.getDialect();
         if (dialect == null)
@@ -66,7 +71,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
                 return entry.getValue();
             }
         }
-        return super.getDatabaseType();
+        return super.getDatabaseType(tenant);
     }
 
     private static class SessionFactoryDataSource extends AbstractDataSource

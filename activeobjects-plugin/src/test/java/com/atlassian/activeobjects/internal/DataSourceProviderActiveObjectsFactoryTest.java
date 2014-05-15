@@ -8,6 +8,7 @@ import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
+import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 
 import org.junit.After;
@@ -56,6 +57,9 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Mock 
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
+    @Mock
+    private Tenant tenant;
+
     @Before
     public void setUp()
     {
@@ -82,11 +86,11 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Test
     public void testCreateWithNullDataSource() throws Exception
     {
-        when(dataSourceProvider.getDataSource()).thenReturn(null); // not really needed, but just to make the test clear
+        when(dataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         try
         {
-            activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN);
+            activeObjectsFactory.create(configuration, tenant);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
         }
         catch (ActiveObjectsPluginException e)
@@ -96,16 +100,36 @@ public class DataSourceProviderActiveObjectsFactoryTest
     }
 
     @Test
-    public void testCreateWithNonNullDataSource() throws Exception
+    public void testCreateWithNullDatabaseType() throws Exception
+    {
+        final DataSource dataSource = mock(DataSource.class);
+
+        when(dataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
+        try
+        {
+            activeObjectsFactory.create(configuration, tenant);
+            fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
+        }
+        catch (ActiveObjectsPluginException e)
+        {
+            // ignored
+        }
+    }
+
+    @Test
+    public void testCreate() throws Exception
     {
         final DataSource dataSource = mock(DataSource.class);
         final EntityManager entityManager = mock(EntityManager.class);
 
-        when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
+        when(dataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.DERBY_EMBEDDED);
 
-        assertNotNull(activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN));
+        assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
     }
 

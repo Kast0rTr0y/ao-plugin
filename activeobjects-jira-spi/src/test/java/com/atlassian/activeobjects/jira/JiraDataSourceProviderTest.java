@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.jira;
 
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.jira.ofbiz.OfBizConnectionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +27,9 @@ public class JiraDataSourceProviderTest
 
     @Mock
     private JiraDatabaseTypeExtractor jiraDatabaseTypeExtractor;
+
+    @Mock
+    private Tenant tenant;
 
     @Before
     public void setUp() throws Exception
@@ -95,6 +99,6 @@ public class JiraDataSourceProviderTest
         final Connection connection = mock(Connection.class);
         when(ofBizConnectionFactory.getConnection()).thenReturn(connection);
         when(jiraDatabaseTypeExtractor.getDatabaseType(connection)).thenReturn(value);
-        assertEquals(databaseType, dataSourceProvider.getDatabaseType());
+        assertEquals(databaseType, dataSourceProvider.getDatabaseType(tenant));
     }
 }

@@ -39,6 +39,7 @@
                         <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
                         <Import-Package>
                             com.atlassian.activeobjects.spi*,
+                            com.atlassian.tenancy.api*,
                             com.atlassian.event.api*,
                             com.atlassian.jira.event*,
                             com.atlassian.jira.ofbiz*,
@@ -47,6 +48,7 @@
                             java.sql,
                             javax.naming;resolution:=optional,
                             javax.sql,
+                            javax.annotation*,
                             org.ofbiz.core.entity.jdbc.dbtype,
                             org.ofbiz.core.entity.config,
                             org.slf4j*,
@@ -68,6 +70,11 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

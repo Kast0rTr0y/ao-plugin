@@ -3,10 +3,12 @@ package com.atlassian.activeobjects.jira;
 import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.jira.ofbiz.OfBizConnectionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import org.ofbiz.core.entity.jdbc.dbtype.DatabaseTypeFactory;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -43,13 +45,16 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
         this.ds = new OfBizDataSource(connectionFactory);
     }
 
-    public DataSource getDataSource()
+    @Nonnull
+    @Override
+    public DataSource getDataSource(@Nonnull final Tenant tenant)
     {
         return ds;
     }
 
+    @Nonnull
     @Override
-    public DatabaseType getDatabaseType()
+    public DatabaseType getDatabaseType(@Nonnull final Tenant tenant)
     {
         return memoize(new Supplier<DatabaseType>()
         {
@@ -76,7 +81,7 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
     }
 
     @Override
-    public String getSchema()
+    public String getSchema(@Nonnull final Tenant tenant)
     {
         return connectionFactory.getDatasourceInfo().getSchemaName();
     }

@@ -103,7 +103,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             public ExecutorService load(@Nonnull final Tenant tenant) throws Exception
             {
                 logger.debug("creating new init executor for {}", tenant);
-                return initExecutorServiceProvider.initExecutorService(tenant.toString());
+                return initExecutorServiceProvider.initExecutorService(tenant);
             }
         });
 
