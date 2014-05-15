@@ -53,9 +53,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * DDL / upgrade tasks will be initiated by the first call to the delegate or by a call to {@link #startActiveObjects}
  */
-class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
+class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
 {
-    private static final Logger logger = LoggerFactory.getLogger(BabyBearActiveObjectsDelegate.class);
+    private static final Logger logger = LoggerFactory.getLogger(TenantAwareActiveObjectsDelegate.class);
 
     static final String CONFIGURATION_TIMEOUT_MS_PROPERTY = "activeobjects.servicefactory.config.timeout";
 
@@ -76,7 +76,7 @@ class BabyBearActiveObjectsDelegate implements ActiveObjects, ServiceListener
     @VisibleForTesting
     final LoadingCache<Tenant, Promise<ActiveObjects>> aoPromisesByTenant;
 
-    BabyBearActiveObjectsDelegate(
+    TenantAwareActiveObjectsDelegate(
             @Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final DataSourceProvider dataSourceProvider,

@@ -9,7 +9,6 @@ import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import org.junit.Before;
 import org.junit.Rule;
@@ -86,8 +85,8 @@ public final class ActiveObjectsServiceFactoryTest
     private final ExecutorService executorService2 = mock(ExecutorService.class);
     private final Bundle bundle1 = mock(Bundle.class);
     private final Bundle bundle2 = mock(Bundle.class);
-    private final BabyBearActiveObjectsDelegate babyBear1 = mock(BabyBearActiveObjectsDelegate.class);
-    private final BabyBearActiveObjectsDelegate babyBear2 = mock(BabyBearActiveObjectsDelegate.class);
+    private final TenantAwareActiveObjectsDelegate babyBear1 = mock(TenantAwareActiveObjectsDelegate.class);
+    private final TenantAwareActiveObjectsDelegate babyBear2 = mock(TenantAwareActiveObjectsDelegate.class);
 
     @Before
     public void setUp() throws Exception
