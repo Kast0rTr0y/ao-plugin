@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -294,9 +295,16 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
         return new ActiveObjectsModuleMetaData()
         {
             @Override
-            public void awaitInitialization()
+            public void awaitInitialization() throws ExecutionException, InterruptedException
             {
-                delegate().claim();
+                delegate().get();
+            }
+
+            @Override
+            public void awaitInitialization(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException, TimeoutException
+            {
+                delegate().get(timeout, unit);
             }
 
             @Override

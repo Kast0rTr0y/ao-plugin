@@ -2,7 +2,6 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
-import com.atlassian.activeobjects.external.ModelVersion;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 
@@ -15,6 +14,9 @@ import net.java.ao.RawEntity;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -297,7 +299,16 @@ public class EntityManagedActiveObjects implements ActiveObjects
             }
 
             @Override
-            public void awaitInitialization()
+            public void awaitInitialization() throws ExecutionException, InterruptedException
+            {
+                throw new UnsupportedOperationException(
+                        "Cannot call awaitModelInitialization directly on EntityManagedActiveObjects.\n"
+                                + "awaitModelInitialization should not be called from within an upgrade task");
+            }
+
+            @Override
+            public void awaitInitialization(final long timeout, final TimeUnit unit)
+                    throws InterruptedException, ExecutionException, TimeoutException
             {
                 throw new UnsupportedOperationException(
                         "Cannot call awaitModelInitialization directly on EntityManagedActiveObjects.\n"

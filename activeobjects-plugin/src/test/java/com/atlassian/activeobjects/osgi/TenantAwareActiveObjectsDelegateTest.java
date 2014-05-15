@@ -224,6 +224,22 @@ public class TenantAwareActiveObjectsDelegateTest
     }
 
     @Test
+    public void awaitInitNoTenant() throws ExecutionException, InterruptedException
+    {
+        expectedException.expect(NoDataSourceException.class);
+
+        babyBear.moduleMetaData().awaitInitialization();
+    }
+
+    @Test
+    public void awaitInitTimedNoTenant() throws ExecutionException, InterruptedException
+    {
+        expectedException.expect(NoDataSourceException.class);
+
+        babyBear.moduleMetaData().awaitInitialization();
+    }
+
+    @Test
     public void isInitializedNoTenant()
     {
         assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
