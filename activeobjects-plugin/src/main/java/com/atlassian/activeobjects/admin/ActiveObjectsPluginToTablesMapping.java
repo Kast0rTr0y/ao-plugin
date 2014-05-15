@@ -39,7 +39,7 @@ public class ActiveObjectsPluginToTablesMapping implements PluginToTablesMapping
     }
 
     @Override
-    public PluginInfo get(String tableName)
+    public synchronized PluginInfo get(String tableName)
     {
         return getMappingFromSettings().get(tableName);
     }
