@@ -107,6 +107,7 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertSame(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), Thread.currentThread().getContextClassLoader());
         assertThat(serviceFactory.configExecutor, notNullValue());
+        assertThat(serviceFactory.initExecutorsShutdown, is(false));
 
         verify(threadLocalDelegateExecutorFactory).createScheduledExecutorService(any(ScheduledExecutorService.class));
     }
@@ -128,6 +129,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.destroy();
 
         assertThat(serviceFactory.configExecutor.isShutdown(), is(true));
+        assertThat(serviceFactory.initExecutorsShutdown, is(true));
 
         verify(eventPublisher).unregister(serviceFactory);
         verify(executorService1).shutdown();
@@ -141,6 +143,16 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
 
         assertSame(serviceFactory.initExecutorFn.apply(tenant1), executorService1);
+    }
+
+    @Test
+    public void initExecutorFnAfterDestroy() throws Exception
+    {
+        serviceFactory.destroy();
+
+        expectedException.expect(IllegalStateException.class);
+
+        serviceFactory.initExecutorFn.apply(tenant1);
     }
 
     @Test

@@ -31,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -60,6 +62,11 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
     @VisibleForTesting
     final LoadingCache<Tenant, ExecutorService> initExecutorsByTenant;
+
+    private final ReadWriteLock initExecutorsLock = new ReentrantReadWriteLock();
+
+    @VisibleForTesting
+    volatile boolean initExecutorsShutdown = false;
 
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
@@ -113,9 +120,22 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public ExecutorService apply(@Nullable final Tenant tenant)
             {
-                //noinspection ConstantConditions
-                checkNotNull(tenant);
-                return initExecutorsByTenant.getUnchecked(tenant);
+                initExecutorsLock.readLock().lock();
+                try
+                {
+                    if (initExecutorsShutdown)
+                    {
+                        throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
+                    }
+
+                    //noinspection ConstantConditions
+                    checkNotNull(tenant);
+                    return initExecutorsByTenant.getUnchecked(tenant);
+                }
+                finally
+                {
+                    initExecutorsLock.readLock().unlock();
+                }
             }
         };
 
@@ -144,10 +164,21 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     {
         logger.debug("destroying");
         configExecutor.shutdown();
-        for (ExecutorService initExecutor : ImmutableList.copyOf(initExecutorsByTenant.asMap().values()))
+
+        initExecutorsLock.writeLock().lock();
+        try
         {
-            initExecutor.shutdown();
+            for (ExecutorService initExecutor : ImmutableList.copyOf(initExecutorsByTenant.asMap().values()))
+            {
+                initExecutor.shutdown();
+            }
+            initExecutorsShutdown = true;
         }
+        finally
+        {
+            initExecutorsLock.writeLock().unlock();
+        }
+
         eventPublisher.unregister(this);
     }
 
