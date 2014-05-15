@@ -228,10 +228,27 @@ public class TenantAwareActiveObjectsDelegateTest
     }
 
     @Test
-    public void isInitialized()
+    public void isInitializedNoTenant()
+    {
+        assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
+    }
+
+    @Test
+    public void isInitializedNotComplete()
     {
         when(tenantProvider.getTenant()).thenReturn(tenant);
 
-        assertFalse("should not be initialised yet", babyBear.moduleMetaData().isInitialized());
+        assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
+    }
+
+    @Test
+    public void isInitializedComplete()
+    {
+        final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
+        babyBear.aoPromisesByTenant.put(tenant, aoPromise);
+
+        when(tenantProvider.getTenant()).thenReturn(tenant);
+
+        assertThat(babyBear.moduleMetaData().isInitialized(), is(true));
     }
 }

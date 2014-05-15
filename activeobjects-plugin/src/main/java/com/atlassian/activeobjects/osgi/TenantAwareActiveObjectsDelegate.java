@@ -248,7 +248,7 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
      *
      * @throws java.lang.RuntimeException at the drop of a hat
      */
-    ActiveObjectsConfiguration getAoConfig()
+    private ActiveObjectsConfiguration getAoConfig()
     {
         try
         {
@@ -305,7 +305,8 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
             @Override
             public boolean isInitialized()
             {
-                return delegate().isDone();
+                Tenant tenant = tenantProvider.getTenant();
+                return tenant != null && aoPromisesByTenant.getUnchecked(tenant).isDone();
             }
 
             @Override

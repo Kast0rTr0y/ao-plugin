@@ -25,7 +25,6 @@ public interface ActiveObjectsModuleMetaData
      * return immediately and won't throw an exception.
      * 
      * @return true if initialized, false otherwise
-     * @throws com.atlassian.activeobjects.external.NoDataSourceException
      */
     boolean isInitialized();
 
