@@ -33,4 +33,11 @@ public interface ActiveObjectsModuleMetaData
      * @throws com.atlassian.activeobjects.external.NoDataSourceException
      */
     DatabaseType getDatabaseType();
+
+    /**
+     * Indicates whether there is a data source (i.e. a tenant) present.
+     *
+     * @since 0.26
+     */
+    boolean isDataSourcePresent();
 }

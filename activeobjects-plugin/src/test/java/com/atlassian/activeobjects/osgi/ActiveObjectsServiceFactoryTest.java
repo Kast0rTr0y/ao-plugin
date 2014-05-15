@@ -65,9 +65,6 @@ public final class ActiveObjectsServiceFactoryTest
     private Bundle bundle;
     
     @Mock
-    private DataSourceProvider dataSourceProvider;
-    
-    @Mock
     private TenantProvider tenantProvider;
 
     @Mock
@@ -100,9 +97,8 @@ public final class ActiveObjectsServiceFactoryTest
             }
         });
 
-        serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, dataSourceProvider,
-                tenantProvider, aoConfigurationGenerator, threadLocalDelegateExecutorFactory,
-                initExecutorServiceProvider);
+        serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantProvider,
+                aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertSame(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), Thread.currentThread().getContextClassLoader());

@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventListener;
@@ -77,7 +76,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public ActiveObjectsServiceFactory(
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final EventPublisher eventPublisher,
-            @Nonnull final DataSourceProvider dataSourceProvider,
             @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
@@ -86,7 +84,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantProvider = checkNotNull(tenantProvider);
         checkNotNull(factory);
-        checkNotNull(dataSourceProvider);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
         checkNotNull(initExecutorServiceProvider);
@@ -145,7 +142,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public TenantAwareActiveObjectsDelegate load(@Nonnull final Bundle bundle) throws Exception
             {
-                TenantAwareActiveObjectsDelegate delegate = new TenantAwareActiveObjectsDelegate(bundle, factory, dataSourceProvider, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
+                TenantAwareActiveObjectsDelegate delegate = new TenantAwareActiveObjectsDelegate(bundle, factory, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
                 delegate.init();
                 return delegate;
             }

@@ -291,13 +291,19 @@ public class EntityManagedActiveObjects implements ActiveObjects
             }
 
             @Override
+            public boolean isDataSourcePresent()
+            {
+                return false;
+            }
+
+            @Override
             public void awaitInitialization()
             {
                 throw new UnsupportedOperationException(
                         "Cannot call awaitModelInitialization directly on EntityManagedActiveObjects.\n"
                                 + "awaitModelInitialization should not be called from within an upgrade task");
             }
-        };
+        }
 
         return new EntityAOModuleMetaData();
     }

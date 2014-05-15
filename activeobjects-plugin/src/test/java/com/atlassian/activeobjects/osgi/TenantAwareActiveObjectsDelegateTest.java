@@ -5,7 +5,6 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
@@ -31,7 +30,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
@@ -55,8 +53,6 @@ public class TenantAwareActiveObjectsDelegateTest
     private Bundle bundle;
     @Mock
     private ActiveObjectsFactory factory;
-    @Mock
-    private DataSourceProvider dataSourceProvider;
     @Mock
     private TenantProvider tenantProvider;
     @Mock
@@ -94,8 +90,8 @@ public class TenantAwareActiveObjectsDelegateTest
     @Before
     public void before()
     {
-        babyBear = new TenantAwareActiveObjectsDelegate(bundle, factory, dataSourceProvider, tenantProvider,
-                aoConfigurationGenerator, initExecutorFunction, configExecutor);
+        babyBear = new TenantAwareActiveObjectsDelegate(bundle, factory, tenantProvider, aoConfigurationGenerator,
+                initExecutorFunction, configExecutor);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
         when(bundle.getBundleContext()).thenReturn(bundleContext);
@@ -250,5 +246,19 @@ public class TenantAwareActiveObjectsDelegateTest
         when(tenantProvider.getTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isInitialized(), is(true));
+    }
+
+    @Test
+    public void isDataSourcePresentNo()
+    {
+        assertThat(babyBear.moduleMetaData().isDataSourcePresent(), is(false));
+    }
+
+    @Test
+    public void isDataSourcePresentYes()
+    {
+        when(tenantProvider.getTenant()).thenReturn(tenant);
+
+        assertThat(babyBear.moduleMetaData().isDataSourcePresent(), is(true));
     }
 }

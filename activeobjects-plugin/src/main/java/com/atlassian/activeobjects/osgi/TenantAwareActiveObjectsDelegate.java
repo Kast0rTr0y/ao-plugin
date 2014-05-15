@@ -6,7 +6,6 @@ import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.tenancy.api.Tenant;
@@ -79,7 +78,6 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
     TenantAwareActiveObjectsDelegate(
             @Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
-            @Nonnull final DataSourceProvider dataSourceProvider,
             @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
@@ -89,7 +87,6 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
         this.tenantProvider = checkNotNull(tenantProvider);
         this.configExecutor = checkNotNull(configExecutor);
         checkNotNull(factory);
-        checkNotNull(dataSourceProvider);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(initExecutorFunction);
 
@@ -313,6 +310,12 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
             public DatabaseType getDatabaseType()
             {
                 return delegate().claim().moduleMetaData().getDatabaseType();
+            }
+
+            @Override
+            public boolean isDataSourcePresent()
+            {
+                return tenantProvider.getTenant() != null;
             }
         };
     }
