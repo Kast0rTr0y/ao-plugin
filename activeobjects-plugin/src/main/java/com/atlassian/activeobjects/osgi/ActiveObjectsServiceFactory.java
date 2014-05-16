@@ -71,7 +71,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     final Function<Tenant, ExecutorService> initExecutorFn;
 
     @VisibleForTesting
-    final LoadingCache<Bundle, TenantAwareActiveObjectsDelegate> aoDelegatesByBundle;
+    final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
     public ActiveObjectsServiceFactory(
             @Nonnull final ActiveObjectsFactory factory,
@@ -137,12 +137,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         };
 
         // loading cache for ActiveObjects delegates
-        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjectsDelegate>()
+        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjects>()
         {
             @Override
-            public TenantAwareActiveObjectsDelegate load(@Nonnull final Bundle bundle) throws Exception
+            public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
             {
-                TenantAwareActiveObjectsDelegate delegate = new TenantAwareActiveObjectsDelegate(bundle, factory, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
                 delegate.init();
                 return delegate;
             }
@@ -206,7 +206,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
-            for (TenantAwareActiveObjectsDelegate aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
                 logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.startActiveObjects(tenant);
@@ -227,7 +227,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
-            for (TenantAwareActiveObjectsDelegate aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
                 logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);

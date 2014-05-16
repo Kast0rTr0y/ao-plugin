@@ -5,7 +5,6 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
@@ -82,8 +81,8 @@ public final class ActiveObjectsServiceFactoryTest
     private final ExecutorService executorService2 = mock(ExecutorService.class);
     private final Bundle bundle1 = mock(Bundle.class);
     private final Bundle bundle2 = mock(Bundle.class);
-    private final TenantAwareActiveObjectsDelegate babyBear1 = mock(TenantAwareActiveObjectsDelegate.class);
-    private final TenantAwareActiveObjectsDelegate babyBear2 = mock(TenantAwareActiveObjectsDelegate.class);
+    private final TenantAwareActiveObjects babyBear1 = mock(TenantAwareActiveObjects.class);
+    private final TenantAwareActiveObjects babyBear2 = mock(TenantAwareActiveObjects.class);
 
     @Before
     public void setUp() throws Exception
@@ -128,8 +127,8 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(serviceFactory.initExecutorsShutdown, is(true));
 
         verify(eventPublisher).unregister(serviceFactory);
-        verify(executorService1).shutdown();
-        verify(executorService2).shutdown();
+        verify(executorService1).shutdownNow();
+        verify(executorService2).shutdownNow();
     }
 
     @Test

@@ -42,9 +42,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith (MockitoJUnitRunner.class)
-public class TenantAwareActiveObjectsDelegateTest
+public class TenantAwareActiveObjectsTest
 {
-    private TenantAwareActiveObjectsDelegate babyBear;
+    private TenantAwareActiveObjects babyBear;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -84,13 +84,13 @@ public class TenantAwareActiveObjectsDelegateTest
     public static void beforeClass()
     {
         // don't forget to update maven-surefire-plugin confugration
-        System.setProperty(TenantAwareActiveObjectsDelegate.CONFIGURATION_TIMEOUT_MS_PROPERTY, String.valueOf(999));
+        System.setProperty(TenantAwareActiveObjects.CONFIGURATION_TIMEOUT_MS_PROPERTY, String.valueOf(999));
     }
 
     @Before
     public void before()
     {
-        babyBear = new TenantAwareActiveObjectsDelegate(bundle, factory, tenantProvider, aoConfigurationGenerator,
+        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantProvider, aoConfigurationGenerator,
                 initExecutorFunction, configExecutor);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");

@@ -160,7 +160,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <!-- don't forget to update BabyBearActiveObjectsDelegateTest -->
+                        <!-- don't forget to update TenantAwareActiveObjectsTest -->
                         <activeobjects.servicefactory.config.timeout>999</activeobjects.servicefactory.config.timeout>
                     </systemPropertyVariables>
                 </configuration>
