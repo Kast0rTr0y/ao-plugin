@@ -23,6 +23,7 @@ public interface ActiveObjectsModuleMetaData
      * Blocks indefinitely.
      *
      * @throws com.atlassian.activeobjects.external.NoDataSourceException
+     * @throws com.atlassian.activeobjects.ActiveObjectsInitException if an exception occurred during initializations
      */
     void awaitInitialization() throws ExecutionException, InterruptedException;
 
@@ -38,7 +39,7 @@ public interface ActiveObjectsModuleMetaData
 
     /**
      * Indicates if initialization has completed successfully. If this returns true a call to awaitInitialization will
-     * return immediately and won't throw an exception.
+     * return immediately and won't throw an exception, providing a tenant is present.
      * 
      * @return true if initialized, false otherwise
      */

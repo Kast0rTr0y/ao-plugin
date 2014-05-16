@@ -87,8 +87,8 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
     }
 
     /**
-     * This has the same contract as {@link #create(ActiveObjectsConfiguration)} except that checking the configuration
-     * type has already been taken care of.
+     * This has the same contract as {@link #create(ActiveObjectsConfiguration, com.atlassian.tenancy.api.Tenant)}
+     * except that checking the configuration type has already been taken care of.
      *
      * @param configuration the configuration to work with
      * @return the new {@link com.atlassian.activeobjects.external.ActiveObjects}

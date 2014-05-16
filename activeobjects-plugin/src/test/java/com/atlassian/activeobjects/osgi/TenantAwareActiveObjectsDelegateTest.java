@@ -254,6 +254,19 @@ public class TenantAwareActiveObjectsDelegateTest
     }
 
     @Test
+    public void isInitializedException()
+    {
+        when(tenantProvider.getTenant()).thenReturn(tenant);
+
+        final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
+        aoFuture.setException(new IllegalStateException());
+        final Promise<ActiveObjects> aoPromise = Promises.forFuture(aoFuture);
+        babyBear.aoPromisesByTenant.put(tenant, aoPromise);
+
+        assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
+    }
+
+    @Test
     public void isInitializedComplete()
     {
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);

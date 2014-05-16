@@ -167,7 +167,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         {
             for (ExecutorService initExecutor : ImmutableList.copyOf(initExecutorsByTenant.asMap().values()))
             {
-                initExecutor.shutdown();
+                initExecutor.shutdownNow();
             }
             initExecutorsShutdown = true;
         }

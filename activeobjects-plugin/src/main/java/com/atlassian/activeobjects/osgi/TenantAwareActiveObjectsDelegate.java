@@ -5,6 +5,7 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -95,7 +96,7 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
         aoPromisesByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
         {
             @Override
-            public Promise<ActiveObjects> load(final Tenant tenant) throws Exception
+            public Promise<ActiveObjects> load(@Nonnull final Tenant tenant) throws Exception
             {
                 logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
@@ -112,7 +113,14 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
                             public ActiveObjects call() throws Exception
                             {
                                 logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
-                                return factory.create(aoConfig, tenant);
+                                try
+                                {
+                                    return factory.create(aoConfig, tenant);
+                                }
+                                catch (Exception e)
+                                {
+                                    throw new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
+                                }
                             }
                         }));
                     }
@@ -311,7 +319,23 @@ class TenantAwareActiveObjectsDelegate implements ActiveObjects, ServiceListener
             public boolean isInitialized()
             {
                 Tenant tenant = tenantProvider.getTenant();
-                return tenant != null && aoPromisesByTenant.getUnchecked(tenant).isDone();
+                if (tenant != null)
+                {
+                    Promise<ActiveObjects> aoPromise = aoPromisesByTenant.getUnchecked(tenant);
+                    if (aoPromise.isDone())
+                    {
+                        try
+                        {
+                            aoPromise.claim();
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            // any exception indicates a failure in initialisation, or at least that the delegate is not usable
+                        }
+                    }
+                }
+                return false;
             }
 
             @Override
