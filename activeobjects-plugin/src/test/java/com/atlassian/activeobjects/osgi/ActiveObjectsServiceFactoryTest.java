@@ -26,8 +26,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -100,7 +100,7 @@ public final class ActiveObjectsServiceFactoryTest
                 aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
-        assertSame(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), Thread.currentThread().getContextClassLoader());
+        assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));
         assertThat(serviceFactory.configExecutor, notNullValue());
         assertThat(serviceFactory.initExecutorsShutdown, is(false));
 
@@ -137,7 +137,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
 
-        assertSame(serviceFactory.initExecutorFn.apply(tenant1), executorService1);
+        assertThat(serviceFactory.initExecutorFn.apply(tenant1), sameInstance(executorService1));
     }
 
     @Test
@@ -156,7 +156,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
-        assertSame(serviceFactory.getService(bundle1, null), babyBear1);
+        assertThat((TenantAwareActiveObjects) serviceFactory.getService(bundle1, null), sameInstance(babyBear1));
     }
 
     @Test

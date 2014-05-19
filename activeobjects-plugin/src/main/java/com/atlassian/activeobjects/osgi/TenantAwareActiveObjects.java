@@ -60,7 +60,7 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
 
     static final String CONFIGURATION_TIMEOUT_MS_PROPERTY = "activeobjects.servicefactory.config.timeout";
 
-    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 180000);
+    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
 
     private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
 
@@ -142,7 +142,8 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
                     ActiveObjectsConfiguration configuration = aoConfigurationGenerator.generateScannedConfiguration(bundle, ENTITY_DEFAULT_PACKAGE);
                     if (configuration != null)
                     {
-                        aoConfigFutureRef.get().set(configuration);
+                        // a configuration may have been registered in between checking and now, however this isn't a fail condition; the OSGI registered one will continue to be used
+                        setAoConfigFuture(configuration, true);
                     }
                     else
                     {
@@ -197,21 +198,9 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
         {
             case ServiceEvent.REGISTERED:
             {
+                // resolve the config and attempt to use it
                 Object registeredService = bundle.getBundleContext().getService(event.getServiceReference());
-                if (aoConfigFutureRef.get().isDone())
-                {
-                    if (registeredService != getAoConfig())
-                    {
-                        // bad case - a different configuration has been registered
-                        throwMultipleAoConfigurationsException();
-                    }
-                }
-                else
-                {
-                    // good case - one configuration registered
-                    aoConfigFutureRef.get().set((ActiveObjectsConfiguration) registeredService);
-                    logger.debug("bundle [{}] registered service ActiveObjectsConfiguration", bundle.getSymbolicName());
-                }
+                setAoConfigFuture((ActiveObjectsConfiguration) registeredService, false);
                 break;
             }
 
@@ -221,12 +210,43 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
                 bundle.getBundleContext().ungetService(event.getServiceReference());
                 logger.debug("bundle [{}] unregistered service ActiveObjectsConfiguration", bundle.getSymbolicName());
 
-                // have a new future throw an exception on resolution
+                // have a new config future throw an exception on resolution
                 SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
                 exceptionalAoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has had its configuration service unregistered"));
                 aoConfigFutureRef.set(exceptionalAoConfigFuture);
 
+                // destroy any resolved ActiveObjects
+                aoPromisesByTenant.invalidateAll();
+
                 break;
+            }
+        }
+    }
+
+    @VisibleForTesting
+    void setAoConfigFuture(ActiveObjectsConfiguration aoConfig, boolean generated)
+    {
+        if (aoConfigFutureRef.get().set(aoConfig))
+        {
+            logger.debug("bundle [{}] registered service ActiveObjectsConfiguration", bundle.getSymbolicName());
+        }
+        else if (!generated)
+        {
+            try
+            {
+                if (aoConfig != aoConfigFutureRef.get().get())
+                {
+                    // bad case - a different configuration has already been registered
+                    throwMultipleAoConfigurationsException();
+                }
+            }
+            catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (ExecutionException e)
+            {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -238,36 +258,15 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
     {
         RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
 
+        // have a new config future throw an exception on resolution
         SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
         exceptionalAoConfigFuture.setException(e);
         aoConfigFutureRef.set(exceptionalAoConfigFuture);
 
-        throw e;
-    }
+        // destroy any resolved ActiveObjects
+        aoPromisesByTenant.invalidateAll();
 
-    /**
-     * Danger! Danger Will Robinson!
-     *
-     * Convenience method purely to make calling code more readable.
-     *
-     * Pulls the value out of the future. It will block if the future isn't done.
-     *
-     * @throws java.lang.RuntimeException at the drop of a hat
-     */
-    private ActiveObjectsConfiguration getAoConfig()
-    {
-        try
-        {
-            return aoConfigFutureRef.get().get();
-        }
-        catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (ExecutionException e)
-        {
-            throw new RuntimeException(e);
-        }
+        throw e;
     }
 
     void startActiveObjects(@Nonnull final Tenant tenant)

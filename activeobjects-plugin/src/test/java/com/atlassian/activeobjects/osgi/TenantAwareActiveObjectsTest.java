@@ -216,6 +216,32 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
+    public void setAoConfigFutureRegistered()
+    {
+        babyBear.setAoConfigFuture(aoConfig, false);
+
+        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
+
+        babyBear.setAoConfigFuture(aoConfig, false);
+
+        expectedException.expect(IllegalStateException.class);
+
+        babyBear.setAoConfigFuture(mock(ActiveObjectsConfiguration.class), false);
+
+        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
+    }
+
+    @Test
+    public void setAoConfigFutureGenerated()
+    {
+        babyBear.setAoConfigFuture(aoConfig, false);
+
+        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
+
+        babyBear.setAoConfigFuture(mock(ActiveObjectsConfiguration.class), true);
+    }
+
+    @Test
     public void delgateUntenanted()
     {
         expectedException.expect(NoDataSourceException.class);
