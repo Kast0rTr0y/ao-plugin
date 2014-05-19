@@ -160,7 +160,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public void destroy() throws Exception
     {
         logger.debug("destroying");
-        configExecutor.shutdown();
+        configExecutor.shutdownNow();
 
         initExecutorsLock.writeLock().lock();
         try
