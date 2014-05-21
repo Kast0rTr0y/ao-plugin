@@ -146,7 +146,9 @@ public abstract class BaseActiveObjectsIntegrationTest
     @MockHostComponent
     protected TenantAccessor tenantAccessor;
 
-    private final Tenant tenant = new Tenant();
+    private final Tenant tenant = new Tenant()
+    {
+    };
 
     private final Iterable<Tenant> availableTenants = ImmutableList.of(tenant);
     

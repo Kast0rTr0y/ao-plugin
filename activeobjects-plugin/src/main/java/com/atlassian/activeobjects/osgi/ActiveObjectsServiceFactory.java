@@ -2,7 +2,6 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
-import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
@@ -10,6 +9,7 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -51,7 +51,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
 
     private final EventPublisher eventPublisher;
-    private final TenantProvider tenantProvider;
+    private final TenantContext tenantContext;
 
     @VisibleForTesting
     final ThreadFactory aoContextThreadFactory;
@@ -76,13 +76,13 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public ActiveObjectsServiceFactory(
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final EventPublisher eventPublisher,
-            @Nonnull final TenantProvider tenantProvider,
+            @Nonnull final TenantContext tenantContext,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
             @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
-        this.tenantProvider = checkNotNull(tenantProvider);
+        this.tenantContext = checkNotNull(tenantContext);
         checkNotNull(factory);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
@@ -142,7 +142,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
             {
-                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantProvider, aoConfigurationGenerator, initExecutorFn, configExecutor);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFn, configExecutor);
                 delegate.init();
                 return delegate;
             }
@@ -201,7 +201,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public void onTenantArrived(TenantArrivedEvent event)
     {
         // ensure that the tenant is still present
-        Tenant tenant = tenantProvider.getTenant();
+        Tenant tenant = tenantContext.getCurrentTenant();
         logger.debug("tenant arrived {}", tenant);
 
         if (tenant != null)
@@ -222,7 +222,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @EventListener
     public void onHotRestart(HotRestartEvent hotRestartEvent)
     {
-        Tenant tenant = tenantProvider.getTenant();
+        Tenant tenant = tenantContext.getCurrentTenant();
         logger.debug("performing hot restart with tenant {}", tenant);
 
         if (tenant != null)
