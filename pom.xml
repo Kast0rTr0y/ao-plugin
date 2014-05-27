@@ -271,6 +271,13 @@
                 <artifactId>hsqldb</artifactId>
                 <version>${hsqldb.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.atlassian.beehive</groupId>
+                <artifactId>beehive-api</artifactId>
+                <version>${atlassian.beehive.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
