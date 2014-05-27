@@ -2,6 +2,9 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.sal.api.component.ComponentLocator;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
@@ -24,6 +27,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String LOCK_SUFFIX = ".upgrade";
 
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
@@ -50,22 +54,44 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        upgrade(configuration, tenant);
-
-        final ActiveObjects ao = doCreate(configuration, tenant);
-        final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
-
-        return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
+        if (!ComponentLocator.isInitialized())
         {
-            @Override
-            public ActiveObjects doInTransaction()
+            throw new IllegalStateException("ComponentLocator must be initialized before attempting to upgrade plugins");
+        }
+        ClusterLock lock = null;
+        try
+        {
+            ClusterLockService clusterLockService = ComponentLocator.getComponent(ClusterLockService.class);
+            if (clusterLockService != null)
             {
-                logger.debug("Created active objects instance with configuration {}, now migrating entities {}",
-                        configuration, entitiesToMigrate);
-                ao.migrate(asArray(entitiesToMigrate));
-                return ao;
+                lock = clusterLockService.getLockForName(configuration.getPluginKey().asString() + LOCK_SUFFIX);
+                lock.lock();
             }
-        });
+
+            upgrade(configuration, tenant);
+
+            final ActiveObjects ao = doCreate(configuration, tenant);
+            final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
+
+            return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
+            {
+                @Override
+                public ActiveObjects doInTransaction()
+                {
+                    logger.debug("Created active objects instance with configuration {}, now migrating entities {}",
+                            configuration, entitiesToMigrate);
+                    ao.migrate(asArray(entitiesToMigrate));
+                    return ao;
+                }
+            });
+        }
+        finally
+        {
+            if (lock != null)
+            {
+                lock.unlock();
+            }
+        }
     }
 
     private void upgrade(final ActiveObjectsConfiguration configuration, final Tenant tenant)

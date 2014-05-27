@@ -2,6 +2,7 @@ package it.com.atlassian.activeobjects;
 
 import com.atlassian.activeobjects.internal.ActiveObjectsSettingKeys;
 import com.atlassian.activeobjects.internal.DataSourceType;
+import com.atlassian.sal.api.component.ComponentLocator;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.tenancy.api.Tenant;
 import org.hsqldb.jdbc.jdbcDataSource;
@@ -25,6 +26,8 @@ public final class TestActiveObjectsPluginWithApplicationDatabase extends BaseAc
     @Before
     public final void setUp()
     {
+        ComponentLocator componentLocator = mock(ComponentLocator.class);
+        ComponentLocator.setComponentLocator(componentLocator);
         // plugin settings
         final PluginSettings globalSettings = mock(PluginSettings.class);
         when(globalSettings.get(endsWith(ActiveObjectsSettingKeys.DATA_SOURCE_TYPE))).thenReturn(DataSourceType.APPLICATION.name());
