@@ -50,10 +50,24 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Mock 
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
+    @Mock
+    private Tenant tenant;
+
+    @Mock
+    private ClusterLock clusterLock;
+
     @Before
     public void setUp()
     {
-        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate);
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getSymbolicName()).thenReturn("com.example.plugin");
+        PluginKey pluginKey = PluginKey.fromBundle(bundle);
+        ClusterLockService clusterLockService = mock(ClusterLockService.class);
+        when(clusterLockService.getLockForName(anyString())).thenReturn(clusterLock);
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(configuration.getPluginKey()).thenReturn(pluginKey);
+        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
+                dataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
     }
 
@@ -77,7 +91,8 @@ public class DataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            // ignored
+            verify(clusterLock).lock();
+            verify(clusterLock).unlock();
         }
     }
 
@@ -93,6 +108,8 @@ public class DataSourceProviderActiveObjectsFactoryTest
 
         assertNotNull(activeObjectsFactory.create(configuration));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
+        verify(clusterLock).lock();
+        verify(clusterLock).unlock();
     }
 
     private static DataSource anyDataSource()

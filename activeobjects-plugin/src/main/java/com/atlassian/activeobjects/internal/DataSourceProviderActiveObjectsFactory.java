@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
@@ -30,9 +32,10 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, 
-            EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
+            EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider,
+            TransactionTemplate transactionTemplate, ClusterLockService clusterLockService)
     {
-        super(DataSourceType.APPLICATION, aoUpgradeManager);
+        super(DataSourceType.APPLICATION, aoUpgradeManager,transactionTemplate, clusterLockService);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
         this.transactionTemplate = checkNotNull(transactionTemplate);
@@ -70,6 +73,16 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
             throw new ActiveObjectsPluginException("No data source defined in the application");
         }
         return new ActiveObjectsDataSource(dataSource);
+    }
+
+    private DatabaseType getDatabaseType(final Tenant tenant)
+    {
+        final DatabaseType databaseType = dataSourceProvider.getDatabaseType(tenant);
+        if (databaseType == null)
+        {
+            throw new ActiveObjectsPluginException("No database type defined in the application");
+        }
+        return databaseType;
     }
 
     public static class ActiveObjectsDataSource implements DataSource

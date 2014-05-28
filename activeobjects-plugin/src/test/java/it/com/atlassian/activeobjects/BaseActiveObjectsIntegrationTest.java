@@ -71,6 +71,9 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected AtlassianPluginsContainer container;
 
     @MockHostComponent
+    private ClusterLockService clusterLockService;
+
+    @MockHostComponent
     private TransactionTemplate transactionTemplate;
 
     @MockHostComponent
