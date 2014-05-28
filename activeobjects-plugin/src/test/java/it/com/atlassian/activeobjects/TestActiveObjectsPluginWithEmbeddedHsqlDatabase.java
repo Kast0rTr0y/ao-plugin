@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.internal.ActiveObjectsSettingKeys;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginException;
-import com.atlassian.sal.api.component.ComponentLocator;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,8 +27,6 @@ public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseA
     @Before
     public final void setUp()
     {
-        ComponentLocator componentLocator = mock(ComponentLocator.class);
-        ComponentLocator.setComponentLocator(componentLocator);
         // plugin settings
         final PluginSettings globalSettings = mock(PluginSettings.class);
         when(globalSettings.get(endsWith(ActiveObjectsSettingKeys.DATA_SOURCE_TYPE))).thenReturn(DataSourceType.HSQLDB.name());

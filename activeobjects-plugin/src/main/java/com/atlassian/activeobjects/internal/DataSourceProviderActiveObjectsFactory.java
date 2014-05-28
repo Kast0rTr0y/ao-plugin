@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 
@@ -33,9 +34,10 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, 
-            EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
+            EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider,
+            TransactionTemplate transactionTemplate, ClusterLockService clusterLockService)
     {
-        super(DataSourceType.APPLICATION, aoUpgradeManager,transactionTemplate);
+        super(DataSourceType.APPLICATION, aoUpgradeManager,transactionTemplate, clusterLockService);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
         this.dataSourceProvider = checkNotNull(dataSourceProvider);
     }

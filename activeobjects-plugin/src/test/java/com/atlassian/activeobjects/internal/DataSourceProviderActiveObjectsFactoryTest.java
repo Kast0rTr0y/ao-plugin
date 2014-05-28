@@ -8,7 +8,6 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
-import com.atlassian.sal.api.component.ComponentLocator;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
@@ -71,18 +70,15 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Before
     public void setUp()
     {
-        ComponentLocator componentLocator = mock(ComponentLocator.class);
-        ComponentLocator.setComponentLocator(componentLocator);
         Bundle bundle = mock(Bundle.class);
         when(bundle.getSymbolicName()).thenReturn("com.example.plugin");
         PluginKey pluginKey = PluginKey.fromBundle(bundle);
         ClusterLockService clusterLockService = mock(ClusterLockService.class);
         when(clusterLockService.getLockForName(anyString())).thenReturn(clusterLock);
-        when(ComponentLocator.getComponent(ClusterLockService.class)).thenReturn(clusterLockService);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(configuration.getPluginKey()).thenReturn(pluginKey);
         activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
-                dataSourceProvider, transactionTemplate);
+                dataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {

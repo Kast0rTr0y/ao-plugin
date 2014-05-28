@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
-import com.atlassian.sal.api.component.ComponentLocator;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
@@ -32,12 +31,15 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
     protected final TransactionTemplate transactionTemplate;
+    private final ClusterLockService clusterLockService;
 
-    AbstractActiveObjectsFactory(DataSourceType dataSourceType, ActiveObjectUpgradeManager aoUpgradeManager, TransactionTemplate transactionTemplate)
+    AbstractActiveObjectsFactory(DataSourceType dataSourceType, ActiveObjectUpgradeManager aoUpgradeManager,
+                                 TransactionTemplate transactionTemplate, ClusterLockService clusterLockService)
     {
         this.supportedDataSourceType = checkNotNull(dataSourceType);
         this.aoUpgradeManager = checkNotNull(aoUpgradeManager);
         this.transactionTemplate = checkNotNull(transactionTemplate);
+        this.clusterLockService = checkNotNull(clusterLockService);
     }
 
     @Override
@@ -54,20 +56,10 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        if (!ComponentLocator.isInitialized())
-        {
-            throw new IllegalStateException("ComponentLocator must be initialized before attempting to upgrade plugins");
-        }
-        ClusterLock lock = null;
+        ClusterLock lock = clusterLockService.getLockForName(configuration.getPluginKey().asString() + LOCK_SUFFIX);
+        lock.lock();
         try
         {
-            ClusterLockService clusterLockService = ComponentLocator.getComponent(ClusterLockService.class);
-            if (clusterLockService != null)
-            {
-                lock = clusterLockService.getLockForName(configuration.getPluginKey().asString() + LOCK_SUFFIX);
-                lock.lock();
-            }
-
             upgrade(configuration, tenant);
 
             final ActiveObjects ao = doCreate(configuration, tenant);
@@ -87,10 +79,7 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         }
         finally
         {
-            if (lock != null)
-            {
-                lock.unlock();
-            }
+            lock.unlock();
         }
     }
 
