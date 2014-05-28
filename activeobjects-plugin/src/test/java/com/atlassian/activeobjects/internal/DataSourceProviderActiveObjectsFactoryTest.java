@@ -146,6 +146,8 @@ public class DataSourceProviderActiveObjectsFactoryTest
 
         assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
+        verify(clusterLock).lock();
+        verify(clusterLock).unlock();
     }
 
     private static DataSource anyDataSource()
