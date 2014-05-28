@@ -2,9 +2,12 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
@@ -21,6 +24,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.osgi.framework.Bundle;
 
 import javax.sql.DataSource;
 
@@ -60,10 +64,21 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Mock
     private Tenant tenant;
 
+    @Mock
+    private ClusterLock clusterLock;
+
     @Before
     public void setUp()
     {
-        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate);
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getSymbolicName()).thenReturn("com.example.plugin");
+        PluginKey pluginKey = PluginKey.fromBundle(bundle);
+        ClusterLockService clusterLockService = mock(ClusterLockService.class);
+        when(clusterLockService.getLockForName(anyString())).thenReturn(clusterLock);
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(configuration.getPluginKey()).thenReturn(pluginKey);
+        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
+                dataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
@@ -87,7 +102,6 @@ public class DataSourceProviderActiveObjectsFactoryTest
     public void testCreateWithNullDataSource() throws Exception
     {
         when(dataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
-        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         try
         {
             activeObjectsFactory.create(configuration, tenant);
@@ -95,7 +109,8 @@ public class DataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            // ignored
+            verify(clusterLock).lock();
+            verify(clusterLock).unlock();
         }
     }
 
@@ -105,7 +120,6 @@ public class DataSourceProviderActiveObjectsFactoryTest
         final DataSource dataSource = mock(DataSource.class);
 
         when(dataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
-        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
@@ -114,7 +128,8 @@ public class DataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            // ignored
+            verify(clusterLock).lock();
+            verify(clusterLock).unlock();
         }
     }
 
@@ -131,6 +146,8 @@ public class DataSourceProviderActiveObjectsFactoryTest
 
         assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
+        verify(clusterLock).lock();
+        verify(clusterLock).unlock();
     }
 
     private static DataSource anyDataSource()

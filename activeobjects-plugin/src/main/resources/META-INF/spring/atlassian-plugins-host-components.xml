@@ -41,6 +41,7 @@
     <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
     <osgi:reference id="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
     <osgi:reference id="moduleFactory" interface="com.atlassian.plugin.module.ModuleFactory"/>
+    <osgi:reference id="clusterLockService" interface="com.atlassian.beehive.ClusterLockService"/>
 
     <!-- used for the admin UI only, so optional -->
     <osgi:reference id="userManager" interface="com.atlassian.sal.api.user.UserManager" timeout="2000" cardinality="0..1"/>

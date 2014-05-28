@@ -52,6 +52,7 @@
                             com.atlassian.tenancy.api*;version="${tenancy.libversion}",
                             com.atlassian.security.random;version="1.0",
                             com.atlassian.util.concurrent;version="${atlassian.concurrent.version}",
+                            com.atlassian.beehive*;version="${atlassian.beehive.version}",
                             com.google.common*,
                             com.mchange.v2.c3p0;resolution:=optional;version="0.8",
                             javax.naming;version="0.0.0",
@@ -211,6 +212,11 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-spi</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.beehive</groupId>
+            <artifactId>beehive-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

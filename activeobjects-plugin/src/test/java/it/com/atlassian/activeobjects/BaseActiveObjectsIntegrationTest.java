@@ -11,6 +11,8 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.module.ModuleFactory;
@@ -93,6 +95,9 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected AtlassianPluginsContainer container;
 
     @MockHostComponent
+    private ClusterLockService clusterLockService;
+
+    @MockHostComponent
     private TransactionTemplate transactionTemplate;
 
     @MockHostComponent
@@ -153,6 +158,9 @@ public abstract class BaseActiveObjectsIntegrationTest
     @Before
     public void initHostComponents()
     {
+        ClusterLock lock = mock(ClusterLock.class);
+        when(clusterLockService.getLockForName(anyString())).thenReturn(lock);
+
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
             @Override
