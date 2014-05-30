@@ -4,8 +4,8 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
-import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
@@ -54,7 +54,7 @@ public class TenantAwareActiveObjectsTest
     @Mock
     private ActiveObjectsFactory factory;
     @Mock
-    private TenantProvider tenantProvider;
+    private TenantContext tenantContext;
     @Mock
     private AOConfigurationGenerator aoConfigurationGenerator;
     @Mock
@@ -90,7 +90,7 @@ public class TenantAwareActiveObjectsTest
     @Before
     public void before()
     {
-        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantProvider, aoConfigurationGenerator,
+        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator,
                 initExecutorFunction, configExecutor);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
@@ -206,7 +206,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void delegateTenanted() throws ExecutionException, InterruptedException
     {
-        when(tenantProvider.getTenant()).thenReturn(tenant);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
 
@@ -274,7 +274,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void isInitializedNotComplete()
     {
-        when(tenantProvider.getTenant()).thenReturn(tenant);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
     }
@@ -282,7 +282,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void isInitializedException()
     {
-        when(tenantProvider.getTenant()).thenReturn(tenant);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
         aoFuture.setException(new IllegalStateException());
@@ -298,7 +298,7 @@ public class TenantAwareActiveObjectsTest
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
         babyBear.aoPromisesByTenant.put(tenant, aoPromise);
 
-        when(tenantProvider.getTenant()).thenReturn(tenant);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isInitialized(), is(true));
     }
@@ -312,7 +312,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void isDataSourcePresentYes()
     {
-        when(tenantProvider.getTenant()).thenReturn(tenant);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isDataSourcePresent(), is(true));
     }
