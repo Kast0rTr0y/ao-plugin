@@ -56,7 +56,7 @@
 
         <junit.version>4.10</junit.version>
         <mockito.version>1.8.4</mockito.version>
-        <atlassian.selenium.version>2.1-m14</atlassian.selenium.version>
+        <atlassian.selenium.version>2.1-m22</atlassian.selenium.version>
         <refapp.jira.version>5.0.7</refapp.jira.version>
         <guava.version>11.0.2</guava.version>
         <atlassian.beehive.version>0.1.3</atlassian.beehive.version>
