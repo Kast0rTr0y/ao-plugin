@@ -3,6 +3,8 @@ package it.com.atlassian.activeobjects;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.module.ModuleFactory;
@@ -13,13 +15,22 @@ import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.sal.api.message.HelpPathResolver;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.activeobjects.junit.*;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.websudo.WebSudoManager;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * <p>This configures the basics of the system on which the Active Objects plugin can run.</p>
@@ -61,7 +72,8 @@ import org.junit.runner.RunWith;
 public abstract class BaseActiveObjectsIntegrationTest
 {
     /**
-     * Using a 'configurable' {@link org.junit.rules.TemporaryFolder} so that we can keep the temporary folder for inspection when needed.
+     * Using a 'configurable' {@link org.junit.rules.TemporaryFolder} so that we can keep the temporary folder for
+     * inspection when needed.
      *
      * @see com.atlassian.activeobjects.junit.ConfigurableTemporaryFolder#ConfigurableTemporaryFolder(boolean)
      */
@@ -111,10 +123,26 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected EventPublisher eventPublisher;
-    
+
     @MockHostComponent
     protected TransactionSynchronisationManager transactionSynchronizationManager;
 
     @MockHostComponent
     protected ModuleFactory moduleFactory;
+
+    @Before
+    public void initHostComponents()
+    {
+        ClusterLock lock = mock(ClusterLock.class);
+        when(clusterLockService.getLockForName(anyString())).thenReturn(lock);
+
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
+            }
+        });
+   }
 }

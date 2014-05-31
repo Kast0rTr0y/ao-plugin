@@ -6,7 +6,6 @@ import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-import com.atlassian.tenancy.api.Tenant;
 import com.google.common.base.Supplier;
 import net.java.ao.RawEntity;
 import org.slf4j.Logger;
@@ -58,9 +57,9 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         lock.lock();
         try
         {
-            upgrade(configuration, tenant);
+            upgrade(configuration);
 
-            final ActiveObjects ao = doCreate(configuration, tenant);
+            final ActiveObjects ao = doCreate(configuration);
             final Set<Class<? extends RawEntity<?>>> entitiesToMigrate = configuration.getEntities();
 
             return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
@@ -81,16 +80,16 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         }
     }
 
-    private void upgrade(final ActiveObjectsConfiguration configuration, final Tenant tenant)
+    private void upgrade(final ActiveObjectsConfiguration configuration)
     {
         aoUpgradeManager.upgrade(configuration.getTableNamePrefix(), configuration.getUpgradeTasks(), new Supplier<ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects get()
             {
-                @Override
-                public ActiveObjects get()
-                {
-                    return doCreate(configuration, tenant);
-                }
-            });
+                return doCreate(configuration);
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")

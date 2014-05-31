@@ -2,18 +2,26 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import net.java.ao.EntityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.osgi.framework.Bundle;
 
 import javax.sql.DataSource;
 
@@ -51,9 +59,6 @@ public class DataSourceProviderActiveObjectsFactoryTest
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     @Mock
-    private Tenant tenant;
-
-    @Mock
     private ClusterLock clusterLock;
 
     @Before
@@ -66,9 +71,16 @@ public class DataSourceProviderActiveObjectsFactoryTest
         when(clusterLockService.getLockForName(anyString())).thenReturn(clusterLock);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(configuration.getPluginKey()).thenReturn(pluginKey);
-        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
-                dataSourceProvider, transactionTemplate, clusterLockService);
+        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
+            }
+        });
     }
 
     @After

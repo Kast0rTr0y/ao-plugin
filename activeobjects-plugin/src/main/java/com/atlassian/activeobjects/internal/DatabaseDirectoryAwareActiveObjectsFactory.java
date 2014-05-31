@@ -8,6 +8,7 @@ import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
 import org.slf4j.Logger;
