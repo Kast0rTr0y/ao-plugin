@@ -1,6 +1,6 @@
 package com.atlassian.activeobjects.confluence;
 
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.DefaultInitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
@@ -21,7 +21,7 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
 {
     private static final Logger logger = LoggerFactory.getLogger(DefaultInitExecutorServiceProvider.class);
 
-    private final DataSourceProvider dataSourceProvider;
+    private final TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
     private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
     @VisibleForTesting
@@ -29,11 +29,11 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
 
     public ConfluenceInitExecutorServiceProvider(
             final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
-            final DataSourceProvider dataSourceProvider,
+            final TenantAwareDataSourceProvider tenantAwareDataSourceProvider,
             final InitExecutorServiceProvider defaultInitExecutorServiceProvider)
     {
         this.threadLocalDelegateExecutorFactory = checkNotNull(threadLocalDelegateExecutorFactory);
-        this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.tenantAwareDataSourceProvider = checkNotNull(tenantAwareDataSourceProvider);
         this.defaultInitExecutorServiceProvider = checkNotNull(defaultInitExecutorServiceProvider);
     }
 
@@ -50,7 +50,7 @@ public class ConfluenceInitExecutorServiceProvider implements InitExecutorServic
     @Override
     public ExecutorService initExecutorService(@Nonnull Tenant tenant)
     {
-        DatabaseType databaseType = dataSourceProvider.getDatabaseType(tenant);
+        DatabaseType databaseType = tenantAwareDataSourceProvider.getDatabaseType(tenant);
         if (DatabaseType.HSQL.equals(databaseType))
         {
             logger.debug("creating HSQL snowflake init executor");

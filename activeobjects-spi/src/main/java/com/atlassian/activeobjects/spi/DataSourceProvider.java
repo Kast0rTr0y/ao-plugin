@@ -1,44 +1,42 @@
 package com.atlassian.activeobjects.spi;
 
-import com.atlassian.tenancy.api.Tenant;
-
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 /**
  * Gives access to the host application data source.
+ *
+ * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider} instead; may throw
+ * {@link java.lang.IllegalStateException} if called when the application is in a warm (untenanted) state.
  */
 public interface DataSourceProvider
 {
     /**
      * @return the host application data source
-     */
-
-    /**
-     * Provide host application data source associated with a tenant.
      *
-     * This data source will be used for the entire lifetime of {@link com.atlassian.activeobjects.external.ActiveObjects}
+     * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider#getDataSource(com.atlassian.tenancy.api.Tenant)} instead
      */
-    @Nonnull
-    DataSource getDataSource(@Nonnull final Tenant tenant);
+    DataSource getDataSource();
 
     /**
-     * <p>Returns the database type for the tenant</p>
+     * <p>Returns the database type.</p>
      * <p>Note: if {@link com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN} is return it is left up to the client of
      * the data source provider to 'guess' the type of the database. It is strongly advised to implement this method so
      * that it never returns {@link com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN}.</p>
      *
      * @return a valid database type
      * @see com.atlassian.activeobjects.spi.DatabaseType
+     *
+     * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider#getDatabaseType(com.atlassian.tenancy.api.Tenant)} instead
      */
-    @Nonnull
-    DatabaseType getDatabaseType(@Nonnull final Tenant tenant);
+    DatabaseType getDatabaseType();
 
     /**
-     * <p>The name of the schema used with this database for the tenant.</p>
+     * <p>The name of the schema used with this database.</p>
      * <p>This is especially import for SQL Server, PostgresQL and HSQLDB</p>
      *
      * @return the name of the schema to use, {@code null} if no schema is required.
+     *
+     * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider#getSchema(com.atlassian.tenancy.api.Tenant)} instead
      */
-    String getSchema(@Nonnull final Tenant tenant);
+    String getSchema();
 }

@@ -33,7 +33,7 @@ public final class TestActiveObjectsPluginWithApplicationDatabase extends BaseAc
 
         applicationDatabaseDirectory = folder.newFolder("application-db");
 
-        when(dataSourceProvider.getDataSource(any(Tenant.class))).thenReturn(hsqlDataSource(applicationDatabaseDirectory, CONSUMER_PLUGIN_KEY));
+        when(tenantAwareDataSourceProvider.getDataSource(any(Tenant.class))).thenReturn(hsqlDataSource(applicationDatabaseDirectory, CONSUMER_PLUGIN_KEY));
 
         container.start();
     }

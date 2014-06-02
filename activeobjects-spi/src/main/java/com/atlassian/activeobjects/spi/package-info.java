@@ -2,7 +2,7 @@
  * <p>This is the SPI package for the Active Objects plugin. Application that want to embed the Active Object plugin will
  * have to implement this SPI and expose those implementation as services. Here is the list of necessary services:<p>
  * <dl>
- * <dt>{@link com.atlassian.activeobjects.spi.DataSourceProvider}</dt>
+ * <dt>{@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider}</dt>
  * <dd>This is a <strong>required</strong> service that the host application must provide. It allows the Active Objects
  * capable plugin to access the database.</dd>
  * <dt>{@link com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration}</dt>
