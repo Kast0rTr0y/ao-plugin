@@ -9,6 +9,7 @@ import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.internal.config.NameConvertersFactory;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.util.Digester;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.NameConverters;
@@ -35,7 +36,7 @@ public final class DefaultActiveObjectsConfigurationFactory implements ActiveObj
     }
 
     @Override
-    public ActiveObjectsConfiguration getConfiguration(Bundle bundle, String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks)
+    public ActiveObjectsConfiguration getConfiguration(Bundle bundle, String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks, ActiveObjectModuleDescriptor activeObjectModuleDescriptor)
     {
         final PluginKey pluginKey = PluginKey.fromBundle(bundle);
         final Prefix tableNamePrefix = getTableNamePrefix(bundle, namespace);
@@ -48,6 +49,8 @@ public final class DefaultActiveObjectsConfigurationFactory implements ActiveObj
 
         defaultActiveObjectsConfiguration.setEntities(entities);
         defaultActiveObjectsConfiguration.setUpgradeTasks(upgradeTasks);
+
+        defaultActiveObjectsConfiguration.setActiveObjectModuleDescriptor(activeObjectModuleDescriptor);
 
         return defaultActiveObjectsConfiguration;
     }

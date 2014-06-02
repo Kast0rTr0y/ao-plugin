@@ -57,6 +57,8 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         lock.lock();
         try
         {
+            configuration.validate();
+
             upgrade(configuration);
 
             final ActiveObjects ao = doCreate(configuration);

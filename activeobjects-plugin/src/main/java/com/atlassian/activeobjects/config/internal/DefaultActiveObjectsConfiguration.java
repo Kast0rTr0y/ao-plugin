@@ -6,6 +6,7 @@ import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
 import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
 import net.java.ao.schema.NameConverters;
@@ -30,6 +31,7 @@ public final class DefaultActiveObjectsConfiguration implements ActiveObjectsCon
     private Prefix tableNamePrefix;
     private NameConverters nameConverters;
     private SchemaConfiguration schemaConfiguration;
+    private ActiveObjectModuleDescriptor activeObjectModuleDescriptor;
 
     private Set<Class<? extends RawEntity<?>>> entities;
     private List<ActiveObjectsUpgradeTask> upgradeTasks;
@@ -85,6 +87,11 @@ public final class DefaultActiveObjectsConfiguration implements ActiveObjectsCon
         this.schemaConfiguration = schemaConfiguration;
     }
 
+    public void setActiveObjectModuleDescriptor(final ActiveObjectModuleDescriptor activeObjectModuleDescriptor)
+    {
+        this.activeObjectModuleDescriptor = activeObjectModuleDescriptor;
+    }
+
     @Override
     public Set<Class<? extends RawEntity<?>>> getEntities()
     {
@@ -105,6 +112,15 @@ public final class DefaultActiveObjectsConfiguration implements ActiveObjectsCon
     public void setUpgradeTasks(List<ActiveObjectsUpgradeTask> upgradeTasks)
     {
         this.upgradeTasks = upgradeTasks;
+    }
+
+    @Override
+    public void validate()
+    {
+        if (activeObjectModuleDescriptor != null)
+        {
+            activeObjectModuleDescriptor.validate();
+        }
     }
 
     @Override

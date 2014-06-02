@@ -78,8 +78,11 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         final Set<Class<? extends RawEntity<?>>> entities = getEntities(element);
         final List<ActiveObjectsUpgradeTask> upgradeTasks = getUpgradeTasks(element);
         configuration = getActiveObjectsConfiguration(getNameSpace(element), entities, upgradeTasks);
+    }
 
-        final Set<Class<? extends RawEntity<?>>> entityClasses = entitiesValidator.check(entities, configuration.getNameConverters());
+    public void validate()
+    {
+        final Set<Class<? extends RawEntity<?>>> entityClasses = entitiesValidator.check(configuration.getEntities(), configuration.getNameConverters());
         recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
     }
 
@@ -171,7 +174,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private ActiveObjectsConfiguration getActiveObjectsConfiguration(String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks)
     {
-        return configurationFactory.getConfiguration(getBundle(), namespace, entities, upgradeTasks);
+        return configurationFactory.getConfiguration(getBundle(), namespace, entities, upgradeTasks, this);
     }
 
     private void unregister(ServiceRegistration serviceRegistration)

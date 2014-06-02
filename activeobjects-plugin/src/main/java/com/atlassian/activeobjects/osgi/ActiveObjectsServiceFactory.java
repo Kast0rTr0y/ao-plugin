@@ -162,7 +162,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
             final Set<Class<? extends RawEntity<?>>> entities = scanEntities(bundle);
             if (!entities.isEmpty())
             {
-                return  configurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities, scanUpgradeTask(bundle));
+                return  configurationFactory.getConfiguration(bundle, bundle.getSymbolicName(), entities, scanUpgradeTask(bundle), null);
             }
             else
             {
@@ -318,6 +318,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory
         public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
         {
             return getDelegate().getUpgradeTasks();
+        }
+
+        @Override
+        public void validate()
+        {
+            getDelegate().validate();
         }
 
         @Override

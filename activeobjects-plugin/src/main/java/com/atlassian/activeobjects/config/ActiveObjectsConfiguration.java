@@ -63,4 +63,9 @@ public interface ActiveObjectsConfiguration
      * @return the upgrade tasks
      */
     List<ActiveObjectsUpgradeTask> getUpgradeTasks();
+
+    /**
+     * Validate any entity information passed in from <ao> configuration module
+     */
+    void validate();
 }

@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.config;
 
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import net.java.ao.RawEntity;
 import org.osgi.framework.Bundle;
 
@@ -9,5 +10,5 @@ import java.util.Set;
 
 public interface ActiveObjectsConfigurationFactory
 {
-    ActiveObjectsConfiguration getConfiguration(Bundle bundle, String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks);
+    ActiveObjectsConfiguration getConfiguration(Bundle bundle, String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks, ActiveObjectModuleDescriptor activeObjectModuleDescriptor);
 }
