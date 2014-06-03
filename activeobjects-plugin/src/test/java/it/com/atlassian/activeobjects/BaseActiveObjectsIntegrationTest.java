@@ -31,6 +31,7 @@ import com.atlassian.sal.api.websudo.WebSudoManager;
 
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantAccessor;
+import com.atlassian.tenancy.api.TenantContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Before;
@@ -151,10 +152,15 @@ public abstract class BaseActiveObjectsIntegrationTest
     @MockHostComponent
     protected TenantAccessor tenantAccessor;
 
-    private final Tenant tenant = new Tenant();
+    @MockHostComponent
+    protected TenantContext tenantContext;
+
+    private final Tenant tenant = new Tenant()
+    {
+    };
 
     private final Iterable<Tenant> availableTenants = ImmutableList.of(tenant);
-    
+
     @Before
     public void initHostComponents()
     {
@@ -191,6 +197,8 @@ public abstract class BaseActiveObjectsIntegrationTest
         });
 
         when(tenantAccessor.getAvailableTenants()).thenReturn(availableTenants);
+
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         when(initExecutorServiceProvider.initExecutorService(tenant)).thenReturn(MoreExecutors.sameThreadExecutor());
     }

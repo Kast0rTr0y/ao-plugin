@@ -3,12 +3,12 @@ package com.atlassian.activeobjects.osgi;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
-import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public final class ActiveObjectsServiceFactoryTest
     private Bundle bundle;
     
     @Mock
-    private TenantProvider tenantProvider;
+    private TenantContext tenantContext;
 
     @Mock
     private AOConfigurationGenerator aoConfigurationGenerator;
@@ -96,7 +96,7 @@ public final class ActiveObjectsServiceFactoryTest
             }
         });
 
-        serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantProvider,
+        serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
                 aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
@@ -181,7 +181,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
-        when(tenantProvider.getTenant()).thenReturn(tenant1);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
         when(bundle1.getSymbolicName()).thenReturn("bundle1");
@@ -198,7 +198,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
-        when(tenantProvider.getTenant()).thenReturn(tenant1);
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
         when(bundle1.getSymbolicName()).thenReturn("bundle1");

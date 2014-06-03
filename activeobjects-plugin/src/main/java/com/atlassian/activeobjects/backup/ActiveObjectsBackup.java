@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
-import com.atlassian.activeobjects.internal.TenantProvider;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
@@ -35,6 +34,7 @@ import com.atlassian.dbexporter.node.stax.StaxStreamReader;
 import com.atlassian.dbexporter.node.stax.StaxStreamWriter;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import net.java.ao.DatabaseProvider;
@@ -63,14 +63,14 @@ public final class ActiveObjectsBackup implements Backup
     private final NameConverters nameConverters;
     private final ImportExportErrorService errorService;
 
-    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, final TenantProvider tenantProvider, NameConverters converters, ImportExportErrorService errorService)
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, final TenantContext tenantContext, NameConverters converters, ImportExportErrorService errorService)
     {
         this(new Supplier<DatabaseProvider>()
         {
             @Override
             public DatabaseProvider get()
             {
-                final Tenant tenant = tenantProvider.getTenant();
+                final Tenant tenant = tenantContext.getCurrentTenant();
                 return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(tenant), dataSourceProvider.getDatabaseType(tenant), dataSourceProvider.getSchema(tenant));
             }
         }, converters, errorService);
