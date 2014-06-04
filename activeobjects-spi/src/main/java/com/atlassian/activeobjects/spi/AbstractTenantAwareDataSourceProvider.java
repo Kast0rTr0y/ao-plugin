@@ -5,10 +5,10 @@ import com.atlassian.tenancy.api.Tenant;
 import javax.annotation.Nonnull;
 
 /**
- * This class provides a partial implementation of the {@link com.atlassian.activeobjects.spi.DataSourceProvider}
+ * This class provides a partial implementation of the {@link TenantAwareDataSourceProvider}
  * where {@link #getDatabaseType()} always returns {@link com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN}.
  */
-public abstract class AbstractDataSourceProvider implements DataSourceProvider
+public abstract class AbstractTenantAwareDataSourceProvider implements TenantAwareDataSourceProvider
 {
     /**
      * Always returns com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN

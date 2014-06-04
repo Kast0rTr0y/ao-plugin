@@ -70,7 +70,7 @@
                         <constructor-arg index="5" ref="uniqueNameConverter"/>
                     </bean>
                 </constructor-arg>
-                <constructor-arg ref="dataSourceProvider"/>
+                <constructor-arg ref="tenantAwareDataSourceProvider"/>
                 <constructor-arg ref="errorService"/>
                 <constructor-arg ref="pluginInformationFactory"/>
                 <constructor-arg ref="tenantContext"/>

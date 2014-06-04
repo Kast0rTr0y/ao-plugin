@@ -1,6 +1,6 @@
 package com.atlassian.activeobjects.refapp;
 
-import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.AbstractTenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.tenancy.api.Tenant;
 
@@ -12,11 +12,11 @@ import static com.google.common.base.Preconditions.*;
 /**
  *
  */
-public class RefappDataSourceProvider extends AbstractDataSourceProvider
+public class RefappTenantAwareDataSourceProvider extends AbstractTenantAwareDataSourceProvider
 {
     private final DataSource dataSource;
 
-    public RefappDataSourceProvider(DataSource dataSource)
+    public RefappTenantAwareDataSourceProvider(DataSource dataSource)
     {
         this.dataSource = checkNotNull(dataSource);
     }

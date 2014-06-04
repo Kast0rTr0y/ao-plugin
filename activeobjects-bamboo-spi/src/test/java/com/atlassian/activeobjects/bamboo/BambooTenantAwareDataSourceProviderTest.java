@@ -25,12 +25,12 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
 /**
- * Testing {@link com.atlassian.activeobjects.bamboo.BambooDataSourceProvider}
+ * Testing {@link BambooTenantAwareDataSourceProvider}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BambooDataSourceProviderTest
+public class BambooTenantAwareDataSourceProviderTest
 {
-    private BambooDataSourceProvider dataSourceProvider;
+    private BambooTenantAwareDataSourceProvider dataSourceProvider;
 
     @Mock
     private PluginHibernateSessionFactory sessionFactory;
@@ -44,7 +44,7 @@ public class BambooDataSourceProviderTest
     @Before
     public void setUp() throws Exception
     {
-        dataSourceProvider = new BambooDataSourceProvider(sessionFactory, dialectExtractor);
+        dataSourceProvider = new BambooTenantAwareDataSourceProvider(sessionFactory, dialectExtractor);
     }
 
     @After

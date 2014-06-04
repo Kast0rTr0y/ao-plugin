@@ -26,12 +26,12 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
 /**
- * Testing {@link com.atlassian.activeobjects.confluence.ConfluenceDataSourceProvider}
+ * Testing {@link ConfluenceTenantAwareDataSourceProvider}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ConfluenceDataSourceProviderTest
+public class ConfluenceTenantAwareDataSourceProviderTest
 {
-    private ConfluenceDataSourceProvider dataSourceProvider;
+    private ConfluenceTenantAwareDataSourceProvider dataSourceProvider;
 
     @Mock
     private PluginHibernateSessionFactory sessionFactory;
@@ -45,7 +45,7 @@ public class ConfluenceDataSourceProviderTest
     @Before
     public void setUp() throws Exception
     {
-        dataSourceProvider = new ConfluenceDataSourceProvider(sessionFactory, dialectExtrator);
+        dataSourceProvider = new ConfluenceTenantAwareDataSourceProvider(sessionFactory, dialectExtrator);
     }
 
     @After

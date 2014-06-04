@@ -16,11 +16,11 @@ import java.sql.Connection;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-/** Testing {@link com.atlassian.activeobjects.jira.JiraDataSourceProviderTest} */
+/** Testing {@link JiraTenantAwareDataSourceProviderTest} */
 @RunWith(MockitoJUnitRunner.class)
-public class JiraDataSourceProviderTest
+public class JiraTenantAwareDataSourceProviderTest
 {
-    private JiraDataSourceProvider dataSourceProvider;
+    private JiraTenantAwareDataSourceProvider dataSourceProvider;
 
     @Mock
     private OfBizConnectionFactory ofBizConnectionFactory;
@@ -34,7 +34,7 @@ public class JiraDataSourceProviderTest
     @Before
     public void setUp() throws Exception
     {
-        dataSourceProvider = new JiraDataSourceProvider(ofBizConnectionFactory, jiraDatabaseTypeExtractor);
+        dataSourceProvider = new JiraTenantAwareDataSourceProvider(ofBizConnectionFactory, jiraDatabaseTypeExtractor);
     }
 
     @After
