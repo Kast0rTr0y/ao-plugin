@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.jira;
 
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.jira.ofbiz.OfBizConnectionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,11 +16,11 @@ import java.sql.Connection;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-/** Testing {@link com.atlassian.activeobjects.jira.JiraDataSourceProviderTest} */
+/** Testing {@link JiraTenantAwareDataSourceProviderTest} */
 @RunWith(MockitoJUnitRunner.class)
-public class JiraDataSourceProviderTest
+public class JiraTenantAwareDataSourceProviderTest
 {
-    private JiraDataSourceProvider dataSourceProvider;
+    private JiraTenantAwareDataSourceProvider dataSourceProvider;
 
     @Mock
     private OfBizConnectionFactory ofBizConnectionFactory;
@@ -27,10 +28,13 @@ public class JiraDataSourceProviderTest
     @Mock
     private JiraDatabaseTypeExtractor jiraDatabaseTypeExtractor;
 
+    @Mock
+    private Tenant tenant;
+
     @Before
     public void setUp() throws Exception
     {
-        dataSourceProvider = new JiraDataSourceProvider(ofBizConnectionFactory, jiraDatabaseTypeExtractor);
+        dataSourceProvider = new JiraTenantAwareDataSourceProvider(ofBizConnectionFactory, jiraDatabaseTypeExtractor);
     }
 
     @After
@@ -95,6 +99,6 @@ public class JiraDataSourceProviderTest
         final Connection connection = mock(Connection.class);
         when(ofBizConnectionFactory.getConnection()).thenReturn(connection);
         when(jiraDatabaseTypeExtractor.getDatabaseType(connection)).thenReturn(value);
-        assertEquals(databaseType, dataSourceProvider.getDatabaseType());
+        assertEquals(databaseType, dataSourceProvider.getDatabaseType(tenant));
     }
 }

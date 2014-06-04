@@ -5,12 +5,13 @@ import com.atlassian.activeobjects.backup.ActiveObjectsTableReader;
 import com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl;
 import com.atlassian.activeobjects.backup.PluginInformationFactory;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
-import com.google.common.base.Preconditions;
+import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -27,22 +28,25 @@ public final class TablesController
 {
     private final DatabaseProviderFactory databaseProviderFactory;
     private final NameConverters nameConverters;
-    private final DataSourceProvider dataSourceProvider;
+    private final TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
     private final ImportExportErrorServiceImpl errorService;
     private final PluginInformationFactory pluginInformationFactory;
+    private final TenantContext tenantContext;
 
-    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory)
+    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, TenantAwareDataSourceProvider tenantAwareDataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory, TenantContext tenantContext)
     {
         this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
         this.nameConverters = checkNotNull(nameConverters);
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
-        this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.tenantAwareDataSourceProvider = checkNotNull(tenantAwareDataSourceProvider);
         this.errorService = checkNotNull(errorService);
+        this.tenantContext = checkNotNull(tenantContext);
     }
 
     public ModelAndView list(HttpServletRequest request, HttpServletResponse response) throws Exception
     {
-        final DatabaseProvider databaseProvider = getDatabaseProvider();
+        final Tenant tenant = tenantContext.getCurrentTenant();
+        final DatabaseProvider databaseProvider = getDatabaseProvider(tenant);
         final Iterable<Table> tables = readTables(newTableReader(databaseProvider));
         final RowCounter rowCounter = RowCounter.from(databaseProvider);
 
@@ -69,9 +73,9 @@ public final class TablesController
         return new ActiveObjectsTableReader(errorService, nameConverters, databaseProvider, ActiveObjectsBackup.schemaConfiguration());
     }
 
-    private DatabaseProvider getDatabaseProvider()
+    private DatabaseProvider getDatabaseProvider(Tenant tenant)
     {
-        return databaseProviderFactory.getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
+        return databaseProviderFactory.getDatabaseProvider(tenantAwareDataSourceProvider.getDataSource(tenant), tenantAwareDataSourceProvider.getDatabaseType(tenant), tenantAwareDataSourceProvider.getSchema(tenant));
     }
 
     private Multimap<PluginInformation, TableInformation> tablesPerPlugin(Iterable<Table> tables, final RowCounter rowCounter)

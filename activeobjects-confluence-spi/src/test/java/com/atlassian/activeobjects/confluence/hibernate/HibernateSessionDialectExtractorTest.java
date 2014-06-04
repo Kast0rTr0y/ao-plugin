@@ -1,6 +1,8 @@
 package com.atlassian.activeobjects.confluence.hibernate;
 
 import com.atlassian.hibernate.PluginHibernateSessionFactory;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
 import net.sf.hibernate.dialect.Dialect;
@@ -9,8 +11,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -28,12 +33,22 @@ public class HibernateSessionDialectExtractorTest
     @Mock
     private PluginHibernateSessionFactory pluginSessionFactory;
 
+    @Mock
+    private TransactionTemplate transactionTemplate;
+
     @Before
     public void setUp() throws Exception
     {
-        dialectExtractor = new HibernateSessionDialectExtractor(pluginSessionFactory);
+        dialectExtractor = new HibernateSessionDialectExtractor(pluginSessionFactory, transactionTemplate);
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
+            }
+        });
     }
-
 
     @After
     public void tearDown() throws Exception

@@ -6,9 +6,11 @@ import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 
+import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
 
@@ -30,15 +32,16 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private final ActiveObjectsPluginConfiguration dbConfiguration;
 
     public DatabaseDirectoryAwareActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager,
-            ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration, TransactionTemplate transactionTemplate)
+            ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration,
+            TransactionTemplate transactionTemplate, ClusterLockService clusterLockService)
     {
-        super(DataSourceType.HSQLDB, aoUpgradeManager,transactionTemplate);
+        super(DataSourceType.HSQLDB, aoUpgradeManager,transactionTemplate, clusterLockService);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.dbConfiguration = checkNotNull(dbConfiguration);
     }
 
     @Override
-    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType)
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, Tenant tenant)
     {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), configuration.getPluginKey());
         final EntityManager entityManager = getEntityManager(dbDir, configuration);
@@ -48,7 +51,6 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private EntityManager getEntityManager(File dbDirectory, ActiveObjectsConfiguration configuration)
     {
         return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto()
-                .useWeakCache()
                 .tableNameConverter(configuration.getNameConverters().getTableNameConverter())
                 .fieldNameConverter(configuration.getNameConverters().getFieldNameConverter())
                 .sequenceNameConverter(configuration.getNameConverters().getSequenceNameConverter())

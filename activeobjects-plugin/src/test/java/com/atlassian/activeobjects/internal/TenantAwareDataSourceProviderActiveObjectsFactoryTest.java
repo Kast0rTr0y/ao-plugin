@@ -2,14 +2,16 @@ package com.atlassian.activeobjects.internal;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-
+import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +22,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.osgi.framework.Bundle;
 
 import javax.sql.DataSource;
 
@@ -34,7 +37,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DataSourceProviderActiveObjectsFactoryTest
+public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
 {
     private DataSourceProviderActiveObjectsFactory activeObjectsFactory;
 
@@ -42,7 +45,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
     private ActiveObjectUpgradeManager upgradeManager;
 
     @Mock
-    private DataSourceProvider dataSourceProvider;
+    private TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
 
     @Mock
     private EntityManagerFactory entityManagerFactory;
@@ -56,10 +59,24 @@ public class DataSourceProviderActiveObjectsFactoryTest
     @Mock 
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
+    @Mock
+    private Tenant tenant;
+
+    @Mock
+    private ClusterLock clusterLock;
+
     @Before
     public void setUp()
     {
-        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate);
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getSymbolicName()).thenReturn("com.example.plugin");
+        PluginKey pluginKey = PluginKey.fromBundle(bundle);
+        ClusterLockService clusterLockService = mock(ClusterLockService.class);
+        when(clusterLockService.getLockForName(anyString())).thenReturn(clusterLock);
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(configuration.getPluginKey()).thenReturn(pluginKey);
+        activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
+                tenantAwareDataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
@@ -76,37 +93,59 @@ public class DataSourceProviderActiveObjectsFactoryTest
     {
         activeObjectsFactory = null;
         entityManagerFactory = null;
-        dataSourceProvider = null;
+        tenantAwareDataSourceProvider = null;
     }
 
     @Test
     public void testCreateWithNullDataSource() throws Exception
     {
-        when(dataSourceProvider.getDataSource()).thenReturn(null); // not really needed, but just to make the test clear
-        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
-            activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN);
+            activeObjectsFactory.create(configuration, tenant);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
         }
         catch (ActiveObjectsPluginException e)
         {
-            // ignored
+            verify(clusterLock).lock();
+            verify(clusterLock).unlock();
         }
     }
 
     @Test
-    public void testCreateWithNonNullDataSource() throws Exception
+    public void testCreateWithNullDatabaseType() throws Exception
+    {
+        final DataSource dataSource = mock(DataSource.class);
+
+        when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
+        try
+        {
+            activeObjectsFactory.create(configuration, tenant);
+            fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
+        }
+        catch (ActiveObjectsPluginException e)
+        {
+            verify(clusterLock).lock();
+            verify(clusterLock).unlock();
+        }
+    }
+
+    @Test
+    public void testCreate() throws Exception
     {
         final DataSource dataSource = mock(DataSource.class);
         final EntityManager entityManager = mock(EntityManager.class);
 
-        when(dataSourceProvider.getDataSource()).thenReturn(dataSource);
+        when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.DERBY_EMBEDDED);
 
-        assertNotNull(activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN));
+        assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
+        verify(clusterLock).lock();
+        verify(clusterLock).unlock();
     }
 
     private static DataSource anyDataSource()

@@ -2,11 +2,10 @@ package com.atlassian.activeobjects.admin;
 
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginInformation;
-import com.google.common.base.Preconditions;
 
 import java.util.List;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public interface PluginToTablesMapping
 {
@@ -14,7 +13,7 @@ public interface PluginToTablesMapping
 
     PluginInfo get(String tableName);
 
-    public final static class PluginInfo
+    public static class PluginInfo
     {
         public final String key;
         public final String name;

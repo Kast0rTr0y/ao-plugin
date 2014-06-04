@@ -6,10 +6,13 @@ import com.atlassian.activeobjects.junit.ConfigurableTemporaryFolder;
 import com.atlassian.activeobjects.junit.Host;
 import com.atlassian.activeobjects.junit.MockHostComponent;
 import com.atlassian.activeobjects.junit.PackageVersion;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
+import com.atlassian.beehive.ClusterLock;
+import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.module.ModuleFactory;
@@ -17,6 +20,7 @@ import com.atlassian.plugin.web.WebInterfaceManager;
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.auth.LoginUriProvider;
+import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.sal.api.message.HelpPathResolver;
 import com.atlassian.sal.api.message.I18nResolver;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -25,6 +29,11 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.websudo.WebSudoManager;
 
+import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantAccessor;
+import com.atlassian.tenancy.api.TenantContext;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -33,6 +42,9 @@ import org.mockito.Matchers;
 import static org.mockito.Mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * <p>This configures the basics of the system on which the Active Objects plugin can run.</p>
@@ -84,6 +96,9 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected AtlassianPluginsContainer container;
 
     @MockHostComponent
+    private ClusterLockService clusterLockService;
+
+    @MockHostComponent
     private TransactionTemplate transactionTemplate;
 
     @MockHostComponent
@@ -96,7 +111,7 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected PluginSettingsFactory pluginSettingsFactory;
 
     @MockHostComponent
-    protected DataSourceProvider dataSourceProvider;
+    protected TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
 
     @MockHostComponent
     protected WebInterfaceManager webInterfaceManager;
@@ -127,10 +142,31 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected ModuleFactory moduleFactory;
-    
+
+    @MockHostComponent
+    protected ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
+
+    @MockHostComponent
+    protected InitExecutorServiceProvider initExecutorServiceProvider;
+
+    @MockHostComponent
+    protected TenantAccessor tenantAccessor;
+
+    @MockHostComponent
+    protected TenantContext tenantContext;
+
+    private final Tenant tenant = new Tenant()
+    {
+    };
+
+    private final Iterable<Tenant> availableTenants = ImmutableList.of(tenant);
+
     @Before
     public void initHostComponents()
     {
+        ClusterLock lock = mock(ClusterLock.class);
+        when(clusterLockService.getLockForName(anyString())).thenReturn(lock);
+
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
             @Override
@@ -140,6 +176,30 @@ public abstract class BaseActiveObjectsIntegrationTest
             }
         });
 
-        when(dataSourceProvider.getDatabaseType()).thenReturn(DatabaseType.UNKNOWN);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.UNKNOWN);
+
+        when(threadLocalDelegateExecutorFactory.createScheduledExecutorService(Matchers.any(ScheduledExecutorService.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return invocation.getArguments()[0];
+            }
+        });
+
+        when(threadLocalDelegateExecutorFactory.createExecutorService(Matchers.any(ExecutorService.class))).thenAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable
+            {
+                return invocation.getArguments()[0];
+            }
+        });
+
+        when(tenantAccessor.getAvailableTenants()).thenReturn(availableTenants);
+
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+
+        when(initExecutorServiceProvider.initExecutorService(tenant)).thenReturn(MoreExecutors.sameThreadExecutor());
     }
 }

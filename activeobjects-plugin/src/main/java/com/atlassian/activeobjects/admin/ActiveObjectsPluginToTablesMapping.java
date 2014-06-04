@@ -9,12 +9,10 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesMapping
+public class ActiveObjectsPluginToTablesMapping implements PluginToTablesMapping
 {
     private static final String KEY = ActiveObjectsPluginToTablesMapping.class.getName();
 
@@ -22,77 +20,33 @@ public final class ActiveObjectsPluginToTablesMapping implements PluginToTablesM
     {
     }.getType();
 
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
     private final PluginSettings settings;
-    private Map<String, PluginInfo> mappings;
 
     public ActiveObjectsPluginToTablesMapping(PluginSettingsFactory factory)
     {
         this.settings = checkNotNull(factory).createGlobalSettings();
-        this.mappings = getMappingFromSettings();
     }
 
     @Override
-    public void add(PluginInfo pluginInfo, List<String> tableNames)
+    public synchronized void add(PluginInfo pluginInfo, List<String> tableNames)
     {
-        lock.writeLock().lock();
-        try
-        {
-            doAdd(pluginInfo, tableNames);
-        }
-        finally
-        {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public PluginInfo get(String tableName)
-    {
-        lock.readLock().lock();
-        try
-        {
-            return doGet(tableName);
-        }
-        finally
-        {
-            lock.readLock().unlock();
-        }
-    }
-
-    private void doAdd(PluginInfo pluginInfo, List<String> tableNames)
-    {
-        final Map<String, PluginInfo> newMappings = Maps.newHashMap(mappings);
+        final Map<String, PluginInfo> mappings = getMappingFromSettings();
         for (String tableName : tableNames)
         {
-            newMappings.put(tableName, pluginInfo);
+            mappings.put(tableName, pluginInfo);
         }
-        putMapInSettings(newMappings);
-        this.mappings = newMappings;
+        settings.put(KEY, new Gson().toJson(mappings));
     }
 
-    private PluginInfo doGet(String tableName)
+    @Override
+    public synchronized PluginInfo get(String tableName)
     {
-        return mappings.get(tableName);
+        return getMappingFromSettings().get(tableName);
     }
 
-    private void putMapInSettings(Map<String, PluginInfo> newMappings)
+    protected Map<String, PluginInfo> getMappingFromSettings()
     {
-        settings.put(KEY, new Gson().toJson(newMappings));
-    }
-
-    public Map<String, PluginInfo> getMappingFromSettings()
-    {
-        lock.readLock().lock();
-        try
-        {
-            final Map<String, PluginInfo> map = new Gson().fromJson((String) settings.get(KEY), MAPPINGS_TYPE);
-            return map != null ? map : Maps.<String, PluginInfo>newHashMap();
-        }
-        finally
-        {
-            lock.readLock().unlock();
-        }
+        final Map<String, PluginInfo> map = new Gson().fromJson((String) settings.get(KEY), MAPPINGS_TYPE);
+        return map != null ? map : Maps.<String, PluginInfo>newHashMap();
     }
 }

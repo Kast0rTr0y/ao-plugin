@@ -6,8 +6,12 @@
         <version>${project.version}</version>
     </plugin-info>
 
-    <component key="dataSourceProvider" class="com.atlassian.activeobjects.refapp.RefappDataSourceProvider" name="Data Source Provider" public="true">
+    <component key="dataSourceProvider" class="com.atlassian.activeobjects.spi.DataSourceProviderImpl" name="Data Source Provider" public="true">
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
+    <component key="tenantAwareDataSourceProvider" class="com.atlassian.activeobjects.refapp.RefappTenantAwareDataSourceProvider" name="Tenant Aware Data Source Provider" public="true">
+        <interface>com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider</interface>
     </component>
 
     <component name="Refapp Data Source" key="refapp-datasource"
@@ -20,4 +24,7 @@
     </component>
 
     <component-import name="Application Properties" key="application-properties" interface="com.atlassian.sal.api.ApplicationProperties"/>
+
+    <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
+
 </atlassian-plugin>

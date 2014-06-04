@@ -3,6 +3,7 @@ package it.com.atlassian.activeobjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsSettingKeys;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
+import com.atlassian.tenancy.api.Tenant;
 import org.hsqldb.jdbc.jdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +33,7 @@ public final class TestActiveObjectsPluginWithApplicationDatabase extends BaseAc
 
         applicationDatabaseDirectory = folder.newFolder("application-db");
 
-        when(dataSourceProvider.getDataSource()).thenReturn(hsqlDataSource(applicationDatabaseDirectory, CONSUMER_PLUGIN_KEY));
+        when(tenantAwareDataSourceProvider.getDataSource(any(Tenant.class))).thenReturn(hsqlDataSource(applicationDatabaseDirectory, CONSUMER_PLUGIN_KEY));
 
         container.start();
     }

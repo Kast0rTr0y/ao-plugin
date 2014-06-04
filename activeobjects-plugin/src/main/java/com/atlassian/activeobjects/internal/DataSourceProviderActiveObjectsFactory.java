@@ -10,12 +10,14 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
@@ -27,16 +29,17 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
 public final class DataSourceProviderActiveObjectsFactory extends AbstractActiveObjectsFactory
 {
     private final EntityManagerFactory entityManagerFactory;
-    private final DataSourceProvider dataSourceProvider;
+    private final TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
     
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     public DataSourceProviderActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager, 
-            EntityManagerFactory entityManagerFactory, DataSourceProvider dataSourceProvider, TransactionTemplate transactionTemplate)
+            EntityManagerFactory entityManagerFactory, TenantAwareDataSourceProvider tenantAwareDataSourceProvider,
+            TransactionTemplate transactionTemplate, ClusterLockService clusterLockService)
     {
-        super(DataSourceType.APPLICATION, aoUpgradeManager,transactionTemplate);
+        super(DataSourceType.APPLICATION, aoUpgradeManager,transactionTemplate, clusterLockService);
         this.entityManagerFactory = checkNotNull(entityManagerFactory);
-        this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.tenantAwareDataSourceProvider = checkNotNull(tenantAwareDataSourceProvider);
     }
     
     public void setTransactionSynchronizationManager(TransactionSynchronisationManager transactionSynchronizationManager)
@@ -46,37 +49,48 @@ public final class DataSourceProviderActiveObjectsFactory extends AbstractActive
     
     /**
      * Creates an {@link com.atlassian.activeobjects.external.ActiveObjects} using the
-     * {@link com.atlassian.activeobjects.spi.DataSourceProvider}
+     * {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider}
      *
      * @param configuration the configuration of active objects
      * @return a new configured, ready to go ActiveObjects instance
-     * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.activeobjects.spi.DataSourceProvider}
+     * @throws ActiveObjectsPluginException if the data source obtained from the {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider}
      * is {@code null}
      */
     @Override
-    protected ActiveObjects doCreate(final ActiveObjectsConfiguration configuration, final DatabaseType dbType)
+    protected ActiveObjects doCreate(final ActiveObjectsConfiguration configuration, final Tenant tenant)
     {
         return transactionTemplate.execute(new TransactionCallback<ActiveObjects>()
         {
             @Override
             public ActiveObjects doInTransaction()
             {
-                final DataSource dataSource = getDataSource();
-                final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dbType, dataSourceProvider.getSchema(), configuration);
+                final DataSource dataSource = getDataSource(tenant);
+                final DatabaseType dbType = getDatabaseType(tenant);
+                final EntityManager entityManager = entityManagerFactory.getEntityManager(dataSource, dbType, tenantAwareDataSourceProvider.getSchema(tenant), configuration);
                 return new EntityManagedActiveObjects(entityManager, 
                         new SalTransactionManager(transactionTemplate, entityManager, transactionSynchronizationManager), dbType);
             }
         });
     }
 
-    private DataSource getDataSource()
+    private DataSource getDataSource(final Tenant tenant)
     {
-        final DataSource dataSource = dataSourceProvider.getDataSource();
+        final DataSource dataSource = tenantAwareDataSourceProvider.getDataSource(tenant);
         if (dataSource == null)
         {
             throw new ActiveObjectsPluginException("No data source defined in the application");
         }
         return new ActiveObjectsDataSource(dataSource);
+    }
+
+    private DatabaseType getDatabaseType(final Tenant tenant)
+    {
+        final DatabaseType databaseType = tenantAwareDataSourceProvider.getDatabaseType(tenant);
+        if (databaseType == null)
+        {
+            throw new ActiveObjectsPluginException("No database type defined in the application");
+        }
+        return databaseType;
     }
 
     public static class ActiveObjectsDataSource implements DataSource

@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.junit;
 
+import com.atlassian.plugin.Application;
 import com.atlassian.plugin.DefaultModuleDescriptorFactory;
 import com.atlassian.plugin.JarPluginArtifact;
 import com.atlassian.plugin.ModuleDescriptorFactory;
@@ -8,6 +9,7 @@ import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.event.PluginEventManager;
 import com.atlassian.plugin.event.impl.DefaultPluginEventManager;
 import com.atlassian.plugin.factories.LegacyDynamicPluginFactory;
+import com.atlassian.plugin.factories.PluginFactory;
 import com.atlassian.plugin.hostcontainer.DefaultHostContainer;
 import com.atlassian.plugin.loaders.DirectoryPluginLoader;
 import com.atlassian.plugin.loaders.PluginLoader;
@@ -26,6 +28,9 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import java.io.File;
 import java.util.Arrays;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import static org.junit.Assert.*;
 
@@ -91,11 +96,11 @@ public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsCon
         osgiContainerManager = new FelixOsgiContainerManager(cache, scannerConfiguration, requiredWrappingProvider, pluginEventManager);
 
         final LegacyDynamicPluginFactory legacyFactory = new LegacyDynamicPluginFactory(PluginAccessor.Descriptor.FILENAME, tmpDir);
-        final OsgiPluginFactory osgiPluginDeployer = new OsgiPluginFactory(PluginAccessor.Descriptor.FILENAME, (String) null, cache, osgiContainerManager, pluginEventManager);
+        final OsgiPluginFactory osgiPluginDeployer = new OsgiPluginFactory(PluginAccessor.Descriptor.FILENAME, ImmutableSet.<Application>of(), cache, osgiContainerManager, pluginEventManager);
         final OsgiBundleFactory osgiBundleFactory = new OsgiBundleFactory(osgiContainerManager, pluginEventManager);
 
         final File pluginsDir = getDir(tmpDir, "plugins");
-        final DirectoryPluginLoader loader = new DirectoryPluginLoader(pluginsDir, Arrays.asList(legacyFactory, osgiPluginDeployer, osgiBundleFactory), pluginEventManager);
+        final DirectoryPluginLoader loader = new DirectoryPluginLoader(pluginsDir, ImmutableList.<PluginFactory>of(legacyFactory, osgiPluginDeployer, osgiBundleFactory), pluginEventManager);
 
         pluginManager = new DefaultPluginManager(new MemoryPluginPersistentStateStore(), Arrays.<PluginLoader>asList(loader), moduleDescriptorFactory, pluginEventManager);
         pluginManager.setPluginInstaller(new FilePluginInstaller(pluginsDir));

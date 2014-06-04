@@ -16,6 +16,8 @@
             <constructor-arg index="5">
                 <bean class="com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator"/>
             </constructor-arg>
+            <constructor-arg index="6" ref="tenantAccessor"/>
+            <constructor-arg index="7" ref="eventPublisher"/>
         </bean>
     </osgi:service>
 
@@ -48,22 +50,20 @@
         </constructor-arg>
     </bean>
 
-	<bean id="activeObjectsConfigurationServiceProvider" class="com.atlassian.activeobjects.osgi.AOConfigurationServiceProviderImpl">
-		<constructor-arg index="0" ref="osgiUtils"/>
-		<constructor-arg index="1" ref="activeObjectsConfigurationFactory" />
-		<constructor-arg index="2">
+    <bean id="aoConfigurationGenerator" class="com.atlassian.activeobjects.osgi.AOConfigurationGeneratorImpl">
+        <constructor-arg index="0" ref="activeObjectsConfigurationFactory" />
+        <constructor-arg index="1">
             <bean class="com.atlassian.activeobjects.spring.ApplicationContextFactoryBean"/>
         </constructor-arg>
-        <constructor-arg index="3" ref="bundleContext"/>
-	</bean>
-	
+    </bean>
+
     <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
         <constructor-arg index="0" ref="activeObjectsFactory"/>
-        <constructor-arg index="1" ref="activeObjectsConfigurationServiceProvider"/>
-        <constructor-arg index="2" ref="eventPublisher"/>
-        <constructor-arg index="3" ref="aoSynchronizationManager"/>
-        <constructor-arg index="4" ref="dataSourceProvider"/>
-        <constructor-arg index="5" ref="transactionTemplate"/>
+        <constructor-arg index="1" ref="eventPublisher"/>
+        <constructor-arg index="2" ref="tenantContext"/>
+        <constructor-arg index="3" ref="aoConfigurationGenerator"/>
+        <constructor-arg index="4" ref="threadLocalDelegateExecutorFactory"/>
+        <constructor-arg index="5" ref="initExecutorServiceProvider"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
@@ -85,7 +85,7 @@
 
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
-        <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg ref="tenantAwareDataSourceProvider"/>
         <constructor-arg ref="simpleNameConverters"/>
         <constructor-arg ref="errorService"/>
     </bean>
@@ -122,6 +122,7 @@
                     <constructor-arg index="1" ref="applicationProperties"/>
                     <constructor-arg index="2" ref="aoPluginConfiguration"/>
                     <constructor-arg index="3" ref="transactionTemplate"/>
+                    <constructor-arg index="4" ref="clusterLockService"/>
                 </bean>
                 <bean class="com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory" autowire="byName">
                     <constructor-arg index="0" ref="aoUpgradeManager"/>
@@ -130,8 +131,9 @@
                             <constructor-arg index="0" ref="databaseProviderFactory"/>
                         </bean>
                     </constructor-arg>
-                    <constructor-arg index="2" ref="dataSourceProvider"/>
+                    <constructor-arg index="2" ref="tenantAwareDataSourceProvider"/>
                     <constructor-arg index="3" ref="transactionTemplate"/>
+                    <constructor-arg index="4" ref="clusterLockService"/>
                     <property name="transactionSynchronizationManager" ref="aoSynchronizationManager"/>
                 </bean>
             </list>

@@ -1,8 +1,9 @@
-package com.atlassian.activeobjects.confluence;
+package com.atlassian.activeobjects.bamboo;
 
-import com.atlassian.activeobjects.confluence.hibernate.DialectExtractor;
+import com.atlassian.activeobjects.bamboo.hibernate.DialectExtractor;
 import com.atlassian.activeobjects.spi.DatabaseType;
-import com.atlassian.hibernate.PluginHibernateSessionFactory;
+import com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory;
+import com.atlassian.tenancy.api.Tenant;
 import net.sf.hibernate.dialect.DB2390Dialect;
 import net.sf.hibernate.dialect.DB2400Dialect;
 import net.sf.hibernate.dialect.DB2Dialect;
@@ -12,7 +13,6 @@ import net.sf.hibernate.dialect.MySQLDialect;
 import net.sf.hibernate.dialect.Oracle9Dialect;
 import net.sf.hibernate.dialect.OracleDialect;
 import net.sf.hibernate.dialect.PostgreSQLDialect;
-import net.sf.hibernate.dialect.SQLServerDialect;
 import net.sf.hibernate.dialect.SQLServerIntlDialect;
 import org.junit.After;
 import org.junit.Before;
@@ -25,23 +25,26 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
 /**
- * Testing {@link com.atlassian.activeobjects.confluence.ConfluenceDataSourceProvider}
+ * Testing {@link BambooTenantAwareDataSourceProvider}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ConfluenceDataSourceProviderTest
+public class BambooTenantAwareDataSourceProviderTest
 {
-    private ConfluenceDataSourceProvider dataSourceProvider;
+    private BambooTenantAwareDataSourceProvider dataSourceProvider;
 
     @Mock
     private PluginHibernateSessionFactory sessionFactory;
 
     @Mock
-    private DialectExtractor dialectExtrator;
+    private DialectExtractor dialectExtractor;
+
+    @Mock
+    private Tenant tenant;
 
     @Before
     public void setUp() throws Exception
     {
-        dataSourceProvider = new ConfluenceDataSourceProvider(sessionFactory, dialectExtrator);
+        dataSourceProvider = new BambooTenantAwareDataSourceProvider(sessionFactory, dialectExtractor);
     }
 
     @After
@@ -85,7 +88,6 @@ public class ConfluenceDataSourceProviderTest
     @Test
     public void testGetMsSqlDatabaseTypeWithMsSqlDialect()
     {
-        assertDatabaseTypeForDialect(DatabaseType.MS_SQL, SQLServerDialect.class);
         assertDatabaseTypeForDialect(DatabaseType.MS_SQL, SQLServerIntlDialect.class);
     }
 
@@ -100,7 +102,7 @@ public class ConfluenceDataSourceProviderTest
 
     private void assertDatabaseTypeForDialect(DatabaseType databaseType, Class<? extends Dialect> dialect)
     {
-        doReturn(dialect).when(dialectExtrator).getDialect();
-        assertEquals(databaseType, dataSourceProvider.getDatabaseType());
+        doReturn(dialect).when(dialectExtractor).getDialect();
+        assertEquals(databaseType, dataSourceProvider.getDatabaseType(tenant));
     }
 }

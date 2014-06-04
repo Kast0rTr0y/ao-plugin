@@ -4,11 +4,16 @@ import javax.sql.DataSource;
 
 /**
  * Gives access to the host application data source.
+ *
+ * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider} instead; may throw
+ * {@link java.lang.IllegalStateException} if called when the application is in a warm (untenanted) state.
  */
 public interface DataSourceProvider
 {
     /**
      * @return the host application data source
+     *
+     * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider#getDataSource(com.atlassian.tenancy.api.Tenant)} instead
      */
     DataSource getDataSource();
 
@@ -20,6 +25,8 @@ public interface DataSourceProvider
      *
      * @return a valid database type
      * @see com.atlassian.activeobjects.spi.DatabaseType
+     *
+     * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider#getDatabaseType(com.atlassian.tenancy.api.Tenant)} instead
      */
     DatabaseType getDatabaseType();
 
@@ -28,6 +35,8 @@ public interface DataSourceProvider
      * <p>This is especially import for SQL Server, PostgresQL and HSQLDB</p>
      *
      * @return the name of the schema to use, {@code null} if no schema is required.
+     *
+     * @deprecated since 0.26.1 use {@link com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider#getSchema(com.atlassian.tenancy.api.Tenant)} instead
      */
     String getSchema();
 }

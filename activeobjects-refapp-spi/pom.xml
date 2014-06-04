@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.25-SNAPSHOT</version>
+        <version>0.27.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>activeobjects-refapp-spi</artifactId>
@@ -61,7 +61,8 @@
                             org.hsqldb*;version="${hsqldb.version}",
                         </Export-Package>
                         <Import-Package>
-                            com.atlassian.sal.api*;version="${sal.version}",
+                            com.atlassian.sal.api*;version="${sal.libversion}",
+                            com.atlassian.tenancy.api*,
                             com.google.common*;version="1.0",
                             javax*;version="0.0.0",
                             javax.naming;version="0.0.0",
@@ -84,9 +85,14 @@
             <artifactId>activeobjects-spi</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-api</artifactId>
-            <version>${sal.version}</version>
+            <version>${sal.libversion}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.25-SNAPSHOT</version>
+        <version>0.27.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -18,5 +18,9 @@
             <artifactId>sal-api</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
+       </dependency>
     </dependencies>
 </project>

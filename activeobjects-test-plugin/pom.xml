@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.25-SNAPSHOT</version>
+        <version>0.27.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>activeobjects-test-plugin</artifactId>
@@ -52,6 +52,11 @@
                     <artifactId>activeobjects-test</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.beehive</groupId>
+            <artifactId>beehive-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -154,11 +159,11 @@
                 <configuration>
                     <systemPropertyVariables>
                         <webdriver.browser>firefox</webdriver.browser>
+                        <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
                     <products>
                         <product>
                             <id>refapp</id>
-                            <version>${refapp.version}</version>
                             <bundledArtifacts>
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
@@ -171,13 +176,6 @@
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.util.concurrent</groupId>
-                                    <artifactId>atlassian-util-concurrent</artifactId>
-                                    <version>${atlassian.concurrent.version}</version>
-                                </libArtifact>
-                            </libArtifacts>
                         </product>
                     </products>
                     <testGroups>
@@ -218,7 +216,6 @@
                             <products>
                                 <product>
                                     <id>refapp</id>
-                                    <version>${refapp.version}</version>
                                     <bundledArtifacts>
                                         <bundledArtifact>
                                             <groupId>com.atlassian.activeobjects</groupId>
@@ -231,13 +228,6 @@
                                             <version>${project.version}</version>
                                         </bundledArtifact>
                                     </bundledArtifacts>
-                                    <libArtifacts>
-                                        <libArtifact>
-                                            <groupId>com.atlassian.util.concurrent</groupId>
-                                            <artifactId>atlassian-util-concurrent</artifactId>
-                                            <version>${atlassian.concurrent.version}</version>
-                                        </libArtifact>
-                                    </libArtifacts>
                                 </product>
                                 <product>
                                     <id>jira</id>
@@ -249,7 +239,11 @@
                                             <artifactId>activeobjects-spi</artifactId>
                                             <version>${project.version}</version>
                                         </libArtifact>
-
+                                        <libArtifact>
+                                            <groupId>com.google.guava</groupId>
+                                            <artifactId>guava</artifactId>
+                                            <version>11.0.2-atlassian-01</version>
+                                        </libArtifact>
                                     </libArtifacts>
                                     <bundledArtifacts>
                                         <bundledArtifact>
