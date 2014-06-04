@@ -3,18 +3,15 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.PluginKey;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
-import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-
 import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,7 +99,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
     @Test
     public void testCreateWithNullDataSource() throws Exception
     {
-        when(dataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
+        when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
             activeObjectsFactory.create(configuration, tenant);
@@ -121,7 +118,6 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         final DataSource dataSource = mock(DataSource.class);
 
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
-        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
