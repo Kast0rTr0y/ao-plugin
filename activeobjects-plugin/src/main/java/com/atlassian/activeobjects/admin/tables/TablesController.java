@@ -5,7 +5,7 @@ import com.atlassian.activeobjects.backup.ActiveObjectsTableReader;
 import com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl;
 import com.atlassian.activeobjects.backup.PluginInformationFactory;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.Table;
@@ -28,17 +28,17 @@ public final class TablesController
 {
     private final DatabaseProviderFactory databaseProviderFactory;
     private final NameConverters nameConverters;
-    private final DataSourceProvider dataSourceProvider;
+    private final TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
     private final ImportExportErrorServiceImpl errorService;
     private final PluginInformationFactory pluginInformationFactory;
     private final TenantContext tenantContext;
 
-    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory, TenantContext tenantContext)
+    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, TenantAwareDataSourceProvider tenantAwareDataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory, TenantContext tenantContext)
     {
         this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
         this.nameConverters = checkNotNull(nameConverters);
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
-        this.dataSourceProvider = checkNotNull(dataSourceProvider);
+        this.tenantAwareDataSourceProvider = checkNotNull(tenantAwareDataSourceProvider);
         this.errorService = checkNotNull(errorService);
         this.tenantContext = checkNotNull(tenantContext);
     }
@@ -75,7 +75,7 @@ public final class TablesController
 
     private DatabaseProvider getDatabaseProvider(Tenant tenant)
     {
-        return databaseProviderFactory.getDatabaseProvider(dataSourceProvider.getDataSource(tenant), dataSourceProvider.getDatabaseType(tenant), dataSourceProvider.getSchema(tenant));
+        return databaseProviderFactory.getDatabaseProvider(tenantAwareDataSourceProvider.getDataSource(tenant), tenantAwareDataSourceProvider.getDatabaseType(tenant), tenantAwareDataSourceProvider.getSchema(tenant));
     }
 
     private Multimap<PluginInformation, TableInformation> tablesPerPlugin(Iterable<Table> tables, final RowCounter rowCounter)

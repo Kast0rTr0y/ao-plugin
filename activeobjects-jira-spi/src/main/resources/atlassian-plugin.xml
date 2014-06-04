@@ -6,9 +6,13 @@
         <version>${project.version}</version>
     </plugin-info>
 
-    <component key="dataSourceProvider" name="Data Source Provider" public="true"
-               class="com.atlassian.activeobjects.jira.JiraDataSourceProvider">
+    <component key="dataSourceProvider" class="com.atlassian.activeobjects.spi.DataSourceProviderImpl" name="Data Source Provider" public="true">
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
+    <component key="tenantAwareDataSourceProvider" name="Tenant Aware Data Source Provider" public="true"
+               class="com.atlassian.activeobjects.jira.JiraTenantAwareDataSourceProvider">
+        <interface>com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider</interface>
     </component>
 
     <component key="ofBizConnectionFactory" name="OfBiz Connection factory"
@@ -18,6 +22,8 @@
                class="com.atlassian.activeobjects.jira.OfBizDatabaseTypeExtractor"/>
 
     <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
+
+    <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
 
     <component key="jiraQuickRestart" name="JIRA Quick Restart"
                class="com.atlassian.activeobjects.jira.JiraQuickRestart"/>

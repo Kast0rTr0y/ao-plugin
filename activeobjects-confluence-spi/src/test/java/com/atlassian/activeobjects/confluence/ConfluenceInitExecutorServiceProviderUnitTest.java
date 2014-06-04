@@ -1,6 +1,6 @@
 package com.atlassian.activeobjects.confluence;
 
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
@@ -30,7 +30,7 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     private InitExecutorServiceProvider defaultInitExecutorServiceProvider;
 
     @Mock
-    private DataSourceProvider dataSourceProvider;
+    private TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
 
     @Mock
     private ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
@@ -41,7 +41,7 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     @Before
     public void setUp() throws Exception
     {
-        confluenceInitExecutorServiceProvider = new ConfluenceInitExecutorServiceProvider(threadLocalDelegateExecutorFactory, dataSourceProvider, defaultInitExecutorServiceProvider);
+        confluenceInitExecutorServiceProvider = new ConfluenceInitExecutorServiceProvider(threadLocalDelegateExecutorFactory, tenantAwareDataSourceProvider, defaultInitExecutorServiceProvider);
 
         when(threadLocalDelegateExecutorFactory.createExecutorService(Matchers.any(ExecutorService.class))).thenAnswer(new Answer<Object>()
         {
@@ -56,7 +56,7 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     @Test
     public void hsqlSnowflake()
     {
-        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.HSQL);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.HSQL);
 
         assertThat(confluenceInitExecutorServiceProvider.initExecutorService(tenant), is(ExecutorService.class));
     }
@@ -64,7 +64,7 @@ public class ConfluenceInitExecutorServiceProviderUnitTest
     @Test
     public void realDatabase()
     {
-        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.POSTGRESQL);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.POSTGRESQL);
 
         final ExecutorService executorService = mock(ExecutorService.class);
         when(defaultInitExecutorServiceProvider.initExecutorService(tenant)).thenReturn(executorService);

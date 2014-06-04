@@ -1,7 +1,7 @@
 package com.atlassian.activeobjects.bamboo;
 
 import com.atlassian.activeobjects.bamboo.hibernate.DialectExtractor;
-import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.AbstractTenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.ConnectionHandler;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory;
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class BambooDataSourceProvider extends AbstractDataSourceProvider
+public final class BambooTenantAwareDataSourceProvider extends AbstractTenantAwareDataSourceProvider
 {
     private static final Map<Class<? extends Dialect>, DatabaseType> DIALECT_TO_DATABASE_MAPPING = ImmutableMap.<Class<? extends Dialect>, DatabaseType>builder()
             .put(HSQLDialect.class, DatabaseType.HSQL)
@@ -42,7 +42,7 @@ public final class BambooDataSourceProvider extends AbstractDataSourceProvider
     private final SessionFactoryDataSource dataSource;
     private final DialectExtractor dialectExtractor;
 
-    public BambooDataSourceProvider(PluginHibernateSessionFactory sessionFactory, DialectExtractor dialectExtractor)
+    public BambooTenantAwareDataSourceProvider(PluginHibernateSessionFactory sessionFactory, DialectExtractor dialectExtractor)
     {
         this.dataSource = new SessionFactoryDataSource(checkNotNull(sessionFactory));
         this.dialectExtractor = checkNotNull(dialectExtractor);

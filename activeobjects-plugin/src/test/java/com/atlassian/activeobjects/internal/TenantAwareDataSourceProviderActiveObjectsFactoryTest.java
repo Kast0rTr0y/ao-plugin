@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.beehive.ClusterLock;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DataSourceProviderActiveObjectsFactoryTest
+public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
 {
     private DataSourceProviderActiveObjectsFactory activeObjectsFactory;
 
@@ -47,7 +48,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
     private ActiveObjectUpgradeManager upgradeManager;
 
     @Mock
-    private DataSourceProvider dataSourceProvider;
+    private TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
 
     @Mock
     private EntityManagerFactory entityManagerFactory;
@@ -78,7 +79,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(configuration.getPluginKey()).thenReturn(pluginKey);
         activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
-                dataSourceProvider, transactionTemplate, clusterLockService);
+                tenantAwareDataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
         when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
         {
@@ -95,7 +96,7 @@ public class DataSourceProviderActiveObjectsFactoryTest
     {
         activeObjectsFactory = null;
         entityManagerFactory = null;
-        dataSourceProvider = null;
+        tenantAwareDataSourceProvider = null;
     }
 
     @Test
@@ -119,8 +120,9 @@ public class DataSourceProviderActiveObjectsFactoryTest
     {
         final DataSource dataSource = mock(DataSource.class);
 
-        when(dataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
-        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
+        when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
+        when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
             activeObjectsFactory.create(configuration, tenant);
@@ -139,10 +141,10 @@ public class DataSourceProviderActiveObjectsFactoryTest
         final DataSource dataSource = mock(DataSource.class);
         final EntityManager entityManager = mock(EntityManager.class);
 
-        when(dataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
+        when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
-        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.DERBY_EMBEDDED);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.DERBY_EMBEDDED);
 
         assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());

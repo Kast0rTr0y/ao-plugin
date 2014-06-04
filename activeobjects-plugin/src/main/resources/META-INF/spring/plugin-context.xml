@@ -74,7 +74,7 @@
 
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
-        <constructor-arg ref="dataSourceProvider"/>
+        <constructor-arg ref="tenantAwareDataSourceProvider"/>
         <constructor-arg ref="tenantContext"/>
         <constructor-arg>
             <bean class="net.java.ao.builder.SimpleNameConverters">
@@ -132,7 +132,7 @@
                             <constructor-arg index="0" ref="databaseProviderFactory"/>
                         </bean>
                     </constructor-arg>
-                    <constructor-arg index="2" ref="dataSourceProvider"/>
+                    <constructor-arg index="2" ref="tenantAwareDataSourceProvider"/>
                     <constructor-arg index="3" ref="transactionTemplate"/>
                     <constructor-arg index="4" ref="clusterLockService"/>
                     <property name="transactionSynchronizationManager" ref="aoSynchronizationManager"/>

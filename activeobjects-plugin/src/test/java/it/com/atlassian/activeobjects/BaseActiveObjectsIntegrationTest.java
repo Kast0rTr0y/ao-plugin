@@ -6,7 +6,7 @@ import com.atlassian.activeobjects.junit.ConfigurableTemporaryFolder;
 import com.atlassian.activeobjects.junit.Host;
 import com.atlassian.activeobjects.junit.MockHostComponent;
 import com.atlassian.activeobjects.junit.PackageVersion;
-import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
@@ -111,7 +111,7 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected PluginSettingsFactory pluginSettingsFactory;
 
     @MockHostComponent
-    protected DataSourceProvider dataSourceProvider;
+    protected TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
 
     @MockHostComponent
     protected WebInterfaceManager webInterfaceManager;
@@ -176,7 +176,7 @@ public abstract class BaseActiveObjectsIntegrationTest
             }
         });
 
-        when(dataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.UNKNOWN);
+        when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.UNKNOWN);
 
         when(threadLocalDelegateExecutorFactory.createScheduledExecutorService(Matchers.any(ScheduledExecutorService.class))).thenAnswer(new Answer<Object>()
         {

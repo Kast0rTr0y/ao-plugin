@@ -38,7 +38,7 @@
     </bean>
 
     <osgi:reference id="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
-    <osgi:reference id="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
+    <osgi:reference id="tenantAwareDataSourceProvider" interface="com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider"/>
     <osgi:reference id="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
     <osgi:reference id="moduleFactory" interface="com.atlassian.plugin.module.ModuleFactory"/>
     <osgi:reference id="clusterLockService" interface="com.atlassian.beehive.ClusterLockService"/>

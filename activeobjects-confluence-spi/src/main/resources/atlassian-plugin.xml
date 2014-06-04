@@ -6,8 +6,12 @@
         <version>${project.version}</version>
     </plugin-info>
 
-    <component key="dataSourceProvider" class="com.atlassian.activeobjects.confluence.ConfluenceDataSourceProvider" name="Data Source Provider" public="true">
+    <component key="dataSourceProvider" class="com.atlassian.activeobjects.spi.DataSourceProviderImpl" name="Data Source Provider" public="true">
         <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
+    </component>
+
+    <component key="tenantAwareDataSourceProvider" class="com.atlassian.activeobjects.confluence.ConfluenceTenantAwareDataSourceProvider" name="Tenant Aware Data Source Provider" public="true">
+        <interface>com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider</interface>
     </component>
 
     <component key="initExecutorServiceProvider" class="com.atlassian.activeobjects.confluence.ConfluenceInitExecutorServiceProvider" name="Confluence Init Executor Service Provider" public="true">
@@ -23,6 +27,8 @@
 
     <component-import key="hibernateSessionFactory" interface="com.atlassian.hibernate.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
     <component-import key="synchronizationManager" interface="com.atlassian.confluence.core.SynchronizationManager" name="Confluence Synchronisation Manager"/>
-    
+
+    <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
+
     <backup-restore key="activeObjectsBackupRestoreProvider" class="com.atlassian.activeobjects.confluence.backup.ActiveObjectsBackupRestoreProvider" public="true"/>
 </atlassian-plugin>

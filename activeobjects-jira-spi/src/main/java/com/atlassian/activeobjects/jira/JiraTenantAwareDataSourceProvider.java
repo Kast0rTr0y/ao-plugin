@@ -1,6 +1,6 @@
 package com.atlassian.activeobjects.jira;
 
-import com.atlassian.activeobjects.spi.AbstractDataSourceProvider;
+import com.atlassian.activeobjects.spi.AbstractTenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.jira.ofbiz.OfBizConnectionFactory;
 import com.atlassian.tenancy.api.Tenant;
@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Suppliers.*;
 
-public final class JiraDataSourceProvider extends AbstractDataSourceProvider
+public final class JiraTenantAwareDataSourceProvider extends AbstractTenantAwareDataSourceProvider
 {
     private static final Map<org.ofbiz.core.entity.jdbc.dbtype.DatabaseType, DatabaseType> DB_TYPE_TO_DB_TYPE = ImmutableMap.<org.ofbiz.core.entity.jdbc.dbtype.DatabaseType, DatabaseType>builder()
             .put(DatabaseTypeFactory.DB2, DatabaseType.DB2)
@@ -38,7 +38,7 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
     private final JiraDatabaseTypeExtractor databaseTypeExtractor;
     private final DataSource ds;
 
-    public JiraDataSourceProvider(OfBizConnectionFactory connectionFactory, JiraDatabaseTypeExtractor databaseTypeExtractor)
+    public JiraTenantAwareDataSourceProvider(OfBizConnectionFactory connectionFactory, JiraDatabaseTypeExtractor databaseTypeExtractor)
     {
         this.connectionFactory = checkNotNull(connectionFactory);
         this.databaseTypeExtractor = checkNotNull(databaseTypeExtractor);
