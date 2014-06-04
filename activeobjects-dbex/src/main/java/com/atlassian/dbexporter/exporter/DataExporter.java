@@ -45,9 +45,17 @@ public final class DataExporter implements Exporter
         {
             public Void call(Connection connection)
             {
-                for (String table : getTableNames(context))
+                for (final String table : getTableNames(context))
                 {
-                    exportTable(table, connection, node, monitor, configuration.getEntityNameProcessor());
+                    withNoAutoCommit(errorService, connection, new JdbcCallable<Void>()
+                    {
+                        @Override
+                        public Void call(Connection connection)
+                        {
+                            exportTable(table, connection, node, monitor, configuration.getEntityNameProcessor());
+                            return null;
+                        }
+                    });
                 }
                 node.closeEntity();
                 return null;

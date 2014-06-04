@@ -47,6 +47,33 @@ public final class JdbcUtils
     }
 
     /**
+     * Executes callable with no autoCommit.
+     *
+     * E.g. PostgreSQL requires autoCommit to be off for batchSize to take
+     * effect.
+     */
+    public static <T> T withNoAutoCommit(ImportExportErrorService errorService, Connection connection, JdbcCallable<T> callable)
+    {
+        try
+        {
+            final boolean autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try
+            {
+                return callable.call(connection);
+            }
+            finally
+            {
+                connection.setAutoCommit(autoCommit);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw errorService.newImportExportSqlException(null, "", e);
+        }
+    }
+
+    /**
      * Closes the specified {@link java.sql.ResultSet}, swallowing {@link java.sql.SQLException}s.
      *
      * @param resultSet
