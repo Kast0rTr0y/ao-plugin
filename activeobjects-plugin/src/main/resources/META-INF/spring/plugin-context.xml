@@ -86,6 +86,7 @@
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="tenantAwareDataSourceProvider"/>
+        <constructor-arg ref="tenantContext"/>
         <constructor-arg ref="simpleNameConverters"/>
         <constructor-arg ref="errorService"/>
     </bean>
