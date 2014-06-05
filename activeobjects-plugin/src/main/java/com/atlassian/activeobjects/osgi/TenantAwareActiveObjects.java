@@ -60,7 +60,7 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
 
     static final String CONFIGURATION_TIMEOUT_MS_PROPERTY = "activeobjects.servicefactory.config.timeout";
 
-    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
+    private final long CONFIGURATION_TIMEOUT_MS;
 
     private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
 
@@ -91,6 +91,8 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
         checkNotNull(factory);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(initExecutorFunction);
+
+        CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
 
         // loading cache for delegate promises by tenant
         aoPromisesByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()

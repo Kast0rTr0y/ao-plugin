@@ -83,7 +83,6 @@ public class TenantAwareActiveObjectsTest
     @BeforeClass
     public static void beforeClass()
     {
-        // don't forget to update maven-surefire-plugin confugration
         System.setProperty(TenantAwareActiveObjects.CONFIGURATION_TIMEOUT_MS_PROPERTY, String.valueOf(999));
     }
 
