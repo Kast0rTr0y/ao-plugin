@@ -113,7 +113,6 @@
                             net.java.ao.event;version="${ao.version}",
                             net.java.ao.schema;version="${ao.version}",
                         </Export-Package>
-                        <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
                     <libArtifacts>
