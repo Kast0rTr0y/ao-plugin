@@ -182,6 +182,11 @@
                                     <artifactId>activeobjects-spi</artifactId>
                                     <version>${project.version}</version>
                                 </libArtifact>
+                                <libArtifact>
+                                    <groupId>com.atlassian.tenancy</groupId>
+                                    <artifactId>atlassian-tenancy-api</artifactId>
+                                    <version>${tenancy.libversion}</version>
+                                </libArtifact>
                             </libArtifacts>
                             <bundledArtifacts>
                                 <bundledArtifact>
@@ -193,6 +198,11 @@
                                     <groupId>com.atlassian.activeobjects</groupId>
                                     <artifactId>activeobjects-jira-spi</artifactId>
                                     <version>${project.version}</version>
+                                </bundledArtifact>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.tenancy</groupId>
+                                    <artifactId>atlassian-tenancy-compatibility-plugin</artifactId>
+                                    <version>${tenancy.libversion}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
                         </product>
