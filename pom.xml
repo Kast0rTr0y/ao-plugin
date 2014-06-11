@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.4</version>
+        <version>3.0.11</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
