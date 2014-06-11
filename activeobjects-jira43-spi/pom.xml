@@ -44,7 +44,6 @@
                         <Embed-Dependency>!clover.*;scope=compile|runtime;inline=true</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
-                        <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                 </configuration>
             </plugin>

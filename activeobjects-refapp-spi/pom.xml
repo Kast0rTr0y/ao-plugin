@@ -71,7 +71,6 @@
                         <Private-Package>
                             com.atlassian.activeobjects.refapp*,
                         </Private-Package>
-                        <Spring-Context>*;timeout:=60</Spring-Context>
                     </instructions>
                 </configuration>
             </plugin>
