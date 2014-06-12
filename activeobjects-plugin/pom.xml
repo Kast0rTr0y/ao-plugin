@@ -110,7 +110,8 @@
                             net.java.ao.event;version="${ao.version}",
                             net.java.ao.schema;version="${ao.version}",
                         </Export-Package>
-                        <Spring-Context>*;timeout:=60</Spring-Context>
+                        <!-- Ensure plugin is spring powered - see https://extranet.atlassian.com/x/xBS9hQ -->
+                        <Spring-Context>*</Spring-Context>
                     </instructions>
                     <noWebapp>true</noWebapp>
                     <log4jProperties>src/test/resources/log4j.properties</log4jProperties>
