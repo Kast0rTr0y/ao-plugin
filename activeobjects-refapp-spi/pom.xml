@@ -71,6 +71,8 @@
                         <Private-Package>
                             com.atlassian.activeobjects.refapp*,
                         </Private-Package>
+                        <!-- Ensure plugin is spring powered - see https://extranet.atlassian.com/x/xBS9hQ -->
+                        <Spring-Context>*</Spring-Context>
                     </instructions>
                 </configuration>
             </plugin>
