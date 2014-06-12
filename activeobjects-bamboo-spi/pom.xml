@@ -58,6 +58,8 @@
                         <Embed-Dependency>!clover.*;scope=compile|runtime;inline=true</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
+                        <!-- Ensure plugin is spring powered - see https://extranet.atlassian.com/x/xBS9hQ -->
+                        <Spring-Context>*</Spring-Context>
                     </instructions>
                 </configuration>
             </plugin>
