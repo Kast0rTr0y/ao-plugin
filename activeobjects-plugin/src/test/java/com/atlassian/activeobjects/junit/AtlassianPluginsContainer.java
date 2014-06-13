@@ -24,4 +24,6 @@ public interface AtlassianPluginsContainer
     void unInstall(Plugin plugin);
 
     <T> T getService(Class<T> serviceType) throws InterruptedException;
+
+    Plugin getPlugin(String key);
 }

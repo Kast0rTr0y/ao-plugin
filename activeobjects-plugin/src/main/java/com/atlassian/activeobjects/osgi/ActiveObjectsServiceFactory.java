@@ -7,6 +7,8 @@ import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -17,7 +19,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.common.collect.ImmutableMap;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -26,9 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -57,9 +59,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     final ThreadFactory aoContextThreadFactory;
 
     @VisibleForTesting
-    final ScheduledExecutorService configExecutor;
-
-    @VisibleForTesting
     final LoadingCache<Tenant, ExecutorService> initExecutorsByTenant;
 
     private final ReadWriteLock initExecutorsLock = new ReentrantReadWriteLock();
@@ -79,7 +78,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Nonnull final TenantContext tenantContext,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
-            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
+            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider,
+            @Nonnull final PluginAccessor pluginAccessor)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantContext = checkNotNull(tenantContext);
@@ -87,18 +87,11 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
         checkNotNull(initExecutorServiceProvider);
+        checkNotNull(pluginAccessor);
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
         ClassLoader bundleContextClassLoader = Thread.currentThread().getContextClassLoader();
         aoContextThreadFactory = new ContextClassLoaderThreadFactory(bundleContextClassLoader);
-
-        // scheduled single thread pool for use by AO plugins waiting for config modules
-        final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setThreadFactory(aoContextThreadFactory)
-                .setNameFormat("active-objects-config")
-                .build();
-        final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        configExecutor = threadLocalDelegateExecutorFactory.createScheduledExecutorService(delegate);
 
         // loading cache for init executors pools
         initExecutorsByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
@@ -142,7 +135,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
             {
-                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFn, configExecutor);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFn, pluginAccessor);
                 delegate.init();
                 return delegate;
             }
@@ -160,7 +153,6 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public void destroy() throws Exception
     {
         logger.debug("destroying");
-        configExecutor.shutdownNow();
 
         initExecutorsLock.writeLock().lock();
         try
@@ -232,6 +224,24 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                 logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);
             }
+        }
+    }
+
+    /**
+     * Listens for {@link PluginEnabledEvent} for propagation to all delegates.
+     *
+     * If a plugin is enabled before the delegate has made it into the loading cache, it's OK because the delegate
+     * does a check for the plugin (and its modules) during {@link TenantAwareActiveObjects#init()} anyway.
+     */
+    @SuppressWarnings ("UnusedDeclaration")
+    @EventListener
+    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
+    {
+        // todo: optimise
+//        final Map<Bundle, TenantAwareActiveObjects> currentAoDelegatesByBundle = ImmutableMap.copyOf(aoDelegatesByBundle.asMap());
+        for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+        {
+            aoDelegate.onPluginEnabledEvent(pluginEnabledEvent);
         }
     }
 }

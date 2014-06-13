@@ -56,4 +56,10 @@ abstract class DelegatingAtlassianPluginsContainer implements AtlassianPluginsCo
     {
         return container.getService(serviceType);
     }
+
+    @Override
+    public Plugin getPlugin(final String key)
+    {
+        return container.getPlugin(key);
+    }
 }

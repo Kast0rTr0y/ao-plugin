@@ -74,7 +74,8 @@ public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsCon
         pluginManager.uninstall(plugin);
     }
 
-    private Plugin getPlugin(String key)
+    @Override
+    public Plugin getPlugin(String key)
     {
         return pluginManager.getPlugin(key);
     }

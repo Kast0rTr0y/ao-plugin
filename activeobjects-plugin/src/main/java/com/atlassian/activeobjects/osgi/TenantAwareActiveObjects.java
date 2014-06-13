@@ -6,7 +6,12 @@ import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.plugin.ModuleDescriptor;
+import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -24,20 +29,17 @@ import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceEvent;
-import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -54,25 +56,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * DDL / upgrade tasks will be initiated by the first call to the delegate or by a call to {@link #startActiveObjects}
  */
-class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
+class TenantAwareActiveObjects implements ActiveObjects
 {
     private static final Logger logger = LoggerFactory.getLogger(TenantAwareActiveObjects.class);
-
-    static final String CONFIGURATION_TIMEOUT_MS_PROPERTY = "activeobjects.servicefactory.config.timeout";
-
-    private static final long CONFIGURATION_TIMEOUT_MS = Integer.getInteger(CONFIGURATION_TIMEOUT_MS_PROPERTY, 30000);
 
     private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
 
     private final Bundle bundle;
     private final TenantContext tenantContext;
-    private final ScheduledExecutorService configExecutor;
+    private final PluginAccessor pluginAccessor;
 
     @VisibleForTesting
-    final AtomicReference<SettableFuture<ActiveObjectsConfiguration>> aoConfigFutureRef = new AtomicReference<SettableFuture<ActiveObjectsConfiguration>>(SettableFuture.<ActiveObjectsConfiguration>create());
-
-    @VisibleForTesting
-    final Runnable configCheckRunnable;
+    final SettableFuture<ActiveObjectsConfiguration> aoConfigFuture = SettableFuture.create();
 
     @VisibleForTesting
     final LoadingCache<Tenant, Promise<ActiveObjects>> aoPromisesByTenant;
@@ -83,11 +78,11 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
             @Nonnull final TenantContext tenantContext,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
-            @Nonnull final ScheduledExecutorService configExecutor)
+            @Nonnull final PluginAccessor pluginAccessor)
     {
         this.bundle = checkNotNull(bundle);
         this.tenantContext = checkNotNull(tenantContext);
-        this.configExecutor = checkNotNull(configExecutor);
+        this.pluginAccessor = checkNotNull(pluginAccessor);
         checkNotNull(factory);
         checkNotNull(aoConfigurationGenerator);
         checkNotNull(initExecutorFunction);
@@ -100,7 +95,7 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
             {
                 logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
-                return Promises.forFuture(aoConfigFutureRef.get()).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
+                return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
                 {
                     @Override
                     public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig)
@@ -127,60 +122,17 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
                 });
             }
         });
-
-        // warns if no aoConfigFutureRef set then attempts to generate one
-        configCheckRunnable = new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                if (!aoConfigFutureRef.get().isDone())
-                {
-                    logger.warn("bundle [{}] hasn't found an active objects configuration after {}ms; scanning default package '{}' for entities; note that this delay is configurable via the system property '{}'",
-                            new Object[] { bundle.getSymbolicName(), CONFIGURATION_TIMEOUT_MS, ENTITY_DEFAULT_PACKAGE, CONFIGURATION_TIMEOUT_MS_PROPERTY });
-
-                    ActiveObjectsConfiguration configuration = aoConfigurationGenerator.generateScannedConfiguration(bundle, ENTITY_DEFAULT_PACKAGE);
-                    if (configuration != null)
-                    {
-                        // a configuration may have been registered in between checking and now, however this isn't a fail condition; the OSGI registered one will continue to be used
-                        setAoConfigFuture(configuration, true);
-                    }
-                    else
-                    {
-                        RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
-                        aoConfigFutureRef.get().setException(e);
-                    }
-                }
-            }
-        };
     }
 
     public void init() throws InvalidSyntaxException
     {
-        // listen to service registrations for ActiveObjectsConfiguration from this bundle only
-        final String configFilter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
-        bundle.getBundleContext().addServiceListener(this, configFilter);
-        logger.debug("bundle [{}] listening for {}ms for <ao> configuration service with filter {}; note that this period is configurable via the system property '{}'", new Object[] { bundle.getSymbolicName(), CONFIGURATION_TIMEOUT_MS_PROPERTY, configFilter, CONFIGURATION_TIMEOUT_MS_PROPERTY });
+        logger.debug("bundle [{}] init", bundle.getSymbolicName());
 
-        // check that we actually receive the above registration
-        configExecutor.schedule(configCheckRunnable, CONFIGURATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-
-        // attempt to get the configuration service now - it may already have been registered
-        ServiceReference[] serviceReferences = bundle.getBundleContext().getServiceReferences(ActiveObjectsConfiguration.class.getName(), configFilter);
-        if (serviceReferences != null)
+        // try and pull out the configuration if the plugin is enabled
+        final Plugin plugin = pluginAccessor.getEnabledPlugin(bundle.getSymbolicName());
+        if (plugin != null)
         {
-            if (serviceReferences.length == 1)
-            {
-                // got the one and only
-                logger.debug("bundle [{}] init registered existing ActiveObjectsConfiguration", bundle.getSymbolicName());
-                Object aoConfig = bundle.getBundleContext().getService(serviceReferences[0]);
-                aoConfigFutureRef.get().set((ActiveObjectsConfiguration) aoConfig);
-            }
-            else if (serviceReferences.length > 1)
-            {
-                // multiple configurations registered already...
-                throwMultipleAoConfigurationsException();
-            }
+            retrieveConfiguration(plugin);
         }
 
         // start things up now if we have a tenant
@@ -191,82 +143,58 @@ class TenantAwareActiveObjects implements ActiveObjects, ServiceListener
         }
     }
 
-    @Override
-    public synchronized void serviceChanged(final ServiceEvent event)
+    void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
     {
-        switch (event.getType())
+        if (pluginEnabledEvent != null)
         {
-            case ServiceEvent.REGISTERED:
+            Plugin plugin = pluginEnabledEvent.getPlugin();
+            if (plugin != null && bundle.getSymbolicName().equals(plugin.getKey()))
             {
-                // resolve the config and attempt to use it
-                Object registeredService = bundle.getBundleContext().getService(event.getServiceReference());
-                setAoConfigFuture((ActiveObjectsConfiguration) registeredService, false);
-                break;
-            }
-
-            case ServiceEvent.UNREGISTERING:
-            {
-                // dutifully unregister
-                bundle.getBundleContext().ungetService(event.getServiceReference());
-                logger.debug("bundle [{}] unregistered service ActiveObjectsConfiguration", bundle.getSymbolicName());
-
-                // have a new config future throw an exception on resolution
-                SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
-                exceptionalAoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has had its configuration service unregistered"));
-                aoConfigFutureRef.set(exceptionalAoConfigFuture);
-
-                // destroy any resolved ActiveObjects
-                aoPromisesByTenant.invalidateAll();
-
-                break;
-            }
-        }
-    }
-
-    @VisibleForTesting
-    void setAoConfigFuture(ActiveObjectsConfiguration aoConfig, boolean generated)
-    {
-        if (aoConfigFutureRef.get().set(aoConfig))
-        {
-            logger.debug("bundle [{}] registered service ActiveObjectsConfiguration", bundle.getSymbolicName());
-        }
-        else if (!generated)
-        {
-            try
-            {
-                if (aoConfig != aoConfigFutureRef.get().get())
-                {
-                    // bad case - a different configuration has already been registered
-                    throwMultipleAoConfigurationsException();
-                }
-            }
-            catch (InterruptedException e)
-            {
-                throw new RuntimeException(e);
-            }
-            catch (ExecutionException e)
-            {
-                throw new RuntimeException(e);
+                logger.debug("bundle [{}] onPluginEnabledEvent", bundle.getSymbolicName());
+                retrieveConfiguration(plugin);
             }
         }
     }
 
     /**
-     * the plugin has multiple <ao> configurations defined; blow up here and cause any future calls to the config to blow up
+     * Attempt to retrieve the <ao> configuration from the plugin passed.
+     * Does nothing if aoConfigFuture has already been met.
      */
-    void throwMultipleAoConfigurationsException()
+    synchronized void retrieveConfiguration(@Nonnull Plugin plugin)
     {
-        RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
+        checkNotNull(plugin);
+        logger.debug("bundle [{}] retrieveConfiguration", bundle.getSymbolicName());
 
-        // have a new config future throw an exception on resolution
-        SettableFuture<ActiveObjectsConfiguration> exceptionalAoConfigFuture = SettableFuture.create();
-        exceptionalAoConfigFuture.setException(e);
-        aoConfigFutureRef.set(exceptionalAoConfigFuture);
+        if (!aoConfigFuture.isDone())
+        {
+            logger.debug("bundle [{}] attempting to retrieve AO configuration from plugin [{}]", bundle.getSymbolicName(), plugin.getKey());
 
-        // destroy any resolved ActiveObjects
-        aoPromisesByTenant.invalidateAll();
+            // retrieve all <ao> module descriptors; moduleClass is Void (anonymous XML declaration) so need to check actual class
+            List<ModuleDescriptor> moduleDescriptors = new ArrayList<ModuleDescriptor>();
+            for (ModuleDescriptor moduleDescriptor : plugin.getModuleDescriptors())
+            {
+                if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+                {
+                    moduleDescriptors.add(moduleDescriptor);
+                }
+            }
 
-        throw e;
+            switch (moduleDescriptors.size())
+            {
+                // no module has been configured; attempt to generate one
+                case 0:
+                    throw new IllegalStateException(bundle.getSymbolicName() + " myaaargh not enough!");
+
+                // use the one and only
+                case 1:
+                    aoConfigFuture.set(((ActiveObjectModuleDescriptor) moduleDescriptors.get(0)).getConfiguration());
+                    break;
+
+                // many defined
+                default:
+                    throw new IllegalStateException(bundle.getSymbolicName() + " myaaargh too many!");
+            }
+        }
     }
 
     void startActiveObjects(@Nonnull final Tenant tenant)

@@ -64,6 +64,7 @@
         <constructor-arg index="3" ref="aoConfigurationGenerator"/>
         <constructor-arg index="4" ref="threadLocalDelegateExecutorFactory"/>
         <constructor-arg index="5" ref="initExecutorServiceProvider"/>
+        <constructor-arg index="6" ref="pluginAccessor"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>

@@ -6,6 +6,7 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -15,21 +16,16 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,6 +71,9 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private InitExecutorServiceProvider initExecutorServiceProvider;
 
+    @Mock
+    private PluginAccessor pluginAccessor;
+
     private final Tenant tenant1 = mock(Tenant.class);
     private final Tenant tenant2 = mock(Tenant.class);
     private final ExecutorService executorService1 = mock(ExecutorService.class);
@@ -87,24 +86,13 @@ public final class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        when(threadLocalDelegateExecutorFactory.createScheduledExecutorService(any(ScheduledExecutorService.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return invocation.getArguments()[0];
-            }
-        });
-
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
-                aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
+                aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider,
+                pluginAccessor);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));
-        assertThat(serviceFactory.configExecutor, notNullValue());
         assertThat(serviceFactory.initExecutorsShutdown, is(false));
-
-        verify(threadLocalDelegateExecutorFactory).createScheduledExecutorService(any(ScheduledExecutorService.class));
     }
 
     @Test
@@ -123,7 +111,6 @@ public final class ActiveObjectsServiceFactoryTest
 
         serviceFactory.destroy();
 
-        assertThat(serviceFactory.configExecutor.isShutdown(), is(true));
         assertThat(serviceFactory.initExecutorsShutdown, is(true));
 
         verify(eventPublisher).unregister(serviceFactory);

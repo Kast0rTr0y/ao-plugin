@@ -42,6 +42,7 @@
                             com.atlassian.sal.api*;version="${sal.api.compatibility.version}",
                             com.atlassian.plugin;version="${plugins.libversion}",
                             com.atlassian.plugin.descriptors;version="${plugins.libversion}",
+                            com.atlassian.plugin.event.events;version="${plugins.libversion}",
                             com.atlassian.plugin.hostcontainer;version="${plugins.libversion}",
                             com.atlassian.plugin.module;version="${plugins.libversion}",
                             com.atlassian.plugin.osgi.bridge.external;version="${plugins.libversion}",
@@ -155,16 +156,6 @@
                         <phase>test</phase>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemPropertyVariables>
-                        <!-- don't forget to update TenantAwareActiveObjectsTest -->
-                        <activeobjects.servicefactory.config.timeout>999</activeobjects.servicefactory.config.timeout>
-                    </systemPropertyVariables>
-                </configuration>
             </plugin>
         </plugins>
     </build>
