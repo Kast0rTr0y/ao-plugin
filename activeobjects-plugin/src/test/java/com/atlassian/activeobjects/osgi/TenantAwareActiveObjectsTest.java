@@ -4,15 +4,14 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.spi.TenantProvider;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.tenancy.api.Tenant;
-import com.atlassian.tenancy.api.TenantContext;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,25 +20,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith (MockitoJUnitRunner.class)
@@ -55,7 +45,7 @@ public class TenantAwareActiveObjectsTest
     @Mock
     private ActiveObjectsFactory factory;
     @Mock
-    private TenantContext tenantContext;
+    private TenantProvider tenantProvider;
     @Mock
     private AOConfigurationGenerator aoConfigurationGenerator;
     @Mock
@@ -86,7 +76,7 @@ public class TenantAwareActiveObjectsTest
     @Before
     public void before()
     {
-        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFunction, pluginAccessor);
+        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantProvider, aoConfigurationGenerator, initExecutorFunction, pluginAccessor);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
         when(bundle.getBundleContext()).thenReturn(bundleContext);
@@ -99,7 +89,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void delegateTenanted() throws ExecutionException, InterruptedException
     {
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant);
 
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
 
@@ -141,7 +131,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void isInitializedNotComplete()
     {
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
     }
@@ -149,7 +139,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void isInitializedException()
     {
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant);
 
         final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
         aoFuture.setException(new IllegalStateException());
@@ -165,7 +155,7 @@ public class TenantAwareActiveObjectsTest
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
         babyBear.aoPromisesByTenant.put(tenant, aoPromise);
 
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isInitialized(), is(true));
     }
@@ -179,7 +169,7 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void isDataSourcePresentYes()
     {
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isDataSourcePresent(), is(true));
     }

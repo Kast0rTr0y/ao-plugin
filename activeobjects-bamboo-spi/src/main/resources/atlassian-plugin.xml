@@ -15,7 +15,9 @@
 
   <component key="dialectExtractor" class="com.atlassian.activeobjects.bamboo.hibernate.HibernateSessionDialectExtractor" name="Dialect Extractor"/>
 
-  <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
+  <component key="tenantProvider" class="com.atlassian.activeobjects.spi.TenantProviderImpl" name="Tenant Context" public="true">
+    <interface>com.atlassian.activeobjects.spi.TenantProvider</interface>
+  </component>
 
   <component-import key="hibernateSessionFactory" interface="com.atlassian.bamboo.persistence3.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
 </atlassian-plugin>

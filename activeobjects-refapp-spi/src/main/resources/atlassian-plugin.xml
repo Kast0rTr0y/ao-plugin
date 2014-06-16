@@ -25,6 +25,8 @@
 
     <component-import name="Application Properties" key="application-properties" interface="com.atlassian.sal.api.ApplicationProperties"/>
 
-    <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
+    <component key="tenantProvider" class="com.atlassian.activeobjects.spi.TenantProviderImpl" name="Tenant Context" public="true">
+        <interface>com.atlassian.activeobjects.spi.TenantProvider</interface>
+    </component>
 
 </atlassian-plugin>

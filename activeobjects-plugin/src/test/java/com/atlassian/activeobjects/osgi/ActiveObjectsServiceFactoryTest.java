@@ -5,11 +5,11 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
+import com.atlassian.activeobjects.spi.TenantProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
-import com.atlassian.tenancy.api.TenantContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public final class ActiveObjectsServiceFactoryTest
     private Bundle bundle;
     
     @Mock
-    private TenantContext tenantContext;
+    private TenantProvider tenantProvider;
 
     @Mock
     private AOConfigurationGenerator aoConfigurationGenerator;
@@ -86,7 +86,7 @@ public final class ActiveObjectsServiceFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
+        serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantProvider,
                 aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider,
                 pluginAccessor);
 
@@ -168,7 +168,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant1);
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
         when(bundle1.getSymbolicName()).thenReturn("bundle1");
@@ -185,7 +185,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant1);
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
         when(bundle1.getSymbolicName()).thenReturn("bundle1");

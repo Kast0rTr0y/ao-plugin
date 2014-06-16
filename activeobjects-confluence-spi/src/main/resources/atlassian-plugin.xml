@@ -28,7 +28,9 @@
     <component-import key="hibernateSessionFactory" interface="com.atlassian.hibernate.PluginHibernateSessionFactory" name="Hibernate Session Factory"/>
     <component-import key="synchronizationManager" interface="com.atlassian.confluence.core.SynchronizationManager" name="Confluence Synchronisation Manager"/>
 
-    <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
+    <component key="tenantProvider" class="com.atlassian.activeobjects.spi.TenantProviderImpl" name="Tenant Context" public="true">
+        <interface>com.atlassian.activeobjects.spi.TenantProvider</interface>
+    </component>
 
     <backup-restore key="activeObjectsBackupRestoreProvider" class="com.atlassian.activeobjects.confluence.backup.ActiveObjectsBackupRestoreProvider" public="true"/>
 </atlassian-plugin>

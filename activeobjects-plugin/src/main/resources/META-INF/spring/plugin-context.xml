@@ -60,7 +60,7 @@
     <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
         <constructor-arg index="0" ref="activeObjectsFactory"/>
         <constructor-arg index="1" ref="eventPublisher"/>
-        <constructor-arg index="2" ref="tenantContext"/>
+        <constructor-arg index="2" ref="tenantProvider"/>
         <constructor-arg index="3" ref="aoConfigurationGenerator"/>
         <constructor-arg index="4" ref="threadLocalDelegateExecutorFactory"/>
         <constructor-arg index="5" ref="initExecutorServiceProvider"/>
@@ -76,7 +76,7 @@
     <bean id="aoBackup" class="com.atlassian.activeobjects.backup.ActiveObjectsBackup">
         <constructor-arg ref="databaseProviderFactory"/>
         <constructor-arg ref="tenantAwareDataSourceProvider"/>
-        <constructor-arg ref="tenantContext"/>
+        <constructor-arg ref="tenantProvider"/>
         <constructor-arg>
             <bean class="net.java.ao.builder.SimpleNameConverters">
                 <constructor-arg index="0">

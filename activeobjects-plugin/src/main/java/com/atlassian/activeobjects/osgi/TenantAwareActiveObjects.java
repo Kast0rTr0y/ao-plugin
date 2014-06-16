@@ -8,13 +8,13 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
 import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.DatabaseType;
+import com.atlassian.activeobjects.spi.TenantProvider;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.tenancy.api.Tenant;
-import com.atlassian.tenancy.api.TenantContext;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
 import com.google.common.annotations.VisibleForTesting;
@@ -63,7 +63,7 @@ class TenantAwareActiveObjects implements ActiveObjects
     private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
 
     private final Bundle bundle;
-    private final TenantContext tenantContext;
+    private final TenantProvider tenantProvider;
     private final PluginAccessor pluginAccessor;
 
     @VisibleForTesting
@@ -75,13 +75,13 @@ class TenantAwareActiveObjects implements ActiveObjects
     TenantAwareActiveObjects(
             @Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
-            @Nonnull final TenantContext tenantContext,
+            @Nonnull final TenantProvider tenantProvider,
             @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
             @Nonnull final PluginAccessor pluginAccessor)
     {
         this.bundle = checkNotNull(bundle);
-        this.tenantContext = checkNotNull(tenantContext);
+        this.tenantProvider = checkNotNull(tenantProvider);
         this.pluginAccessor = checkNotNull(pluginAccessor);
         checkNotNull(factory);
         checkNotNull(aoConfigurationGenerator);
@@ -136,7 +136,7 @@ class TenantAwareActiveObjects implements ActiveObjects
         }
 
         // start things up now if we have a tenant
-        Tenant tenant = tenantContext.getCurrentTenant();
+        Tenant tenant = tenantProvider.getCurrentTenant();
         if (tenant != null)
         {
             startActiveObjects(tenant);
@@ -213,7 +213,7 @@ class TenantAwareActiveObjects implements ActiveObjects
     @VisibleForTesting
     protected Promise<ActiveObjects> delegate()
     {
-        Tenant tenant = tenantContext.getCurrentTenant();
+        Tenant tenant = tenantProvider.getCurrentTenant();
         if (tenant != null)
         {
             return aoPromisesByTenant.getUnchecked(tenant);
@@ -245,7 +245,7 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public boolean isInitialized()
             {
-                Tenant tenant = tenantContext.getCurrentTenant();
+                Tenant tenant = tenantProvider.getCurrentTenant();
                 if (tenant != null)
                 {
                     Promise<ActiveObjects> aoPromise = aoPromisesByTenant.getUnchecked(tenant);
@@ -274,7 +274,7 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public boolean isDataSourcePresent()
             {
-                return tenantContext.getCurrentTenant() != null;
+                return tenantProvider.getCurrentTenant() != null;
             }
         };
     }

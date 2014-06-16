@@ -73,7 +73,7 @@
                 <constructor-arg ref="tenantAwareDataSourceProvider"/>
                 <constructor-arg ref="errorService"/>
                 <constructor-arg ref="pluginInformationFactory"/>
-                <constructor-arg ref="tenantContext"/>
+                <constructor-arg ref="tenantProvider"/>
             </bean>
         </property>
     </bean>

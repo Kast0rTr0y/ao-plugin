@@ -9,6 +9,7 @@ import com.atlassian.activeobjects.junit.PackageVersion;
 import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
+import com.atlassian.activeobjects.spi.TenantProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.test.ActiveObjectsPluginFile;
 import com.atlassian.event.api.EventPublisher;
@@ -29,7 +30,6 @@ import com.atlassian.sal.api.websudo.WebSudoManager;
 
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantAccessor;
-import com.atlassian.tenancy.api.TenantContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Before;
@@ -148,7 +148,7 @@ public abstract class BaseActiveObjectsIntegrationTest
     protected TenantAccessor tenantAccessor;
 
     @MockHostComponent
-    protected TenantContext tenantContext;
+    protected TenantProvider tenantProvider;
 
     private final Tenant tenant = new Tenant()
     {
@@ -190,7 +190,7 @@ public abstract class BaseActiveObjectsIntegrationTest
 
         when(tenantAccessor.getAvailableTenants()).thenReturn(availableTenants);
 
-        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(tenantProvider.getCurrentTenant()).thenReturn(tenant);
 
         when(initExecutorServiceProvider.initExecutorService(tenant)).thenReturn(MoreExecutors.sameThreadExecutor());
 
