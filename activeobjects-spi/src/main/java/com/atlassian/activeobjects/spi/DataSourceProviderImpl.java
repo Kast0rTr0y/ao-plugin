@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.spi;
 
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 
 import javax.sql.DataSource;
 
@@ -14,18 +15,18 @@ public class DataSourceProviderImpl implements DataSourceProvider
 {
     private final TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
 
-    private final TenantProvider tenantProvider;
+    private final TenantContext tenantContext;
 
-    public DataSourceProviderImpl(final TenantAwareDataSourceProvider tenantAwareDataSourceProvider, final TenantProvider tenantProvider)
+    public DataSourceProviderImpl(final TenantAwareDataSourceProvider tenantAwareDataSourceProvider, final TenantContext tenantContext)
     {
         this.tenantAwareDataSourceProvider = tenantAwareDataSourceProvider;
-        this.tenantProvider = tenantProvider;
+        this.tenantContext = tenantContext;
     }
 
     @Override
     public DataSource getDataSource()
     {
-        Tenant tenant = tenantProvider.getCurrentTenant();
+        Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant == null)
         {
             throw new IllegalStateException("tenant / dataSource unavailable");
@@ -36,7 +37,7 @@ public class DataSourceProviderImpl implements DataSourceProvider
     @Override
     public DatabaseType getDatabaseType()
     {
-        Tenant tenant = tenantProvider.getCurrentTenant();
+        Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant == null)
         {
             throw new IllegalStateException("tenant / databaseType unavailable");
@@ -47,7 +48,7 @@ public class DataSourceProviderImpl implements DataSourceProvider
     @Override
     public String getSchema()
     {
-        Tenant tenant = tenantProvider.getCurrentTenant();
+        Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant == null)
         {
             throw new IllegalStateException("tenant / schema unavailable");

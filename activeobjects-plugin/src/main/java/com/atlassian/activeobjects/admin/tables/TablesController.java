@@ -7,11 +7,11 @@ import com.atlassian.activeobjects.backup.PluginInformationFactory;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
 import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.PluginInformation;
-import com.atlassian.activeobjects.spi.TenantProvider;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
 import com.atlassian.tenancy.api.Tenant;
+import com.atlassian.tenancy.api.TenantContext;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -31,21 +31,21 @@ public final class TablesController
     private final TenantAwareDataSourceProvider tenantAwareDataSourceProvider;
     private final ImportExportErrorServiceImpl errorService;
     private final PluginInformationFactory pluginInformationFactory;
-    private final TenantProvider tenantProvider;
+    private final TenantContext tenantContext;
 
-    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, TenantAwareDataSourceProvider tenantAwareDataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory, TenantProvider tenantProvider)
+    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, TenantAwareDataSourceProvider tenantAwareDataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory, TenantContext tenantContext)
     {
         this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
         this.nameConverters = checkNotNull(nameConverters);
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
         this.tenantAwareDataSourceProvider = checkNotNull(tenantAwareDataSourceProvider);
         this.errorService = checkNotNull(errorService);
-        this.tenantProvider = checkNotNull(tenantProvider);
+        this.tenantContext = checkNotNull(tenantContext);
     }
 
     public ModelAndView list(HttpServletRequest request, HttpServletResponse response) throws Exception
     {
-        final Tenant tenant = tenantProvider.getCurrentTenant();
+        final Tenant tenant = tenantContext.getCurrentTenant();
         final DatabaseProvider databaseProvider = getDatabaseProvider(tenant);
         final Iterable<Table> tables = readTables(newTableReader(databaseProvider));
         final RowCounter rowCounter = RowCounter.from(databaseProvider);

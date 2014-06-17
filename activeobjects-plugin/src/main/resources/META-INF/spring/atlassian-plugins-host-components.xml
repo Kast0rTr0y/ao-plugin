@@ -40,7 +40,7 @@
     <osgi:reference id="tenantAwareDataSourceProvider" interface="com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider"/>
     <osgi:reference id="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
     <osgi:reference id="moduleFactory" interface="com.atlassian.plugin.module.ModuleFactory"/>
-    <osgi:reference id="tenantProvider" interface="com.atlassian.activeobjects.spi.TenantProvider"/>
+    <osgi:reference id="tenantContext" interface="com.atlassian.tenancy.api.TenantContext"/>
     <osgi:reference id="threadLocalDelegateExecutorFactory" interface="com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory"/>
     <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
 

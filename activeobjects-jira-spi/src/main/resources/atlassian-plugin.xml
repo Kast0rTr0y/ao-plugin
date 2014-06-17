@@ -23,9 +23,7 @@
 
     <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
 
-    <component key="tenantProvider" class="com.atlassian.activeobjects.spi.TenantProviderImpl" name="Tenant Context" public="true">
-        <interface>com.atlassian.activeobjects.spi.TenantProvider</interface>
-    </component>
+    <component-import key="tenantContext" interface="com.atlassian.tenancy.api.TenantContext" name="Tenant Context"/>
 
     <component key="jiraQuickRestart" name="JIRA Quick Restart"
                class="com.atlassian.activeobjects.jira.JiraQuickRestart"/>
