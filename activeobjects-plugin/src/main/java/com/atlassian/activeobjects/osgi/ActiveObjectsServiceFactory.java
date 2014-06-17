@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
@@ -19,7 +20,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -237,11 +235,16 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @EventListener
     public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
     {
-        // todo: optimise
-//        final Map<Bundle, TenantAwareActiveObjects> currentAoDelegatesByBundle = ImmutableMap.copyOf(aoDelegatesByBundle.asMap());
-        for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+        if (pluginEnabledEvent != null)
         {
-            aoDelegate.onPluginEnabledEvent(pluginEnabledEvent);
+            Plugin plugin = pluginEnabledEvent.getPlugin();
+            if (plugin != null)
+            {
+                for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+                {
+                    aoDelegate.retrieveConfiguration(plugin);
+                }
+            }
         }
     }
 }

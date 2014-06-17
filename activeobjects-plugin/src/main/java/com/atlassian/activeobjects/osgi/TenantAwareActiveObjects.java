@@ -145,67 +145,58 @@ class TenantAwareActiveObjects implements ActiveObjects
         }
     }
 
-    void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
-    {
-        if (pluginEnabledEvent != null)
-        {
-            Plugin plugin = pluginEnabledEvent.getPlugin();
-            if (plugin != null && bundle.getSymbolicName().equals(plugin.getKey()))
-            {
-                logger.debug("bundle [{}] onPluginEnabledEvent", bundle.getSymbolicName());
-                retrieveConfiguration(plugin);
-            }
-        }
-    }
-
     /**
      * Attempt to retrieve the <ao> configuration from the plugin passed.
      * Does nothing if aoConfigFuture has already been met.
+     * Does nothing unless the plugin's key matches our bundle's key.
      */
     synchronized void retrieveConfiguration(@Nonnull Plugin plugin)
     {
         checkNotNull(plugin);
-        logger.debug("bundle [{}] retrieveConfiguration", bundle.getSymbolicName());
-
-        if (!aoConfigFuture.isDone())
+        if (bundle.getSymbolicName().equals(plugin.getKey()))
         {
-            logger.debug("bundle [{}] attempting to retrieve AO configuration from plugin [{}]", bundle.getSymbolicName(), plugin.getKey());
+            logger.debug("bundle [{}] retrieveConfiguration", bundle.getSymbolicName());
 
-            // retrieve all <ao> module descriptors; moduleClass is Void (anonymous XML declaration) so need to check actual class
-            List<ModuleDescriptor> moduleDescriptors = new ArrayList<ModuleDescriptor>();
-            for (ModuleDescriptor moduleDescriptor : plugin.getModuleDescriptors())
+            if (!aoConfigFuture.isDone())
             {
-                if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+                logger.debug("bundle [{}] attempting to retrieve AO configuration from plugin [{}]", bundle.getSymbolicName(), plugin.getKey());
+
+                // retrieve all <ao> module descriptors; moduleClass is Void (anonymous XML declaration) so need to check actual class
+                List<ModuleDescriptor> moduleDescriptors = new ArrayList<ModuleDescriptor>();
+                for (ModuleDescriptor moduleDescriptor : plugin.getModuleDescriptors())
                 {
-                    moduleDescriptors.add(moduleDescriptor);
+                    if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+                    {
+                        moduleDescriptors.add(moduleDescriptor);
+                    }
                 }
-            }
 
-            switch (moduleDescriptors.size())
-            {
-                // no module has been configured; attempt to generate one
-                case 0:
-                    logger.warn("bundle [{}] hasn't found an active objects configuration; scanning default package '{}' for entities", new Object[] { bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE });
-                    ActiveObjectsConfiguration configuration = aoConfigurationGenerator.generateScannedConfiguration(bundle, ENTITY_DEFAULT_PACKAGE);
-                    if (configuration != null)
-                    {
-                        aoConfigFuture.set(configuration);
-                    }
-                    else
-                    {
-                        aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor"));
-                    }
-                    break;
+                switch (moduleDescriptors.size())
+                {
+                    // no module has been configured; attempt to generate one
+                    case 0:
+                        logger.warn("bundle [{}] hasn't found an active objects configuration; scanning default package '{}' for entities", new Object[] { bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE });
+                        ActiveObjectsConfiguration configuration = aoConfigurationGenerator.generateScannedConfiguration(bundle, ENTITY_DEFAULT_PACKAGE);
+                        if (configuration != null)
+                        {
+                            aoConfigFuture.set(configuration);
+                        }
+                        else
+                        {
+                            aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor"));
+                        }
+                        break;
 
-                // use the one and only
-                case 1:
-                    aoConfigFuture.set(((ActiveObjectModuleDescriptor) moduleDescriptors.get(0)).getConfiguration());
-                    break;
+                    // use the one and only
+                    case 1:
+                        aoConfigFuture.set(((ActiveObjectModuleDescriptor) moduleDescriptors.get(0)).getConfiguration());
+                        break;
 
-                // many defined; not cool
-                default:
-                    aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!"));
-                    break;
+                    // many defined; not cool
+                    default:
+                        aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!"));
+                        break;
+                }
             }
         }
     }
