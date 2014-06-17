@@ -6,10 +6,6 @@
         <version>${project.version}</version>
     </plugin-info>
 
-    <component key="dataSourceProvider" class="com.atlassian.activeobjects.spi.DataSourceProviderImpl" name="Data Source Provider" public="true">
-        <interface>com.atlassian.activeobjects.spi.DataSourceProvider</interface>
-    </component>
-
     <component key="tenantAwareDataSourceProvider" class="com.atlassian.activeobjects.refapp.RefappTenantAwareDataSourceProvider" name="Tenant Aware Data Source Provider" public="true">
         <interface>com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider</interface>
     </component>

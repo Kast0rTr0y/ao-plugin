@@ -158,4 +158,12 @@
             <bean class="com.atlassian.activeobjects.internal.DriverNameExtractorImpl"/>
         </constructor-arg>
     </bean>
+
+    <bean id="dataSourceProvider" class="com.atlassian.activeobjects.spi.DataSourceProviderImpl">
+        <constructor-arg index="0" ref="tenantAwareDataSourceProvider"/>
+        <constructor-arg index="1" ref="tenantContext"/>
+    </bean>
+
+    <osgi:service ref="dataSourceProvider" interface="com.atlassian.activeobjects.spi.DataSourceProvider"/>
+
 </beans>
