@@ -65,6 +65,7 @@ class TenantAwareActiveObjects implements ActiveObjects
     private final Bundle bundle;
     private final TenantProvider tenantProvider;
     private final PluginAccessor pluginAccessor;
+    private final AOConfigurationGenerator aoConfigurationGenerator;
 
     @VisibleForTesting
     final SettableFuture<ActiveObjectsConfiguration> aoConfigFuture = SettableFuture.create();
@@ -82,9 +83,9 @@ class TenantAwareActiveObjects implements ActiveObjects
     {
         this.bundle = checkNotNull(bundle);
         this.tenantProvider = checkNotNull(tenantProvider);
+        this.aoConfigurationGenerator = checkNotNull(aoConfigurationGenerator);
         this.pluginAccessor = checkNotNull(pluginAccessor);
         checkNotNull(factory);
-        checkNotNull(aoConfigurationGenerator);
         checkNotNull(initExecutorFunction);
 
         // loading cache for delegate promises by tenant
@@ -183,16 +184,27 @@ class TenantAwareActiveObjects implements ActiveObjects
             {
                 // no module has been configured; attempt to generate one
                 case 0:
-                    throw new IllegalStateException(bundle.getSymbolicName() + " myaaargh not enough!");
+                    logger.warn("bundle [{}] hasn't found an active objects configuration; scanning default package '{}' for entities", new Object[] { bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE });
+                    ActiveObjectsConfiguration configuration = aoConfigurationGenerator.generateScannedConfiguration(bundle, ENTITY_DEFAULT_PACKAGE);
+                    if (configuration != null)
+                    {
+                        aoConfigFuture.set(configuration);
+                    }
+                    else
+                    {
+                        aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor"));
+                    }
+                    break;
 
                 // use the one and only
                 case 1:
                     aoConfigFuture.set(((ActiveObjectModuleDescriptor) moduleDescriptors.get(0)).getConfiguration());
                     break;
 
-                // many defined
+                // many defined; not cool
                 default:
-                    throw new IllegalStateException(bundle.getSymbolicName() + " myaaargh too many!");
+                    aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!"));
+                    break;
             }
         }
     }
