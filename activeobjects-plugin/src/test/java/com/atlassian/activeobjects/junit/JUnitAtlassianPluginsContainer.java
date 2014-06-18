@@ -85,7 +85,7 @@ public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsCon
     {
         final ServiceTracker tracker = new ServiceTracker(osgiContainerManager.getBundles()[0].getBundleContext(), serviceType.getName(), null);
         tracker.open();
-        return serviceType.cast(tracker.waitForService(30000));
+        return serviceType.cast(tracker.waitForService(60000));
     }
 
     private void initPluginManager(HostComponentProvider hostComponentProvider, PackageScannerConfiguration scannerConfiguration, File tmpDir)
