@@ -42,7 +42,8 @@
         <module>activeobjects-plugin</module>
         <module>activeobjects-test</module>
         <module>activeobjects-test-model</module>
-        <module>activeobjects-test-plugin</module>
+        <!-- TODO AO-530 re-enable after refapp/jira PluginEnabledEvent timing fixed -->
+        <!--<module>activeobjects-test-plugin</module>-->
     </modules>
 
     <properties>
