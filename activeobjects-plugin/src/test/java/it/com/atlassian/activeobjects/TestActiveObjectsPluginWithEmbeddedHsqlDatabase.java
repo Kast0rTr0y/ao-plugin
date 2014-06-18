@@ -50,7 +50,8 @@ public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseA
     public final void databaseCreatedInDefaultDirectoryWithinHomeDirectory() throws Exception
     {
         container.install(newConsumerPlugin(CONSUMER_PLUGIN_KEY));
-        container.getService(ActiveObjectsTestConsumer.class).run();
+        ActiveObjectsTestConsumer consumer = container.getService(ActiveObjectsTestConsumer.class);
+        consumer.run();
 
         assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", CONSUMER_PLUGIN_KEY);
     }
@@ -62,7 +63,8 @@ public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseA
         File consumerPluginFile = newConsumerPlugin(CONSUMER_PLUGIN_KEY);
         Plugin installedConsumerPlugin = container.install(consumerPluginFile);
 
-        container.getService(ActiveObjectsTestConsumer.class).run();
+        ActiveObjectsTestConsumer consumer = container.getService(ActiveObjectsTestConsumer.class);
+        consumer.run();
 
         assertDatabaseExists(homeDirectory, "foo", CONSUMER_PLUGIN_KEY);
 
