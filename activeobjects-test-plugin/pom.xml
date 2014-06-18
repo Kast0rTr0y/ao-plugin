@@ -172,40 +172,40 @@
                                 </bundledArtifact>
                             </bundledArtifacts>
                         </product>
-                        <!--<product>-->
-                            <!--<id>jira</id>-->
-                            <!--<version>${refapp.jira.version}</version>-->
-                            <!--<productDataVersion>${refapp.jira.version}</productDataVersion>-->
-                            <!--<libArtifacts>-->
-                                <!--<libArtifact>-->
-                                    <!--<groupId>com.atlassian.activeobjects</groupId>-->
-                                    <!--<artifactId>activeobjects-spi</artifactId>-->
-                                    <!--<version>${project.version}</version>-->
-                                <!--</libArtifact>-->
-                                <!--<libArtifact>-->
-                                    <!--<groupId>com.atlassian.tenancy</groupId>-->
-                                    <!--<artifactId>atlassian-tenancy-api</artifactId>-->
-                                    <!--<version>${tenancy.libversion}</version>-->
-                                <!--</libArtifact>-->
-                            <!--</libArtifacts>-->
-                            <!--<bundledArtifacts>-->
-                                <!--<bundledArtifact>-->
-                                    <!--<groupId>com.atlassian.activeobjects</groupId>-->
-                                    <!--<artifactId>activeobjects-plugin</artifactId>-->
-                                    <!--<version>${project.version}</version>-->
-                                <!--</bundledArtifact>-->
-                                <!--<bundledArtifact>-->
-                                    <!--<groupId>com.atlassian.activeobjects</groupId>-->
-                                    <!--<artifactId>activeobjects-jira-spi</artifactId>-->
-                                    <!--<version>${project.version}</version>-->
-                                <!--</bundledArtifact>-->
-                                <!--<bundledArtifact>-->
-                                    <!--<groupId>com.atlassian.tenancy</groupId>-->
-                                    <!--<artifactId>atlassian-tenancy-compatibility-plugin</artifactId>-->
-                                    <!--<version>${tenancy.libversion}</version>-->
-                                <!--</bundledArtifact>-->
-                            <!--</bundledArtifacts>-->
-                        <!--</product>-->
+                        <product>
+                            <id>jira</id>
+                            <version>${refapp.jira.version}</version>
+                            <productDataVersion>${refapp.jira.version}</productDataVersion>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </libArtifact>
+                                <libArtifact>
+                                    <groupId>com.atlassian.tenancy</groupId>
+                                    <artifactId>atlassian-tenancy-api</artifactId>
+                                    <version>${tenancy.libversion}</version>
+                                </libArtifact>
+                            </libArtifacts>
+                            <bundledArtifacts>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-plugin</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-jira-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.tenancy</groupId>
+                                    <artifactId>atlassian-tenancy-compatibility-plugin</artifactId>
+                                    <version>${tenancy.libversion}</version>
+                                </bundledArtifact>
+                            </bundledArtifacts>
+                        </product>
                     </products>
                     <testGroups>
                         <testGroup>
@@ -220,18 +220,18 @@
                                 <tested.app>com.atlassian.webdriver.refapp.RefappTestedProduct</tested.app>
                             </systemProperties>
                         </testGroup>
-                        <!--<testGroup>-->
-                            <!--<id>jira</id>-->
-                            <!--<productIds>-->
-                                <!--<productId>jira</productId>-->
-                            <!--</productIds>-->
-                            <!--<includes>-->
-                                <!--<include>it/**</include>-->
-                            <!--</includes>-->
-                            <!--<systemProperties>-->
-                                <!--<tested.app>com.atlassian.jira.pageobjects.JiraTestedProduct</tested.app>-->
-                            <!--</systemProperties>-->
-                        <!--</testGroup>-->
+                        <testGroup>
+                            <id>jira</id>
+                            <productIds>
+                                <productId>jira</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**</include>
+                            </includes>
+                            <systemProperties>
+                                <tested.app>com.atlassian.jira.pageobjects.JiraTestedProduct</tested.app>
+                            </systemProperties>
+                        </testGroup>
                     </testGroups>
                 </configuration>
             </plugin>

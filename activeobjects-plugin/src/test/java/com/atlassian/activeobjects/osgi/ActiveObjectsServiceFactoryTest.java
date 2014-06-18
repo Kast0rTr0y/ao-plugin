@@ -6,7 +6,9 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -195,5 +197,22 @@ public final class ActiveObjectsServiceFactoryTest
 
         verify(babyBear1).restartActiveObjects(tenant1);
         verify(babyBear2).restartActiveObjects(tenant1);
+    }
+
+    @Test
+    public void onPluginEnabledEvent()
+    {
+        final PluginEnabledEvent pluginEnabledEvent = mock(PluginEnabledEvent.class);
+        final Plugin plugin1 = mock(Plugin.class);
+
+        when(pluginEnabledEvent.getPlugin()).thenReturn(plugin1);
+
+        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+
+        serviceFactory.onPluginEnabledEvent(pluginEnabledEvent);
+
+        verify(babyBear1).retrieveConfiguration(plugin1);
+        verify(babyBear2).retrieveConfiguration(plugin1);
     }
 }

@@ -4,6 +4,9 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
+import com.atlassian.plugin.ModuleDescriptor;
+import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -12,7 +15,6 @@ import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,24 +23,21 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,6 +82,9 @@ public class TenantAwareActiveObjectsTest
     @Mock
     private ActiveObjectsConfiguration aoConfig;
 
+    @Mock
+    private Plugin plugin;
+
     @Before
     public void before()
     {
@@ -94,7 +96,77 @@ public class TenantAwareActiveObjectsTest
         when(bundleContext.getService(serviceReference)).thenReturn(aoConfig);
 
         when(serviceEvent.getServiceReference()).thenReturn(serviceReference);
+
+        when(pluginAccessor.getEnabledPlugin("some.bundle")).thenReturn(plugin);
+
+        when(plugin.getKey()).thenReturn("some.bundle");
     }
+
+    @Test
+    public void init()
+    {
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
+        when(plugin.getKey()).thenReturn(null);
+
+        babyBear.init();
+
+        verify(plugin).getKey();
+
+        assertThat(babyBear.aoPromisesByTenant.asMap().keySet(), hasItem(tenant));
+    }
+
+    @Test
+    public void retrieveConfigurationZero() throws ExecutionException, InterruptedException
+    {
+        expectedException.expect(IllegalStateException.class);
+
+        babyBear.retrieveConfiguration(plugin);
+
+        assertThat(babyBear.aoConfigFuture.isDone(), is(true));
+    }
+
+
+    @Test
+    public void retrieveConfigurationZeroGenerated() throws ExecutionException, InterruptedException
+    {
+        when(aoConfigurationGenerator.generateScannedConfiguration(bundle, TenantAwareActiveObjects.ENTITY_DEFAULT_PACKAGE)).thenReturn(aoConfig);
+
+        babyBear.retrieveConfiguration(plugin);
+    }
+
+    @Test
+    public void retrieveConfigurationOne() throws ExecutionException, InterruptedException
+    {
+        final ActiveObjectModuleDescriptor activeObjectModuleDescriptor = mock(ActiveObjectModuleDescriptor.class);
+
+        final Collection<ModuleDescriptor<?>> moduleDescriptors = new ArrayList<ModuleDescriptor<?>>();
+        moduleDescriptors.add(activeObjectModuleDescriptor);
+
+        when(activeObjectModuleDescriptor.getConfiguration()).thenReturn(aoConfig);
+        when(plugin.getModuleDescriptors()).thenReturn(moduleDescriptors);
+
+        babyBear.retrieveConfiguration(plugin);
+
+        assertThat(babyBear.aoConfigFuture.isDone(), is(true));
+        assertThat(babyBear.aoConfigFuture.get(), equalTo(aoConfig));
+    }
+
+    @Test
+    public void retrieveConfigurationMany() throws ExecutionException, InterruptedException
+    {
+        expectedException.expect(IllegalStateException.class);
+
+        final ActiveObjectModuleDescriptor activeObjectModuleDescriptor = mock(ActiveObjectModuleDescriptor.class);
+
+        final Collection<ModuleDescriptor<?>> moduleDescriptors = new ArrayList<ModuleDescriptor<?>>();
+        moduleDescriptors.add(activeObjectModuleDescriptor);
+        moduleDescriptors.add(activeObjectModuleDescriptor);
+
+        when(activeObjectModuleDescriptor.getConfiguration()).thenReturn(aoConfig);
+        when(plugin.getModuleDescriptors()).thenReturn(moduleDescriptors);
+
+        babyBear.retrieveConfiguration(plugin);
+   }
 
     @Test
     public void delegateTenanted() throws ExecutionException, InterruptedException

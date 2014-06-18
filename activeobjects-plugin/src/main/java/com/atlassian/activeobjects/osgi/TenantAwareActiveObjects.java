@@ -60,7 +60,8 @@ class TenantAwareActiveObjects implements ActiveObjects
 {
     private static final Logger logger = LoggerFactory.getLogger(TenantAwareActiveObjects.class);
 
-    private static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
+    @VisibleForTesting
+    static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
 
     private final Bundle bundle;
     private final TenantContext tenantContext;
@@ -126,7 +127,7 @@ class TenantAwareActiveObjects implements ActiveObjects
         });
     }
 
-    public void init() throws InvalidSyntaxException
+    public void init()
     {
         logger.debug("bundle [{}] init", bundle.getSymbolicName());
 
@@ -183,7 +184,9 @@ class TenantAwareActiveObjects implements ActiveObjects
                         }
                         else
                         {
-                            aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor"));
+                            final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
+                            aoConfigFuture.setException(e);
+                            throw e;
                         }
                         break;
 
@@ -194,8 +197,9 @@ class TenantAwareActiveObjects implements ActiveObjects
 
                     // many defined; not cool
                     default:
-                        aoConfigFuture.setException(new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!"));
-                        break;
+                        final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
+                        aoConfigFuture.setException(e);
+                        throw e;
                 }
             }
         }
