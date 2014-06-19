@@ -74,8 +74,7 @@ public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsCon
         pluginManager.uninstall(plugin);
     }
 
-    @Override
-    public Plugin getPlugin(String key)
+    private Plugin getPlugin(String key)
     {
         return pluginManager.getPlugin(key);
     }
@@ -85,7 +84,7 @@ public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsCon
     {
         final ServiceTracker tracker = new ServiceTracker(osgiContainerManager.getBundles()[0].getBundleContext(), serviceType.getName(), null);
         tracker.open();
-        return serviceType.cast(tracker.waitForService(120000));
+        return serviceType.cast(tracker.waitForService(10000));
     }
 
     private void initPluginManager(HostComponentProvider hostComponentProvider, PackageScannerConfiguration scannerConfiguration, File tmpDir)

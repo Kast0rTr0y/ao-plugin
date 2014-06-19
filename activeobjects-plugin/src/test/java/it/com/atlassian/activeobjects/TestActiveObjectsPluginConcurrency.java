@@ -6,9 +6,6 @@ import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;

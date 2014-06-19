@@ -97,7 +97,7 @@ public abstract class BaseActiveObjectsIntegrationTest
     private TransactionTemplate transactionTemplate;
 
     @MockHostComponent
-    protected PluginAccessor pluginAccessor;
+    private PluginAccessor pluginAccessor;
 
     @MockHostComponent
     protected ApplicationProperties applicationProperties;
@@ -193,14 +193,5 @@ public abstract class BaseActiveObjectsIntegrationTest
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         when(initExecutorServiceProvider.initExecutorService(tenant)).thenReturn(MoreExecutors.sameThreadExecutor());
-
-        when(pluginAccessor.getEnabledPlugin(Matchers.any(String.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return container.getPlugin((String) invocation.getArguments()[0]);
-            }
-        });
     }
 }

@@ -6,9 +6,6 @@ import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.plugin.Plugin;
-import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -65,16 +62,10 @@ public final class ActiveObjectsServiceFactoryTest
     private TenantContext tenantContext;
 
     @Mock
-    private AOConfigurationGenerator aoConfigurationGenerator;
-
-    @Mock
     private ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
 
     @Mock
     private InitExecutorServiceProvider initExecutorServiceProvider;
-
-    @Mock
-    private PluginAccessor pluginAccessor;
 
     private final Tenant tenant1 = mock(Tenant.class);
     private final Tenant tenant2 = mock(Tenant.class);
@@ -89,8 +80,7 @@ public final class ActiveObjectsServiceFactoryTest
     public void setUp() throws Exception
     {
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
-                aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider,
-                pluginAccessor);
+                threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));

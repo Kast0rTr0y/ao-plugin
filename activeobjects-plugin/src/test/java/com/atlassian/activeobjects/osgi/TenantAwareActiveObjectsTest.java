@@ -78,9 +78,6 @@ public class TenantAwareActiveObjectsTest
     @Mock
     private ActiveObjectsConfiguration aoConfig;
 
-    @Mock
-    private Plugin plugin;
-
     @Before
     public void before()
     {
@@ -92,19 +89,14 @@ public class TenantAwareActiveObjectsTest
         when(bundleContext.getService(serviceReference)).thenReturn(aoConfig);
 
         when(serviceEvent.getServiceReference()).thenReturn(serviceReference);
-
-        when(plugin.getKey()).thenReturn("some.bundle");
     }
 
     @Test
     public void init()
     {
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
-        when(plugin.getKey()).thenReturn(null);
 
         babyBear.init();
-
-        verify(plugin).getKey();
 
         assertThat(babyBear.aoPromisesByTenant.asMap().keySet(), hasItem(tenant));
     }
@@ -118,7 +110,7 @@ public class TenantAwareActiveObjectsTest
 
         babyBear.aoPromisesByTenant.put(tenant, aoPromise);
 
-        assertSame(babyBear.delegate().get(), ao);
+        assertSame(babyBear.delegate(false).get(), ao);
     }
 
     @Test
@@ -126,7 +118,7 @@ public class TenantAwareActiveObjectsTest
     {
         expectedException.expect(NoDataSourceException.class);
 
-        babyBear.delegate();
+        babyBear.delegate(false);
     }
 
     @Test

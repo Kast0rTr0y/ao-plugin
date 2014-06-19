@@ -10,7 +10,6 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
-import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
@@ -76,18 +75,14 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final EventPublisher eventPublisher,
             @Nonnull final TenantContext tenantContext,
-            @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
-            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider,
-            @Nonnull final PluginAccessor pluginAccessor)
+            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantContext = checkNotNull(tenantContext);
         checkNotNull(factory);
-        checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
         checkNotNull(initExecutorServiceProvider);
-        checkNotNull(pluginAccessor);
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
         ClassLoader bundleContextClassLoader = Thread.currentThread().getContextClassLoader();

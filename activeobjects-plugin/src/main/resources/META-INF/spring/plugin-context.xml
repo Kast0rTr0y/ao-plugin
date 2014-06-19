@@ -24,8 +24,6 @@
     <!--suppress SpringOsgiServiceCommonInspection, because we're using the ServiceFactory, IDEA gets confused-->
     <osgi:service id="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" ref="activeObjectsServiceFactory"/>
 
-    <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
-
     <osgi:service id="backup" ref="aoBackup" interface="com.atlassian.activeobjects.spi.Backup"/>
 
     <bean id="activeObjectsConfigurationFactory" class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsConfigurationFactory">
@@ -50,21 +48,12 @@
         </constructor-arg>
     </bean>
 
-    <bean id="aoConfigurationGenerator" class="com.atlassian.activeobjects.osgi.AOConfigurationGeneratorImpl">
-        <constructor-arg index="0" ref="activeObjectsConfigurationFactory" />
-        <constructor-arg index="1">
-            <bean class="com.atlassian.activeobjects.spring.ApplicationContextFactoryBean"/>
-        </constructor-arg>
-    </bean>
-
     <bean id="activeObjectsServiceFactory" class="com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory">
         <constructor-arg index="0" ref="activeObjectsFactory"/>
         <constructor-arg index="1" ref="eventPublisher"/>
         <constructor-arg index="2" ref="tenantContext"/>
-        <constructor-arg index="3" ref="aoConfigurationGenerator"/>
-        <constructor-arg index="4" ref="threadLocalDelegateExecutorFactory"/>
-        <constructor-arg index="5" ref="initExecutorServiceProvider"/>
-        <constructor-arg index="6" ref="pluginAccessor"/>
+        <constructor-arg index="3" ref="threadLocalDelegateExecutorFactory"/>
+        <constructor-arg index="4" ref="initExecutorServiceProvider"/>
     </bean>
 
     <bean id="fieldNameConverter" class="net.java.ao.atlassian.AtlassianFieldNameConverter"/>
