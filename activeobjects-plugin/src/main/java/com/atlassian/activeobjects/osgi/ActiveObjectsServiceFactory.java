@@ -143,6 +143,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @Override
     public void afterPropertiesSet() throws Exception
     {
+        logger.warn("afterPropertiesSet");
+
         // we want tenant arrival and hot restart event notifications
         eventPublisher.register(this);
     }
@@ -150,7 +152,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @Override
     public void destroy() throws Exception
     {
-        logger.debug("destroying");
+        logger.warn("destroying");
 
         initExecutorsLock.writeLock().lock();
         try
@@ -235,16 +237,20 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @EventListener
     public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
     {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("onPluginEnabledEvent ");
         if (pluginEnabledEvent != null)
         {
             Plugin plugin = pluginEnabledEvent.getPlugin();
             if (plugin != null)
             {
+                sb.append(plugin.getKey());
                 for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
                 {
                     aoDelegate.retrieveConfiguration(plugin);
                 }
             }
         }
+        logger.warn(sb.toString());
     }
 }

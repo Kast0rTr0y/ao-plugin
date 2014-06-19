@@ -221,6 +221,22 @@ class TenantAwareActiveObjects implements ActiveObjects
     @VisibleForTesting
     protected Promise<ActiveObjects> delegate()
     {
+        if (!aoConfigFuture.isDone())
+        {
+            logger.warn("bundle [{}] invoking ActiveObjects before PluginEnabledEvent", bundle.getSymbolicName());
+
+            // try and pull out the configuration module from the plugin
+            final Plugin plugin = pluginAccessor.getEnabledPlugin(bundle.getSymbolicName());
+            if (plugin == null)
+            {
+                throw new IllegalStateException("plugin [{" + bundle.getSymbolicName() + "}] invoking ActiveObjects before it is enabled");
+            }
+            else
+            {
+                retrieveConfiguration(plugin);
+            }
+        }
+
         Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant != null)
         {
