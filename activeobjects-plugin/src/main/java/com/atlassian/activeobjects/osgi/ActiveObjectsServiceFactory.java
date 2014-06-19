@@ -2,14 +2,16 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.plugin.event.events.PluginEnabledEvent;
+import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -133,7 +135,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
             {
-                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFn, pluginAccessor);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
                 return delegate;
             }
@@ -175,7 +177,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
         checkNotNull(bundle);
-        logger.debug("bundle [{}]", bundle.getSymbolicName());
+        logger.warn("bundle [{}]", bundle.getSymbolicName());
         return aoDelegatesByBundle.getUnchecked(bundle);
     }
 
@@ -228,29 +230,34 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     }
 
     /**
-     * Listens for {@link PluginEnabledEvent} for propagation to all delegates.
-     *
-     * If a plugin is enabled before the delegate has made it into the loading cache, it's OK because the delegate
-     * does a check for the plugin (and its modules) during {@link TenantAwareActiveObjects#init()} anyway.
+     * Listens for {@link PluginModuleEnabledEvent} for {@link ActiveObjectModuleDescriptor}.
+     * Passes it to appropriate delegate i.e. the one for which the plugin/bundle key matches.
      */
     @SuppressWarnings ("UnusedDeclaration")
     @EventListener
-    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
+    public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent)
     {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("onPluginEnabledEvent ");
-        if (pluginEnabledEvent != null)
+        if (pluginModuleEnabledEvent != null)
         {
-            Plugin plugin = pluginEnabledEvent.getPlugin();
-            if (plugin != null)
+            final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
+            if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
             {
-                sb.append(plugin.getKey());
-                for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+                final Plugin plugin = moduleDescriptor.getPlugin();
+                if (plugin != null)
                 {
-                    aoDelegate.retrieveConfiguration(plugin);
+                    final String pluginKey = plugin.getKey();
+                    if (pluginKey != null)
+                    {
+                        for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+                        {
+                            if (pluginKey.equals(aoDelegate.getBundle().getSymbolicName()))
+                            {
+                                aoDelegate.setAoConfiguration(((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration());
+                            }
+                        }
+                    }
                 }
             }
         }
-        logger.warn(sb.toString());
     }
 }

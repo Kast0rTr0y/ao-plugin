@@ -6,12 +6,7 @@ import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.external.NoDataSourceException;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.internal.ActiveObjectsInitException;
-import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.DatabaseType;
-import com.atlassian.plugin.ModuleDescriptor;
-import com.atlassian.plugin.Plugin;
-import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -28,12 +23,9 @@ import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.InvalidSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -60,13 +52,8 @@ class TenantAwareActiveObjects implements ActiveObjects
 {
     private static final Logger logger = LoggerFactory.getLogger(TenantAwareActiveObjects.class);
 
-    @VisibleForTesting
-    static final String ENTITY_DEFAULT_PACKAGE = "ao.model";
-
     private final Bundle bundle;
     private final TenantContext tenantContext;
-    private final PluginAccessor pluginAccessor;
-    private final AOConfigurationGenerator aoConfigurationGenerator;
 
     @VisibleForTesting
     final SettableFuture<ActiveObjectsConfiguration> aoConfigFuture = SettableFuture.create();
@@ -78,16 +65,11 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final TenantContext tenantContext,
-            @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
-            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction,
-            @Nonnull final PluginAccessor pluginAccessor)
+            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction)
     {
         this.bundle = checkNotNull(bundle);
         this.tenantContext = checkNotNull(tenantContext);
-        this.aoConfigurationGenerator = checkNotNull(aoConfigurationGenerator);
-        this.pluginAccessor = checkNotNull(pluginAccessor);
         checkNotNull(factory);
-        checkNotNull(aoConfigurationGenerator);
         checkNotNull(initExecutorFunction);
 
         // loading cache for delegate promises by tenant
@@ -131,13 +113,6 @@ class TenantAwareActiveObjects implements ActiveObjects
     {
         logger.debug("bundle [{}] init", bundle.getSymbolicName());
 
-        // try and pull out the configuration if the plugin is enabled
-        final Plugin plugin = pluginAccessor.getEnabledPlugin(bundle.getSymbolicName());
-        if (plugin != null)
-        {
-            retrieveConfiguration(plugin);
-        }
-
         // start things up now if we have a tenant
         Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant != null)
@@ -146,62 +121,19 @@ class TenantAwareActiveObjects implements ActiveObjects
         }
     }
 
-    /**
-     * Attempt to retrieve the <ao> configuration from the plugin passed.
-     * Does nothing if aoConfigFuture has already been met.
-     * Does nothing unless the plugin's key matches our bundle's key.
-     */
-    synchronized void retrieveConfiguration(@Nonnull Plugin plugin)
+    void setAoConfiguration(@Nonnull final ActiveObjectsConfiguration aoConfiguration)
     {
-        checkNotNull(plugin);
-        if (bundle.getSymbolicName().equals(plugin.getKey()))
+        logger.warn("setAoConfiguration [{}]", bundle.getSymbolicName());
+
+        if (aoConfigFuture.isDone())
         {
-            logger.debug("bundle [{}] retrieveConfiguration", bundle.getSymbolicName());
-
-            if (!aoConfigFuture.isDone())
-            {
-                logger.debug("bundle [{}] attempting to retrieve AO configuration from plugin [{}]", bundle.getSymbolicName(), plugin.getKey());
-
-                // retrieve all <ao> module descriptors; moduleClass is Void (anonymous XML declaration) so need to check actual class
-                List<ModuleDescriptor> moduleDescriptors = new ArrayList<ModuleDescriptor>();
-                for (ModuleDescriptor moduleDescriptor : plugin.getModuleDescriptors())
-                {
-                    if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
-                    {
-                        moduleDescriptors.add(moduleDescriptor);
-                    }
-                }
-
-                switch (moduleDescriptors.size())
-                {
-                    // no module has been configured; attempt to generate one
-                    case 0:
-                        logger.warn("bundle [{}] hasn't found an active objects configuration; scanning default package '{}' for entities", new Object[] { bundle.getSymbolicName(), ENTITY_DEFAULT_PACKAGE });
-                        ActiveObjectsConfiguration configuration = aoConfigurationGenerator.generateScannedConfiguration(bundle, ENTITY_DEFAULT_PACKAGE);
-                        if (configuration != null)
-                        {
-                            aoConfigFuture.set(configuration);
-                        }
-                        else
-                        {
-                            final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has no active objects configuration - define an <ao> module descriptor");
-                            aoConfigFuture.setException(e);
-                            throw e;
-                        }
-                        break;
-
-                    // use the one and only
-                    case 1:
-                        aoConfigFuture.set(((ActiveObjectModuleDescriptor) moduleDescriptors.get(0)).getConfiguration());
-                        break;
-
-                    // many defined; not cool
-                    default:
-                        final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
-                        aoConfigFuture.setException(e);
-                        throw e;
-                }
-            }
+            final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
+            aoConfigFuture.setException(e);
+            throw e;
+        }
+        else
+        {
+            aoConfigFuture.set(aoConfiguration);
         }
     }
 
@@ -223,20 +155,14 @@ class TenantAwareActiveObjects implements ActiveObjects
     {
         if (!aoConfigFuture.isDone())
         {
-            logger.warn("bundle [{}] invoking ActiveObjects before PluginEnabledEvent", bundle.getSymbolicName());
-
-            // try and pull out the configuration module from the plugin
-            final Plugin plugin = pluginAccessor.getEnabledPlugin(bundle.getSymbolicName());
-            if (plugin == null)
-            {
-                throw new IllegalStateException("plugin [{" + bundle.getSymbolicName() + "}] invoking ActiveObjects before it is enabled");
-            }
-            else
-            {
-                retrieveConfiguration(plugin);
-            }
+            throw new IllegalStateException("plugin [{" + bundle.getSymbolicName() + "}] invoking ActiveObjects before <ao> configuration module is enabled or plugin is missin an <ao> configuration module. Note that scanning of entities from the ao.model package is no longer supported.");
         }
 
+        return delegateForTenant();
+    }
+
+    private Promise<ActiveObjects> delegateForTenant()
+    {
         Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant != null)
         {
@@ -256,14 +182,14 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public void awaitInitialization() throws ExecutionException, InterruptedException
             {
-                delegate().get();
+                delegateForTenant().get();
             }
 
             @Override
             public void awaitInitialization(long timeout, TimeUnit unit)
                     throws InterruptedException, ExecutionException, TimeoutException
             {
-                delegate().get(timeout, unit);
+                delegateForTenant().get(timeout, unit);
             }
 
             @Override
@@ -292,7 +218,7 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public DatabaseType getDatabaseType()
             {
-                return delegate().claim().moduleMetaData().getDatabaseType();
+                return delegateForTenant().claim().moduleMetaData().getDatabaseType();
             }
 
             @Override
