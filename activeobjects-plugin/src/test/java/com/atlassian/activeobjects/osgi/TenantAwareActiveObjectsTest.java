@@ -56,13 +56,9 @@ public class TenantAwareActiveObjectsTest
     @Mock
     private TenantContext tenantContext;
     @Mock
-    private AOConfigurationGenerator aoConfigurationGenerator;
-    @Mock
     private Function<Tenant, ExecutorService> initExecutorFunction;
     @Mock
     private ScheduledExecutorService configExecutor;
-    @Mock
-    private PluginAccessor pluginAccessor;
 
     @Mock
     private BundleContext bundleContext;
@@ -88,7 +84,7 @@ public class TenantAwareActiveObjectsTest
     @Before
     public void before()
     {
-        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFunction, pluginAccessor);
+        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFunction);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
         when(bundle.getBundleContext()).thenReturn(bundleContext);
@@ -96,8 +92,6 @@ public class TenantAwareActiveObjectsTest
         when(bundleContext.getService(serviceReference)).thenReturn(aoConfig);
 
         when(serviceEvent.getServiceReference()).thenReturn(serviceReference);
-
-        when(pluginAccessor.getEnabledPlugin("some.bundle")).thenReturn(plugin);
 
         when(plugin.getKey()).thenReturn("some.bundle");
     }
@@ -114,59 +108,6 @@ public class TenantAwareActiveObjectsTest
 
         assertThat(babyBear.aoPromisesByTenant.asMap().keySet(), hasItem(tenant));
     }
-
-    @Test
-    public void retrieveConfigurationZero() throws ExecutionException, InterruptedException
-    {
-        expectedException.expect(IllegalStateException.class);
-
-        babyBear.retrieveConfiguration(plugin);
-
-        assertThat(babyBear.aoConfigFuture.isDone(), is(true));
-    }
-
-
-    @Test
-    public void retrieveConfigurationZeroGenerated() throws ExecutionException, InterruptedException
-    {
-        when(aoConfigurationGenerator.generateScannedConfiguration(bundle, TenantAwareActiveObjects.ENTITY_DEFAULT_PACKAGE)).thenReturn(aoConfig);
-
-        babyBear.retrieveConfiguration(plugin);
-    }
-
-    @Test
-    public void retrieveConfigurationOne() throws ExecutionException, InterruptedException
-    {
-        final ActiveObjectModuleDescriptor activeObjectModuleDescriptor = mock(ActiveObjectModuleDescriptor.class);
-
-        final Collection<ModuleDescriptor<?>> moduleDescriptors = new ArrayList<ModuleDescriptor<?>>();
-        moduleDescriptors.add(activeObjectModuleDescriptor);
-
-        when(activeObjectModuleDescriptor.getConfiguration()).thenReturn(aoConfig);
-        when(plugin.getModuleDescriptors()).thenReturn(moduleDescriptors);
-
-        babyBear.retrieveConfiguration(plugin);
-
-        assertThat(babyBear.aoConfigFuture.isDone(), is(true));
-        assertThat(babyBear.aoConfigFuture.get(), equalTo(aoConfig));
-    }
-
-    @Test
-    public void retrieveConfigurationMany() throws ExecutionException, InterruptedException
-    {
-        expectedException.expect(IllegalStateException.class);
-
-        final ActiveObjectModuleDescriptor activeObjectModuleDescriptor = mock(ActiveObjectModuleDescriptor.class);
-
-        final Collection<ModuleDescriptor<?>> moduleDescriptors = new ArrayList<ModuleDescriptor<?>>();
-        moduleDescriptors.add(activeObjectModuleDescriptor);
-        moduleDescriptors.add(activeObjectModuleDescriptor);
-
-        when(activeObjectModuleDescriptor.getConfiguration()).thenReturn(aoConfig);
-        when(plugin.getModuleDescriptors()).thenReturn(moduleDescriptors);
-
-        babyBear.retrieveConfiguration(plugin);
-   }
 
     @Test
     public void delegateTenanted() throws ExecutionException, InterruptedException
