@@ -1,8 +1,6 @@
-package it.com.atlassian.activeobjects.admin;
+package com.atlassian.activeobjects.admin;
 
 
-import com.atlassian.activeobjects.admin.ActiveObjectsPluginToTablesMapping;
-import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.google.common.collect.ImmutableList;
