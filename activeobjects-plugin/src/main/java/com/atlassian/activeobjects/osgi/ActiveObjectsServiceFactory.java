@@ -243,12 +243,19 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                     final String pluginKey = plugin.getKey();
                     if (pluginKey != null)
                     {
+                        boolean attachedToDelegate = false;
                         for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
                         {
                             if (pluginKey.equals(aoDelegate.getBundle().getSymbolicName()))
                             {
                                 aoDelegate.setAoConfiguration(((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration());
+                                attachedToDelegate = true;
+                                break;
                             }
+                        }
+                        if (!attachedToDelegate)
+                        {
+                            logger.error("unable to find aoDelegate for ActiveObjectModuleDescriptor belonging to plugin with key [{}]", plugin.getKey());
                         }
                     }
                 }
