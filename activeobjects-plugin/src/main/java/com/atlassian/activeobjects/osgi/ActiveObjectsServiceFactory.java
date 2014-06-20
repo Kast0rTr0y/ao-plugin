@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
@@ -29,9 +30,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,6 +75,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
     @VisibleForTesting
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
+
+    private final Map<String, ActiveObjectsConfiguration> unattachedConfigByKey = new HashMap<String, ActiveObjectsConfiguration>();
+
+    private final Lock delegateConfigLock = new ReentrantLock();
 
     public ActiveObjectsServiceFactory(
             @Nonnull final ActiveObjectsFactory factory,
@@ -132,6 +141,20 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             {
                 TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
+                delegateConfigLock.lock();
+                try
+                {
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByKey.get(bundle.getSymbolicName());
+                    if (aoConfig != null)
+                    {
+                        delegate.setAoConfiguration(aoConfig);
+                        unattachedConfigByKey.remove(bundle.getSymbolicName());
+                    }
+                }
+                finally
+                {
+                    delegateConfigLock.unlock();
+                }
                 return delegate;
             }
         });
@@ -173,13 +196,30 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     {
         checkNotNull(bundle);
         logger.warn("bundle [{}]", bundle.getSymbolicName());
-        return aoDelegatesByBundle.getUnchecked(bundle);
+
+        delegateConfigLock.lock();
+        try
+        {
+            return aoDelegatesByBundle.getUnchecked(bundle);
+        }
+        finally
+        {
+            delegateConfigLock.unlock();
+        }
     }
 
     @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
-        aoDelegatesByBundle.invalidate(bundle);
+        delegateConfigLock.lock();
+        try
+        {
+            aoDelegatesByBundle.invalidate(bundle);
+        }
+        finally
+        {
+            delegateConfigLock.unlock();
+        }
     }
 
     /**
@@ -195,10 +235,19 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
-            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+            delegateConfigLock.lock();
+            try
             {
-                logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
-                aoDelegate.startActiveObjects(tenant);
+
+                for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
+                {
+                    logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
+                    aoDelegate.startActiveObjects(tenant);
+                }
+            }
+            finally
+            {
+                delegateConfigLock.unlock();
             }
         }
     }
@@ -216,10 +265,19 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
-            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+            delegateConfigLock.lock();
+            try
             {
-                logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
-                aoDelegate.restartActiveObjects(tenant);
+
+                for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
+                {
+                    logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
+                    aoDelegate.restartActiveObjects(tenant);
+                }
+            }
+            finally
+            {
+                delegateConfigLock.unlock();
             }
         }
     }
@@ -244,18 +302,28 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                     if (pluginKey != null)
                     {
                         boolean attachedToDelegate = false;
-                        for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
+                        ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
+
+                        delegateConfigLock.lock();
+                        try
                         {
-                            if (pluginKey.equals(aoDelegate.getBundle().getSymbolicName()))
+                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
                             {
-                                aoDelegate.setAoConfiguration(((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration());
-                                attachedToDelegate = true;
-                                break;
+                                if (pluginKey.equals(aoDelegate.getBundle().getSymbolicName()))
+                                {
+                                    aoDelegate.setAoConfiguration(aoConfig);
+                                    attachedToDelegate = true;
+                                    break;
+                                }
+                            }
+                            if (!attachedToDelegate)
+                            {
+                                unattachedConfigByKey.put(pluginKey, aoConfig);
                             }
                         }
-                        if (!attachedToDelegate)
+                        finally
                         {
-                            logger.error("unable to find aoDelegate for ActiveObjectModuleDescriptor belonging to plugin with key [{}]", plugin.getKey());
+                            delegateConfigLock.lock();
                         }
                     }
                 }
