@@ -79,7 +79,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @VisibleForTesting
     final Map<String, ActiveObjectsConfiguration> unattachedConfigByKey = new HashMap<String, ActiveObjectsConfiguration>();
 
-    private final Lock delegateConfigLock = new ReentrantLock();
+    private final Lock unattachedConfigsLock = new ReentrantLock();
 
     public ActiveObjectsServiceFactory(
             @Nonnull final ActiveObjectsFactory factory,
@@ -142,7 +142,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             {
                 TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
-                delegateConfigLock.lock();
+                unattachedConfigsLock.lock();
                 try
                 {
                     final ActiveObjectsConfiguration aoConfig = unattachedConfigByKey.get(bundle.getSymbolicName());
@@ -154,7 +154,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                 }
                 finally
                 {
-                    delegateConfigLock.unlock();
+                    unattachedConfigsLock.unlock();
                 }
                 return delegate;
             }
@@ -164,7 +164,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        logger.warn("afterPropertiesSet");
+        logger.debug("afterPropertiesSet");
 
         // we want tenant arrival and hot restart event notifications
         eventPublisher.register(this);
@@ -173,7 +173,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @Override
     public void destroy() throws Exception
     {
-        logger.warn("destroying");
+        logger.debug("destroying");
 
         initExecutorsLock.writeLock().lock();
         try
@@ -196,31 +196,14 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
         checkNotNull(bundle);
-        logger.warn("bundle [{}]", bundle.getSymbolicName());
-
-        delegateConfigLock.lock();
-        try
-        {
-            return aoDelegatesByBundle.getUnchecked(bundle);
-        }
-        finally
-        {
-            delegateConfigLock.unlock();
-        }
+        logger.debug("bundle [{}]", bundle.getSymbolicName());
+        return aoDelegatesByBundle.getUnchecked(bundle);
     }
 
     @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
-        delegateConfigLock.lock();
-        try
-        {
-            aoDelegatesByBundle.invalidate(bundle);
-        }
-        finally
-        {
-            delegateConfigLock.unlock();
-        }
+        aoDelegatesByBundle.invalidate(bundle);
     }
 
     /**
@@ -236,19 +219,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
-            delegateConfigLock.lock();
-            try
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
-
-                for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
-                {
-                    logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
-                    aoDelegate.startActiveObjects(tenant);
-                }
-            }
-            finally
-            {
-                delegateConfigLock.unlock();
+                logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
+                aoDelegate.startActiveObjects(tenant);
             }
         }
     }
@@ -266,19 +240,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
-            delegateConfigLock.lock();
-            try
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
-
-                for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
-                {
-                    logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
-                    aoDelegate.restartActiveObjects(tenant);
-                }
-            }
-            finally
-            {
-                delegateConfigLock.unlock();
+                logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
+                aoDelegate.restartActiveObjects(tenant);
             }
         }
     }
@@ -305,7 +270,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                         boolean attachedToDelegate = false;
                         ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
 
-                        delegateConfigLock.lock();
+                        unattachedConfigsLock.lock();
                         try
                         {
                             for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
@@ -324,7 +289,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                         }
                         finally
                         {
-                            delegateConfigLock.lock();
+                            unattachedConfigsLock.lock();
                         }
                     }
                 }
