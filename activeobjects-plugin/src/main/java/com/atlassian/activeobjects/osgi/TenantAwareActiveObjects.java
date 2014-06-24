@@ -151,9 +151,9 @@ class TenantAwareActiveObjects implements ActiveObjects
     }
 
     @VisibleForTesting
-    protected Promise<ActiveObjects> delegate(final boolean noConfigException)
+    protected Promise<ActiveObjects> delegate()
     {
-        if (noConfigException && !aoConfigFuture.isDone())
+        if (!aoConfigFuture.isDone())
         {
             throw new IllegalStateException("plugin [{" + bundle.getSymbolicName() + "}] invoking ActiveObjects before <ao> configuration module is enabled or plugin is missing an <ao> configuration module. Note that scanning of entities from the ao.model package is no longer supported.");
         }
@@ -177,14 +177,30 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public void awaitInitialization() throws ExecutionException, InterruptedException
             {
-                delegate(false).get();
+                Tenant tenant = tenantContext.getCurrentTenant();
+                if (tenant != null)
+                {
+                    aoPromisesByTenant.getUnchecked(tenant).get();
+                }
+                else
+                {
+                    throw new NoDataSourceException();
+                }
             }
 
             @Override
             public void awaitInitialization(long timeout, TimeUnit unit)
                     throws InterruptedException, ExecutionException, TimeoutException
             {
-                delegate(false).get(timeout, unit);
+                Tenant tenant = tenantContext.getCurrentTenant();
+                if (tenant != null)
+                {
+                    aoPromisesByTenant.getUnchecked(tenant).get(timeout, unit);
+                }
+                else
+                {
+                    throw new NoDataSourceException();
+                }
             }
 
             @Override
@@ -213,7 +229,7 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public DatabaseType getDatabaseType()
             {
-                return delegate(true).claim().moduleMetaData().getDatabaseType();
+                return delegate().claim().moduleMetaData().getDatabaseType();
             }
 
             @Override
@@ -227,127 +243,127 @@ class TenantAwareActiveObjects implements ActiveObjects
     @Override
     public void migrate(final Class<? extends RawEntity<?>>... entities)
     {
-        delegate(true).claim().migrate(entities);
+        delegate().claim().migrate(entities);
     }
 
     @Override
     public void migrateDestructively(final Class<? extends RawEntity<?>>... entities)
     {
-        delegate(true).claim().migrateDestructively(entities);
+        delegate().claim().migrateDestructively(entities);
     }
 
     @Override
     public void flushAll()
     {
-        delegate(true).claim().flushAll();
+        delegate().claim().flushAll();
     }
 
     @Override
     public void flush(final RawEntity<?>... entities)
     {
-        delegate(true).claim().flush(entities);
+        delegate().claim().flush(entities);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] get(final Class<T> type, final K... keys)
     {
-        return delegate(true).claim().get(type, keys);
+        return delegate().claim().get(type, keys);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T get(final Class<T> type, final K key)
     {
-        return delegate(true).claim().get(type, key);
+        return delegate().claim().get(type, key);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T create(final Class<T> type, final DBParam... params)
     {
-        return delegate(true).claim().create(type, params);
+        return delegate().claim().create(type, params);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T create(final Class<T> type, final Map<String, Object> params)
     {
-        return delegate(true).claim().create(type, params);
+        return delegate().claim().create(type, params);
     }
 
     @Override
     public void delete(final RawEntity<?>... entities)
     {
-        delegate(true).claim().delete(entities);
+        delegate().claim().delete(entities);
     }
 
     @Override
     public <K> int deleteWithSQL(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
     {
-        return delegate(true).claim().deleteWithSQL(type, criteria, parameters);
+        return delegate().claim().deleteWithSQL(type, criteria, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type)
     {
-        return delegate(true).claim().find(type);
+        return delegate().claim().find(type);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String criteria, final Object... parameters)
     {
-        return delegate(true).claim().find(type, criteria, parameters);
+        return delegate().claim().find(type, criteria, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final Query query)
     {
-        return delegate(true).claim().find(type, query);
+        return delegate().claim().find(type, query);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String field, final Query query)
     {
-        return delegate(true).claim().find(type, field, query);
+        return delegate().claim().find(type, field, query);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] findWithSQL(final Class<T> type, final String keyField, final String sql, final Object... parameters)
     {
-        return delegate(true).claim().findWithSQL(type, keyField, sql, parameters);
+        return delegate().claim().findWithSQL(type, keyField, sql, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> void stream(final Class<T> type, final EntityStreamCallback<T, K> streamCallback)
     {
-        delegate(true).claim().stream(type, streamCallback);
+        delegate().claim().stream(type, streamCallback);
     }
 
     @Override
     public <T extends RawEntity<K>, K> void stream(final Class<T> type, final Query query, final EntityStreamCallback<T, K> streamCallback)
     {
-        delegate(true).claim().stream(type, query, streamCallback);
+        delegate().claim().stream(type, query, streamCallback);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type)
     {
-        return delegate(true).claim().count(type);
+        return delegate().claim().count(type);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
     {
-        return delegate(true).claim().count(type, criteria, parameters);
+        return delegate().claim().count(type, criteria, parameters);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type, final Query query)
     {
-        return delegate(true).claim().count(type, query);
+        return delegate().claim().count(type, query);
     }
 
     @Override
     public <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
-        return delegate(true).claim().executeInTransaction(callback);
+        return delegate().claim().executeInTransaction(callback);
     }
 
     public Bundle getBundle()
