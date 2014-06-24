@@ -289,7 +289,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                         }
                         finally
                         {
-                            unattachedConfigsLock.unlock();
+                            unattachedConfigsLock.lock();
                         }
                     }
                 }
