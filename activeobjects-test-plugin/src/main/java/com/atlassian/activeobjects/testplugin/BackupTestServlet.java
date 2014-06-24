@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.activeobjects.test.model.Author;
 import com.atlassian.activeobjects.test.model.Model;
 
+import com.atlassian.sal.api.lifecycle.LifecycleAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,7 +25,7 @@ import java.io.UnsupportedEncodingException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class BackupTestServlet extends HttpServlet implements InitializingBean
+public class BackupTestServlet extends HttpServlet implements LifecycleAware
 {
     public static final String CREATE = "create";
     public static final String BACKUP = "backup";
@@ -87,9 +88,9 @@ public class BackupTestServlet extends HttpServlet implements InitializingBean
     {
         new Model(ao).emptyDatabase();
     }
-    
+
     @Override
-    public void afterPropertiesSet() throws Exception
+    public void onStart()
     {
         //accessing active objects during plugin initialization used to blow up : AO-330
         Model model = new Model(ao);
