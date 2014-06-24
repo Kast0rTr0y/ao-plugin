@@ -102,7 +102,26 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void delegateTenanted() throws ExecutionException, InterruptedException
+    public void setAoConfig() throws ExecutionException, InterruptedException
+    {
+        babyBear.setAoConfiguration(aoConfig);
+
+        assertThat(babyBear.aoConfigFuture.isDone(), is(true));
+        assertThat(babyBear.aoConfigFuture.get(), is(aoConfig));
+    }
+
+    @Test
+    public void setAoConfigMultiple()
+    {
+        babyBear.aoConfigFuture.set(aoConfig);
+
+        expectedException.expect(IllegalStateException.class);
+
+        babyBear.setAoConfiguration(aoConfig);
+    }
+
+    @Test
+    public void delegate() throws ExecutionException, InterruptedException
     {
         babyBear.aoConfigFuture.set(aoConfig);
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
@@ -119,6 +138,14 @@ public class TenantAwareActiveObjectsTest
     {
         babyBear.aoConfigFuture.set(aoConfig);
         expectedException.expect(NoDataSourceException.class);
+
+        babyBear.delegate();
+    }
+
+    @Test
+    public void delegateNoConfig()
+    {
+        expectedException.expect(IllegalStateException.class);
 
         babyBear.delegate();
     }

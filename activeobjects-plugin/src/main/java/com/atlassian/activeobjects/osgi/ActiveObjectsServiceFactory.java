@@ -76,7 +76,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @VisibleForTesting
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
-    private final Map<String, ActiveObjectsConfiguration> unattachedConfigByKey = new HashMap<String, ActiveObjectsConfiguration>();
+    @VisibleForTesting
+    final Map<String, ActiveObjectsConfiguration> unattachedConfigByKey = new HashMap<String, ActiveObjectsConfiguration>();
 
     private final Lock delegateConfigLock = new ReentrantLock();
 
