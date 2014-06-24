@@ -104,21 +104,23 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void delegateTenanted() throws ExecutionException, InterruptedException
     {
+        babyBear.aoConfigFuture.set(aoConfig);
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
 
         babyBear.aoPromisesByTenant.put(tenant, aoPromise);
 
-        assertSame(babyBear.delegate(false).get(), ao);
+        assertSame(babyBear.delegate().get(), ao);
     }
 
     @Test
     public void delgateUntenanted()
     {
+        babyBear.aoConfigFuture.set(aoConfig);
         expectedException.expect(NoDataSourceException.class);
 
-        babyBear.delegate(false);
+        babyBear.delegate();
     }
 
     @Test
