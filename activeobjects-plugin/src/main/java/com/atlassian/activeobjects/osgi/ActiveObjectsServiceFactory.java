@@ -12,6 +12,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
+import com.atlassian.plugin.osgi.util.OsgiHeaderUtil;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -275,7 +276,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                         {
                             for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
                             {
-                                if (pluginKey.equals(aoDelegate.getBundle().getSymbolicName()))
+                                if (pluginKey.equals(OsgiHeaderUtil.getPluginKey(aoDelegate.getBundle())))
                                 {
                                     aoDelegate.setAoConfiguration(aoConfig);
                                     attachedToDelegate = true;
