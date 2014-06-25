@@ -123,7 +123,7 @@ class TenantAwareActiveObjects implements ActiveObjects
 
     void setAoConfiguration(@Nonnull final ActiveObjectsConfiguration aoConfiguration)
     {
-        logger.warn("setAoConfiguration [{}]", bundle.getSymbolicName());
+        logger.debug("setAoConfiguration [{}]", bundle.getSymbolicName());
 
         if (aoConfigFuture.isDone())
         {
