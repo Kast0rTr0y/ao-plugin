@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
 import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
@@ -215,7 +214,7 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.onPluginModuleEnabledEvent(event);
 
-        assertThat(serviceFactory.unattachedConfigByKey, hasEntry("bundle1", aoConfig));
+        assertThat(serviceFactory.unattachedConfigByPluginKey, hasEntry("bundle1", aoConfig));
     }
 
     @Test
@@ -225,7 +224,7 @@ public final class ActiveObjectsServiceFactoryTest
 
         serviceFactory.onPluginModuleEnabledEvent(event);
 
-        assertThat(serviceFactory.unattachedConfigByKey.isEmpty(), is(true));
+        assertThat(serviceFactory.unattachedConfigByPluginKey.isEmpty(), is(true));
 
         verify(babyBear1).setAoConfiguration(aoConfig);
     }

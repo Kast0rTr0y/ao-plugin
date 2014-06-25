@@ -78,7 +78,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
     @VisibleForTesting
-    final Map<String, ActiveObjectsConfiguration> unattachedConfigByKey = new HashMap<String, ActiveObjectsConfiguration>();
+    final Map<String, ActiveObjectsConfiguration> unattachedConfigByPluginKey = new HashMap<String, ActiveObjectsConfiguration>();
 
     private final Lock unattachedConfigsLock = new ReentrantLock();
 
@@ -146,11 +146,11 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                 unattachedConfigsLock.lock();
                 try
                 {
-                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByKey.get(bundle.getSymbolicName());
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByPluginKey.get(OsgiHeaderUtil.getPluginKey(bundle));
                     if (aoConfig != null)
                     {
                         delegate.setAoConfiguration(aoConfig);
-                        unattachedConfigByKey.remove(bundle.getSymbolicName());
+                        unattachedConfigByPluginKey.remove(bundle.getSymbolicName());
                     }
                 }
                 finally
@@ -285,7 +285,7 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                             }
                             if (!attachedToDelegate)
                             {
-                                unattachedConfigByKey.put(pluginKey, aoConfig);
+                                unattachedConfigByPluginKey.put(pluginKey, aoConfig);
                             }
                         }
                         finally
