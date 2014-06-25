@@ -146,11 +146,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                 unattachedConfigsLock.lock();
                 try
                 {
-                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByPluginKey.get(OsgiHeaderUtil.getPluginKey(bundle));
+                    final String pluginKey = OsgiHeaderUtil.getPluginKey(bundle);
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByPluginKey.get(pluginKey);
                     if (aoConfig != null)
                     {
                         delegate.setAoConfiguration(aoConfig);
-                        unattachedConfigByPluginKey.remove(bundle.getSymbolicName());
+                        unattachedConfigByPluginKey.remove(pluginKey);
                     }
                 }
                 finally
