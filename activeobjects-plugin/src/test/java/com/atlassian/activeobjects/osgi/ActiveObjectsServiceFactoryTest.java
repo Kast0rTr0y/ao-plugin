@@ -98,7 +98,7 @@ public final class ActiveObjectsServiceFactoryTest
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));
-        assertThat(serviceFactory.initExecutorsShutdown, is(false));
+        assertThat(serviceFactory.destroying, is(false));
 
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
@@ -128,12 +128,16 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
+        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
         serviceFactory.destroy();
 
-        assertThat(serviceFactory.initExecutorsShutdown, is(true));
+        assertThat(serviceFactory.destroying, is(true));
 
         verify(eventPublisher).unregister(serviceFactory);
+        verify(babyBear1).destroy();
+        verify(babyBear2).destroy();
         verify(executorService1).shutdownNow();
         verify(executorService2).shutdownNow();
     }
