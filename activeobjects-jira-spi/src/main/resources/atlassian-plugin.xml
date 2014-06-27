@@ -22,7 +22,4 @@
     <component key="tenantContext" class="com.atlassian.activeobjects.spi.CompatibilityTenantContextImpl" public="true">
         <interface>com.atlassian.activeobjects.spi.CompatibilityTenantContext</interface>
     </component>
-
-    <component key="jiraQuickRestart" name="JIRA Quick Restart"
-               class="com.atlassian.activeobjects.jira.JiraQuickRestart"/>
 </atlassian-plugin>
