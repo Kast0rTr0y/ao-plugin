@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.11</version>
+        <version>3.0.22</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -63,7 +63,7 @@
         <junit.version>4.10</junit.version>
         <hamcrest.version>1.1</hamcrest.version>
         <mockito.version>1.8.4</mockito.version>
-        <atlassian.selenium.version>2.1-m22</atlassian.selenium.version>
+        <atlassian.selenium.version>2.1</atlassian.selenium.version>
         <refapp.jira.version>6.3-OD-07-010</refapp.jira.version>
         <atlassian.concurrent.version>2.4.0</atlassian.concurrent.version>
     </properties>
