@@ -121,6 +121,15 @@ class TenantAwareActiveObjects implements ActiveObjects
         }
     }
 
+    public void destroy()
+    {
+        aoConfigFuture.cancel(false);
+        for (Promise<ActiveObjects> aoPromise : aoPromisesByTenant.asMap().values())
+        {
+            aoPromise.cancel(false);
+        }
+    }
+
     void setAoConfiguration(@Nonnull final ActiveObjectsConfiguration aoConfiguration)
     {
         logger.debug("setAoConfiguration [{}]", bundle.getSymbolicName());

@@ -36,9 +36,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -66,10 +64,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @VisibleForTesting
     final LoadingCache<Tenant, ExecutorService> initExecutorsByTenant;
 
-    private final ReadWriteLock initExecutorsLock = new ReentrantReadWriteLock();
-
     @VisibleForTesting
-    volatile boolean initExecutorsShutdown = false;
+    volatile boolean destroying = false;
 
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
@@ -116,22 +112,14 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public ExecutorService apply(@Nullable final Tenant tenant)
             {
-                initExecutorsLock.readLock().lock();
-                try
+                if (destroying)
                 {
-                    if (initExecutorsShutdown)
-                    {
-                        throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
-                    }
+                    throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
+                }
 
-                    //noinspection ConstantConditions
-                    checkNotNull(tenant);
-                    return initExecutorsByTenant.getUnchecked(tenant);
-                }
-                finally
-                {
-                    initExecutorsLock.readLock().unlock();
-                }
+                //noinspection ConstantConditions
+                checkNotNull(tenant);
+                return initExecutorsByTenant.getUnchecked(tenant);
             }
         };
 
@@ -177,18 +165,16 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     {
         logger.debug("destroying");
 
-        initExecutorsLock.writeLock().lock();
-        try
+        destroying = true;
+
+        for (ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
         {
-            for (ExecutorService initExecutor : ImmutableList.copyOf(initExecutorsByTenant.asMap().values()))
-            {
-                initExecutor.shutdownNow();
-            }
-            initExecutorsShutdown = true;
+            initExecutor.shutdownNow();
         }
-        finally
+
+        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
         {
-            initExecutorsLock.writeLock().unlock();
+            aoDelegate.destroy();
         }
 
         eventPublisher.unregister(this);
@@ -199,6 +185,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     {
         checkNotNull(bundle);
         logger.debug("bundle [{}]", bundle.getSymbolicName());
+
+        if (destroying)
+        {
+            throw new IllegalStateException("getService after ActiveObjectsServiceFactory destruction");
+        }
+
         return aoDelegatesByBundle.getUnchecked(bundle);
     }
 
@@ -206,6 +198,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
         aoDelegatesByBundle.invalidate(bundle);
+        if (ao instanceof TenantAwareActiveObjects)
+        {
+            ((TenantAwareActiveObjects) ao).destroy();
+        }
     }
 
     /**
