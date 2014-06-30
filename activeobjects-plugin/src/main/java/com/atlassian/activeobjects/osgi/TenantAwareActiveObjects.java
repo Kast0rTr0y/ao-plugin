@@ -87,22 +87,13 @@ class TenantAwareActiveObjects implements ActiveObjects
                     {
                         logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
 
-                        return Promises.forFuture(initExecutorFunction.apply(tenant).submit(new Callable<ActiveObjects>()
-                        {
-                            @Override
-                            public ActiveObjects call() throws Exception
-                            {
-                                logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
-                                try
-                                {
-                                    return factory.create(aoConfig, tenant);
-                                }
-                                catch (Exception e)
-                                {
-                                    throw new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
-                                }
-                            }
-                        }));
+                        final ActiveObjects activeObjects = factory.create(aoConfig, tenant);
+                        final SettableFuture<ActiveObjects> metFuture = SettableFuture.create();
+                        metFuture.set(activeObjects);
+
+                        logger.debug("bundle [{}] returning ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
+
+                        return Promises.forFuture(metFuture);
                     }
                 });
             }
