@@ -87,22 +87,29 @@ class TenantAwareActiveObjects implements ActiveObjects
                     {
                         logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
 
-                        return Promises.forFuture(initExecutorFunction.apply(tenant).submit(new Callable<ActiveObjects>()
+                        final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
+                        initExecutorFunction.apply(tenant).submit(new Callable<Void>()
                         {
                             @Override
-                            public ActiveObjects call() throws Exception
+                            public Void call() throws Exception
                             {
                                 logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
                                 try
                                 {
-                                    return factory.create(aoConfig, tenant);
+                                    final ActiveObjects ao = factory.create(aoConfig, tenant);
+                                    logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());
+                                    aoFuture.set(ao);
                                 }
                                 catch (Exception e)
                                 {
-                                    throw new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
+                                    final ActiveObjectsInitException activeObjectsInitException = new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
+                                    aoFuture.setException(activeObjectsInitException);
                                 }
+                                return null;
                             }
-                        }));
+                        });
+
+                        return Promises.forFuture(aoFuture);
                     }
                 });
             }
