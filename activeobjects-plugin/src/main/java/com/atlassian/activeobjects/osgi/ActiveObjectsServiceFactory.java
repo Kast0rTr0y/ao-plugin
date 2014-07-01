@@ -238,13 +238,14 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
+            final ExecutorService initExecutor = initExecutorsByTenant.getIfPresent(tenant);
+            initExecutorsByTenant.invalidate(tenant);
             for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
                 logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);
             }
 
-            final ExecutorService initExecutor = initExecutorsByTenant.getIfPresent(tenant);
             if (initExecutor != null)
             {
                 logger.debug("terminating any initExecutor threads");

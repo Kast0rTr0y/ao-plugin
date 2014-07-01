@@ -124,6 +124,7 @@ class TenantAwareActiveObjects implements ActiveObjects
         Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant != null)
         {
+            aoPromisesByTenant.invalidate(tenant);
             startActiveObjects(tenant);
         }
     }
