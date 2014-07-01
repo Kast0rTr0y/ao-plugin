@@ -90,9 +90,7 @@
         <constructor-arg ref="pluginAccessor"/>
     </bean>
 
-    <bean id="pluginToTablesMapping" class="com.atlassian.activeobjects.admin.ActiveObjectsPluginToTablesMapping">
-        <constructor-arg ref="pluginSettingsFactory"/>
-    </bean>
+    <bean id="pluginToTablesMapping" class="com.atlassian.activeobjects.admin.InMemoryPluginToTablesMapping"/>
 
     <bean id="aoPluginConfiguration"
           class="com.atlassian.activeobjects.config.internal.DefaultActiveObjectsPluginConfiguration">

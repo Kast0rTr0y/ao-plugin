@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.admin.PluginInfo;
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.PluginInformation;
@@ -36,7 +37,7 @@ public final class PluginInformationFactory
             return new NotAvailablePluginInformation();
         }
 
-        final PluginToTablesMapping.PluginInfo pluginInfo = pluginToTablesMapping.get(tableName);
+        final PluginInfo pluginInfo = pluginToTablesMapping.get(tableName);
         if (pluginInfo != null)
         {
             return new AvailablePluginInformation(pluginInfo);
@@ -146,7 +147,7 @@ public final class PluginInformationFactory
             );
         }
 
-        public AvailablePluginInformation(PluginToTablesMapping.PluginInfo pluginInfo)
+        public AvailablePluginInformation(PluginInfo pluginInfo)
         {
             this(checkNotNull(pluginInfo).name, pluginInfo.key, pluginInfo.version, pluginInfo.vendorName, pluginInfo.vendorUrl);
         }

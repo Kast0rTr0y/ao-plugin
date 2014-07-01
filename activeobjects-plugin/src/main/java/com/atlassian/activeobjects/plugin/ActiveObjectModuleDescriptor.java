@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.plugin;
 
 import com.atlassian.activeobjects.ActiveObjectsPluginException;
 import com.atlassian.activeobjects.EntitiesValidator;
+import com.atlassian.activeobjects.admin.PluginInfo;
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
@@ -15,7 +16,6 @@ import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.module.ModuleFactory;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.tenancy.api.TenantAccessor;
-import com.atlassian.tenancy.api.helper.PerTenantInitialiser;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
-import static com.atlassian.activeobjects.admin.PluginToTablesMapping.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.*;
 
@@ -91,15 +90,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         configuration = getActiveObjectsConfiguration(getNameSpace(element), entities, upgradeTasks);
 
         final Set<Class<? extends RawEntity<?>>> entityClasses = entitiesValidator.check(entities, configuration.getNameConverters());
-
-        new PerTenantInitialiser(eventPublisher, tenantAccessor, new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
-            }
-        }).init();
+        recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
     }
 
     private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element)
