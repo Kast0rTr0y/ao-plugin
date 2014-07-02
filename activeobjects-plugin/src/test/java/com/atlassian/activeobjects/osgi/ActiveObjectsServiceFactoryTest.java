@@ -23,9 +23,11 @@ import org.osgi.framework.Bundle;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Dictionary;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
@@ -180,10 +182,12 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
         assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(2));
 
-        serviceFactory.ungetService(bundle1, null, null);
+        serviceFactory.ungetService(bundle1, null, babyBear1);
 
         assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
         assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(1));
+
+        verify(babyBear1).destroy();
     }
 
     @Test
@@ -200,8 +204,11 @@ public final class ActiveObjectsServiceFactoryTest
         verify(babyBear2).startActiveObjects(tenant1);
     }
 
+    @Test
     public void onHotRestart()
     {
+        serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
+
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
@@ -211,6 +218,9 @@ public final class ActiveObjectsServiceFactoryTest
 
         verify(babyBear1).restartActiveObjects(tenant1);
         verify(babyBear2).restartActiveObjects(tenant1);
+        verify(executorService1).shutdownNow();
+
+        assertThat(serviceFactory.initExecutorsByTenant.asMap().isEmpty(), is(true));
     }
 
     @Test
@@ -231,5 +241,17 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(serviceFactory.unattachedConfigByPluginKey.isEmpty(), is(true));
 
         verify(babyBear1).setAoConfiguration(aoConfig);
+    }
+
+    @Test
+    public void aoDelegatesByBundleLoader() throws ExecutionException, InterruptedException
+    {
+        serviceFactory.unattachedConfigByPluginKey.put("bundle1", aoConfig);
+
+        final TenantAwareActiveObjects aoDelegate = serviceFactory.aoDelegatesByBundle.get(bundle1);
+
+        assertThat(aoDelegate, notNullValue());
+        assertThat(aoDelegate.aoConfigFuture.isDone(), is(true));
+        assertThat(aoDelegate.aoConfigFuture.get(), is(aoConfig));
     }
 }

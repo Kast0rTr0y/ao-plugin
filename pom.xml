@@ -343,11 +343,6 @@
     <profiles>
         <profile>
             <id>release</id>
-            <properties>
-                <skipTests>true</skipTests>
-                <maven.test.skip>true</maven.test.skip>
-                <skipITs>true</skipITs>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
