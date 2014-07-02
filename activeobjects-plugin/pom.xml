@@ -16,7 +16,7 @@
 
     <properties>
         <db.skip>false</db.skip>
-        <mysql.version>5.1.13</mysql.version>
+        <mysql.version>5.1.14</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
