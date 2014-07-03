@@ -13,7 +13,6 @@
     <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="2000" cardinality="0..1"/>
     <osgi:reference id="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" timeout="2000" cardinality="0..1"/>
     <osgi:reference id="tenantAccessor" interface="com.atlassian.tenancy.api.TenantAccessor" timeout="2000" cardinality="0..1"/>
-    <osgi:reference id="threadLocalDelegateExecutorFactory" interface="com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory" timeout="2000" cardinality="0..1"/>
 
     <bean id="aoSynchronizationManager" class="com.atlassian.activeobjects.spring.OptionalServiceFactoryBean">
         <constructor-arg value="com.atlassian.activeobjects.spi.TransactionSynchronisationManager" />
@@ -42,7 +41,8 @@
     <osgi:reference id="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
     <osgi:reference id="moduleFactory" interface="com.atlassian.plugin.module.ModuleFactory"/>
     <osgi:reference id="clusterLockService" interface="com.atlassian.beehive.ClusterLockService"/>
-    <osgi:reference id="tenantContext" interface="com.atlassian.tenancy.api.TenantContext"/>
+    <osgi:reference id="threadLocalDelegateExecutorFactory" interface="com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory"/>
+    <osgi:reference id="pluginAccessor" interface="com.atlassian.plugin.PluginAccessor"/>
 
     <!-- used for the admin UI only, so optional -->
     <osgi:reference id="userManager" interface="com.atlassian.sal.api.user.UserManager" timeout="2000" cardinality="0..1"/>
@@ -65,6 +65,16 @@
                 <entry key="com.atlassian.plugin.web.WebInterfaceManager" value-ref="webInterfaceManager"/>
                 <entry key="com.atlassian.plugin.web.WebInterfaceManager" value-ref="webInterfaceManager"/>
             </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="tenantContext" class="com.atlassian.activeobjects.spring.OptionalServiceFactoryBean">
+        <constructor-arg value="com.atlassian.tenancy.api.TenantContext"/>
+        <constructor-arg>
+            <osgi:reference interface="com.atlassian.activeobjects.spi.CompatibilityTenantContext" timeout="2000" cardinality="0..1"/>
+        </constructor-arg>
+        <constructor-arg>
+            <osgi:reference interface="com.atlassian.tenancy.api.TenantContext"/>
         </constructor-arg>
     </bean>
 </beans>

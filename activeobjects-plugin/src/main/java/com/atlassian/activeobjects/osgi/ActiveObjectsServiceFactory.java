@@ -1,12 +1,18 @@
 package com.atlassian.activeobjects.osgi;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.HotRestartEvent;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.ModuleDescriptor;
+import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
+import com.atlassian.plugin.osgi.util.OsgiHeaderUtil;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -17,7 +23,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -26,12 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -57,15 +62,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     final ThreadFactory aoContextThreadFactory;
 
     @VisibleForTesting
-    final ScheduledExecutorService configExecutor;
-
-    @VisibleForTesting
     final LoadingCache<Tenant, ExecutorService> initExecutorsByTenant;
 
-    private final ReadWriteLock initExecutorsLock = new ReentrantReadWriteLock();
-
     @VisibleForTesting
-    volatile boolean initExecutorsShutdown = false;
+    volatile boolean destroying = false;
 
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
@@ -73,32 +73,27 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @VisibleForTesting
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
+    @VisibleForTesting
+    final Map<String, ActiveObjectsConfiguration> unattachedConfigByPluginKey = new HashMap<String, ActiveObjectsConfiguration>();
+
+    private final Lock unattachedConfigsLock = new ReentrantLock();
+
     public ActiveObjectsServiceFactory(
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final EventPublisher eventPublisher,
             @Nonnull final TenantContext tenantContext,
-            @Nonnull final AOConfigurationGenerator aoConfigurationGenerator,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
             @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantContext = checkNotNull(tenantContext);
         checkNotNull(factory);
-        checkNotNull(aoConfigurationGenerator);
         checkNotNull(threadLocalDelegateExecutorFactory);
         checkNotNull(initExecutorServiceProvider);
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
         ClassLoader bundleContextClassLoader = Thread.currentThread().getContextClassLoader();
         aoContextThreadFactory = new ContextClassLoaderThreadFactory(bundleContextClassLoader);
-
-        // scheduled single thread pool for use by AO plugins waiting for config modules
-        final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setThreadFactory(aoContextThreadFactory)
-                .setNameFormat("active-objects-config")
-                .build();
-        final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        configExecutor = threadLocalDelegateExecutorFactory.createScheduledExecutorService(delegate);
 
         // loading cache for init executors pools
         initExecutorsByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
@@ -117,22 +112,14 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public ExecutorService apply(@Nullable final Tenant tenant)
             {
-                initExecutorsLock.readLock().lock();
-                try
+                if (destroying)
                 {
-                    if (initExecutorsShutdown)
-                    {
-                        throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
-                    }
+                    throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
+                }
 
-                    //noinspection ConstantConditions
-                    checkNotNull(tenant);
-                    return initExecutorsByTenant.getUnchecked(tenant);
-                }
-                finally
-                {
-                    initExecutorsLock.readLock().unlock();
-                }
+                //noinspection ConstantConditions
+                checkNotNull(tenant);
+                return initExecutorsByTenant.getUnchecked(tenant);
             }
         };
 
@@ -142,8 +129,23 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
             @Override
             public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
             {
-                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator, initExecutorFn, configExecutor);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
+                unattachedConfigsLock.lock();
+                try
+                {
+                    final String pluginKey = OsgiHeaderUtil.getPluginKey(bundle);
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByPluginKey.get(pluginKey);
+                    if (aoConfig != null)
+                    {
+                        delegate.setAoConfiguration(aoConfig);
+                        unattachedConfigByPluginKey.remove(pluginKey);
+                    }
+                }
+                finally
+                {
+                    unattachedConfigsLock.unlock();
+                }
                 return delegate;
             }
         });
@@ -152,6 +154,8 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     @Override
     public void afterPropertiesSet() throws Exception
     {
+        logger.debug("afterPropertiesSet");
+
         // we want tenant arrival and hot restart event notifications
         eventPublisher.register(this);
     }
@@ -160,20 +164,17 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public void destroy() throws Exception
     {
         logger.debug("destroying");
-        configExecutor.shutdownNow();
 
-        initExecutorsLock.writeLock().lock();
-        try
+        destroying = true;
+
+        for (ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
         {
-            for (ExecutorService initExecutor : ImmutableList.copyOf(initExecutorsByTenant.asMap().values()))
-            {
-                initExecutor.shutdownNow();
-            }
-            initExecutorsShutdown = true;
+            initExecutor.shutdownNow();
         }
-        finally
+
+        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
         {
-            initExecutorsLock.writeLock().unlock();
+            aoDelegate.destroy();
         }
 
         eventPublisher.unregister(this);
@@ -184,6 +185,12 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     {
         checkNotNull(bundle);
         logger.debug("bundle [{}]", bundle.getSymbolicName());
+
+        if (destroying)
+        {
+            throw new IllegalStateException("getService after ActiveObjectsServiceFactory destruction");
+        }
+
         return aoDelegatesByBundle.getUnchecked(bundle);
     }
 
@@ -191,6 +198,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
         aoDelegatesByBundle.invalidate(bundle);
+        if (ao instanceof TenantAwareActiveObjects)
+        {
+            ((TenantAwareActiveObjects) ao).destroy();
+        }
     }
 
     /**
@@ -227,10 +238,67 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
         if (tenant != null)
         {
+            final ExecutorService initExecutor = initExecutorsByTenant.getIfPresent(tenant);
+            initExecutorsByTenant.invalidate(tenant);
             for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
                 logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);
+            }
+
+            if (initExecutor != null)
+            {
+                logger.debug("terminating any initExecutor threads");
+                initExecutor.shutdownNow();
+            }
+        }
+    }
+
+    /**
+     * Listens for {@link PluginModuleEnabledEvent} for {@link ActiveObjectModuleDescriptor}.
+     * Passes it to appropriate delegate i.e. the one for which the plugin/bundle key matches.
+     */
+    @SuppressWarnings ("UnusedDeclaration")
+    @EventListener
+    public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent)
+    {
+        if (pluginModuleEnabledEvent != null)
+        {
+            final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
+            if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+            {
+                final Plugin plugin = moduleDescriptor.getPlugin();
+                if (plugin != null)
+                {
+                    final String pluginKey = plugin.getKey();
+                    if (pluginKey != null)
+                    {
+                        boolean attachedToDelegate = false;
+                        ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
+
+                        unattachedConfigsLock.lock();
+                        try
+                        {
+                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
+                            {
+                                if (pluginKey.equals(OsgiHeaderUtil.getPluginKey(aoDelegate.getBundle())))
+                                {
+                                    aoDelegate.setAoConfiguration(aoConfig);
+                                    attachedToDelegate = true;
+                                    break;
+                                }
+                            }
+                            if (!attachedToDelegate)
+                            {
+                                unattachedConfigByPluginKey.put(pluginKey, aoConfig);
+                            }
+                        }
+                        finally
+                        {
+                            unattachedConfigsLock.unlock();
+                        }
+                    }
+                }
             }
         }
     }

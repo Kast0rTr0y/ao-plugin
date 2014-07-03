@@ -11,7 +11,6 @@ import com.atlassian.util.concurrent.Promises;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -20,25 +19,17 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith (MockitoJUnitRunner.class)
@@ -55,8 +46,6 @@ public class TenantAwareActiveObjectsTest
     private ActiveObjectsFactory factory;
     @Mock
     private TenantContext tenantContext;
-    @Mock
-    private AOConfigurationGenerator aoConfigurationGenerator;
     @Mock
     private Function<Tenant, ExecutorService> initExecutorFunction;
     @Mock
@@ -80,17 +69,10 @@ public class TenantAwareActiveObjectsTest
     @Mock
     private ActiveObjectsConfiguration aoConfig;
 
-    @BeforeClass
-    public static void beforeClass()
-    {
-        System.setProperty(TenantAwareActiveObjects.CONFIGURATION_TIMEOUT_MS_PROPERTY, String.valueOf(999));
-    }
-
     @Before
     public void before()
     {
-        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, aoConfigurationGenerator,
-                initExecutorFunction, configExecutor);
+        babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFunction);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
         when(bundle.getBundleContext()).thenReturn(bundleContext);
@@ -101,110 +83,38 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void init() throws InvalidSyntaxException
+    public void init()
     {
-        final String filter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
+        when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         babyBear.init();
 
-        verify(bundle, times(2)).getBundleContext();
-        verify(bundleContext).addServiceListener(babyBear, filter);
-
-        verify(configExecutor).schedule(babyBear.configCheckRunnable, 999, TimeUnit.MILLISECONDS);
+        assertThat(babyBear.aoPromisesByTenant.asMap().keySet(), hasItem(tenant));
     }
 
     @Test
-    public void initOnePresent() throws InvalidSyntaxException, ExecutionException, InterruptedException
+    public void setAoConfig() throws ExecutionException, InterruptedException
     {
-        final String filter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
+        babyBear.setAoConfiguration(aoConfig);
 
-        final ServiceReference[] serviceReferences = new ServiceReference[] { mock(ServiceReference.class) };
-
-        when(bundleContext.getServiceReferences(ActiveObjectsConfiguration.class.getName(), filter)).thenReturn(serviceReferences);
-        when(bundleContext.getService(serviceReferences[0])).thenReturn(aoConfig);
-
-        babyBear.init();
-
-        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
-        assertThat(babyBear.aoConfigFutureRef.get().get(), is(aoConfig));
-
-        verify(bundle, times(3)).getBundleContext();
-        verify(bundleContext).addServiceListener(babyBear, filter);
-        verify(bundleContext).getServiceReferences(any(String.class), any(String.class));
-        verify(bundleContext).getService(serviceReferences[0]);
-
-        verify(configExecutor).schedule(babyBear.configCheckRunnable, 999, TimeUnit.MILLISECONDS);
+        assertThat(babyBear.aoConfigFuture.isDone(), is(true));
+        assertThat(babyBear.aoConfigFuture.get(), is(aoConfig));
     }
 
     @Test
-    public void initManyPresent() throws InvalidSyntaxException
+    public void setAoConfigMultiple()
     {
-        final String filter = "(&(objectclass=" + ActiveObjectsConfiguration.class.getName() + ")(com.atlassian.plugin.key=" + bundle.getSymbolicName() + "))";
-
-        final ServiceReference[] serviceReferences = new ServiceReference[] { mock(ServiceReference.class), mock(ServiceReference.class) };
-
-        when(bundleContext.getServiceReferences(ActiveObjectsConfiguration.class.getName(), filter)).thenReturn(serviceReferences);
+        babyBear.aoConfigFuture.set(aoConfig);
 
         expectedException.expect(IllegalStateException.class);
 
-        babyBear.init();
+        babyBear.setAoConfiguration(aoConfig);
     }
 
     @Test
-    public void serviceChangedRegisteredSingle() throws ExecutionException, InterruptedException
+    public void delegate() throws ExecutionException, InterruptedException
     {
-        when(serviceEvent.getType()).thenReturn(ServiceEvent.REGISTERED);
-
-        babyBear.serviceChanged(serviceEvent);
-
-        assertTrue("AO configuration future is not fulfilled", babyBear.aoConfigFutureRef.get().isDone());
-        assertSame(aoConfig, babyBear.aoConfigFutureRef.get().get());
-    }
-
-    @Test
-    public void serviceChangedRegisteredMultiple()
-    {
-        final SettableFuture<ActiveObjectsConfiguration> existingAoConfigFutureRef = SettableFuture.create();
-        existingAoConfigFutureRef.set(mock(ActiveObjectsConfiguration.class));
-        babyBear.aoConfigFutureRef.set(existingAoConfigFutureRef);
-
-        when(serviceEvent.getType()).thenReturn(ServiceEvent.REGISTERED);
-
-        expectedException.expect(IllegalStateException.class);
-
-        babyBear.serviceChanged(serviceEvent);
-    }
-
-    @Test
-    public void serviceChangedUnregistering()
-    {
-        final SettableFuture<ActiveObjectsConfiguration> originalAoConfigFuture = SettableFuture.create();
-        originalAoConfigFuture.set(aoConfig);
-        babyBear.aoConfigFutureRef.set(originalAoConfigFuture);
-
-        when(serviceEvent.getType()).thenReturn(ServiceEvent.UNREGISTERING);
-
-        babyBear.serviceChanged(serviceEvent);
-
-        verify(bundleContext).ungetService(serviceReference);
-        assertTrue("AO configuration future is not fulfilled", babyBear.aoConfigFutureRef.get().isDone());
-        assertNotSame(originalAoConfigFuture, babyBear.aoConfigFutureRef.get());
-
-        try
-        {
-            babyBear.aoConfigFutureRef.get().get();
-            fail("ExecutionException wrapping IllegalStateException not thrown");
-        }
-        catch (Exception e)
-        {
-            assertThat(e, is(ExecutionException.class));
-            assertThat(e.getCause(), is(IllegalStateException.class));
-        }
-    }
-
-    @Test
-    public void delegateTenanted() throws ExecutionException, InterruptedException
-    {
+        babyBear.aoConfigFuture.set(aoConfig);
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
@@ -215,35 +125,18 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void setAoConfigFutureRegistered()
-    {
-        babyBear.setAoConfigFuture(aoConfig, false);
-
-        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
-
-        babyBear.setAoConfigFuture(aoConfig, false);
-
-        expectedException.expect(IllegalStateException.class);
-
-        babyBear.setAoConfigFuture(mock(ActiveObjectsConfiguration.class), false);
-
-        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
-    }
-
-    @Test
-    public void setAoConfigFutureGenerated()
-    {
-        babyBear.setAoConfigFuture(aoConfig, false);
-
-        assertThat(babyBear.aoConfigFutureRef.get().isDone(), is(true));
-
-        babyBear.setAoConfigFuture(mock(ActiveObjectsConfiguration.class), true);
-    }
-
-    @Test
     public void delgateUntenanted()
     {
+        babyBear.aoConfigFuture.set(aoConfig);
         expectedException.expect(NoDataSourceException.class);
+
+        babyBear.delegate();
+    }
+
+    @Test
+    public void delegateNoConfig()
+    {
+        expectedException.expect(IllegalStateException.class);
 
         babyBear.delegate();
     }

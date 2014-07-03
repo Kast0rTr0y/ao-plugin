@@ -1,11 +1,14 @@
 package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.ModuleDescriptor;
+import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -15,22 +18,19 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Dictionary;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,12 +46,6 @@ public final class ActiveObjectsServiceFactoryTest
     private ApplicationContext applicationContext;
 
     @Mock
-    private OsgiServiceUtils osgiUtils;
-
-    @Mock
-    private ActiveObjects activeObjects;
-
-    @Mock
     private ActiveObjectsConfiguration configuration;
 
     @Mock
@@ -61,13 +55,7 @@ public final class ActiveObjectsServiceFactoryTest
     private EventPublisher eventPublisher;
 
     @Mock
-    private Bundle bundle;
-    
-    @Mock
     private TenantContext tenantContext;
-
-    @Mock
-    private AOConfigurationGenerator aoConfigurationGenerator;
 
     @Mock
     private ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
@@ -75,36 +63,58 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private InitExecutorServiceProvider initExecutorServiceProvider;
 
-    private final Tenant tenant1 = mock(Tenant.class);
-    private final Tenant tenant2 = mock(Tenant.class);
-    private final ExecutorService executorService1 = mock(ExecutorService.class);
-    private final ExecutorService executorService2 = mock(ExecutorService.class);
-    private final Bundle bundle1 = mock(Bundle.class);
-    private final Bundle bundle2 = mock(Bundle.class);
-    private final TenantAwareActiveObjects babyBear1 = mock(TenantAwareActiveObjects.class);
-    private final TenantAwareActiveObjects babyBear2 = mock(TenantAwareActiveObjects.class);
+    @Mock
+    private Tenant tenant1;
+    @Mock
+    private Tenant tenant2;
+    @Mock
+    private ExecutorService executorService1;
+    @Mock
+    private ExecutorService executorService2;
+    @Mock
+    private Bundle bundle1;
+    @Mock
+    private Bundle bundle2;
+    @Mock
+    private Dictionary<String, String> bundle1Dictionary;
+    @Mock
+    private Dictionary<String, String> bundle2Dictionary;
+    @Mock
+    private TenantAwareActiveObjects babyBear1;
+    @Mock
+    private TenantAwareActiveObjects babyBear2;
+    @Mock
+    private PluginModuleEnabledEvent event;
+    @Mock
+    private ActiveObjectModuleDescriptor moduleDescriptor;
+    @Mock
+    private Plugin plugin1;
+    @Mock
+    private ActiveObjectsConfiguration aoConfig;
 
     @Before
     public void setUp() throws Exception
     {
-        when(threadLocalDelegateExecutorFactory.createScheduledExecutorService(any(ScheduledExecutorService.class))).thenAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(final InvocationOnMock invocation) throws Throwable
-            {
-                return invocation.getArguments()[0];
-            }
-        });
-
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
-                aoConfigurationGenerator, threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
+                threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
         assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
         assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));
-        assertThat(serviceFactory.configExecutor, notNullValue());
-        assertThat(serviceFactory.initExecutorsShutdown, is(false));
+        assertThat(serviceFactory.destroying, is(false));
 
-        verify(threadLocalDelegateExecutorFactory).createScheduledExecutorService(any(ScheduledExecutorService.class));
+        when(babyBear1.getBundle()).thenReturn(bundle1);
+        when(babyBear2.getBundle()).thenReturn(bundle2);
+        when(bundle1.getSymbolicName()).thenReturn("bundle1");
+        when(bundle2.getSymbolicName()).thenReturn("bundle2");
+        when(bundle1.getHeaders()).thenReturn(bundle1Dictionary);
+        when(bundle2.getHeaders()).thenReturn(bundle2Dictionary);
+        when(bundle1Dictionary.get("Atlassian-Plugin-Key")).thenReturn("bundle1");
+        when(bundle2Dictionary.get("Atlassian-Plugin-Key")).thenReturn("bundle2");
+        //noinspection unchecked
+        when(event.getModule()).thenReturn((ModuleDescriptor)moduleDescriptor);
+        when(moduleDescriptor.getPlugin()).thenReturn(plugin1);
+        when(plugin1.getKey()).thenReturn("bundle1");
+        when(moduleDescriptor.getConfiguration()).thenReturn(aoConfig);
     }
 
     @Test
@@ -120,13 +130,16 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
+        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
         serviceFactory.destroy();
 
-        assertThat(serviceFactory.configExecutor.isShutdown(), is(true));
-        assertThat(serviceFactory.initExecutorsShutdown, is(true));
+        assertThat(serviceFactory.destroying, is(true));
 
         verify(eventPublisher).unregister(serviceFactory);
+        verify(babyBear1).destroy();
+        verify(babyBear2).destroy();
         verify(executorService1).shutdownNow();
         verify(executorService2).shutdownNow();
     }
@@ -169,10 +182,12 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
         assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(2));
 
-        serviceFactory.ungetService(bundle1, null, null);
+        serviceFactory.ungetService(bundle1, null, babyBear1);
 
         assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
         assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(1));
+
+        verify(babyBear1).destroy();
     }
 
     @Test
@@ -182,10 +197,6 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
         when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
-        when(babyBear1.getBundle()).thenReturn(bundle1);
-        when(babyBear2.getBundle()).thenReturn(bundle2);
-        when(bundle1.getSymbolicName()).thenReturn("bundle1");
-        when(bundle2.getSymbolicName()).thenReturn("bundle2");
 
         serviceFactory.onTenantArrived(null);
 
@@ -193,20 +204,54 @@ public final class ActiveObjectsServiceFactoryTest
         verify(babyBear2).startActiveObjects(tenant1);
     }
 
+    @Test
     public void onHotRestart()
     {
+        serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
+
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
         serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
 
         when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
-        when(babyBear1.getBundle()).thenReturn(bundle1);
-        when(babyBear2.getBundle()).thenReturn(bundle2);
-        when(bundle1.getSymbolicName()).thenReturn("bundle1");
-        when(bundle2.getSymbolicName()).thenReturn("bundle2");
 
         serviceFactory.onHotRestart(null);
 
         verify(babyBear1).restartActiveObjects(tenant1);
         verify(babyBear2).restartActiveObjects(tenant1);
+        verify(executorService1).shutdownNow();
+
+        assertThat(serviceFactory.initExecutorsByTenant.asMap().isEmpty(), is(true));
+    }
+
+    @Test
+    public void onPluginModuleEnabledEventNoDelegate()
+    {
+        serviceFactory.onPluginModuleEnabledEvent(event);
+
+        assertThat(serviceFactory.unattachedConfigByPluginKey, hasEntry("bundle1", aoConfig));
+    }
+
+    @Test
+    public void onPluginModuleEnabledEventHasDelegate()
+    {
+        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+
+        serviceFactory.onPluginModuleEnabledEvent(event);
+
+        assertThat(serviceFactory.unattachedConfigByPluginKey.isEmpty(), is(true));
+
+        verify(babyBear1).setAoConfiguration(aoConfig);
+    }
+
+    @Test
+    public void aoDelegatesByBundleLoader() throws ExecutionException, InterruptedException
+    {
+        serviceFactory.unattachedConfigByPluginKey.put("bundle1", aoConfig);
+
+        final TenantAwareActiveObjects aoDelegate = serviceFactory.aoDelegatesByBundle.get(bundle1);
+
+        assertThat(aoDelegate, notNullValue());
+        assertThat(aoDelegate.aoConfigFuture.isDone(), is(true));
+        assertThat(aoDelegate.aoConfigFuture.get(), is(aoConfig));
     }
 }

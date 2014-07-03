@@ -82,30 +82,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.atlassian.selenium</groupId>
-            <artifactId>atlassian-pageobjects-api</artifactId>
-            <version>${atlassian.selenium.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.collections</groupId>
-                    <artifactId>google-collections</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.atlassian.selenium</groupId>
-            <artifactId>atlassian-visual-comparison</artifactId>
-            <version>${atlassian.selenium.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.atlassian.selenium</groupId>
-            <artifactId>atlassian-webdriver-core</artifactId>
-            <version>${atlassian.selenium.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>xmlunit</groupId>
             <artifactId>xmlunit</artifactId>
             <version>1.4</version>
