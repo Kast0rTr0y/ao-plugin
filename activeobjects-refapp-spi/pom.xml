@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.28.0-m001</version>
+        <version>0.28.0-m002-SNAPSHOT</version>
     </parent>
 
     <artifactId>activeobjects-refapp-spi</artifactId>
