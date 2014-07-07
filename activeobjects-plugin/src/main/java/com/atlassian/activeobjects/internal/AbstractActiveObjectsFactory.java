@@ -26,7 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String LOCK_SUFFIX = ".upgrade";
+    private static final String LOCK_SUFFIX = ".ao-plugin.upgrade";
 
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
