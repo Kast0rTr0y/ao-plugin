@@ -50,6 +50,7 @@
                             com.atlassian.plugin.osgi.factory;version="${plugins.libversion}",
                             com.atlassian.plugin.osgi.util;version="${plugins.libversion}",
                             com.atlassian.plugin.predicate;version="${plugins.libversion}",
+                            com.atlassian.plugin.util;version="${plugins.libversion}",
                             com.atlassian.plugin.web;version="${webfragments.libversion}",
                             com.atlassian.plugin.webresource;version="${webresource.libversion}",
                             com.atlassian.tenancy.api*;version="${tenancy.compatibility.version}",
