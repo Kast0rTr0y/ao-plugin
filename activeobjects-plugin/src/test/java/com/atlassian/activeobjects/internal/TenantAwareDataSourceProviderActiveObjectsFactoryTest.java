@@ -164,7 +164,6 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(false);
 
         expectedException.expect(ActiveObjectsInitException.class);
-        expectedException.expectMessage("unable to acquire cluster lock named 'com.example.plugin.ao-plugin.upgrade' after waiting " + PluginUtils.getDefaultEnablingWaitPeriod() + " seconds");
 
         activeObjectsFactory.create(configuration, tenant);
     }
@@ -175,7 +174,6 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenThrow(new InterruptedException());
 
         expectedException.expect(ActiveObjectsInitException.class);
-        expectedException.expectMessage("interrupted while trying to acquire cluster lock named 'com.example.plugin.ao-plugin.upgrade'");
 
         activeObjectsFactory.create(configuration, tenant);
     }
