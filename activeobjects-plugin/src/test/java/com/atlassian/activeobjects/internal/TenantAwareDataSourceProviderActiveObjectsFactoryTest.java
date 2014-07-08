@@ -8,13 +8,16 @@ import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.plugin.util.PluginUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
 import net.java.ao.EntityManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -24,6 +27,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import static org.junit.Assert.assertNotNull;
@@ -40,6 +44,9 @@ import static org.mockito.Mockito.when;
 public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
 {
     private DataSourceProviderActiveObjectsFactory activeObjectsFactory;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Mock
     private ActiveObjectUpgradeManager upgradeManager;
@@ -100,6 +107,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
     public void testCreateWithNullDataSource() throws Exception
     {
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
+        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(true);
         try
         {
             activeObjectsFactory.create(configuration, tenant);
@@ -107,7 +115,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            verify(clusterLock).lock();
+            verify(clusterLock).tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS);
             verify(clusterLock).unlock();
         }
     }
@@ -118,6 +126,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         final DataSource dataSource = mock(DataSource.class);
 
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
+        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(true);
         when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
@@ -126,7 +135,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            verify(clusterLock).lock();
+            verify(clusterLock).tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS);
             verify(clusterLock).unlock();
         }
     }
@@ -141,11 +150,34 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.DERBY_EMBEDDED);
+        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(true);
 
         assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
-        verify(clusterLock).lock();
+        verify(clusterLock).tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS);
         verify(clusterLock).unlock();
+    }
+
+    @Test
+    public void testCreateLockTimeout() throws InterruptedException
+    {
+        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(false);
+
+        expectedException.expect(ActiveObjectsInitException.class);
+        expectedException.expectMessage("unable to acquire cluster lock named 'com.example.plugin.ao-plugin.upgrade' after waiting " + PluginUtils.getDefaultEnablingWaitPeriod() + " seconds");
+
+        activeObjectsFactory.create(configuration, tenant);
+    }
+
+    @Test
+    public void testCreateLockInterrupted() throws InterruptedException
+    {
+        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenThrow(new InterruptedException());
+
+        expectedException.expect(ActiveObjectsInitException.class);
+        expectedException.expectMessage("interrupted while trying to acquire cluster lock named 'com.example.plugin.ao-plugin.upgrade'");
+
+        activeObjectsFactory.create(configuration, tenant);
     }
 
     private static DataSource anyDataSource()
