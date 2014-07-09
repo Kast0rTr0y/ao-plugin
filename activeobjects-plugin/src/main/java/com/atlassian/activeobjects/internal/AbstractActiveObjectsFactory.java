@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
+import com.atlassian.plugin.util.PluginUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,7 +28,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String LOCK_SUFFIX = ".upgrade";
+    private static final String LOCK_PREFIX = "ao-plugin.upgrade.";
+    private static final int LOCK_TIMEOUT_SECONDS = PluginUtils.getDefaultEnablingWaitPeriod();
 
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
@@ -56,8 +59,20 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        ClusterLock lock = clusterLockService.getLockForName(configuration.getPluginKey().asString() + LOCK_SUFFIX);
-        lock.lock();
+        final String lockName = LOCK_PREFIX + configuration.getPluginKey().asString();
+        final ClusterLock lock = clusterLockService.getLockForName(lockName);
+        try
+        {
+            if (!lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+            {
+                throw new ActiveObjectsInitException("unable to acquire cluster lock named '" + lockName + "' after waiting " + LOCK_TIMEOUT_SECONDS + " seconds");
+            }
+        }
+        catch (InterruptedException e)
+        {
+            throw new ActiveObjectsInitException("interrupted while trying to acquire cluster lock named '" + lockName + "'", e);
+        }
+
         try
         {
             upgrade(configuration, tenant);
