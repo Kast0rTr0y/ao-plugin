@@ -28,7 +28,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String LOCK_SUFFIX = ".ao-plugin.upgrade";
+    private static final String LOCK_PREFIX = "ao-plugin.upgrade.";
     private static final int LOCK_TIMEOUT_SECONDS = PluginUtils.getDefaultEnablingWaitPeriod();
 
     private final DataSourceType supportedDataSourceType;
@@ -59,7 +59,7 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        final String lockName = configuration.getPluginKey().asString() + LOCK_SUFFIX;
+        final String lockName = LOCK_PREFIX + configuration.getPluginKey().asString();
         final ClusterLock lock = clusterLockService.getLockForName(lockName);
         try
         {
