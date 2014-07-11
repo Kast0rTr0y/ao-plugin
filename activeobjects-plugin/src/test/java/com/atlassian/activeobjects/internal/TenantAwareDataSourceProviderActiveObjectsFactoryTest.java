@@ -8,7 +8,6 @@ import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
-import com.atlassian.plugin.util.PluginUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
@@ -30,6 +29,8 @@ import org.osgi.framework.Bundle;
 import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
+import static org.hamcrest.core.Is.isA;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
@@ -107,7 +108,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
     public void testCreateWithNullDataSource() throws Exception
     {
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
-        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(true);
+        when(clusterLock.tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)).thenReturn(true);
         try
         {
             activeObjectsFactory.create(configuration, tenant);
@@ -115,7 +116,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            verify(clusterLock).tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS);
+            verify(clusterLock).tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             verify(clusterLock).unlock();
         }
     }
@@ -126,7 +127,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         final DataSource dataSource = mock(DataSource.class);
 
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
-        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(true);
+        when(clusterLock.tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)).thenReturn(true);
         when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
         try
         {
@@ -135,7 +136,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         }
         catch (ActiveObjectsPluginException e)
         {
-            verify(clusterLock).tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS);
+            verify(clusterLock).tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             verify(clusterLock).unlock();
         }
     }
@@ -150,20 +151,21 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         when(entityManagerFactory.getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration())).thenReturn(entityManager);
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
         when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(DatabaseType.DERBY_EMBEDDED);
-        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(true);
+        when(clusterLock.tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)).thenReturn(true);
 
         assertNotNull(activeObjectsFactory.create(configuration, tenant));
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
-        verify(clusterLock).tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS);
+        verify(clusterLock).tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         verify(clusterLock).unlock();
     }
 
     @Test
     public void testCreateLockTimeout() throws InterruptedException
     {
-        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenReturn(false);
+        when(clusterLock.tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)).thenReturn(false);
 
         expectedException.expect(ActiveObjectsInitException.class);
+        expectedException.expectCause(nullValue(Throwable.class));
 
         activeObjectsFactory.create(configuration, tenant);
     }
@@ -171,9 +173,10 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
     @Test
     public void testCreateLockInterrupted() throws InterruptedException
     {
-        when(clusterLock.tryLock(PluginUtils.getDefaultEnablingWaitPeriod(), TimeUnit.SECONDS)).thenThrow(new InterruptedException());
+        when(clusterLock.tryLock(AbstractActiveObjectsFactory.LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)).thenThrow(new InterruptedException());
 
         expectedException.expect(ActiveObjectsInitException.class);
+        expectedException.expectCause(isA(InterruptedException.class));
 
         activeObjectsFactory.create(configuration, tenant);
     }

@@ -60,7 +60,7 @@
         <guava.libversion>11.0.2</guava.libversion>
         <sal.libversion>2.4.0</sal.libversion>
 
-        <junit.version>4.10</junit.version>
+        <junit.version>4.11</junit.version>
         <hamcrest.version>1.1</hamcrest.version>
         <mockito.version>1.8.4</mockito.version>
         <atlassian.selenium.version>2.1</atlassian.selenium.version>
