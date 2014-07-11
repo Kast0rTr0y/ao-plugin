@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
-import com.atlassian.plugin.util.PluginUtils;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.tenancy.api.Tenant;
@@ -28,8 +27,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private static final String LOCK_TIMEOUT_PROPERTY = "ao-plugin.upgrade.task.lock.timeout";
     private static final String LOCK_PREFIX = "ao-plugin.upgrade.";
-    private static final int LOCK_TIMEOUT_SECONDS = PluginUtils.getDefaultEnablingWaitPeriod();
+    protected static final int LOCK_TIMEOUT_SECONDS = Integer.getInteger(LOCK_TIMEOUT_PROPERTY, 300000);
 
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
@@ -65,7 +66,7 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
         {
             if (!lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS))
             {
-                throw new ActiveObjectsInitException("unable to acquire cluster lock named '" + lockName + "' after waiting " + LOCK_TIMEOUT_SECONDS + " seconds");
+                throw new ActiveObjectsInitException("unable to acquire cluster lock named '" + lockName + "' after waiting " + LOCK_TIMEOUT_SECONDS + " seconds; note that this timeout may be adjusted via the system property '" + LOCK_TIMEOUT_PROPERTY + "'");
             }
         }
         catch (InterruptedException e)
