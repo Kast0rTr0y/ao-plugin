@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,7 +27,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String LOCK_SUFFIX = ".upgrade";
+
+    private static final String LOCK_TIMEOUT_PROPERTY = "ao-plugin.upgrade.task.lock.timeout";
+    private static final String LOCK_PREFIX = "ao-plugin.upgrade.";
+    protected static final int LOCK_TIMEOUT_SECONDS = Integer.getInteger(LOCK_TIMEOUT_PROPERTY, 300000);
 
     private final DataSourceType supportedDataSourceType;
     private final ActiveObjectUpgradeManager aoUpgradeManager;
@@ -56,8 +60,20 @@ abstract class AbstractActiveObjectsFactory implements ActiveObjectsFactory
             throw new IllegalStateException(configuration + " is not supported. Did you can #accept(ActiveObjectConfiguration) before calling me?");
         }
 
-        ClusterLock lock = clusterLockService.getLockForName(configuration.getPluginKey().asString() + LOCK_SUFFIX);
-        lock.lock();
+        final String lockName = LOCK_PREFIX + configuration.getPluginKey().asString();
+        final ClusterLock lock = clusterLockService.getLockForName(lockName);
+        try
+        {
+            if (!lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+            {
+                throw new ActiveObjectsInitException("unable to acquire cluster lock named '" + lockName + "' after waiting " + LOCK_TIMEOUT_SECONDS + " seconds; note that this timeout may be adjusted via the system property '" + LOCK_TIMEOUT_PROPERTY + "'");
+            }
+        }
+        catch (InterruptedException e)
+        {
+            throw new ActiveObjectsInitException("interrupted while trying to acquire cluster lock named '" + lockName + "'", e);
+        }
+
         try
         {
             upgrade(configuration, tenant);

@@ -26,6 +26,7 @@ public interface ActiveObjectsFactory
      * @param tenant against which to create
      * @return the new {@link com.atlassian.activeobjects.external.ActiveObjects}
      * @throws IllegalStateException is the type of configuration is not supported by this factory
+     * @throws com.atlassian.activeobjects.internal.ActiveObjectsInitException on failure to lock across the cluster prior to upgradation
      * @see #accept(ActiveObjectsConfiguration)
      */
     ActiveObjects create(ActiveObjectsConfiguration configuration, Tenant tenant);

@@ -29,8 +29,9 @@ import java.util.concurrent.ExecutorService;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -98,7 +99,7 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
                 threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
-        assertThat(serviceFactory.aoContextThreadFactory, is(ContextClassLoaderThreadFactory.class));
+        assertThat(serviceFactory.aoContextThreadFactory, instanceOf(ContextClassLoaderThreadFactory.class));
         assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));
         assertThat(serviceFactory.destroying, is(false));
 
