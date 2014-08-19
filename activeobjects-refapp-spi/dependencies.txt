@@ -1,5 +1,0 @@
-com.atlassian.activeobjects:activeobjects-spi:0.16-SNAPSHOT:jar:-:compile||SNAPSHOT|SNAPSHOT
-com.atlassian.sal:sal-api:2.1.0:jar:-:provided||{sha1}4e1d34761e29324eb6e9cbdd9b6d56e6bbe3c294|{sha1}c6bdd6a5a0b691df0fa953c23c0222e34a1f7b4a
-com.google.collections:google-collections:1.0:jar:-:provided||{sha1}9ffe71ac6dcab6bc03ea13f5c2e7b2804e69b357|{sha1}292197f3cb1ebc0dd03e20897e4250b265177286
-hsqldb:hsqldb:1.8.0.7:jar:-:compile||{sha1}20554954120b3cc9f08804524ec90113a73f3015|{sha1}453b1a28d2a085dc954a97617e2d71dca8d56527
-org.slf4j:slf4j-api:1.5.8:jar:-:provided||{sha1}2aaf496dfd551adb9b079f58a7e2d55eb383fc82|{sha1}8692e4210c1fa89b7e6aa388a47653127d5ee08f
