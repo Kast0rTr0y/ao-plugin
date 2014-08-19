@@ -21,8 +21,6 @@
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
-        <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
-        <tenancy.compatibility.version>1.4</tenancy.compatibility.version>
     </properties>
 
     <build>
@@ -52,7 +50,7 @@
                             com.atlassian.plugin.predicate;version="${plugins.libversion}",
                             com.atlassian.plugin.web;version="${webfragments.libversion}",
                             com.atlassian.plugin.webresource;version="${webresource.libversion}",
-                            com.atlassian.tenancy.api*;version="${tenancy.compatibility.version}",
+                            com.atlassian.tenancy.api*;version="${tenancy.api.compatibility.version}",
                             com.atlassian.security.random;version="1.0",
                             com.atlassian.util.concurrent;version="${atlassian.concurrent.version}",
                             com.atlassian.beehive*;version="${atlassian.beehive.version}",

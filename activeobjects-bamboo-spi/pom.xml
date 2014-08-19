@@ -46,7 +46,7 @@
                             com.atlassian.bamboo*,
                             com.atlassian.hibernate,
                             com.atlassian.activeobjects.spi*;version="${project.version}",
-                            com.atlassian.tenancy.api*,
+                            com.atlassian.tenancy.api;version="${tenancy.api.compatibility.version}",
                             com.google.common*,
                             java.sql,
                             javax.annotation*,

@@ -39,11 +39,11 @@
                         <Bundle-SymbolicName>com.atlassian.activeobjects.jira.spi</Bundle-SymbolicName>
                         <Import-Package>
                             com.atlassian.activeobjects.spi*,
-                            com.atlassian.tenancy.api*,
+                            com.atlassian.tenancy.api;version="${tenancy.api.compatibility.version}",
                             com.atlassian.event.api*,
                             com.atlassian.jira.event*,
                             com.atlassian.jira.ofbiz*,
-                            com.atlassian.sal.api*,
+                            com.atlassian.sal.api*;version="${sal.api.compatibility.version}",
                             com.google.common*,
                             java.sql,
                             javax.naming;resolution:=optional,

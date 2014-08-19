@@ -51,7 +51,7 @@
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>2.21.3</refapp.version>
+        <refapp.version>2.22.2</refapp.version>
 
         <tenancy.libversion>1.4.1</tenancy.libversion>
         <plugins.libversion>3.0.16</plugins.libversion>
@@ -67,6 +67,9 @@
         <refapp.jira.version>6.3-OD-07-010</refapp.jira.version>
         <atlassian.concurrent.version>2.4.0</atlassian.concurrent.version>
         <atlassian.beehive.version>0.1.3</atlassian.beehive.version>
+
+        <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
+        <tenancy.api.compatibility.version>1.4</tenancy.api.compatibility.version>
     </properties>
     <build>
         <pluginManagement>
@@ -127,13 +130,6 @@
                         </products>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
-                        <libArtifacts>
-                            <libArtifact>
-                                <groupId>com.google.guava</groupId>
-                                <artifactId>guava</artifactId>
-                                <version>11.0.2-atlassian-01</version>
-                            </libArtifact>
-                        </libArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>
