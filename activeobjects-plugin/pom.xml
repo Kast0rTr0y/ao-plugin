@@ -115,13 +115,6 @@
                     </instructions>
                     <noWebapp>true</noWebapp>
                     <log4jProperties>src/test/resources/log4j.properties</log4jProperties>
-                    <bundledArtifacts>
-                        <bundledArtifact>
-                            <groupId>com.atlassian.activeobjects</groupId>
-                            <artifactId>activeobjects-refapp-spi</artifactId>
-                            <version>${project.version}</version>
-                        </bundledArtifact>
-                    </bundledArtifacts>
                 </configuration>
             </plugin>
             <!-- creates and drops databases before and after tests -->

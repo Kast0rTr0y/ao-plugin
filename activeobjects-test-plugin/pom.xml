@@ -90,12 +90,6 @@
 
         <!-- refapp -->
         <dependency>
-            <groupId>com.atlassian.activeobjects</groupId>
-            <artifactId>activeobjects-refapp-spi</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.atlassian.refapp</groupId>
             <artifactId>atlassian-refapp-pageobjects</artifactId>
             <version>${refapp.version}</version>
@@ -144,11 +138,6 @@
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
                                     <artifactId>activeobjects-plugin</artifactId>
-                                    <version>${project.version}</version>
-                                </bundledArtifact>
-                                <bundledArtifact>
-                                    <groupId>com.atlassian.activeobjects</groupId>
-                                    <artifactId>activeobjects-refapp-spi</artifactId>
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
