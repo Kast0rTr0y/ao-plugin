@@ -58,8 +58,12 @@ class TenantAwareActiveObjects implements ActiveObjects
     @VisibleForTesting
     final SettableFuture<ActiveObjectsConfiguration> aoConfigFuture = SettableFuture.create();
 
-    @VisibleForTesting
-    final LoadingCache<Tenant, Promise<ActiveObjects>> aoPromisesByTenant;
+    LoadingCache<Tenant, ActiveObjects> aoByTenant;
+
+    final ActiveObjectsFactory factory;
+
+//    @VisibleForTesting
+//    LoadingCache<Tenant, Promise<ActiveObjects>> aoPromisesByTenant;
 
     TenantAwareActiveObjects(
             @Nonnull final Bundle bundle,
@@ -69,73 +73,73 @@ class TenantAwareActiveObjects implements ActiveObjects
     {
         this.bundle = checkNotNull(bundle);
         this.tenantContext = checkNotNull(tenantContext);
-        checkNotNull(factory);
+        this.factory = checkNotNull(factory);
         checkNotNull(initExecutorFunction);
 
-        // loading cache for delegate promises by tenant
-        aoPromisesByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
-        {
-            @Override
-            public Promise<ActiveObjects> load(@Nonnull final Tenant tenant) throws Exception
-            {
-                logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
-
-                return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
-                {
-                    @Override
-                    public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig)
-                    {
-                        logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
-
-                        final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
-                        initExecutorFunction.apply(tenant).submit(new Callable<Void>()
-                        {
-                            @Override
-                            public Void call() throws Exception
-                            {
-                                logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
-                                try
-                                {
-                                    final ActiveObjects ao = factory.create(aoConfig, tenant);
-                                    logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());
-                                    aoFuture.set(ao);
-                                }
-                                catch (Exception e)
-                                {
-                                    final ActiveObjectsInitException activeObjectsInitException = new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
-                                    aoFuture.setException(activeObjectsInitException);
-                                }
-                                return null;
-                            }
-                        });
-
-                        return Promises.forFuture(aoFuture);
-                    }
-                });
-            }
-        });
+//        // loading cache for delegate promises by tenant
+//        aoPromisesByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
+//        {
+//            @Override
+//            public Promise<ActiveObjects> load(@Nonnull final Tenant tenant) throws Exception
+//            {
+//                logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
+//
+//                return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
+//                {
+//                    @Override
+//                    public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig)
+//                    {
+//                        logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
+//
+//                        final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
+//                        initExecutorFunction.apply(tenant).submit(new Callable<Void>()
+//                        {
+//                            @Override
+//                            public Void call() throws Exception
+//                            {
+//                                logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
+//                                try
+//                                {
+//                                    final ActiveObjects ao = factory.create(aoConfig, tenant);
+//                                    logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());
+//                                    aoFuture.set(ao);
+//                                }
+//                                catch (Exception e)
+//                                {
+//                                    final ActiveObjectsInitException activeObjectsInitException = new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
+//                                    aoFuture.setException(activeObjectsInitException);
+//                                }
+//                                return null;
+//                            }
+//                        });
+//
+//                        return Promises.forFuture(aoFuture);
+//                    }
+//                });
+//            }
+//        });
     }
 
     public void init()
     {
         logger.debug("bundle [{}] init", bundle.getSymbolicName());
 
-        // start things up now if we have a tenant
-        Tenant tenant = tenantContext.getCurrentTenant();
-        if (tenant != null)
-        {
-            aoPromisesByTenant.invalidate(tenant);
-            startActiveObjects(tenant);
-        }
+//        // start things up now if we have a tenant
+//        Tenant tenant = tenantContext.getCurrentTenant();
+//        if (tenant != null)
+//        {
+//            aoPromisesByTenant.invalidate(tenant);
+//            startActiveObjects(tenant);
+//        }
     }
 
     public void destroy()
     {
         aoConfigFuture.cancel(false);
-        for (Promise<ActiveObjects> aoPromise : aoPromisesByTenant.asMap().values())
-        {
-            aoPromise.cancel(false);
-        }
+//        for (Promise<ActiveObjects> aoPromise : aoPromisesByTenant.asMap().values())
+//        {
+//            aoPromise.cancel(false);
+//        }
     }
 
     void setAoConfiguration(@Nonnull final ActiveObjectsConfiguration aoConfiguration)
@@ -152,23 +156,34 @@ class TenantAwareActiveObjects implements ActiveObjects
         {
             aoConfigFuture.set(aoConfiguration);
         }
+
+        aoByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ActiveObjects>()
+        {
+            @Override
+            public ActiveObjects load(final Tenant tenant) throws Exception
+            {
+                return factory.create(aoConfiguration, tenant);
+            }
+        });
     }
 
     void startActiveObjects(@Nonnull final Tenant tenant)
     {
         checkNotNull(tenant);
-        aoPromisesByTenant.getUnchecked(tenant);
+//        aoPromisesByTenant.getUnchecked(tenant);
     }
 
     void restartActiveObjects(@Nonnull final Tenant tenant)
     {
         checkNotNull(tenant);
-        aoPromisesByTenant.invalidate(tenant);
-        aoPromisesByTenant.getUnchecked(tenant);
+//        aoPromisesByTenant.invalidate(tenant);
+//        aoPromisesByTenant.getUnchecked(tenant);
+        aoByTenant.invalidate(tenant);
+        aoByTenant.getUnchecked(tenant);
     }
 
     @VisibleForTesting
-    protected Promise<ActiveObjects> delegate()
+    protected ActiveObjects delegate()
     {
         if (!aoConfigFuture.isDone())
         {
@@ -178,7 +193,8 @@ class TenantAwareActiveObjects implements ActiveObjects
         Tenant tenant = tenantContext.getCurrentTenant();
         if (tenant != null)
         {
-            return aoPromisesByTenant.getUnchecked(tenant);
+            return aoByTenant.getUnchecked(tenant);
+//            return aoPromisesByTenant.getUnchecked(tenant);
         }
         else
         {
@@ -197,7 +213,9 @@ class TenantAwareActiveObjects implements ActiveObjects
                 Tenant tenant = tenantContext.getCurrentTenant();
                 if (tenant != null)
                 {
-                    aoPromisesByTenant.getUnchecked(tenant).get();
+                    aoConfigFuture.wait();
+//                    aoPromisesByTenant.getUnchecked(tenant).get();
+                    aoByTenant.getUnchecked(tenant);
                 }
                 else
                 {
@@ -212,7 +230,9 @@ class TenantAwareActiveObjects implements ActiveObjects
                 Tenant tenant = tenantContext.getCurrentTenant();
                 if (tenant != null)
                 {
-                    aoPromisesByTenant.getUnchecked(tenant).get(timeout, unit);
+                    aoConfigFuture.wait(timeout);
+//                    aoPromisesByTenant.getUnchecked(tenant).get(timeout, unit);
+                    aoByTenant.getUnchecked(tenant);
                 }
                 else
                 {
@@ -226,19 +246,20 @@ class TenantAwareActiveObjects implements ActiveObjects
                 Tenant tenant = tenantContext.getCurrentTenant();
                 if (tenant != null)
                 {
-                    Promise<ActiveObjects> aoPromise = aoPromisesByTenant.getUnchecked(tenant);
-                    if (aoPromise.isDone())
-                    {
-                        try
-                        {
-                            aoPromise.claim();
-                            return true;
-                        }
-                        catch (Exception e)
-                        {
-                            // any exception indicates a failure in initialisation, or at least that the delegate is not usable
-                        }
-                    }
+                    return aoConfigFuture.isDone();
+//                    Promise<ActiveObjects> aoPromise = aoPromisesByTenant.getUnchecked(tenant);
+//                    if (aoPromise.isDone())
+//                    {
+//                        try
+//                        {
+//                            aoPromise;
+//                            return true;
+//                        }
+//                        catch (Exception e)
+//                        {
+//                            // any exception indicates a failure in initialisation, or at least that the delegate is not usable
+//                        }
+//                    }
                 }
                 return false;
             }
@@ -246,7 +267,7 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Override
             public DatabaseType getDatabaseType()
             {
-                return delegate().claim().moduleMetaData().getDatabaseType();
+                return delegate().moduleMetaData().getDatabaseType();
             }
 
             @Override
@@ -260,127 +281,127 @@ class TenantAwareActiveObjects implements ActiveObjects
     @Override
     public void migrate(final Class<? extends RawEntity<?>>... entities)
     {
-        delegate().claim().migrate(entities);
+        delegate().migrate(entities);
     }
 
     @Override
     public void migrateDestructively(final Class<? extends RawEntity<?>>... entities)
     {
-        delegate().claim().migrateDestructively(entities);
+        delegate().migrateDestructively(entities);
     }
 
     @Override
     public void flushAll()
     {
-        delegate().claim().flushAll();
+        delegate().flushAll();
     }
 
     @Override
     public void flush(final RawEntity<?>... entities)
     {
-        delegate().claim().flush(entities);
+        delegate().flush(entities);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] get(final Class<T> type, final K... keys)
     {
-        return delegate().claim().get(type, keys);
+        return delegate().get(type, keys);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T get(final Class<T> type, final K key)
     {
-        return delegate().claim().get(type, key);
+        return delegate().get(type, key);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T create(final Class<T> type, final DBParam... params)
     {
-        return delegate().claim().create(type, params);
+        return delegate().create(type, params);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T create(final Class<T> type, final Map<String, Object> params)
     {
-        return delegate().claim().create(type, params);
+        return delegate().create(type, params);
     }
 
     @Override
     public void delete(final RawEntity<?>... entities)
     {
-        delegate().claim().delete(entities);
+        delegate().delete(entities);
     }
 
     @Override
     public <K> int deleteWithSQL(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
     {
-        return delegate().claim().deleteWithSQL(type, criteria, parameters);
+        return delegate().deleteWithSQL(type, criteria, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type)
     {
-        return delegate().claim().find(type);
+        return delegate().find(type);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String criteria, final Object... parameters)
     {
-        return delegate().claim().find(type, criteria, parameters);
+        return delegate().find(type, criteria, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final Query query)
     {
-        return delegate().claim().find(type, query);
+        return delegate().find(type, query);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String field, final Query query)
     {
-        return delegate().claim().find(type, field, query);
+        return delegate().find(type, field, query);
     }
 
     @Override
     public <T extends RawEntity<K>, K> T[] findWithSQL(final Class<T> type, final String keyField, final String sql, final Object... parameters)
     {
-        return delegate().claim().findWithSQL(type, keyField, sql, parameters);
+        return delegate().findWithSQL(type, keyField, sql, parameters);
     }
 
     @Override
     public <T extends RawEntity<K>, K> void stream(final Class<T> type, final EntityStreamCallback<T, K> streamCallback)
     {
-        delegate().claim().stream(type, streamCallback);
+        delegate().stream(type, streamCallback);
     }
 
     @Override
     public <T extends RawEntity<K>, K> void stream(final Class<T> type, final Query query, final EntityStreamCallback<T, K> streamCallback)
     {
-        delegate().claim().stream(type, query, streamCallback);
+        delegate().stream(type, query, streamCallback);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type)
     {
-        return delegate().claim().count(type);
+        return delegate().count(type);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
     {
-        return delegate().claim().count(type, criteria, parameters);
+        return delegate().count(type, criteria, parameters);
     }
 
     @Override
     public <K> int count(final Class<? extends RawEntity<K>> type, final Query query)
     {
-        return delegate().claim().count(type, query);
+        return delegate().count(type, query);
     }
 
     @Override
     public <T> T executeInTransaction(final TransactionCallback<T> callback)
     {
-        return delegate().claim().executeInTransaction(callback);
+        return delegate().executeInTransaction(callback);
     }
 
     public Bundle getBundle()
