@@ -46,7 +46,7 @@
 
     <properties>
         <plugin-sdk.version>3.9.4-rc1</plugin-sdk.version>
-        <ao.version>0.23.0.1</ao.version>
+        <ao.version>0.23.0.2</ao.version>
         <sal.version>2.4.0</sal.version>
         <slf4j.version>1.5.8</slf4j.version>
         <atlassian-plugins.version>2.6.5</atlassian-plugins.version>
