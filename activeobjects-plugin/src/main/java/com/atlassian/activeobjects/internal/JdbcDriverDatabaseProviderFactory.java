@@ -5,13 +5,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.Disposable;
 import net.java.ao.DisposableDataSource;
 import net.java.ao.builder.DelegatingDisposableDataSourceHandler;
-import net.java.ao.db.ClientDerbyDatabaseProvider;
-import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
-import net.java.ao.db.HSQLDatabaseProvider;
-import net.java.ao.db.MySQLDatabaseProvider;
-import net.java.ao.db.OracleDatabaseProvider;
-import net.java.ao.db.PostgreSQLDatabaseProvider;
-import net.java.ao.db.SQLServerDatabaseProvider;
+import net.java.ao.db.*;
 
 import javax.sql.DataSource;
 
@@ -123,6 +117,14 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                     public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
                     {
                         return new HSQLDatabaseProvider(getDisposableDataSource(dataSource), schema);
+                    }
+                },
+        H2(DatabaseType.H2, "h2")
+                {
+                    @Override
+                    public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema)
+                    {
+                        return new H2DatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
                 };
 

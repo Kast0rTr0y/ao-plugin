@@ -5,6 +5,7 @@ package com.atlassian.activeobjects.spi;
  */
 public enum DatabaseType
 {
+    H2,
     HSQL,
     MYSQL,
     POSTGRESQL,
