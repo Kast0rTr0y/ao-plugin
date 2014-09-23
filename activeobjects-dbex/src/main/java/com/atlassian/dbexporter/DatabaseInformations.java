@@ -23,6 +23,7 @@ public final class DatabaseInformations
 
         static enum Type
         {
+            H2,
             HSQL,
             MYSQL,
             POSTGRES,
@@ -40,6 +41,11 @@ public final class DatabaseInformations
             if (isEmpty(dbName))
             {
                 return Database.Type.UNKNOWN;
+            }
+
+            if (isH2(dbName))
+            {
+                return Database.Type.H2;
             }
 
             if (isHsql(dbName))
@@ -73,6 +79,11 @@ public final class DatabaseInformations
         private boolean isEmpty(String dbName)
         {
             return dbName == null || dbName.trim().length() == 0;
+        }
+
+        private boolean isH2(String dbName)
+        {
+            return startsWithIgnoreCase(dbName, "H2");
         }
 
         private boolean isHsql(String dbName)

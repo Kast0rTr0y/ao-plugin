@@ -190,6 +190,8 @@ final class ActiveObjectsTableCreator implements TableCreator
     {
         switch (db.getType())
         {
+            case H2:
+                return TypeManager.h2();
             case HSQL:
                 return TypeManager.hsql();
             case MYSQL:

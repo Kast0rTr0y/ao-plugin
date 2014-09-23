@@ -16,11 +16,13 @@
 
     <properties>
         <db.skip>false</db.skip>
+        <h2.version>1.4.181</h2.version>
         <mysql.version>5.1.14</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
         <spring.library.version>2.5.6</spring.library.version>
+        <c3p0.version>0.9.1.1</c3p0.version>
     </properties>
 
     <build>
@@ -389,7 +391,131 @@
                                 <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 <!--com.atlassian.activeobjects.junit.HsqlTest,-->
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>h2-memory</id>
+            <properties>
+                <ao.test.database>h2-memory</ao.test.database>
+                <db.url>jdbc:h2:mem:ao-test;MVCC=TRUE</db.url>
+                <db.username/>
+                <db.password/>
+                <db.skip>true</db.skip>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <version>${h2.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>c3p0</groupId>
+                    <artifactId>c3p0</artifactId>
+                    <version>${c3p0.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                <!--com.atlassian.activeobjects.junit.H2Test,-->
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>h2-file</id>
+            <properties>
+                <ao.test.database>h2-file</ao.test.database>
+                <db.url>jdbc:h2:file:./target/ao-test;MVCC=TRUE</db.url>
+                <db.username/>
+                <db.password/>
+                <db.skip>true</db.skip>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <version>${h2.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                <!--com.atlassian.activeobjects.junit.H2Test,-->
+                                com.atlassian.activeobjects.junit.HsqlTest,
+                                com.atlassian.activeobjects.junit.MySqlTest,
+                                com.atlassian.activeobjects.junit.OracleTest,
+                                com.atlassian.activeobjects.junit.SqlServerTest,
+                                com.atlassian.activeobjects.junit.PostgresTest
+                            </excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>h2-server</id>
+            <properties>
+                <ao.test.database>h2-server</ao.test.database>
+                <db.url>jdbc:h2:tcp://localhost/./target/ao-test;MVCC=TRUE</db.url>
+                <db.username/>
+                <db.password/>
+                <db.skip>true</db.skip>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <version>${h2.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-refapp-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ao.test.database>${ao.test.database}</ao.test.database>
+                                <plugin.root.directories>${basedir}/../activeobjects-test-plugin</plugin.root.directories>
+                            </systemPropertyVariables>
+                            <excludedGroups>
+                                <!--com.atlassian.activeobjects.junit.H2Test,-->
+                                com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 com.atlassian.activeobjects.junit.OracleTest,
                                 com.atlassian.activeobjects.junit.SqlServerTest,
@@ -446,6 +572,7 @@
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 <!--com.atlassian.activeobjects.junit.MySqlTest,-->
                                 com.atlassian.activeobjects.junit.OracleTest,
@@ -494,6 +621,7 @@
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 com.atlassian.activeobjects.junit.OracleTest,
@@ -556,6 +684,7 @@
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 <!--com.atlassian.activeobjects.junit.OracleTest,-->
@@ -619,6 +748,7 @@
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 <!--com.atlassian.activeobjects.junit.OracleTest,-->
@@ -682,6 +812,7 @@
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 <!--com.atlassian.activeobjects.junit.OracleTest,-->
@@ -744,6 +875,7 @@
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
                             <excludedGroups>
+                                com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
                                 com.atlassian.activeobjects.junit.MySqlTest,
                                 com.atlassian.activeobjects.junit.OracleTest,

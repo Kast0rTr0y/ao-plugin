@@ -117,6 +117,11 @@ public final class CreateBackup
             {
                 return password;
             }
+
+            @Override
+            public void init()
+            {
+            }
         };
     }
 

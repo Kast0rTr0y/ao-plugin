@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.test.model.Model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.db.H2DatabaseProvider;
 import net.java.ao.db.HSQLDatabaseProvider;
 import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
@@ -25,6 +26,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertEquals;
 
 public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObjectsBackup
 {
+    protected static final String H2 = "/com/atlassian/activeobjects/backup/h2.xml";
     protected static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     protected static final String HSQL_EMPTY = "/com/atlassian/activeobjects/backup/hsql_empty.xml";
     protected static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
@@ -54,7 +56,11 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
     private Iterable<BackupData> getCurrentDatabaseData()
     {
         final DatabaseProvider provider = entityManager.getProvider();
-        if (provider instanceof HSQLDatabaseProvider)
+        if (provider instanceof H2DatabaseProvider)
+        {
+            return H2_DATA;
+        }
+        else if (provider instanceof HSQLDatabaseProvider)
         {
             return HSQL_DATA;
         }
@@ -227,6 +233,23 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
 
     protected static final BackupData AUTHOR_NAME = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "NAME", SqlType.of(Types.VARCHAR, 60));
     protected static final BackupData AUTHOR_ID = BackupData.of("AO_000000_LONG_NAME_TO_AUTHOR", "ID", SqlType.of(Types.INTEGER), true, true);
+
+    protected static Iterable<BackupData> H2_DATA = ImmutableList.of(
+            AUTHORSHIP_AUTHOR_ID,
+            AUTHORSHIP_BOOK_ID,
+            AUTHORSHIP_ID,
+
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
+            BOOK_ISBN,
+            BOOK_READ,
+            BOOK_PAGES,
+            BOOK_PRICE,
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
+
+            AUTHOR_NAME,
+            AUTHOR_ID
+    );
 
     protected static Iterable<BackupData> HSQL_DATA = ImmutableList.of(
             AUTHORSHIP_AUTHOR_ID,
