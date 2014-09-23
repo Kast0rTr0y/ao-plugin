@@ -5,7 +5,14 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.Disposable;
 import net.java.ao.DisposableDataSource;
 import net.java.ao.builder.DelegatingDisposableDataSourceHandler;
-import net.java.ao.db.*;
+import net.java.ao.db.ClientDerbyDatabaseProvider;
+import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
+import net.java.ao.db.H2DatabaseProvider;
+import net.java.ao.db.HSQLDatabaseProvider;
+import net.java.ao.db.MySQLDatabaseProvider;
+import net.java.ao.db.OracleDatabaseProvider;
+import net.java.ao.db.PostgreSQLDatabaseProvider;
+import net.java.ao.db.SQLServerDatabaseProvider;
 
 import javax.sql.DataSource;
 
