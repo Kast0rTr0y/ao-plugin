@@ -134,6 +134,13 @@
                     <products>
                         <product>
                             <id>refapp</id>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
                             <bundledArtifacts>
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
