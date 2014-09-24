@@ -178,19 +178,18 @@
                         </product>
                     </products>
                     <testGroups>
-                        <!-- disabled until we have a refapp (3.0) that includes the API from this version i.e. H2 -->
-                        <!--<testGroup>-->
-                            <!--<id>refapp</id>-->
-                            <!--<productIds>-->
-                                <!--<productId>refapp</productId>-->
-                            <!--</productIds>-->
-                            <!--<includes>-->
-                                <!--<include>it/**</include>-->
-                            <!--</includes>-->
-                            <!--<systemProperties>-->
-                                <!--<tested.app>com.atlassian.webdriver.refapp.RefappTestedProduct</tested.app>-->
-                            <!--</systemProperties>-->
-                        <!--</testGroup>-->
+                        <testGroup>
+                            <id>refapp</id>
+                            <productIds>
+                                <productId>refapp</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**</include>
+                            </includes>
+                            <systemProperties>
+                                <tested.app>com.atlassian.webdriver.refapp.RefappTestedProduct</tested.app>
+                            </systemProperties>
+                        </testGroup>
                         <testGroup>
                             <id>jira</id>
                             <productIds>
