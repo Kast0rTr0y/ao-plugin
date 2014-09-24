@@ -56,27 +56,27 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
     private Iterable<BackupData> getCurrentDatabaseData()
     {
         final DatabaseProvider provider = entityManager.getProvider();
-        if (provider instanceof H2DatabaseProvider)
+        if (provider.getClass() == H2DatabaseProvider.class)
         {
             return H2_DATA;
         }
-        else if (provider instanceof HSQLDatabaseProvider)
+        else if (provider.getClass() == HSQLDatabaseProvider.class)
         {
             return HSQL_DATA;
         }
-        else if (provider instanceof MySQLDatabaseProvider)
+        else if (provider.getClass() == MySQLDatabaseProvider.class)
         {
             return MYSQL_DATA;
         }
-        else if (provider instanceof PostgreSQLDatabaseProvider)
+        else if (provider.getClass() == PostgreSQLDatabaseProvider.class)
         {
             return POSTGRES_DATA;
         }
-        else if (provider instanceof OracleDatabaseProvider)
+        else if (provider.getClass() == OracleDatabaseProvider.class)
         {
             return ORACLE_DATA;
         }
-        else if (provider instanceof SQLServerDatabaseProvider)
+        else if (provider.getClass() == SQLServerDatabaseProvider.class)
         {
             return SQL_SERVER_DATA;
         }
