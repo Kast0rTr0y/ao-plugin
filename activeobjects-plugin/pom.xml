@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.29.0-SNAPSHOT</version>
+        <version>0.29.0-m002</version>
     </parent>
 
     <artifactId>activeobjects-plugin</artifactId>
@@ -408,8 +408,8 @@
             <properties>
                 <ao.test.database>h2-memory</ao.test.database>
                 <db.url>jdbc:h2:mem:ao-test;MVCC=TRUE</db.url>
-                <db.username/>
-                <db.password/>
+                <db.username />
+                <db.password />
                 <db.skip>true</db.skip>
             </properties>
             <dependencies>
@@ -453,8 +453,8 @@
             <properties>
                 <ao.test.database>h2-file</ao.test.database>
                 <db.url>jdbc:h2:file:./target/ao-test;MVCC=TRUE</db.url>
-                <db.username/>
-                <db.password/>
+                <db.username />
+                <db.password />
                 <db.skip>true</db.skip>
             </properties>
             <dependencies>
@@ -492,8 +492,8 @@
             <properties>
                 <ao.test.database>h2-server</ao.test.database>
                 <db.url>jdbc:h2:tcp://localhost/./target/ao-test;MVCC=TRUE</db.url>
-                <db.username/>
-                <db.password/>
+                <db.username />
+                <db.password />
                 <db.skip>true</db.skip>
             </properties>
             <dependencies>
