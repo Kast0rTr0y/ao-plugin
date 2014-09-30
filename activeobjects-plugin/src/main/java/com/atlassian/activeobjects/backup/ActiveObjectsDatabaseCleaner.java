@@ -1,5 +1,6 @@
 package com.atlassian.activeobjects.backup;
 
+import com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory;
 import com.atlassian.dbexporter.CleanupMode;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.importer.DatabaseCleaner;
@@ -29,13 +30,15 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
     private final NameConverters converters;
     private final DatabaseProvider provider;
     private final SchemaConfiguration schemaConfiguration;
+    private final ActiveObjectsServiceFactory aoServiceFactory;
 
-    public ActiveObjectsDatabaseCleaner(DatabaseProvider provider, NameConverters converters, SchemaConfiguration schemaConfiguration, ImportExportErrorService errorService)
+    public ActiveObjectsDatabaseCleaner(DatabaseProvider provider, NameConverters converters, SchemaConfiguration schemaConfiguration, ImportExportErrorService errorService, final ActiveObjectsServiceFactory aoServiceFactory)
     {
         this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
         this.converters = checkNotNull(converters);
         this.schemaConfiguration = checkNotNull(schemaConfiguration);
+        this.aoServiceFactory = checkNotNull(aoServiceFactory);
     }
 
     @Override
@@ -58,6 +61,8 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
         Statement stmt = null;
         try
         {
+            aoServiceFactory.startCleaning();
+
             final DDLTable[] readTables = SchemaReader.readSchema(provider, converters, schemaConfiguration);
             final DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(provider.getTypeManager(), new DDLTable[]{}, readTables, provider.isCaseSensitive()));
 
@@ -81,6 +86,7 @@ final class ActiveObjectsDatabaseCleaner implements DatabaseCleaner
         {
             closeQuietly(stmt);
             closeQuietly(conn);
+            aoServiceFactory.stopCleaning();
         }
     }
 

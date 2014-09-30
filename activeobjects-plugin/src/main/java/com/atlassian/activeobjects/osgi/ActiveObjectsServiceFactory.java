@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nonnull;
@@ -51,9 +52,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * to the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration plugin configuration} and
  * the application configuration.</p>
  */
-public final class ActiveObjectsServiceFactory implements ServiceFactory, InitializingBean, DisposableBean
+// @NotFinalForTesting
+public class ActiveObjectsServiceFactory implements ServiceFactory, InitializingBean, DisposableBean
 {
     private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
+
+    private static final String LOCK_TIMEOUT_MS_PROPERTY = "ao-plugin.init.task.timeout";
+    private static final int LOCK_TIMEOUT_MS = Integer.getInteger(LOCK_TIMEOUT_MS_PROPERTY, 30000);
 
     private final EventPublisher eventPublisher;
     private final TenantContext tenantContext;
@@ -66,6 +71,9 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
 
     @VisibleForTesting
     volatile boolean destroying = false;
+
+    @VisibleForTesting
+    volatile boolean cleaning = false;
 
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
@@ -115,6 +123,10 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
                 if (destroying)
                 {
                     throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
+                }
+                else if (cleaning)
+                {
+                    throw new IllegalStateException("applied initExecutorFn during ActiveObjects cleaning");
                 }
 
                 //noinspection ConstantConditions
@@ -202,6 +214,40 @@ public final class ActiveObjectsServiceFactory implements ServiceFactory, Initia
         {
             ((TenantAwareActiveObjects) ao).destroy();
         }
+    }
+
+    public void startCleaning()
+    {
+        logger.error("startCleaning START");
+
+        cleaning = true;
+
+        for (final ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
+        {
+            initExecutor.shutdownNow();
+            try
+            {
+                if (!initExecutor.awaitTermination(LOCK_TIMEOUT_MS, TimeUnit.MILLISECONDS))
+                {
+                    logger.error("startCleaning timed out after {}ms awaiting init thread completion, continuing; note that this timeout may be adjusted via the system property '{}'", LOCK_TIMEOUT_MS, LOCK_TIMEOUT_MS_PROPERTY);
+                }
+            }
+            catch (InterruptedException e)
+            {
+                logger.error("startCleaning interrupted while awaiting running init thread completion, continuing", e);
+            }
+        }
+
+        logger.error("startCleaning END");
+    }
+
+    public void stopCleaning()
+    {
+        logger.error("stopCleaning START");
+
+        cleaning = false;
+
+        logger.error("stopCleaning END");
     }
 
     /**
