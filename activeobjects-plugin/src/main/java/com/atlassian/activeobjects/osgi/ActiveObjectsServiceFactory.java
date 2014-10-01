@@ -220,7 +220,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
 
     public void startCleaning()
     {
-        logger.error("startCleaning START");
+        logger.debug("startCleaning");
 
         cleaning = true;
 
@@ -239,17 +239,13 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                 logger.error("startCleaning interrupted while awaiting running init thread completion, continuing", e);
             }
         }
-
-        logger.error("startCleaning END");
     }
 
     public void stopCleaning()
     {
-        logger.error("stopCleaning START");
+        logger.debug("stopCleaning");
 
         cleaning = false;
-
-        logger.error("stopCleaning END");
     }
 
     /**
