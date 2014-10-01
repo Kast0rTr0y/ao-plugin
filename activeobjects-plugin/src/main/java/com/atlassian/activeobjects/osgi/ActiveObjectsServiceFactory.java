@@ -57,8 +57,10 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
 {
     private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
 
-    private static final String LOCK_TIMEOUT_MS_PROPERTY = "ao-plugin.init.task.timeout";
-    private static final int LOCK_TIMEOUT_MS = Integer.getInteger(LOCK_TIMEOUT_MS_PROPERTY, 30000);
+    private static final String INIT_TASK_TIMEOUT_MS_PROPERTY = "ao-plugin.init.task.timeout";
+
+    @VisibleForTesting
+    protected static final int INIT_TASK_TIMEOUT_MS = Integer.getInteger(INIT_TASK_TIMEOUT_MS_PROPERTY, 30000);
 
     private final EventPublisher eventPublisher;
     private final TenantContext tenantContext;
@@ -227,9 +229,9 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             initExecutor.shutdownNow();
             try
             {
-                if (!initExecutor.awaitTermination(LOCK_TIMEOUT_MS, TimeUnit.MILLISECONDS))
+                if (!initExecutor.awaitTermination(INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS))
                 {
-                    logger.error("startCleaning timed out after {}ms awaiting init thread completion, continuing; note that this timeout may be adjusted via the system property '{}'", LOCK_TIMEOUT_MS, LOCK_TIMEOUT_MS_PROPERTY);
+                    logger.error("startCleaning timed out after {}ms awaiting init thread completion, continuing; note that this timeout may be adjusted via the system property '{}'", INIT_TASK_TIMEOUT_MS, INIT_TASK_TIMEOUT_MS_PROPERTY);
                 }
             }
             catch (InterruptedException e)
