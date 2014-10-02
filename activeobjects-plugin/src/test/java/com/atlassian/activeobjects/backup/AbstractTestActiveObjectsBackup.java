@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
+import com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.spi.NullRestoreProgressMonitor;
 import com.atlassian.plugin.PluginAccessor;
@@ -44,7 +45,7 @@ public abstract class AbstractTestActiveObjectsBackup
     @Before
     public final void setUp()
     {
-         aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class))));
+         aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class))), mock(ActiveObjectsServiceFactory.class));
     }
 
     @After
