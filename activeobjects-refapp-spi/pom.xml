@@ -1,0 +1,104 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.activeobjects</groupId>
+        <artifactId>activeobjects-plugin-parent-pom</artifactId>
+        <version>0.28.10-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>activeobjects-refapp-spi</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>ActiveObjects Plugin - Refapp SPI implementation</name>
+    <description>This is the Refapp implementation of the SPI.</description>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>atlassian-plugin.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>atlassian-plugin.xml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- not using the standard way of bundling deps because of the hsqlServlet class breaking everything -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-hsqldb</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>activeobjects-spi,hsqldb</includeArtifactIds>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <excludes>hsqlServlet.class,META-INF/*</excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.atlassian.activeobjects.refapp.spi</Bundle-SymbolicName>
+                        <Export-Package>
+                            com.atlassian.activeobjects.spi*;version="${project.version}",
+                            org.hsqldb*;version="${hsqldb.version}",
+                        </Export-Package>
+                        <Import-Package>
+                            com.atlassian.sal.api*;version="${sal.libversion}",
+                            com.atlassian.tenancy.api*,
+                            com.google.common*;version="1.0",
+                            javax*;version="0.0.0",
+                            javax.naming;version="0.0.0",
+                            org.slf4j*,
+                            *;resolution:=optional,
+                        </Import-Package>
+                        <Private-Package>
+                            com.atlassian.activeobjects.refapp*,
+                        </Private-Package>
+                        <!-- Ensure plugin is spring powered - see https://extranet.atlassian.com/x/xBS9hQ -->
+                        <Spring-Context>*</Spring-Context>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.tenancy</groupId>
+            <artifactId>atlassian-tenancy-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
+            <version>${sal.libversion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+        </dependency>
+    </dependencies>
+</project>

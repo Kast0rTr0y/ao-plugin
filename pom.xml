@@ -36,6 +36,7 @@
         <module>activeobjects-spi</module>
         <module>activeobjects-dbex</module>
         <module>activeobjects-bamboo-spi</module>
+        <module>activeobjects-refapp-spi</module>
         <module>activeobjects-confluence-spi</module>
         <module>activeobjects-jira-spi</module>
         <module>activeobjects-plugin</module>
@@ -129,6 +130,13 @@
                         </products>
                         <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
+                        <libArtifacts>
+                            <libArtifact>
+                                <groupId>com.google.guava</groupId>
+                                <artifactId>guava</artifactId>
+                                <version>11.0.2-atlassian-01</version>
+                            </libArtifact>
+                        </libArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>

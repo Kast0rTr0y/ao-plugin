@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.backup;
 
 import com.atlassian.activeobjects.admin.PluginToTablesMapping;
 import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
+import com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory;
 import com.atlassian.activeobjects.spi.NullBackupProgressMonitor;
 import com.atlassian.activeobjects.test.model.Model;
 import com.atlassian.dbexporter.ImportExportErrorService;
@@ -49,7 +50,7 @@ public final class CreateBackup
         model.createData();
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), errorService).save(stream, NullBackupProgressMonitor.INSTANCE);
+        new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), errorService, mock(ActiveObjectsServiceFactory.class)).save(stream, NullBackupProgressMonitor.INSTANCE);
 
         System.out.println(stream.toString("UTF-8"));
     }

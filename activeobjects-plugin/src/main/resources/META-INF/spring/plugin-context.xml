@@ -79,6 +79,7 @@
         <constructor-arg ref="tenantContext"/>
         <constructor-arg ref="simpleNameConverters"/>
         <constructor-arg ref="errorService"/>
+        <constructor-arg ref="activeObjectsServiceFactory"/>
     </bean>
 
     <bean id="errorService" class="com.atlassian.activeobjects.backup.ImportExportErrorServiceImpl">

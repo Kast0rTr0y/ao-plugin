@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import java.util.Dictionary;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -69,9 +70,13 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private Tenant tenant2;
     @Mock
+    private Tenant tenant3;
+    @Mock
     private ExecutorService executorService1;
     @Mock
     private ExecutorService executorService2;
+    @Mock
+    private ExecutorService executorService3;
     @Mock
     private Bundle bundle1;
     @Mock
@@ -102,6 +107,7 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(serviceFactory.aoContextThreadFactory, instanceOf(ContextClassLoaderThreadFactory.class));
         assertThat(((ContextClassLoaderThreadFactory) serviceFactory.aoContextThreadFactory).getContextClassLoader(), sameInstance(Thread.currentThread().getContextClassLoader()));
         assertThat(serviceFactory.destroying, is(false));
+        assertThat(serviceFactory.cleaning, is(false));
 
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
@@ -143,6 +149,29 @@ public final class ActiveObjectsServiceFactoryTest
         verify(babyBear2).destroy();
         verify(executorService1).shutdownNow();
         verify(executorService2).shutdownNow();
+    }
+
+    @Test
+    public void startCleaning() throws InterruptedException
+    {
+        serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
+        serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
+        serviceFactory.initExecutorsByTenant.put(tenant3, executorService3);
+
+        when(executorService1.awaitTermination(ActiveObjectsServiceFactory.INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)).thenThrow(new InterruptedException());
+        when(executorService2.awaitTermination(ActiveObjectsServiceFactory.INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)).thenReturn(false);
+        when(executorService3.awaitTermination(ActiveObjectsServiceFactory.INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)).thenReturn(true);
+
+        serviceFactory.startCleaning();
+
+        assertThat(serviceFactory.cleaning, is(true));
+
+        verify(executorService1).shutdownNow();
+        verify(executorService2).shutdownNow();
+        verify(executorService3).shutdownNow();
+        verify(executorService1).awaitTermination(ActiveObjectsServiceFactory.INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        verify(executorService2).awaitTermination(ActiveObjectsServiceFactory.INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        verify(executorService3).awaitTermination(ActiveObjectsServiceFactory.INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.ao.PrefixedSchemaConfiguration;
 import com.atlassian.activeobjects.internal.DatabaseProviderFactory;
 import com.atlassian.activeobjects.internal.Prefix;
 import com.atlassian.activeobjects.internal.SimplePrefix;
+import com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.activeobjects.spi.TenantAwareDataSourceProvider;
@@ -62,8 +63,9 @@ public final class ActiveObjectsBackup implements Backup
     private final Supplier<DatabaseProvider> databaseProviderSupplier;
     private final NameConverters nameConverters;
     private final ImportExportErrorService errorService;
+    private final ActiveObjectsServiceFactory aoServiceFactory;
 
-    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final TenantAwareDataSourceProvider tenantAwareDataSourceProvider, final TenantContext tenantContext, NameConverters converters, ImportExportErrorService errorService)
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final TenantAwareDataSourceProvider tenantAwareDataSourceProvider, final TenantContext tenantContext, NameConverters converters, ImportExportErrorService errorService, final ActiveObjectsServiceFactory aoServiceFactory)
     {
         this(new Supplier<DatabaseProvider>()
         {
@@ -73,16 +75,17 @@ public final class ActiveObjectsBackup implements Backup
                 final Tenant tenant = tenantContext.getCurrentTenant();
                 return checkNotNull(databaseProviderFactory).getDatabaseProvider(tenantAwareDataSourceProvider.getDataSource(tenant), tenantAwareDataSourceProvider.getDatabaseType(tenant), tenantAwareDataSourceProvider.getSchema(tenant));
             }
-        }, converters, errorService);
+        }, converters, errorService, aoServiceFactory);
     }
 
-    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService)
+    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService, final ActiveObjectsServiceFactory aoServiceFactory)
     {
-        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), converters, errorService);
+        this(Suppliers.ofInstance(checkNotNull(databaseProvider)), converters, errorService, aoServiceFactory);
     }
 
-    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService)
+    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService, final ActiveObjectsServiceFactory aoServiceFactory)
     {
+        this.aoServiceFactory = checkNotNull(aoServiceFactory);
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
         this.nameConverters = checkNotNull(converters);
         this.errorService = checkNotNull(errorService);
@@ -145,7 +148,7 @@ public final class ActiveObjectsBackup implements Backup
 
         final DbImporter dbImporter = new DbImporter(errorService,
                 new DatabaseInformationImporter(errorService),
-                new TableDefinitionImporter(errorService, new ActiveObjectsTableCreator(errorService, provider, nameConverters), new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService)),
+                new TableDefinitionImporter(errorService, new ActiveObjectsTableCreator(errorService, provider, nameConverters), new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService, aoServiceFactory)),
                 new DataImporter(errorService,
                         provider.getSchema(),
                         new SqlServerAroundTableImporter(errorService, provider.getSchema()),
@@ -170,7 +173,7 @@ public final class ActiveObjectsBackup implements Backup
     public void clear()
     {
         final DatabaseProvider provider = databaseProviderSupplier.get();
-        new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService).cleanup(CleanupMode.CLEAN);
+        new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService, aoServiceFactory).cleanup(CleanupMode.CLEAN);
     }
 
     private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider)
