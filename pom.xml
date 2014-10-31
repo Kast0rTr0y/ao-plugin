@@ -61,7 +61,7 @@
         <refapp.version>2.22.3</refapp.version>
 
         <tenancy.libversion>1.4.1</tenancy.libversion>
-        <plugins.libversion>3.0.16</plugins.libversion>
+        <plugins.libversion>4.0.0-m012-SNAPSHOT</plugins.libversion>
         <webresource.libversion>3.0.2</webresource.libversion>
         <webfragments.libversion>3.0.0</webfragments.libversion>
         <guava.libversion>11.0.2</guava.libversion>
