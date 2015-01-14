@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.30</version>
+        <version>3.0.84</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -45,7 +45,7 @@
     </modules>
 
     <properties>
-        <amps.version>5.0.0</amps.version>
+        <amps.version>5.0.13</amps.version>
         <ao.version>0.29.2</ao.version>
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
