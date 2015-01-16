@@ -42,6 +42,7 @@
         <module>activeobjects-test</module>
         <module>activeobjects-test-model</module>
         <module>activeobjects-test-plugin</module>
+        <module>activeobjects-jira-master-tests</module>
     </modules>
 
     <properties>
