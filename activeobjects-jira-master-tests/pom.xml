@@ -75,7 +75,7 @@
 			<plugin>
 				<groupId>com.atlassian.maven.plugins</groupId>
 				<artifactId>maven-jira-plugin</artifactId>
-				<version>3.11</version>
+				<version>${amps.version}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<systemPropertyVariables>
