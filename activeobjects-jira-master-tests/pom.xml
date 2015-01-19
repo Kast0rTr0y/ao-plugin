@@ -15,6 +15,7 @@
         <jira.version>RELEASE</jira.version>
 	    <jira.test.lib.version>${jira.version}</jira.test.lib.version>
 		<jira.data.version>${jira.version}</jira.data.version>
+		<amps.version>5.0.14</amps.version>
         <xvfb.enable>false</xvfb.enable>
         <!-- Inserts a value to prevent a cargo/ant bug. -->
         <xvfb.display>0</xvfb.display>
