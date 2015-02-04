@@ -16,9 +16,9 @@
     <description>Integrates ActiveObjects as a plugin into the Atlassian product suite.</description>
 
     <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/activeobjects/ao-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/activeobjects/ao-plugin.git</developerConnection>
-        <url>https://bitbucket.org/activeobjects/ao-plugin/</url>
+        <connection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</connection>
+        <developerConnection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</developerConnection>
+        <url>https://bitbucket.org/activeobjects/ao-plugin</url>
       <tag>HEAD</tag>
   </scm>
 
