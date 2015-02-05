@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
-    <url>https://studio.atlassian.com/browse/AO</url>
+    <url>https://ecosystem.atlassian.net/browse/AO</url>
     <description>Integrates ActiveObjects as a plugin into the Atlassian product suite.</description>
 
     <issueManagement>
