@@ -12,13 +12,21 @@
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
-    <url>https://studio.atlassian.com/browse/AO</url>
+    <url>https://ecosystem.atlassian.net/browse/AO</url>
     <description>Integrates ActiveObjects as a plugin into the Atlassian product suite.</description>
 
+    <issueManagement>
+        <system>Jira</system>
+        <url>https://ecosystem.atlassian.net/browse/AO</url>
+    </issueManagement>
+    <ciManagement>
+        <system>Bamboo</system>
+        <url>https://ecosystem-bamboo.internal.atlassian.com/browse/AOPLUG</url>
+    </ciManagement>
     <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/activeobjects/ao-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/activeobjects/ao-plugin.git</developerConnection>
-        <url>https://bitbucket.org/activeobjects/ao-plugin/</url>
+        <connection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</connection>
+        <developerConnection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</developerConnection>
+        <url>https://bitbucket.org/activeobjects/ao-plugin</url>
       <tag>HEAD</tag>
   </scm>
 
