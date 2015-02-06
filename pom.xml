@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.30</version>
+        <version>3.0.84</version>
     </parent>
 
     <groupId>com.atlassian.activeobjects</groupId>
@@ -12,13 +12,21 @@
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
-    <url>https://studio.atlassian.com/browse/AO</url>
+    <url>https://ecosystem.atlassian.net/browse/AO</url>
     <description>Integrates ActiveObjects as a plugin into the Atlassian product suite.</description>
 
+    <issueManagement>
+        <system>Jira</system>
+        <url>https://ecosystem.atlassian.net/browse/AO</url>
+    </issueManagement>
+    <ciManagement>
+        <system>Bamboo</system>
+        <url>https://ecosystem-bamboo.internal.atlassian.com/browse/AOPLUG</url>
+    </ciManagement>
     <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/activeobjects/ao-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/activeobjects/ao-plugin.git</developerConnection>
-        <url>https://bitbucket.org/activeobjects/ao-plugin/</url>
+        <connection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</connection>
+        <developerConnection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</developerConnection>
+        <url>https://bitbucket.org/activeobjects/ao-plugin</url>
       <tag>HEAD</tag>
   </scm>
 
@@ -45,7 +53,7 @@
     </modules>
 
     <properties>
-        <amps.version>5.0.0</amps.version>
+        <amps.version>5.0.13</amps.version>
         <ao.version>0.29.3</ao.version>
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
