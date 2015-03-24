@@ -22,10 +22,6 @@
         <jtds.version>1.2.4</jtds.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
         <c3p0.version>0.9.1.1</c3p0.version>
-        <spring.library.version>4.0.5.RELEASE_1</spring.library.version>
-        <spring.library.osgi.version>4.0.5.RELEASE</spring.library.osgi.version>
-        <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
-        <tenancy.compatibility.version>1.4</tenancy.compatibility.version>
     </properties>
 
     <build>
@@ -280,6 +276,7 @@
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.spring-webmvc</artifactId>
             <version>${spring.library.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>

@@ -56,12 +56,14 @@
         <amps.version>5.0.13</amps.version>
         <ao.version>0.29.3</ao.version>
         <slf4j.version>1.6.4</slf4j.version>
-        <spring.library.version>4.0.5.RELEASE_1</spring.library.version>
+        <spring.library.version>4.1.4.RELEASE_1</spring.library.version>
+        <spring.library.osgi.version>4.1.0</spring.library.osgi.version>
+
         <hsqldb.version>1.8.0.7</hsqldb.version>
         <refapp.version>2.22.3</refapp.version>
 
         <tenancy.libversion>1.4.1</tenancy.libversion>
-        <plugins.libversion>4.0.0-m012-SNAPSHOT</plugins.libversion>
+        <plugins.libversion>3.0.16</plugins.libversion>
         <webresource.libversion>3.0.2</webresource.libversion>
         <webfragments.libversion>3.0.0</webfragments.libversion>
         <guava.libversion>11.0.2</guava.libversion>
