@@ -70,7 +70,6 @@
                             org.apache.commons.lang.builder;version="2.0",
                             org.apache.commons.logging;version="1.1.1",
                             org.apache.lucene.*;version="2.0";resolution:=optional,
-                            org.apache.velocity*;version="1.6.1",
                             org.dom4j*,
                             org.hsqldb;version="1.8.0";resolution:=optional,
                             org.logicalcobwebs.proxool;version="0.9";resolution:=optional,
@@ -93,6 +92,8 @@
                             org.springframework.web*;version="${spring.library.osgi.version}",
                             org.springframework.web.context.support*;version="${spring.library.osgi.version}",
                             org.springframework.web.util*;version="${spring.library.osgi.version}",
+                            org.springframework.web.servlet.mvc.multiaction;version="${spring.library.osgi.version}",
+                            org.springframework.web.servlet.view.velocity;version="${spring.library.osgi.version}",
                             snaq.db;resolution:=optional;version="4.9",
                             org.xml.sax
                         </Import-Package>
