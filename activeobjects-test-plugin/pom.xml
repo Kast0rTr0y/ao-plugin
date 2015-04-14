@@ -141,6 +141,7 @@
                         <webdriver.browser>firefox</webdriver.browser>
                         <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
+                    <containerId>tomcat8x</containerId>
                     <products>
                         <product>
                             <id>refapp</id>
