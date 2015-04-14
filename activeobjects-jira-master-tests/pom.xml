@@ -86,7 +86,7 @@
 					</systemPropertyVariables>
 					<enableFastdev>false</enableFastdev>
 					<enableDevToolbox>false</enableDevToolbox>
-					<jvmArgs>-Xmx768m -XX:MaxPermSize=384m</jvmArgs>
+					<jvmArgs>-Xmx768m</jvmArgs>
 					<productVersion>${jira.test.lib.version}</productVersion>
 					<productDataVersion>${jira.data.version}</productDataVersion>
 					<compressResources>false</compressResources>
