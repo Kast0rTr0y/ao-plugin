@@ -60,7 +60,7 @@
         <spring.library.osgi.version>4.1.0</spring.library.osgi.version>
 
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>3.0.0-m009-SNAPSHOT</refapp.version>
+        <refapp.version>3.0.0-m009</refapp.version>
 
         <tenancy.libversion>1.4.1</tenancy.libversion>
         <plugins.libversion>3.0.16</plugins.libversion>
