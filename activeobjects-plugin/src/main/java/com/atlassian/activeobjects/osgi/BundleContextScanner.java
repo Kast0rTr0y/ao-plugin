@@ -42,6 +42,7 @@ final class BundleContextScanner
             {
                 final String className = getClassName((URL) entries.nextElement());
                 log.debug("Found class '{}'", className);
+                //noinspection ConstantConditions
                 classes.add(f.apply(className));
             }
         }
