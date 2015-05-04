@@ -88,6 +88,7 @@ class TenantAwareActiveObjects implements ActiveObjects
                         logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
 
                         final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
+                        //noinspection ConstantConditions
                         initExecutorFunction.apply(tenant).submit(new Callable<Void>()
                         {
                             @Override

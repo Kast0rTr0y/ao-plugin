@@ -3,19 +3,20 @@ package com.atlassian.activeobjects.pageobjects;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
+import com.atlassian.webdriver.AtlassianWebDriver;
 import org.openqa.selenium.By;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import static com.atlassian.activeobjects.pageobjects.AoTable.*;
 
 public class ActiveObjectsAdminPage implements Page
 {
-    @ElementBy(tagName = "title")
-    PageElement title;
+    @Inject
+    protected AtlassianWebDriver driver;
 
     @ElementBy(tagName = "tbody")
     PageElement plugins;
@@ -28,7 +29,7 @@ public class ActiveObjectsAdminPage implements Page
 
     public String getTitle()
     {
-        return title.getText();
+        return driver.getTitle();
     }
 
     public List<AoTable> getTables()
