@@ -110,7 +110,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
         if (!(getPlugin() instanceof ContainerManagedPlugin))
         {
-            throw new ActiveObjectsPluginException("Plugin " + plugin.getKey() + " is not a ContainerManagedPlugin, cannot wire context");
+            throw new ActiveObjectsPluginException("Plugin " + getPlugin().getKey() + " " + getPlugin().getClass().getCanonicalName() + " is not a ContainerManagedPlugin, cannot wire context");
         }
         final ContainerManagedPlugin plugin = (ContainerManagedPlugin) getPlugin();
         return Lists.transform(classes, new Function<Class<ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>()
