@@ -9,10 +9,10 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.plugin.AutowireCapablePlugin;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
+import com.atlassian.plugin.module.ContainerManagedPlugin;
 import com.atlassian.plugin.module.ModuleFactory;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.tenancy.api.TenantAccessor;
@@ -108,13 +108,17 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
             }
         });
 
-        final AutowireCapablePlugin plugin = (AutowireCapablePlugin) getPlugin();
+        if (!(getPlugin() instanceof ContainerManagedPlugin))
+        {
+            throw new ActiveObjectsPluginException("Plugin " + getPlugin().getKey() + " " + getPlugin().getClass().getCanonicalName() + " is not a ContainerManagedPlugin, cannot wire context");
+        }
+        final ContainerManagedPlugin plugin = (ContainerManagedPlugin) getPlugin();
         return Lists.transform(classes, new Function<Class<ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>()
         {
             @Override
             public ActiveObjectsUpgradeTask apply(Class<ActiveObjectsUpgradeTask> upgradeTaskClass)
             {
-                return plugin.autowire(upgradeTaskClass);
+                return plugin.getContainerAccessor().createBean(upgradeTaskClass);
             }
         });
     }
