@@ -315,6 +315,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                 if (plugin != null)
                 {
                     final String pluginKey = plugin.getKey();
+                    logger.debug("onPluginModuleEnabledEvent [{}]", pluginKey);
                     if (pluginKey != null)
                     {
                         boolean attachedToDelegate = false;
