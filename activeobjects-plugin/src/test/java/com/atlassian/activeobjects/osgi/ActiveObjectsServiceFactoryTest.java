@@ -85,10 +85,6 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private Bundle bundle2;
     @Mock
-    private Dictionary<String, String> bundle1Dictionary;
-    @Mock
-    private Dictionary<String, String> bundle2Dictionary;
-    @Mock
     private TenantAwareActiveObjects babyBear1;
     @Mock
     private TenantAwareActiveObjects babyBear2;
@@ -118,8 +114,6 @@ public final class ActiveObjectsServiceFactoryTest
 
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
-        when(bundle1.getHeaders()).thenReturn(bundle1Dictionary);
-        when(bundle2.getHeaders()).thenReturn(bundle2Dictionary);
         //noinspection unchecked
         when(moduleEnabledEvent.getModule()).thenReturn((ModuleDescriptor) moduleDescriptor);
         when(moduleDescriptor.getPlugin()).thenReturn(plugin1);
