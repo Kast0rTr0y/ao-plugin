@@ -370,6 +370,8 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                     if (unattachedConfigByBundle.containsKey(bundle))
                     {
                         logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
+
+                        // the cacheloader will do the attaching, after locking first
                         aoDelegatesByBundle.getUnchecked(bundle);
                     }
                 }

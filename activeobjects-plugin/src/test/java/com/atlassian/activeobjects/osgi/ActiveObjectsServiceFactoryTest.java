@@ -270,6 +270,8 @@ public final class ActiveObjectsServiceFactoryTest
     {
         when(moduleDescriptor.getPlugin()).thenReturn(nonOsgiPlugin);
 
+        serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
+
         assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
     }
 
@@ -302,7 +304,7 @@ public final class ActiveObjectsServiceFactoryTest
 
         serviceFactory.onPluginEnabledEvent(enabledEvent);
 
-        serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig);
+        assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle2, aoConfig));
     }
 
     @Test
