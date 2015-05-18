@@ -328,7 +328,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                             {
                                 if (aoDelegate.getBundle().equals(bundle))
                                 {
-                                    logger.debug("onPluginModuleEnabledEvent attaching <ao> confuguration module to ActiveObjects service of [{}]", plugin);
+                                    logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
                                     aoDelegate.setAoConfiguration(aoConfig);
                                     attachedToDelegate = true;
                                     break;
@@ -336,7 +336,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                             }
                             if (!attachedToDelegate)
                             {
-                                logger.debug("onPluginModuleEnabledEvent storing unattached <ao> confuguration module for [{}]", plugin);
+                                logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
                                 unattachedConfigByBundle.put(bundle, aoConfig);
                             }
                         }
