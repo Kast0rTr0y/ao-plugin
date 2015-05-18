@@ -8,7 +8,9 @@ import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
+import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -22,6 +24,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -90,11 +93,15 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private TenantAwareActiveObjects babyBear2;
     @Mock
-    private PluginModuleEnabledEvent event;
+    private PluginModuleEnabledEvent moduleEnabledEvent;
+    @Mock
+    private PluginEnabledEvent enabledEvent;
     @Mock
     private ActiveObjectModuleDescriptor moduleDescriptor;
     @Mock
-    private Plugin plugin1;
+    private OsgiPlugin plugin1;
+    @Mock
+    private Plugin nonOsgiPlugin;
     @Mock
     private ActiveObjectsConfiguration aoConfig;
 
@@ -111,16 +118,13 @@ public final class ActiveObjectsServiceFactoryTest
 
         when(babyBear1.getBundle()).thenReturn(bundle1);
         when(babyBear2.getBundle()).thenReturn(bundle2);
-        when(bundle1.getSymbolicName()).thenReturn("bundle1");
-        when(bundle2.getSymbolicName()).thenReturn("bundle2");
         when(bundle1.getHeaders()).thenReturn(bundle1Dictionary);
         when(bundle2.getHeaders()).thenReturn(bundle2Dictionary);
-        when(bundle1Dictionary.get("Atlassian-Plugin-Key")).thenReturn("bundle1");
-        when(bundle2Dictionary.get("Atlassian-Plugin-Key")).thenReturn("bundle2");
         //noinspection unchecked
-        when(event.getModule()).thenReturn((ModuleDescriptor)moduleDescriptor);
+        when(moduleEnabledEvent.getModule()).thenReturn((ModuleDescriptor) moduleDescriptor);
         when(moduleDescriptor.getPlugin()).thenReturn(plugin1);
-        when(plugin1.getKey()).thenReturn("bundle1");
+        when(enabledEvent.getPlugin()).thenReturn(plugin1);
+        when(plugin1.getBundle()).thenReturn(bundle1);
         when(moduleDescriptor.getConfiguration()).thenReturn(aoConfig);
     }
 
@@ -250,15 +254,23 @@ public final class ActiveObjectsServiceFactoryTest
         verify(babyBear2).restartActiveObjects(tenant1);
         verify(executorService1).shutdownNow();
 
-        assertThat(serviceFactory.initExecutorsByTenant.asMap().isEmpty(), is(true));
+        assertThat(serviceFactory.initExecutorsByTenant.asMap(), is(Collections.<Tenant, ExecutorService>emptyMap()));
     }
 
     @Test
     public void onPluginModuleEnabledEventNoDelegate()
     {
-        serviceFactory.onPluginModuleEnabledEvent(event);
+        serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
 
-        assertThat(serviceFactory.unattachedConfigByPluginKey, hasEntry("bundle1", aoConfig));
+        assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle1, aoConfig));
+    }
+
+    @Test
+    public void onPluginModuleEnabledEventNonOsgi()
+    {
+        when(moduleDescriptor.getPlugin()).thenReturn(nonOsgiPlugin);
+
+        assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
     }
 
     @Test
@@ -266,17 +278,47 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
 
-        serviceFactory.onPluginModuleEnabledEvent(event);
+        serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
 
-        assertThat(serviceFactory.unattachedConfigByPluginKey.isEmpty(), is(true));
+        assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
 
         verify(babyBear1).setAoConfiguration(aoConfig);
     }
 
     @Test
+    public void onPluginEnabledAttachMatching()
+    {
+        serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig);
+
+        serviceFactory.onPluginEnabledEvent(enabledEvent);
+
+        assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
+    }
+
+    @Test
+    public void onPluginEnabledIgnoreNonMatching()
+    {
+        serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig);
+
+        serviceFactory.onPluginEnabledEvent(enabledEvent);
+
+        serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig);
+    }
+
+    @Test
+    public void onPluginEnabledNonOsgi()
+    {
+        when(enabledEvent.getPlugin()).thenReturn(nonOsgiPlugin);
+        serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig);
+
+        serviceFactory.onPluginEnabledEvent(enabledEvent);
+
+        assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle1, aoConfig));
+    }
+    @Test
     public void aoDelegatesByBundleLoader() throws ExecutionException, InterruptedException
     {
-        serviceFactory.unattachedConfigByPluginKey.put("bundle1", aoConfig);
+        serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig);
 
         final TenantAwareActiveObjects aoDelegate = serviceFactory.aoDelegatesByBundle.get(bundle1);
 
