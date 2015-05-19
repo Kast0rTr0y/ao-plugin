@@ -11,8 +11,9 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
-import com.atlassian.plugin.osgi.util.OsgiHeaderUtil;
+import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
@@ -84,7 +85,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
     @VisibleForTesting
-    final Map<String, ActiveObjectsConfiguration> unattachedConfigByPluginKey = new HashMap<String, ActiveObjectsConfiguration>();
+    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new HashMap<Bundle, ActiveObjectsConfiguration>();
 
     private final Lock unattachedConfigsLock = new ReentrantLock();
 
@@ -148,12 +149,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                 unattachedConfigsLock.lock();
                 try
                 {
-                    final String pluginKey = OsgiHeaderUtil.getPluginKey(bundle);
-                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByPluginKey.get(pluginKey);
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundle);
                     if (aoConfig != null)
                     {
                         delegate.setAoConfiguration(aoConfig);
-                        unattachedConfigByPluginKey.remove(pluginKey);
+                        unattachedConfigByBundle.remove(bundle);
                     }
                 }
                 finally
@@ -177,7 +177,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @Override
     public void destroy() throws Exception
     {
-        logger.debug("destroying");
+        logger.debug("destroy");
 
         destroying = true;
 
@@ -198,7 +198,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
         checkNotNull(bundle);
-        logger.debug("bundle [{}]", bundle.getSymbolicName());
+        logger.debug("getService bundle [{}]", bundle.getSymbolicName());
 
         if (destroying)
         {
@@ -257,13 +257,13 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     {
         // ensure that the tenant is still present
         Tenant tenant = tenantContext.getCurrentTenant();
-        logger.debug("tenant arrived {}", tenant);
+        logger.debug("onTenantArrived tenant arrived {}", tenant);
 
         if (tenant != null)
         {
             for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
-                logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
+                logger.debug("onTenantArrived starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.startActiveObjects(tenant);
             }
         }
@@ -278,7 +278,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     public void onHotRestart(HotRestartEvent hotRestartEvent)
     {
         Tenant tenant = tenantContext.getCurrentTenant();
-        logger.debug("performing hot restart with tenant {}", tenant);
+        logger.debug("onHotRestart performing hot restart with tenant {}", tenant);
 
         if (tenant != null)
         {
@@ -286,13 +286,13 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             initExecutorsByTenant.invalidate(tenant);
             for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
             {
-                logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
+                logger.debug("onHotRestart restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);
             }
 
             if (initExecutor != null)
             {
-                logger.debug("terminating any initExecutor threads");
+                logger.debug("onHotRestart terminating any initExecutor threads");
                 initExecutor.shutdownNow();
             }
         }
@@ -312,22 +312,23 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
             {
                 final Plugin plugin = moduleDescriptor.getPlugin();
-                if (plugin != null)
+                if (plugin != null && plugin instanceof OsgiPlugin)
                 {
-                    final String pluginKey = plugin.getKey();
-                    logger.debug("onPluginModuleEnabledEvent [{}]", pluginKey);
-                    if (pluginKey != null)
+                    final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+                    if (bundle != null)
                     {
+
                         boolean attachedToDelegate = false;
-                        ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
+                        final ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
 
                         unattachedConfigsLock.lock();
                         try
                         {
                             for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
                             {
-                                if (pluginKey.equals(OsgiHeaderUtil.getPluginKey(aoDelegate.getBundle())))
+                                if (aoDelegate.getBundle().equals(bundle))
                                 {
+                                    logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
                                     aoDelegate.setAoConfiguration(aoConfig);
                                     attachedToDelegate = true;
                                     break;
@@ -335,13 +336,43 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                             }
                             if (!attachedToDelegate)
                             {
-                                unattachedConfigByPluginKey.put(pluginKey, aoConfig);
+                                logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
+                                unattachedConfigByBundle.put(bundle, aoConfig);
                             }
                         }
                         finally
                         {
                             unattachedConfigsLock.unlock();
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Listens for {@link PluginEnabledEvent}. If the plugin is present in the unattached configurations, it will tickle
+     * <code>aoDelegatesByBundle</code> to ensure that the configuration has been attached to a service, whether it has
+     * been OSGi registered or not.
+     */
+    @SuppressWarnings ("UnusedDeclaration")
+    @EventListener
+    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
+    {
+        if (pluginEnabledEvent != null)
+        {
+            final Plugin plugin = pluginEnabledEvent.getPlugin();
+            if (plugin != null && plugin instanceof OsgiPlugin)
+            {
+                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+                if (bundle != null)
+                {
+                    if (unattachedConfigByBundle.containsKey(bundle))
+                    {
+                        logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
+
+                        // the cacheloader will do the attaching, after locking first
+                        aoDelegatesByBundle.getUnchecked(bundle);
                     }
                 }
             }

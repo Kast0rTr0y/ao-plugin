@@ -119,7 +119,7 @@ class TenantAwareActiveObjects implements ActiveObjects
 
     public void init()
     {
-        logger.debug("bundle [{}] init", bundle.getSymbolicName());
+        logger.debug("init bundle [{}]", bundle.getSymbolicName());
 
         // start things up now if we have a tenant
         Tenant tenant = tenantContext.getCurrentTenant();
