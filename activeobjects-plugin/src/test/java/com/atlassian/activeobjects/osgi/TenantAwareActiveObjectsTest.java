@@ -135,7 +135,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void delgateUntenanted()
+    public void delegateUntenanted()
     {
         babyBear.aoConfigFuture.set(aoConfig1);
         expectedException.expect(NoDataSourceException.class);
