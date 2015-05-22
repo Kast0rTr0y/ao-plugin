@@ -105,7 +105,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void setAoConfigMultiple()
+    public void setAoConfigMultipleConfigurationsThrowsIllegalStateException()
     {
         babyBear.aoConfigFuture.set(aoConfig1);
 
@@ -115,7 +115,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void setAoConfigSame()
+    public void setAoConfigSameConfigurationIsOK()
     {
         babyBear.aoConfigFuture.set(aoConfig1);
         babyBear.setAoConfiguration(aoConfig1);
