@@ -6,7 +6,8 @@ public final class NoDataSourceException extends IllegalStateException
     {
         super("No data source is available, indicating that there is no tenant available to the "
                 + "application. Your plugin is probably performing tenant specific operations too eagerly.\n"
-                + "Use a com.atlassian.tenancy.api.helper.PerTenantInitialiser or wait for a "
-                + "com.atlassian.tenancy.api.event.TenantArrivedEvent");
+                + "com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData contains utility methods that "
+                + "can assist you in this situation.\n"
+                + "isDataSourcePresent will safely indicate the availability of the data source.");
     }
 }

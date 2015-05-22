@@ -145,9 +145,27 @@ class TenantAwareActiveObjects implements ActiveObjects
 
         if (aoConfigFuture.isDone())
         {
-            final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
-            aoConfigFuture.setException(e);
-            throw e;
+            final ActiveObjectsConfiguration currentAoConfiguration;
+            try
+            {
+                currentAoConfiguration = aoConfigFuture.get(0, TimeUnit.MILLISECONDS);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e)
+            {
+                // we've already checked the state of the future, this exception must be dire
+                throw new IllegalStateException(e);
+            }
+
+            if (currentAoConfiguration == aoConfiguration)
+            {
+                logger.debug("setAoConfiguration received same <ao> configuration twice [{}]", aoConfiguration);
+            }
+            else
+            {
+                final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
+                aoConfigFuture.setException(e);
+                throw e;
+            }
         }
         else
         {

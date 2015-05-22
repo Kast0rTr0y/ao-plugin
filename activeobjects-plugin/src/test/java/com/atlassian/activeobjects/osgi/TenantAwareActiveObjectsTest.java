@@ -67,7 +67,10 @@ public class TenantAwareActiveObjectsTest
     private ActiveObjects ao;
 
     @Mock
-    private ActiveObjectsConfiguration aoConfig;
+    private ActiveObjectsConfiguration aoConfig1;
+
+    @Mock
+    private ActiveObjectsConfiguration aoConfig2;
 
     @Before
     public void before()
@@ -77,7 +80,7 @@ public class TenantAwareActiveObjectsTest
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
         when(bundle.getBundleContext()).thenReturn(bundleContext);
 
-        when(bundleContext.getService(serviceReference)).thenReturn(aoConfig);
+        when(bundleContext.getService(serviceReference)).thenReturn(aoConfig1);
 
         when(serviceEvent.getServiceReference()).thenReturn(serviceReference);
     }
@@ -95,26 +98,33 @@ public class TenantAwareActiveObjectsTest
     @Test
     public void setAoConfig() throws ExecutionException, InterruptedException
     {
-        babyBear.setAoConfiguration(aoConfig);
+        babyBear.setAoConfiguration(aoConfig1);
 
         assertThat(babyBear.aoConfigFuture.isDone(), is(true));
-        assertThat(babyBear.aoConfigFuture.get(), is(aoConfig));
+        assertThat(babyBear.aoConfigFuture.get(), is(aoConfig1));
     }
 
     @Test
-    public void setAoConfigMultiple()
+    public void setAoConfigMultipleConfigurationsThrowsIllegalStateException()
     {
-        babyBear.aoConfigFuture.set(aoConfig);
+        babyBear.aoConfigFuture.set(aoConfig1);
 
         expectedException.expect(IllegalStateException.class);
 
-        babyBear.setAoConfiguration(aoConfig);
+        babyBear.setAoConfiguration(aoConfig2);
+    }
+
+    @Test
+    public void setAoConfigSameConfigurationIsOK()
+    {
+        babyBear.aoConfigFuture.set(aoConfig1);
+        babyBear.setAoConfiguration(aoConfig1);
     }
 
     @Test
     public void delegate() throws ExecutionException, InterruptedException
     {
-        babyBear.aoConfigFuture.set(aoConfig);
+        babyBear.aoConfigFuture.set(aoConfig1);
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
@@ -125,9 +135,9 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void delgateUntenanted()
+    public void delegateUntenanted()
     {
-        babyBear.aoConfigFuture.set(aoConfig);
+        babyBear.aoConfigFuture.set(aoConfig1);
         expectedException.expect(NoDataSourceException.class);
 
         babyBear.delegate();
