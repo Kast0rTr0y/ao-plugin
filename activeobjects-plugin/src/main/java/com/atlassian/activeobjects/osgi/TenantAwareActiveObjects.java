@@ -145,14 +145,15 @@ class TenantAwareActiveObjects implements ActiveObjects
 
         if (aoConfigFuture.isDone())
         {
-            ActiveObjectsConfiguration currentAoConfiguration = null;
+            final ActiveObjectsConfiguration currentAoConfiguration;
             try
             {
                 currentAoConfiguration = aoConfigFuture.get(0, TimeUnit.MILLISECONDS);
             }
             catch (InterruptedException | ExecutionException | TimeoutException e)
             {
-                // nothing to see here; we've already checked the state of the future
+                // we've already checked the state of the future, this exception must be dire
+                throw new IllegalStateException(e);
             }
 
             if (currentAoConfiguration == aoConfiguration)
