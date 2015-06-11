@@ -23,7 +23,7 @@ import static com.google.common.collect.Iterables.*;
 public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements EntitiesValidator
 {
     static final Set<String> RESERVED_WORDS = ImmutableSet.of("BLOB", "CLOB", "NUMBER", "ROWID", "TIMESTAMP", "VARCHAR2");
-    static final int MAX_NUMBER_OF_ENTITIES = 50;
+    static final int MAX_NUMBER_OF_ENTITIES = 200;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
