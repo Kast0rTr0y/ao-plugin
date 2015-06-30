@@ -67,7 +67,7 @@
         <webresource.libversion>3.0.2</webresource.libversion>
         <webfragments.libversion>3.0.0</webfragments.libversion>
         <guava.libversion>18.0</guava.libversion>
-        <sal.libversion>3.0.0-m012</sal.libversion>
+        <sal.libversion>3.0.0</sal.libversion>
 
         <junit.version>4.11</junit.version>
         <hamcrest.version>1.1</hamcrest.version>
