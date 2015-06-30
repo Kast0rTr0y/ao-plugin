@@ -8,7 +8,7 @@
 
     <groupId>com.atlassian.activeobjects</groupId>
     <artifactId>activeobjects-plugin-parent-pom</artifactId>
-    <version>0.30.0-m006-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
@@ -54,7 +54,7 @@
 
     <properties>
         <amps.version>5.1.2</amps.version>
-        <ao.version>0.29.3</ao.version>
+        <ao.version>1.0.0</ao.version>
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>4.1.4.RELEASE</spring.library.version>
         <spring.library.osgi.version>4.1</spring.library.osgi.version>
