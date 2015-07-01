@@ -135,7 +135,7 @@
         <plugins>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-refapp-plugin</artifactId>
+                <artifactId>maven-amps-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
                         <webdriver.browser>firefox</webdriver.browser>
@@ -145,13 +145,6 @@
                     <products>
                         <product>
                             <id>refapp</id>
-                            <libArtifacts>
-                                <libArtifact>
-                                    <groupId>com.atlassian.activeobjects</groupId>
-                                    <artifactId>activeobjects-spi</artifactId>
-                                    <version>${project.version}</version>
-                                </libArtifact>
-                            </libArtifacts>
                             <bundledArtifacts>
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
@@ -159,6 +152,7 @@
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
+                            <output>${project.build.directory}/refapp.log</output>
                         </product>
                         <!--<product>-->
                             <!--<id>jira</id>-->
