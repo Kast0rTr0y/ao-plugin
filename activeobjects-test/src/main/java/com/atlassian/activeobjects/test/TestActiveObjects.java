@@ -53,8 +53,10 @@ public final class TestActiveObjects extends EntityManagedActiveObjects
 
     private static DatabaseType findDatabaseType(EntityManager entityManager)
     {
-        try (Connection connection = entityManager.getProvider().getConnection())
+        Connection connection = null;
+        try
         {
+            connection = entityManager.getProvider().getConnection();
             String dbName = connection.getMetaData().getDatabaseProductName();
             for (Map.Entry<String, DatabaseType> entry : DATABASE_PRODUCT_TO_TYPE_MAP.entrySet())
             {
@@ -68,6 +70,20 @@ public final class TestActiveObjects extends EntityManagedActiveObjects
         catch (SQLException e)
         {
             throw new ActiveObjectsException(e);
+        }
+        finally
+        {
+            if (connection != null)
+            {
+                try
+                {
+                    connection.close();
+                }
+                catch (SQLException e)
+                {
+                    throw new ActiveObjectsException(e);
+                }
+            }
         }
 
         return DatabaseType.UNKNOWN;
