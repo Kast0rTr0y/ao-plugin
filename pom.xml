@@ -8,7 +8,7 @@
 
     <groupId>com.atlassian.activeobjects</groupId>
     <artifactId>activeobjects-plugin-parent-pom</artifactId>
-    <version>0.28.13</version>
+    <version>0.28.14-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ActiveObjects Plugin - Parent POM</name>
@@ -27,7 +27,7 @@
         <connection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</connection>
         <developerConnection>scm:git:git@bitbucket.org:activeobjects/ao-plugin.git</developerConnection>
         <url>https://bitbucket.org/activeobjects/ao-plugin</url>
-      <tag>activeobjects-plugin-parent-pom-0.28.13</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <licenses>
