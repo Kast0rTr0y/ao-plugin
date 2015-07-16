@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.atlassian.activeobjects</groupId>
         <artifactId>activeobjects-plugin-parent-pom</artifactId>
-        <version>0.30.0-m006-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>activeobjects-plugin</artifactId>
@@ -28,7 +28,7 @@
         <plugins>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-refapp-plugin</artifactId>
+                <artifactId>maven-amps-plugin</artifactId>
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
@@ -370,7 +370,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -384,6 +384,8 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
+                            <productVersion>${refapp.version}</productVersion>
+                            <output>${project.build.directory}/refapp.log</output>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -415,7 +417,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -454,7 +456,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -493,7 +495,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -547,7 +549,7 @@
                     </plugin>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -595,7 +597,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -659,7 +661,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -723,7 +725,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -787,7 +789,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -850,7 +852,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
