@@ -11,8 +11,8 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
-import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
+import com.atlassian.plugin.impl.AbstractDelegatingPlugin;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
@@ -312,9 +312,9 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
             {
                 final Plugin plugin = moduleDescriptor.getPlugin();
-                if (plugin != null && plugin instanceof OsgiPlugin)
+                if (plugin != null)
                 {
-                    final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+                    final Bundle bundle = getPluginBundle(plugin);
                     if (bundle != null)
                     {
 
@@ -350,30 +350,16 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         }
     }
 
-    /**
-     * Listens for {@link PluginEnabledEvent}. If the plugin is present in the unattached configurations, it will tickle
-     * <code>aoDelegatesByBundle</code> to ensure that the configuration has been attached to a service, whether it has
-     * been OSGi registered or not.
-     */
-    @SuppressWarnings ("UnusedDeclaration")
-    @EventListener
-    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
+    private Bundle getPluginBundle(Plugin plugin)
     {
-        if (pluginEnabledEvent != null)
+        if (plugin instanceof OsgiPlugin)
         {
-            final Plugin plugin = pluginEnabledEvent.getPlugin();
-            if (plugin != null && plugin instanceof OsgiPlugin)
-            {
-                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                if (bundle != null)
-                {
-                    if (unattachedConfigByBundle.containsKey(bundle))
-                    {
-                        logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
-                        aoDelegatesByBundle.getUnchecked(bundle);
-                    }
-                }
-            }
+            return ((OsgiPlugin)plugin).getBundle();
         }
+        else if (plugin instanceof AbstractDelegatingPlugin)
+        {
+            return getPluginBundle(((AbstractDelegatingPlugin)plugin).getDelegate());
+        }
+        return null;
     }
 }

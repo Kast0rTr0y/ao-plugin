@@ -8,8 +8,8 @@ import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
-import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
+import com.atlassian.plugin.impl.AbstractDelegatingPlugin;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
 import com.atlassian.sal.api.executor.ThreadLocalDelegateExecutorFactory;
 import com.atlassian.tenancy.api.Tenant;
@@ -36,6 +36,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,8 +96,6 @@ public final class ActiveObjectsServiceFactoryTest
     @Mock
     private PluginModuleEnabledEvent moduleEnabledEvent;
     @Mock
-    private PluginEnabledEvent enabledEvent;
-    @Mock
     private ActiveObjectModuleDescriptor moduleDescriptor;
     @Mock
     private OsgiPlugin plugin1;
@@ -123,7 +122,6 @@ public final class ActiveObjectsServiceFactoryTest
         //noinspection unchecked
         when(moduleEnabledEvent.getModule()).thenReturn((ModuleDescriptor) moduleDescriptor);
         when(moduleDescriptor.getPlugin()).thenReturn(plugin1);
-        when(enabledEvent.getPlugin()).thenReturn(plugin1);
         when(plugin1.getBundle()).thenReturn(bundle1);
         when(moduleDescriptor.getConfiguration()).thenReturn(aoConfig);
     }
@@ -286,36 +284,6 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginEnabledAttachMatching()
-    {
-        serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig);
-
-        serviceFactory.onPluginEnabledEvent(enabledEvent);
-
-        assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
-    }
-
-    @Test
-    public void onPluginEnabledIgnoreNonMatching()
-    {
-        serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig);
-
-        serviceFactory.onPluginEnabledEvent(enabledEvent);
-
-        serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig);
-    }
-
-    @Test
-    public void onPluginEnabledNonOsgi()
-    {
-        when(enabledEvent.getPlugin()).thenReturn(nonOsgiPlugin);
-        serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig);
-
-        serviceFactory.onPluginEnabledEvent(enabledEvent);
-
-        assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle1, aoConfig));
-    }
-    @Test
     public void aoDelegatesByBundleLoader() throws ExecutionException, InterruptedException
     {
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig);
@@ -325,5 +293,32 @@ public final class ActiveObjectsServiceFactoryTest
         assertThat(aoDelegate, notNullValue());
         assertThat(aoDelegate.aoConfigFuture.isDone(), is(true));
         assertThat(aoDelegate.aoConfigFuture.get(), is(aoConfig));
+    }
+
+    @Test
+    public void onPluginModuleEnabledEventHasDelegateForWrappedOsgiPlugin()
+    {
+        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+        Plugin wrappedPlugin = new AbstractDelegatingPlugin(plugin1){};
+        when(moduleDescriptor.getPlugin()).thenReturn(wrappedPlugin);
+        serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
+
+        assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
+
+        verify(babyBear1).setAoConfiguration(aoConfig);
+    }
+
+    @Test
+    public void onPluginModuleEnabledEventHasNoDelegateForWrappedPlugin()
+    {
+        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+        Plugin wrappedPlugin = new AbstractDelegatingPlugin(nonOsgiPlugin)
+        {
+        };
+        when(moduleDescriptor.getPlugin()).thenReturn(wrappedPlugin);
+        serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
+
+        assertThat(serviceFactory.unattachedConfigByBundle, is(Collections.<Bundle, ActiveObjectsConfiguration>emptyMap()));
+        verify(babyBear1, never()).setAoConfiguration(aoConfig);
     }
 }
