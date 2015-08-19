@@ -226,12 +226,10 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
         checkNotNull(bundle);
-        checkNotNull(serviceRegistration);
-        checkNotNull(ao);
         logger.debug("ungetService bundle [{}]", bundle.getSymbolicName());
 
         aoDelegatesByBundle.invalidate(bundle);
-        if (ao instanceof TenantAwareActiveObjects)
+        if (ao != null && ao instanceof TenantAwareActiveObjects)
         {
             ((TenantAwareActiveObjects) ao).destroy();
         }
