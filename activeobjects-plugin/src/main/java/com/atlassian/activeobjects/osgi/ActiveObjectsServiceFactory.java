@@ -11,6 +11,7 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
@@ -84,6 +85,8 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @VisibleForTesting
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
+    // note that we need an explicit lock here to allow aoDelegatesByBundle time to load the configuration during the
+    // invocation of onPluginModuleEnabledEvent
     @VisibleForTesting
     final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new HashMap<Bundle, ActiveObjectsConfiguration>();
 
@@ -194,6 +197,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         eventPublisher.unregister(this);
     }
 
+    /**
+     * Invoked when the Gemini Blueprints/Spring DM proxy first accesses the module. Note that Blueprints is lazy, so
+     * this may not be called. A "safety backup" is added in {@link #onPluginEnabledEvent(PluginEnabledEvent)} to
+     * eagerly initialise the lazy proxies that are not invoked during plugin startup.
+     */
     @Override
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
@@ -208,9 +216,20 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         return aoDelegatesByBundle.getUnchecked(bundle);
     }
 
+    /**
+     * Invoked when the Gemini Blueprints/Spring DM proxy releases the module. Note that Blueprints is lazy, so the
+     * proxy may never have been realised, thus this may not be called. A "safety backup" is added in
+     * {@link #onPluginDisabledEvent(PluginDisabledEvent)} to release those references, for plugins that never
+     * realise the module.
+     */
     @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
+        checkNotNull(bundle);
+        checkNotNull(serviceRegistration);
+        checkNotNull(ao);
+        logger.debug("ungetService bundle [{}]", bundle.getSymbolicName());
+
         aoDelegatesByBundle.invalidate(bundle);
         if (ao instanceof TenantAwareActiveObjects)
         {
@@ -373,6 +392,44 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
 
                         // the cacheloader will do the attaching, after locking first
                         aoDelegatesByBundle.getUnchecked(bundle);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Listens for {@link PluginDisabledEvent}. If the plugin is present in the unattached or attached configurations,
+     * it will be removed to ensure that we don't leak resources and, more importantly, don't retain it if the plugin
+     * is re-enabled.
+     */
+    @SuppressWarnings ("UnusedDeclaration")
+    @EventListener
+    public void onPluginDisabledEvent(PluginDisabledEvent pluginDisabledEvent)
+    {
+        if (pluginDisabledEvent != null)
+        {
+            final Plugin plugin = pluginDisabledEvent.getPlugin();
+            if (plugin != null && plugin instanceof OsgiPlugin)
+            {
+                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+                if (bundle != null)
+                {
+                    logger.debug("onPluginDisabledEvent removing delegate for [{}]", plugin);
+                    aoDelegatesByBundle.invalidate(bundle);
+
+                    unattachedConfigsLock.lock();
+                    try
+                    {
+                        if (unattachedConfigByBundle.containsKey(bundle))
+                        {
+                            logger.debug("onPluginDisabledEvent removing unbound <ao> for [{}]", plugin);
+                            unattachedConfigByBundle.remove(bundle);
+                        }
+                    }
+                    finally
+                    {
+                        unattachedConfigsLock.unlock();
                     }
                 }
             }
