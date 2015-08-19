@@ -19,6 +19,8 @@ import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantContext;
 import com.atlassian.tenancy.api.event.TenantArrivedEvent;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Equivalence;
+import com.google.common.base.Equivalences;
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -32,7 +34,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -60,8 +64,26 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
 
     private static final String INIT_TASK_TIMEOUT_MS_PROPERTY = "ao-plugin.init.task.timeout";
 
+    private static final CacheBuilder identityCacheBuilder;
+
     @VisibleForTesting
     protected static final int INIT_TASK_TIMEOUT_MS = Integer.getInteger(INIT_TASK_TIMEOUT_MS_PROPERTY, 30000);
+
+    static
+    {
+        identityCacheBuilder = CacheBuilder.newBuilder();
+        Class<? extends CacheBuilder> clazz = identityCacheBuilder.getClass();
+        try
+        {
+            Method keyEquivalence = clazz.getDeclaredMethod("keyEquivalence", Equivalence.class);
+            keyEquivalence.setAccessible(true);
+            keyEquivalence.invoke(clazz, Equivalences.identity());
+        }
+        catch (ReflectiveOperationException roe)
+        {
+            logger.error("Unable to invoke keyEquivalences on CacheBuilder", roe);
+        }
+    }
 
     private final EventPublisher eventPublisher;
     private final TenantContext tenantContext;
@@ -85,7 +107,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
     @VisibleForTesting
-    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new HashMap<Bundle, ActiveObjectsConfiguration>();
+    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new IdentityHashMap<Bundle, ActiveObjectsConfiguration>();
 
     private final Lock unattachedConfigsLock = new ReentrantLock();
 
@@ -139,7 +161,13 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         };
 
         // loading cache for ActiveObjects delegates
-        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjects>()
+        aoDelegatesByBundle = getLoadingCache(factory, tenantContext);
+    }
+
+    @SuppressWarnings("unchecked")
+    private LoadingCache<Bundle, TenantAwareActiveObjects> getLoadingCache(final @Nonnull ActiveObjectsFactory factory, final @Nonnull TenantContext tenantContext)
+    {
+        return identityCacheBuilder.build(new CacheLoader<Bundle, TenantAwareActiveObjects>()
         {
             @Override
             public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
@@ -149,11 +177,10 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                 unattachedConfigsLock.lock();
                 try
                 {
-                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundle);
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.remove(bundle);
                     if (aoConfig != null)
                     {
                         delegate.setAoConfiguration(aoConfig);
-                        unattachedConfigByBundle.remove(bundle);
                     }
                 }
                 finally
@@ -324,14 +351,13 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                         unattachedConfigsLock.lock();
                         try
                         {
-                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
+                            final TenantAwareActiveObjects aoDelegate =  aoDelegatesByBundle.getIfPresent(bundle);
                             {
-                                if (aoDelegate.getBundle().equals(bundle))
+                                if (aoDelegate != null)
                                 {
                                     logger.debug("onPluginModuleEnabledEvent attaching <ao> confuguration module to ActiveObjects service of [{}]", plugin);
                                     aoDelegate.setAoConfiguration(aoConfig);
                                     attachedToDelegate = true;
-                                    break;
                                 }
                             }
                             if (!attachedToDelegate)
@@ -352,13 +378,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
 
     private Bundle getPluginBundle(Plugin plugin)
     {
-        if (plugin instanceof OsgiPlugin)
-        {
-            return ((OsgiPlugin)plugin).getBundle();
+        while (plugin instanceof AbstractDelegatingPlugin) {
+            plugin = ((AbstractDelegatingPlugin)plugin).getDelegate();
         }
-        else if (plugin instanceof AbstractDelegatingPlugin)
-        {
-            return getPluginBundle(((AbstractDelegatingPlugin)plugin).getDelegate());
+        if (plugin instanceof OsgiPlugin) {
+            return ((OsgiPlugin)plugin).getBundle();
         }
         return null;
     }
