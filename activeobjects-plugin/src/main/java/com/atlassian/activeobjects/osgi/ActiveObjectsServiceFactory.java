@@ -77,7 +77,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         {
             Method keyEquivalence = clazz.getDeclaredMethod("keyEquivalence", Equivalence.class);
             keyEquivalence.setAccessible(true);
-            keyEquivalence.invoke(clazz, Equivalences.identity());
+            keyEquivalence.invoke(identityCacheBuilder, Equivalences.identity());
         }
         catch (ReflectiveOperationException roe)
         {
