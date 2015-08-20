@@ -82,6 +82,8 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
 
+    // this cache is keyed on object equality, however the assumption is that we are using reference equality; felix's
+    // BundleImpl does not provide an equals method, so we assume that it uses Object.equals
     @VisibleForTesting
     final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
 
