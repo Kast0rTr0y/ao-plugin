@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -88,7 +88,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     // note that we need an explicit lock here to allow aoDelegatesByBundle time to load the configuration during the
     // invocation of onPluginModuleEnabledEvent
     @VisibleForTesting
-    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new HashMap<Bundle, ActiveObjectsConfiguration>();
+    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new IdentityHashMap<Bundle, ActiveObjectsConfiguration>();
 
     private final Lock unattachedConfigsLock = new ReentrantLock();
 
