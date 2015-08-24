@@ -2,6 +2,7 @@ package com.atlassian.activeobjects.osgi;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.internal.ActiveObjectsFactory;
+import com.atlassian.activeobjects.osgi.ActiveObjectsServiceFactory.BundleRef;
 import com.atlassian.activeobjects.plugin.ActiveObjectModuleDescriptor;
 import com.atlassian.activeobjects.spi.ContextClassLoaderThreadFactory;
 import com.atlassian.activeobjects.spi.InitExecutorServiceProvider;
@@ -140,8 +141,8 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
-        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
         serviceFactory.destroy();
 
@@ -199,25 +200,26 @@ public final class ActiveObjectsServiceFactoryTest
     @Test
     public void getService()
     {
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
-        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
-        assertThat((TenantAwareActiveObjects) serviceFactory.getService(bundle1, null), sameInstance(babyBear1));
+        TenantAwareActiveObjects babyBear = (TenantAwareActiveObjects) serviceFactory.getService(bundle1, null);
+        assertThat(babyBear, sameInstance(babyBear1));
     }
 
     @Test
     public void unGetService()
     {
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
-        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
-        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle1, babyBear1));
-        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
+        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(new BundleRef(bundle1), babyBear1));
+        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(new BundleRef(bundle2), babyBear2));
         assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(2));
 
         serviceFactory.ungetService(bundle1, null, babyBear1);
 
-        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
+        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(new BundleRef(bundle2), babyBear2));
         assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(1));
 
         verify(babyBear1).destroy();
@@ -226,8 +228,8 @@ public final class ActiveObjectsServiceFactoryTest
     @Test
     public void onTenantArrived()
     {
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
-        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
         when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
 
@@ -242,8 +244,8 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
 
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
-        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
         when(tenantContext.getCurrentTenant()).thenReturn(tenant1);
 
@@ -277,7 +279,7 @@ public final class ActiveObjectsServiceFactoryTest
     @Test
     public void onPluginModuleEnabledEventHasDelegate()
     {
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
 
         serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
 
@@ -320,14 +322,14 @@ public final class ActiveObjectsServiceFactoryTest
     @Test
     public void onPluginDisabledEvent()
     {
-        serviceFactory.aoDelegatesByBundle.put(bundle1, babyBear1);
-        serviceFactory.aoDelegatesByBundle.put(bundle2, babyBear2);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
+        serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig1);
         serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig2);
 
         serviceFactory.onPluginDisabledEvent(disabledEvent);
 
-        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(bundle2, babyBear2));
+        assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(new BundleRef(bundle2), babyBear2));
         assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle2, aoConfig2));
     }
 
@@ -336,7 +338,7 @@ public final class ActiveObjectsServiceFactoryTest
     {
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig1);
 
-        final TenantAwareActiveObjects aoDelegate = serviceFactory.aoDelegatesByBundle.get(bundle1);
+        final TenantAwareActiveObjects aoDelegate = serviceFactory.aoDelegatesByBundle.get(new BundleRef(bundle1));
 
         assertThat(aoDelegate, notNullValue());
         assertThat(aoDelegate.aoConfigFuture.isDone(), is(true));

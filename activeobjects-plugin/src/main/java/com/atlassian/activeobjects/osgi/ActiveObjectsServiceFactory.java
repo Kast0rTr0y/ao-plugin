@@ -82,15 +82,14 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
 
-    // this cache is keyed on object equality, however the assumption is that we are using reference equality; felix's
-    // BundleImpl does not provide an equals method, so we assume that it uses Object.equals
+    // use BundleRef to ensure that we key on reference equality of the bundles, not any object equality
     @VisibleForTesting
-    final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
+    final LoadingCache<BundleRef, TenantAwareActiveObjects> aoDelegatesByBundle;
 
     // note that we need an explicit lock here to allow aoDelegatesByBundle time to load the configuration during the
     // invocation of onPluginModuleEnabledEvent
     @VisibleForTesting
-    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new IdentityHashMap<Bundle, ActiveObjectsConfiguration>();
+    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new IdentityHashMap<>();
 
     private final Lock unattachedConfigsLock = new ReentrantLock();
 
@@ -144,21 +143,21 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         };
 
         // loading cache for ActiveObjects delegates
-        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjects>()
+        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<BundleRef, TenantAwareActiveObjects>()
         {
             @Override
-            public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
+            public TenantAwareActiveObjects load(@Nonnull final BundleRef bundleRef) throws Exception
             {
-                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundleRef.bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
                 unattachedConfigsLock.lock();
                 try
                 {
-                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundle);
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundleRef.bundle);
                     if (aoConfig != null)
                     {
                         delegate.setAoConfiguration(aoConfig);
-                        unattachedConfigByBundle.remove(bundle);
+                        unattachedConfigByBundle.remove(bundleRef.bundle);
                     }
                 }
                 finally
@@ -215,7 +214,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             throw new IllegalStateException("getService after ActiveObjectsServiceFactory destruction");
         }
 
-        return aoDelegatesByBundle.getUnchecked(bundle);
+        return aoDelegatesByBundle.getUnchecked(new BundleRef(bundle));
     }
 
     /**
@@ -230,7 +229,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         checkNotNull(bundle);
         logger.debug("ungetService bundle [{}]", bundle.getSymbolicName());
 
-        aoDelegatesByBundle.invalidate(bundle);
+        aoDelegatesByBundle.invalidate(new BundleRef(bundle));
         if (ao != null && ao instanceof TenantAwareActiveObjects)
         {
             ((TenantAwareActiveObjects) ao).destroy();
@@ -391,7 +390,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                         logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
 
                         // the cacheloader will do the attaching, after locking first
-                        aoDelegatesByBundle.getUnchecked(bundle);
+                        aoDelegatesByBundle.getUnchecked(new BundleRef(bundle));
                     }
                 }
             }
@@ -433,6 +432,36 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Provides a wrapper that gives explicit object identity hashing and reference equality (via identity hasing)of a
+     * {@link Bundle}, for use in maps etc.
+     */
+    protected static class BundleRef
+    {
+        Bundle bundle;
+
+        public BundleRef(Bundle bundle)
+        {
+            this.bundle = checkNotNull(bundle);
+        }
+
+        @Override
+        public boolean equals(final Object o)
+        {
+            if (o == null || getClass() != o.getClass()) { return false; }
+
+            final BundleRef bundleRef = (BundleRef) o;
+
+            return System.identityHashCode(bundle) == System.identityHashCode(bundleRef.bundle);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return System.identityHashCode(bundle);
         }
     }
 }
