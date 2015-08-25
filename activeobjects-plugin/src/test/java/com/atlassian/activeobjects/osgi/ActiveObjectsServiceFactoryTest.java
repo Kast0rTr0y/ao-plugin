@@ -330,7 +330,9 @@ public final class ActiveObjectsServiceFactoryTest
         serviceFactory.onPluginDisabledEvent(disabledEvent);
 
         assertThat(serviceFactory.aoDelegatesByBundle.asMap(), hasEntry(new BundleRef(bundle2), babyBear2));
+        assertThat(serviceFactory.aoDelegatesByBundle.asMap().size(), is(1));
         assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle2, aoConfig2));
+        assertThat(serviceFactory.unattachedConfigByBundle.size(), is(1));
     }
 
     @Test

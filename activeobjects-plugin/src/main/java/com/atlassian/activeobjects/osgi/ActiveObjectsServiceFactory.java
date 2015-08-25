@@ -415,7 +415,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
                 if (bundle != null)
                 {
                     logger.debug("onPluginDisabledEvent removing delegate for [{}]", plugin);
-                    aoDelegatesByBundle.invalidate(bundle);
+                    aoDelegatesByBundle.invalidate(new BundleRef(bundle));
 
                     unattachedConfigsLock.lock();
                     try
@@ -441,7 +441,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      */
     protected static class BundleRef
     {
-        Bundle bundle;
+        final Bundle bundle;
 
         public BundleRef(Bundle bundle)
         {
@@ -455,7 +455,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
 
             final BundleRef bundleRef = (BundleRef) o;
 
-            return System.identityHashCode(bundle) == System.identityHashCode(bundleRef.bundle);
+            return bundle == bundleRef.bundle;
         }
 
         @Override
