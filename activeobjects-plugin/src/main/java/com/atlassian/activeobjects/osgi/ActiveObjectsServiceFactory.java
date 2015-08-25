@@ -230,7 +230,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         logger.debug("ungetService bundle [{}]", bundle.getSymbolicName());
 
         aoDelegatesByBundle.invalidate(new BundleRef(bundle));
-        if (ao != null && ao instanceof TenantAwareActiveObjects)
+        if (ao instanceof TenantAwareActiveObjects)
         {
             ((TenantAwareActiveObjects) ao).destroy();
         }
@@ -327,10 +327,10 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         if (pluginModuleEnabledEvent != null)
         {
             final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
-            if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+            if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
             {
                 final Plugin plugin = moduleDescriptor.getPlugin();
-                if (plugin != null && plugin instanceof OsgiPlugin)
+                if (plugin instanceof OsgiPlugin)
                 {
                     final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
                     if (bundle != null)
@@ -380,7 +380,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         if (pluginEnabledEvent != null)
         {
             final Plugin plugin = pluginEnabledEvent.getPlugin();
-            if (plugin != null && plugin instanceof OsgiPlugin)
+            if (plugin instanceof OsgiPlugin)
             {
                 final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
                 if (bundle != null)
@@ -409,7 +409,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         if (pluginDisabledEvent != null)
         {
             final Plugin plugin = pluginDisabledEvent.getPlugin();
-            if (plugin != null && plugin instanceof OsgiPlugin)
+            if (plugin instanceof OsgiPlugin)
             {
                 final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
                 if (bundle != null)
