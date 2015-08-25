@@ -324,44 +324,41 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @EventListener
     public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent)
     {
-        if (pluginModuleEnabledEvent != null)
+        final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
+        if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
         {
-            final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
-            if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+            final Plugin plugin = moduleDescriptor.getPlugin();
+            if (plugin instanceof OsgiPlugin)
             {
-                final Plugin plugin = moduleDescriptor.getPlugin();
-                if (plugin instanceof OsgiPlugin)
+                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+                if (bundle != null)
                 {
-                    final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                    if (bundle != null)
+
+                    boolean attachedToDelegate = false;
+                    final ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
+
+                    unattachedConfigsLock.lock();
+                    try
                     {
-
-                        boolean attachedToDelegate = false;
-                        final ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
-
-                        unattachedConfigsLock.lock();
-                        try
+                        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
                         {
-                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
+                            if (aoDelegate.getBundle().equals(bundle))
                             {
-                                if (aoDelegate.getBundle().equals(bundle))
-                                {
-                                    logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
-                                    aoDelegate.setAoConfiguration(aoConfig);
-                                    attachedToDelegate = true;
-                                    break;
-                                }
-                            }
-                            if (!attachedToDelegate)
-                            {
-                                logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
-                                unattachedConfigByBundle.put(bundle, aoConfig);
+                                logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
+                                aoDelegate.setAoConfiguration(aoConfig);
+                                attachedToDelegate = true;
+                                break;
                             }
                         }
-                        finally
+                        if (!attachedToDelegate)
                         {
-                            unattachedConfigsLock.unlock();
+                            logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
+                            unattachedConfigByBundle.put(bundle, aoConfig);
                         }
+                    }
+                    finally
+                    {
+                        unattachedConfigsLock.unlock();
                     }
                 }
             }
@@ -377,21 +374,18 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @EventListener
     public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
     {
-        if (pluginEnabledEvent != null)
+        final Plugin plugin = pluginEnabledEvent.getPlugin();
+        if (plugin instanceof OsgiPlugin)
         {
-            final Plugin plugin = pluginEnabledEvent.getPlugin();
-            if (plugin instanceof OsgiPlugin)
+            final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+            if (bundle != null)
             {
-                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                if (bundle != null)
+                if (unattachedConfigByBundle.containsKey(bundle))
                 {
-                    if (unattachedConfigByBundle.containsKey(bundle))
-                    {
-                        logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
+                    logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
 
-                        // the cacheloader will do the attaching, after locking first
-                        aoDelegatesByBundle.getUnchecked(new BundleRef(bundle));
-                    }
+                    // the cacheloader will do the attaching, after locking first
+                    aoDelegatesByBundle.getUnchecked(new BundleRef(bundle));
                 }
             }
         }
@@ -406,30 +400,27 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @EventListener
     public void onPluginDisabledEvent(PluginDisabledEvent pluginDisabledEvent)
     {
-        if (pluginDisabledEvent != null)
+        final Plugin plugin = pluginDisabledEvent.getPlugin();
+        if (plugin instanceof OsgiPlugin)
         {
-            final Plugin plugin = pluginDisabledEvent.getPlugin();
-            if (plugin instanceof OsgiPlugin)
+            final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+            if (bundle != null)
             {
-                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                if (bundle != null)
-                {
-                    logger.debug("onPluginDisabledEvent removing delegate for [{}]", plugin);
-                    aoDelegatesByBundle.invalidate(new BundleRef(bundle));
+                logger.debug("onPluginDisabledEvent removing delegate for [{}]", plugin);
+                aoDelegatesByBundle.invalidate(new BundleRef(bundle));
 
-                    unattachedConfigsLock.lock();
-                    try
+                unattachedConfigsLock.lock();
+                try
+                {
+                    if (unattachedConfigByBundle.containsKey(bundle))
                     {
-                        if (unattachedConfigByBundle.containsKey(bundle))
-                        {
-                            logger.debug("onPluginDisabledEvent removing unbound <ao> for [{}]", plugin);
-                            unattachedConfigByBundle.remove(bundle);
-                        }
+                        logger.debug("onPluginDisabledEvent removing unbound <ao> for [{}]", plugin);
+                        unattachedConfigByBundle.remove(bundle);
                     }
-                    finally
-                    {
-                        unattachedConfigsLock.unlock();
-                    }
+                }
+                finally
+                {
+                    unattachedConfigsLock.unlock();
                 }
             }
         }
