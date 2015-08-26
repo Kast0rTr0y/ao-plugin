@@ -11,6 +11,7 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.ModuleDescriptor;
 import com.atlassian.plugin.Plugin;
+import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -81,11 +82,14 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @VisibleForTesting
     final Function<Tenant, ExecutorService> initExecutorFn;
 
+    // use BundleRef to ensure that we key on reference equality of the bundles, not any object equality
     @VisibleForTesting
-    final LoadingCache<Bundle, TenantAwareActiveObjects> aoDelegatesByBundle;
+    final LoadingCache<BundleRef, TenantAwareActiveObjects> aoDelegatesByBundle;
 
+    // note that we need an explicit lock here to allow aoDelegatesByBundle time to load the configuration during the
+    // invocation of onPluginModuleEnabledEvent
     @VisibleForTesting
-    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new HashMap<Bundle, ActiveObjectsConfiguration>();
+    final Map<Bundle, ActiveObjectsConfiguration> unattachedConfigByBundle = new IdentityHashMap<>();
 
     private final Lock unattachedConfigsLock = new ReentrantLock();
 
@@ -139,21 +143,21 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         };
 
         // loading cache for ActiveObjects delegates
-        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjects>()
+        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<BundleRef, TenantAwareActiveObjects>()
         {
             @Override
-            public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
+            public TenantAwareActiveObjects load(@Nonnull final BundleRef bundleRef) throws Exception
             {
-                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
+                TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundleRef.bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
                 unattachedConfigsLock.lock();
                 try
                 {
-                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundle);
+                    final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundleRef.bundle);
                     if (aoConfig != null)
                     {
                         delegate.setAoConfiguration(aoConfig);
-                        unattachedConfigByBundle.remove(bundle);
+                        unattachedConfigByBundle.remove(bundleRef.bundle);
                     }
                 }
                 finally
@@ -194,6 +198,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         eventPublisher.unregister(this);
     }
 
+    /**
+     * Invoked when the Gemini Blueprints/Spring DM proxy first accesses the module. Note that Blueprints is lazy, so
+     * this may not be called. A "safety backup" is added in {@link #onPluginEnabledEvent(PluginEnabledEvent)} to
+     * eagerly initialise the lazy proxies that are not invoked during plugin startup.
+     */
     @Override
     public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
     {
@@ -205,13 +214,22 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             throw new IllegalStateException("getService after ActiveObjectsServiceFactory destruction");
         }
 
-        return aoDelegatesByBundle.getUnchecked(bundle);
+        return aoDelegatesByBundle.getUnchecked(new BundleRef(bundle));
     }
 
+    /**
+     * Invoked when the Gemini Blueprints/Spring DM proxy releases the module. Note that Blueprints is lazy, so the
+     * proxy may never have been realised, thus this may not be called. A "safety backup" is added in
+     * {@link #onPluginDisabledEvent(PluginDisabledEvent)} to release those references, for plugins that never
+     * realise the module.
+     */
     @Override
     public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
     {
-        aoDelegatesByBundle.invalidate(bundle);
+        checkNotNull(bundle);
+        logger.debug("ungetService bundle [{}]", bundle.getSymbolicName());
+
+        aoDelegatesByBundle.invalidate(new BundleRef(bundle));
         if (ao instanceof TenantAwareActiveObjects)
         {
             ((TenantAwareActiveObjects) ao).destroy();
@@ -306,44 +324,41 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @EventListener
     public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent)
     {
-        if (pluginModuleEnabledEvent != null)
+        final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
+        if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
         {
-            final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
-            if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
+            final Plugin plugin = moduleDescriptor.getPlugin();
+            if (plugin instanceof OsgiPlugin)
             {
-                final Plugin plugin = moduleDescriptor.getPlugin();
-                if (plugin != null && plugin instanceof OsgiPlugin)
+                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+                if (bundle != null)
                 {
-                    final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                    if (bundle != null)
+
+                    boolean attachedToDelegate = false;
+                    final ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
+
+                    unattachedConfigsLock.lock();
+                    try
                     {
-
-                        boolean attachedToDelegate = false;
-                        final ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
-
-                        unattachedConfigsLock.lock();
-                        try
+                        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
                         {
-                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
+                            if (aoDelegate.getBundle().equals(bundle))
                             {
-                                if (aoDelegate.getBundle().equals(bundle))
-                                {
-                                    logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
-                                    aoDelegate.setAoConfiguration(aoConfig);
-                                    attachedToDelegate = true;
-                                    break;
-                                }
-                            }
-                            if (!attachedToDelegate)
-                            {
-                                logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
-                                unattachedConfigByBundle.put(bundle, aoConfig);
+                                logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
+                                aoDelegate.setAoConfiguration(aoConfig);
+                                attachedToDelegate = true;
+                                break;
                             }
                         }
-                        finally
+                        if (!attachedToDelegate)
                         {
-                            unattachedConfigsLock.unlock();
+                            logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
+                            unattachedConfigByBundle.put(bundle, aoConfig);
                         }
+                    }
+                    finally
+                    {
+                        unattachedConfigsLock.unlock();
                     }
                 }
             }
@@ -359,23 +374,85 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     @EventListener
     public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
     {
-        if (pluginEnabledEvent != null)
+        final Plugin plugin = pluginEnabledEvent.getPlugin();
+        if (plugin instanceof OsgiPlugin)
         {
-            final Plugin plugin = pluginEnabledEvent.getPlugin();
-            if (plugin != null && plugin instanceof OsgiPlugin)
+            final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+            if (bundle != null)
             {
-                final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                if (bundle != null)
+                if (unattachedConfigByBundle.containsKey(bundle))
+                {
+                    logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
+
+                    // the cacheloader will do the attaching, after locking first
+                    aoDelegatesByBundle.getUnchecked(new BundleRef(bundle));
+                }
+            }
+        }
+    }
+
+    /**
+     * Listens for {@link PluginDisabledEvent}. If the plugin is present in the unattached or attached configurations,
+     * it will be removed to ensure that we don't leak resources and, more importantly, don't retain it if the plugin
+     * is re-enabled.
+     */
+    @SuppressWarnings ("UnusedDeclaration")
+    @EventListener
+    public void onPluginDisabledEvent(PluginDisabledEvent pluginDisabledEvent)
+    {
+        final Plugin plugin = pluginDisabledEvent.getPlugin();
+        if (plugin instanceof OsgiPlugin)
+        {
+            final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
+            if (bundle != null)
+            {
+                logger.debug("onPluginDisabledEvent removing delegate for [{}]", plugin);
+                aoDelegatesByBundle.invalidate(new BundleRef(bundle));
+
+                unattachedConfigsLock.lock();
+                try
                 {
                     if (unattachedConfigByBundle.containsKey(bundle))
                     {
-                        logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
-
-                        // the cacheloader will do the attaching, after locking first
-                        aoDelegatesByBundle.getUnchecked(bundle);
+                        logger.debug("onPluginDisabledEvent removing unbound <ao> for [{}]", plugin);
+                        unattachedConfigByBundle.remove(bundle);
                     }
                 }
+                finally
+                {
+                    unattachedConfigsLock.unlock();
+                }
             }
+        }
+    }
+
+    /**
+     * Provides a wrapper that gives explicit object identity hashing and reference equality (via identity hasing)of a
+     * {@link Bundle}, for use in maps etc.
+     */
+    protected static class BundleRef
+    {
+        final Bundle bundle;
+
+        public BundleRef(Bundle bundle)
+        {
+            this.bundle = checkNotNull(bundle);
+        }
+
+        @Override
+        public boolean equals(final Object o)
+        {
+            if (o == null || getClass() != o.getClass()) { return false; }
+
+            final BundleRef bundleRef = (BundleRef) o;
+
+            return bundle == bundleRef.bundle;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return System.identityHashCode(bundle);
         }
     }
 }
