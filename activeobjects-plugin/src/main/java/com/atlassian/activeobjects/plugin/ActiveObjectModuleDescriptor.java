@@ -20,10 +20,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import net.java.ao.RawEntity;
 import net.java.ao.schema.TableNameConverter;
-
 import org.dom4j.Element;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
@@ -33,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newLinkedList;
 
 /**
  * <p>The module descriptor for active objects.</p>
@@ -44,8 +42,7 @@ import static com.google.common.collect.Lists.*;
  * <p>This configuration is then looked up when the active object service is requested by the given bundle
  * through a &lt;component-import ... &gt; module to configure the service appropriately.</p>
  */
-public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object>
-{
+public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ActiveObjectsConfigurationFactory configurationFactory;
@@ -69,8 +66,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
                                         PluginToTablesMapping pluginToTablesMapping,
                                         EntitiesValidator entitiesValidator,
                                         TenantAccessor tenantAccessor,
-                                        EventPublisher eventPublisher)
-    {
+                                        EventPublisher eventPublisher) {
         super(moduleFactory);
         this.configurationFactory = checkNotNull(configurationFactory);
         this.osgiUtils = checkNotNull(osgiUtils);
@@ -81,8 +77,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     }
 
     @Override
-    public void init(Plugin plugin, Element element) throws PluginParseException
-    {
+    public void init(Plugin plugin, Element element) throws PluginParseException {
         super.init(plugin, element);
 
         final Set<Class<? extends RawEntity<?>>> entities = getEntities(element);
@@ -93,15 +88,12 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         recordTables(entityClasses, configuration.getNameConverters().getTableNameConverter());
     }
 
-    private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element)
-    {
+    private List<ActiveObjectsUpgradeTask> getUpgradeTasks(Element element) {
         final List<Element> upgradeTask = getSubElements(element, "upgradeTask");
 
-        final List<Class<ActiveObjectsUpgradeTask>> classes = Lists.transform(upgradeTask, new Function<Element, Class<ActiveObjectsUpgradeTask>>()
-        {
+        final List<Class<ActiveObjectsUpgradeTask>> classes = Lists.transform(upgradeTask, new Function<Element, Class<ActiveObjectsUpgradeTask>>() {
             @Override
-            public Class<ActiveObjectsUpgradeTask> apply(Element utElement)
-            {
+            public Class<ActiveObjectsUpgradeTask> apply(Element utElement) {
                 final String upgradeTaskClass = utElement.getText().trim();
                 logger.debug("Found upgrade task class <{}>", upgradeTaskClass);
                 return getUpgradeTaskClass(upgradeTaskClass);
@@ -109,58 +101,45 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         });
 
         final AutowireCapablePlugin plugin = (AutowireCapablePlugin) getPlugin();
-        return Lists.transform(classes, new Function<Class<ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>()
-        {
+        return Lists.transform(classes, new Function<Class<ActiveObjectsUpgradeTask>, ActiveObjectsUpgradeTask>() {
             @Override
-            public ActiveObjectsUpgradeTask apply(Class<ActiveObjectsUpgradeTask> upgradeTaskClass)
-            {
+            public ActiveObjectsUpgradeTask apply(Class<ActiveObjectsUpgradeTask> upgradeTaskClass) {
                 return plugin.autowire(upgradeTaskClass);
             }
         });
     }
 
-    private Class<ActiveObjectsUpgradeTask> getUpgradeTaskClass(String upgradeTask)
-    {
-        try
-        {
+    private Class<ActiveObjectsUpgradeTask> getUpgradeTaskClass(String upgradeTask) {
+        try {
             return getPlugin().loadClass(upgradeTask, getClass());
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             throw new ActiveObjectsPluginException(e);
         }
     }
 
-    void recordTables(Set<Class<? extends RawEntity<?>>> entityClasses, final TableNameConverter tableNameConverter)
-    {
-        pluginToTablesMapping.add(PluginInfo.of(getPlugin()), Lists.transform(newLinkedList(entityClasses), new Function<Class<? extends RawEntity<?>>, String>()
-        {
+    void recordTables(Set<Class<? extends RawEntity<?>>> entityClasses, final TableNameConverter tableNameConverter) {
+        pluginToTablesMapping.add(PluginInfo.of(getPlugin()), Lists.transform(newLinkedList(entityClasses), new Function<Class<? extends RawEntity<?>>, String>() {
             @Override
-            public String apply(Class<? extends RawEntity<?>> from)
-            {
+            public String apply(Class<? extends RawEntity<?>> from) {
                 return tableNameConverter.getName(from);
             }
         }));
     }
 
     @Override
-    public void enabled()
-    {
+    public void enabled() {
         super.enabled();
 
-        if (tableNameConverterServiceRegistration == null)
-        {
+        if (tableNameConverterServiceRegistration == null) {
             tableNameConverterServiceRegistration = osgiUtils.registerService(getBundle(), TableNameConverter.class, configuration.getNameConverters().getTableNameConverter());
         }
-        if (activeObjectsConfigurationServiceRegistration == null)
-        {
+        if (activeObjectsConfigurationServiceRegistration == null) {
             activeObjectsConfigurationServiceRegistration = osgiUtils.registerService(getBundle(), ActiveObjectsConfiguration.class, configuration);
         }
     }
 
     @Override
-    public void disabled()
-    {
+    public void disabled() {
         unregister(activeObjectsConfigurationServiceRegistration);
         activeObjectsConfigurationServiceRegistration = null;
         unregister(tableNameConverterServiceRegistration);
@@ -169,31 +148,23 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
     }
 
     @Override
-    public Object getModule()
-    {
+    public Object getModule() {
         return null; // no module
     }
 
-    public ActiveObjectsConfiguration getConfiguration()
-    {
+    public ActiveObjectsConfiguration getConfiguration() {
         return configuration;
     }
 
-    private ActiveObjectsConfiguration getActiveObjectsConfiguration(String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks)
-    {
+    private ActiveObjectsConfiguration getActiveObjectsConfiguration(String namespace, Set<Class<? extends RawEntity<?>>> entities, List<ActiveObjectsUpgradeTask> upgradeTasks) {
         return configurationFactory.getConfiguration(getBundle(), namespace, entities, upgradeTasks);
     }
 
-    private void unregister(ServiceRegistration serviceRegistration)
-    {
-        if (serviceRegistration != null)
-        {
-            try
-            {
+    private void unregister(ServiceRegistration serviceRegistration) {
+        if (serviceRegistration != null) {
+            try {
                 serviceRegistration.unregister();
-            }
-            catch (IllegalStateException ignored)
-            {
+            } catch (IllegalStateException ignored) {
                 logger.debug("Service has already been unregistered", ignored);
             }
         }
@@ -205,41 +176,30 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
      * @param element the 'ao' descriptor element
      * @return the name space for names
      */
-    private String getNameSpace(Element element)
-    {
+    private String getNameSpace(Element element) {
         final String custom = element.attributeValue("namespace");
         return custom != null ? custom : getBundle().getSymbolicName();
     }
 
-    private Set<Class<? extends RawEntity<?>>> getEntities(Element element)
-    {
-        return Sets.newHashSet(Iterables.transform(getEntityClassNames(element), new Function<String, Class<? extends RawEntity<?>>>()
-        {
-            public Class<? extends RawEntity<?>> apply(String entityClassName)
-            {
+    private Set<Class<? extends RawEntity<?>>> getEntities(Element element) {
+        return Sets.newHashSet(Iterables.transform(getEntityClassNames(element), new Function<String, Class<? extends RawEntity<?>>>() {
+            public Class<? extends RawEntity<?>> apply(String entityClassName) {
                 return getEntityClass(entityClassName);
             }
         }));
     }
 
-    private Class<? extends RawEntity<?>> getEntityClass(String entityClassName)
-    {
-        try
-        {
+    private Class<? extends RawEntity<?>> getEntityClass(String entityClassName) {
+        try {
             return getPlugin().loadClass(entityClassName, getClass());
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             throw new ActiveObjectsPluginException(e);
         }
     }
 
-    private Iterable<String> getEntityClassNames(Element element)
-    {
-        return Iterables.transform(getSubElements(element, "entity"), new Function<Element, String>()
-        {
-            public String apply(Element entityElement)
-            {
+    private Iterable<String> getEntityClassNames(Element element) {
+        return Iterables.transform(getSubElements(element, "entity"), new Function<Element, String>() {
+            public String apply(Element entityElement) {
                 final String entityClassName = entityElement.getText().trim();
                 logger.debug("Found entity class <{}>", entityClassName);
                 return entityClassName;
@@ -247,14 +207,12 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         });
     }
 
-    private Bundle getBundle()
-    {
+    private Bundle getBundle() {
         return ((OsgiPlugin) getPlugin()).getBundle();
     }
 
     @SuppressWarnings("unchecked")
-    private static List<Element> getSubElements(Element element, String name)
-    {
+    private static List<Element> getSubElements(Element element, String name) {
         return element.elements(name);
     }
 }

@@ -1,79 +1,63 @@
 package com.atlassian.activeobjects.spi;
 
-public abstract class AbstractRestoreProgressMonitor implements RestoreProgressMonitor
-{
+public abstract class AbstractRestoreProgressMonitor implements RestoreProgressMonitor {
     @Override
-    public void beginRestore()
-    {
+    public void beginRestore() {
     }
 
     @Override
-    public void endRestore()
-    {
+    public void endRestore() {
     }
 
     @Override
-    public void beginDatabaseInformationRestore()
-    {
+    public void beginDatabaseInformationRestore() {
     }
 
     @Override
-    public void beginTableDefinitionsRestore()
-    {
+    public void beginTableDefinitionsRestore() {
     }
 
     @Override
-    public void beginTablesRestore()
-    {
+    public void beginTablesRestore() {
     }
 
     @Override
-    public void beginTableDataRestore(String tableName)
-    {
+    public void beginTableDataRestore(String tableName) {
     }
 
     @Override
-    public void beginTableCreationRestore(String tableName)
-    {
+    public void beginTableCreationRestore(String tableName) {
     }
 
     @Override
-    public void beginTableRowRestore()
-    {
+    public void beginTableRowRestore() {
     }
 
     @Override
-    public void endDatabaseInformationRestore()
-    {
+    public void endDatabaseInformationRestore() {
     }
 
     @Override
-    public void endTableDefinitionsRestore()
-    {
+    public void endTableDefinitionsRestore() {
     }
 
     @Override
-    public void endTablesRestore()
-    {
+    public void endTablesRestore() {
     }
 
     @Override
-    public void endTableDataRestore(String tableName)
-    {
+    public void endTableDataRestore(String tableName) {
     }
 
     @Override
-    public void endTableCreationRestore(String tableName)
-    {
+    public void endTableCreationRestore(String tableName) {
     }
 
     @Override
-    public void endTableRowRestore()
-    {
+    public void endTableRowRestore() {
     }
 
     @Override
-    public void updateTotalNumberOfTablesToRestore(int tableCount)
-    {
+    public void updateTotalNumberOfTablesToRestore(int tableCount) {
     }
 }

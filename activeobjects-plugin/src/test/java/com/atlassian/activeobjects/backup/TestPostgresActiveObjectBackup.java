@@ -6,12 +6,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(PostgresTest.class)
-public class TestPostgresActiveObjectBackup extends ActiveObjectsBackupDataSetup
-{
+public class TestPostgresActiveObjectBackup extends ActiveObjectsBackupDataSetup {
     @Test
     @NonTransactional
-    public void testPostgresBackup() throws Exception
-    {
+    public void testPostgresBackup() throws Exception {
         testBackup(POSTGRES, POSTGRES_DATA);
     }
 }

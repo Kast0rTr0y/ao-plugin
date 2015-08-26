@@ -11,15 +11,13 @@ import com.atlassian.plugin.predicate.ModuleDescriptorPredicate;
 
 import java.util.Collection;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class PluginInformationFactory
-{
+public final class PluginInformationFactory {
     private final PluginToTablesMapping pluginToTablesMapping;
     private final PluginAccessor pluginAccessor;
 
-    public PluginInformationFactory(PluginToTablesMapping pluginToTablesMapping, PluginAccessor pluginAccessor)
-    {
+    public PluginInformationFactory(PluginToTablesMapping pluginToTablesMapping, PluginAccessor pluginAccessor) {
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
         this.pluginAccessor = checkNotNull(pluginAccessor);
     }
@@ -30,114 +28,94 @@ public final class PluginInformationFactory
      * @param tableName the table name
      * @return some plugin information
      */
-    public PluginInformation getPluginInformation(final String tableName)
-    {
-        if (tableName == null)
-        {
+    public PluginInformation getPluginInformation(final String tableName) {
+        if (tableName == null) {
             return new NotAvailablePluginInformation();
         }
 
         final PluginInfo pluginInfo = pluginToTablesMapping.get(tableName);
-        if (pluginInfo != null)
-        {
+        if (pluginInfo != null) {
             return new AvailablePluginInformation(pluginInfo);
         }
 
         final ActiveObjectModuleDescriptor aomd = getModuleDescriptor(tableName);
-        if (aomd != null)
-        {
+        if (aomd != null) {
             return new AvailablePluginInformation(aomd.getPlugin());
         }
 
         return new NotAvailablePluginInformation();
     }
 
-    private ActiveObjectModuleDescriptor getModuleDescriptor(String tableName)
-    {
+    private ActiveObjectModuleDescriptor getModuleDescriptor(String tableName) {
         final Collection<ModuleDescriptor<Object>> moduleDescriptors = findModuleDescriptors(tableName);
         return moduleDescriptors.isEmpty() ? null : (ActiveObjectModuleDescriptor) moduleDescriptors.iterator().next();
     }
 
-    private Collection<ModuleDescriptor<Object>> findModuleDescriptors(final String tableName)
-    {
-        return pluginAccessor.getModuleDescriptors(new ModuleDescriptorPredicate<Object>()
-        {
+    private Collection<ModuleDescriptor<Object>> findModuleDescriptors(final String tableName) {
+        return pluginAccessor.getModuleDescriptors(new ModuleDescriptorPredicate<Object>() {
             @Override
-            public boolean matches(ModuleDescriptor<? extends Object> moduleDescriptor)
-            {
+            public boolean matches(ModuleDescriptor<? extends Object> moduleDescriptor) {
                 return moduleDescriptor instanceof ActiveObjectModuleDescriptor
                         && ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration().getTableNamePrefix().isStarting(tableName, false);
             }
         });
     }
 
-    private static final class NotAvailablePluginInformation implements PluginInformation
-    {
+    private static final class NotAvailablePluginInformation implements PluginInformation {
         @Override
-        public boolean isAvailable()
-        {
+        public boolean isAvailable() {
             return false;
         }
 
         @Override
-        public String getPluginName()
-        {
+        public String getPluginName() {
             return null;
         }
 
         @Override
-        public String getPluginKey()
-        {
+        public String getPluginKey() {
             return null;
         }
 
         @Override
-        public String getPluginVersion()
-        {
+        public String getPluginVersion() {
             return null;
         }
 
         @Override
-        public String getVendorName()
-        {
+        public String getVendorName() {
             return null;
         }
 
         @Override
-        public String getVendorUrl()
-        {
+        public String getVendorUrl() {
             return null;
         }
 
         @Override
-        public boolean equals(Object o)
-        {
+        public boolean equals(Object o) {
             return o != null && o instanceof NotAvailablePluginInformation;
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return 0;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "<unknown plugin>";
         }
     }
 
-    private static final class AvailablePluginInformation implements PluginInformation
-    {
+    private static final class AvailablePluginInformation implements PluginInformation {
         private final String name;
         private final String key;
         private final String version;
         private final String vendorName;
         private final String vendorUrl;
 
-        public AvailablePluginInformation(Plugin plugin)
-        {
+        public AvailablePluginInformation(Plugin plugin) {
             this(
                     checkNotNull(plugin).getName(),
                     plugin.getKey(),
@@ -147,13 +125,11 @@ public final class PluginInformationFactory
             );
         }
 
-        public AvailablePluginInformation(PluginInfo pluginInfo)
-        {
+        public AvailablePluginInformation(PluginInfo pluginInfo) {
             this(checkNotNull(pluginInfo).name, pluginInfo.key, pluginInfo.version, pluginInfo.vendorName, pluginInfo.vendorUrl);
         }
 
-        private AvailablePluginInformation(String name, String key, String version, String vendorName, String vendorUrl)
-        {
+        private AvailablePluginInformation(String name, String key, String version, String vendorName, String vendorUrl) {
             this.name = name;
             this.key = key;
             this.version = version;
@@ -162,73 +138,59 @@ public final class PluginInformationFactory
         }
 
         @Override
-        public boolean isAvailable()
-        {
+        public boolean isAvailable() {
             return true;
         }
 
         @Override
-        public String getPluginName()
-        {
+        public String getPluginName() {
             return name;
         }
 
         @Override
-        public String getPluginKey()
-        {
+        public String getPluginKey() {
             return key;
         }
 
         @Override
-        public String getPluginVersion()
-        {
+        public String getPluginVersion() {
             return version;
         }
 
         @Override
-        public String getVendorName()
-        {
+        public String getVendorName() {
             return vendorName;
         }
 
         @Override
-        public String getVendorUrl()
-        {
+        public String getVendorUrl() {
             return vendorUrl;
         }
 
         @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
+        public boolean equals(Object o) {
+            if (this == o) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass())
-            {
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
 
             final AvailablePluginInformation that = (AvailablePluginInformation) o;
 
-            if (key != null ? !key.equals(that.key) : that.key != null)
-            {
+            if (key != null ? !key.equals(that.key) : that.key != null) {
                 return false;
             }
-            if (name != null ? !name.equals(that.name) : that.name != null)
-            {
+            if (name != null ? !name.equals(that.name) : that.name != null) {
                 return false;
             }
-            if (vendorName != null ? !vendorName.equals(that.vendorName) : that.vendorName != null)
-            {
+            if (vendorName != null ? !vendorName.equals(that.vendorName) : that.vendorName != null) {
                 return false;
             }
-            if (vendorUrl != null ? !vendorUrl.equals(that.vendorUrl) : that.vendorUrl != null)
-            {
+            if (vendorUrl != null ? !vendorUrl.equals(that.vendorUrl) : that.vendorUrl != null) {
                 return false;
             }
-            if (version != null ? !version.equals(that.version) : that.version != null)
-            {
+            if (version != null ? !version.equals(that.version) : that.version != null) {
                 return false;
             }
 
@@ -236,8 +198,7 @@ public final class PluginInformationFactory
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             int result = name != null ? name.hashCode() : 1;
             result = 31 * result + (key != null ? key.hashCode() : 1);
             result = 31 * result + (version != null ? version.hashCode() : 1);
@@ -247,8 +208,7 @@ public final class PluginInformationFactory
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "plugin " + getPluginName() + "(" + getPluginKey() + ") #" + getPluginVersion();
         }
     }

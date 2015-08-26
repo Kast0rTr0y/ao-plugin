@@ -37,8 +37,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
-{
+public class TenantAwareDataSourceProviderActiveObjectsFactoryTest {
     private DataSourceProviderActiveObjectsFactory activeObjectsFactory;
 
     @Mock
@@ -55,8 +54,8 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
 
     @Mock
     private ActiveObjectsConfiguration configuration;
-    
-    @Mock 
+
+    @Mock
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     @Mock
@@ -66,8 +65,7 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
     private ClusterLock clusterLock;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         Bundle bundle = mock(Bundle.class);
         when(bundle.getSymbolicName()).thenReturn("com.example.plugin");
         PluginKey pluginKey = PluginKey.fromBundle(bundle);
@@ -78,62 +76,50 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory,
                 tenantAwareDataSourceProvider, transactionTemplate, clusterLockService);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
-        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
+            public Object answer(InvocationOnMock invocation) throws Throwable {
                 return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
             }
         });
     }
 
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
         activeObjectsFactory = null;
         entityManagerFactory = null;
         tenantAwareDataSourceProvider = null;
     }
 
     @Test
-    public void testCreateWithNullDataSource() throws Exception
-    {
+    public void testCreateWithNullDataSource() throws Exception {
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(null); // not really needed, but just to make the test clear
-        try
-        {
+        try {
             activeObjectsFactory.create(configuration, tenant);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
-        }
-        catch (ActiveObjectsPluginException e)
-        {
+        } catch (ActiveObjectsPluginException e) {
             verify(clusterLock).lock();
             verify(clusterLock).unlock();
         }
     }
 
     @Test
-    public void testCreateWithNullDatabaseType() throws Exception
-    {
+    public void testCreateWithNullDatabaseType() throws Exception {
         final DataSource dataSource = mock(DataSource.class);
 
         when(tenantAwareDataSourceProvider.getDataSource(tenant)).thenReturn(dataSource);
         when(tenantAwareDataSourceProvider.getDatabaseType(tenant)).thenReturn(null); // not really needed, but just to make the test clear
-        try
-        {
+        try {
             activeObjectsFactory.create(configuration, tenant);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
-        }
-        catch (ActiveObjectsPluginException e)
-        {
+        } catch (ActiveObjectsPluginException e) {
             verify(clusterLock).lock();
             verify(clusterLock).unlock();
         }
     }
 
     @Test
-    public void testCreate() throws Exception
-    {
+    public void testCreate() throws Exception {
         final DataSource dataSource = mock(DataSource.class);
         final EntityManager entityManager = mock(EntityManager.class);
 
@@ -148,18 +134,15 @@ public class TenantAwareDataSourceProviderActiveObjectsFactoryTest
         verify(clusterLock).unlock();
     }
 
-    private static DataSource anyDataSource()
-    {
+    private static DataSource anyDataSource() {
         return Mockito.anyObject();
     }
 
-    private static DatabaseType anyDatabaseType()
-    {
+    private static DatabaseType anyDatabaseType() {
         return Mockito.anyObject();
     }
 
-    private static ActiveObjectsConfiguration anyConfiguration()
-    {
+    private static ActiveObjectsConfiguration anyConfiguration() {
         return Mockito.anyObject();
     }
 }

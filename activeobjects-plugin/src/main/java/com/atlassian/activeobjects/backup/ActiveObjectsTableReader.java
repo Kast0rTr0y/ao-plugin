@@ -23,19 +23,17 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.*;
-import static net.java.ao.sql.SqlUtils.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+import static net.java.ao.sql.SqlUtils.closeQuietly;
 
-public final class ActiveObjectsTableReader implements TableReader
-{
+public final class ActiveObjectsTableReader implements TableReader {
     private final ImportExportErrorService errorService;
     private final DatabaseProvider provider;
     private final NameConverters converters;
     private final SchemaConfiguration schemaConfiguration;
 
-    public ActiveObjectsTableReader(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider, SchemaConfiguration schemaConfiguration)
-    {
+    public ActiveObjectsTableReader(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider, SchemaConfiguration schemaConfiguration) {
         this.converters = checkNotNull(converters);
         this.errorService = checkNotNull(errorService);
         this.provider = checkNotNull(provider);
@@ -43,98 +41,75 @@ public final class ActiveObjectsTableReader implements TableReader
     }
 
     @Override
-    public Iterable<Table> read(DatabaseInformation databaseInformation, EntityNameProcessor entityNameProcessor)
-    {
+    public Iterable<Table> read(DatabaseInformation databaseInformation, EntityNameProcessor entityNameProcessor) {
         final List<Table> tables = newArrayList();
         final DDLTable[] ddlTables;
         Connection connection = null;
-        try
-        {
+        try {
             connection = getConnection();
             ddlTables = SchemaReader.readSchema(connection, provider, converters, schemaConfiguration, true);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw errorService.newImportExportSqlException(null, "An error occurred reading schema information from database", e);
-        }
-        finally
-        {
+        } finally {
             closeQuietly(connection);
         }
-        for (DDLTable ddlTable : ddlTables)
-        {
+        for (DDLTable ddlTable : ddlTables) {
             tables.add(readTable(ddlTable, entityNameProcessor));
         }
         return tables;
     }
 
-    private Connection getConnection()
-    {
-        try
-        {
+    private Connection getConnection() {
+        try {
             return provider.getConnection();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw errorService.newImportExportSqlException(null, "Could not get connection from provider", e);
         }
     }
 
-    private Table readTable(DDLTable ddlTable, EntityNameProcessor processor)
-    {
+    private Table readTable(DDLTable ddlTable, EntityNameProcessor processor) {
         final String name = processor.tableName(ddlTable.getName());
         return new Table(name, readColumns(ddlTable.getFields(), processor), readForeignKeys(ddlTable.getForeignKeys()));
     }
 
-    private List<Column> readColumns(DDLField[] fields, final EntityNameProcessor processor)
-    {
-        return Lists.transform(newArrayList(fields), new Function<DDLField, Column>()
-        {
+    private List<Column> readColumns(DDLField[] fields, final EntityNameProcessor processor) {
+        return Lists.transform(newArrayList(fields), new Function<DDLField, Column>() {
             @Override
-            public Column apply(DDLField field)
-            {
+            public Column apply(DDLField field) {
                 return readColumn(field, processor);
             }
         });
     }
 
-    private Column readColumn(DDLField field, EntityNameProcessor processor)
-    {
+    private Column readColumn(DDLField field, EntityNameProcessor processor) {
         final String name = processor.columnName(field.getName());
         return
                 new Column(name, getType(field), field.isPrimaryKey(), field.isAutoIncrement(),
                         getPrecision(field), getScale(field));
     }
 
-    private int getType(DDLField field)
-    {
+    private int getType(DDLField field) {
         return field.getJdbcType();
     }
 
-    private Integer getScale(DDLField field)
-    {
+    private Integer getScale(DDLField field) {
         return field.getType().getQualifiers().getScale();
     }
 
-    private Integer getPrecision(DDLField field)
-    {
+    private Integer getPrecision(DDLField field) {
         Integer precision = field.getType().getQualifiers().getPrecision();
         return precision != null ? precision : field.getType().getQualifiers().getStringLength();
     }
 
-    private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys)
-    {
-        return Collections2.transform(newArrayList(foreignKeys), new Function<DDLForeignKey, ForeignKey>()
-        {
-            public ForeignKey apply(DDLForeignKey fk)
-            {
+    private Collection<ForeignKey> readForeignKeys(DDLForeignKey[] foreignKeys) {
+        return Collections2.transform(newArrayList(foreignKeys), new Function<DDLForeignKey, ForeignKey>() {
+            public ForeignKey apply(DDLForeignKey fk) {
                 return readForeignKey(fk);
             }
         });
     }
 
-    private ForeignKey readForeignKey(DDLForeignKey fk)
-    {
+    private ForeignKey readForeignKey(DDLForeignKey fk) {
         return new ForeignKey(fk.getDomesticTable(), fk.getField(), fk.getTable(), fk.getForeignField());
     }
 }

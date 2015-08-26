@@ -5,18 +5,15 @@ package com.atlassian.activeobjects.internal;
  *
  * @see com.atlassian.sal.api.pluginsettings.PluginSettingsFactory
  */
-public final class ActiveObjectsSettingKeys
-{
+public final class ActiveObjectsSettingKeys {
     public static final String MODEL_VERSION = "#";
     public static final String DATA_SOURCE_TYPE = "DST";
 
-    public String getDataSourceTypeKey(Prefix prefix)
-    {
+    public String getDataSourceTypeKey(Prefix prefix) {
         return prefix.prepend(DATA_SOURCE_TYPE);
     }
 
-    public String getModelVersionKey(Prefix prefix)
-    {
+    public String getModelVersionKey(Prefix prefix) {
         return prefix.prepend(MODEL_VERSION);
     }
 }

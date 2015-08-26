@@ -7,29 +7,25 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>A connection that can't be closed.</p>
  * <p>All calls to Active Objects must happen within a transaction. For this transactions to be successful, we can't let
  * ActiveObjects close the connection in the middle of it.</p>
  */
-public final class ConnectionHandler implements InvocationHandler
-{
+public final class ConnectionHandler implements InvocationHandler {
     private final Connection delegate;
     private final Closeable closeable;
 
-    public ConnectionHandler(Connection delegate, Closeable closeable)
-    {
+    public ConnectionHandler(Connection delegate, Closeable closeable) {
         this.delegate = checkNotNull(delegate);
         this.closeable = checkNotNull(closeable);
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException
-    {
-        if (isCloseMethod(method))
-        {
+    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException {
+        if (isCloseMethod(method)) {
             closeable.close();
             return Void.TYPE;
         }
@@ -37,32 +33,23 @@ public final class ConnectionHandler implements InvocationHandler
         return delegate(method, args);
     }
 
-    private Object delegate(Method method, Object[] args) throws SQLException
-    {
-        try
-        {
+    private Object delegate(Method method, Object[] args) throws SQLException {
+        try {
             return method.invoke(delegate, args);
-        }
-        catch (IllegalAccessException e)
-        {
+        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
-        }
-        catch (InvocationTargetException e)
-        {
+        } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
 
-            if (cause instanceof SQLException)
-            {
+            if (cause instanceof SQLException) {
                 throw (SQLException) cause;
             }
 
-            if (cause instanceof RuntimeException)
-            {
+            if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;
             }
 
-            if (cause instanceof Error)
-            {
+            if (cause instanceof Error) {
                 throw (Error) cause;
             }
 
@@ -70,33 +57,27 @@ public final class ConnectionHandler implements InvocationHandler
         }
     }
 
-    public static Connection newInstance(Connection c)
-    {
-        return newInstance(c, new Closeable()
-        {
+    public static Connection newInstance(Connection c) {
+        return newInstance(c, new Closeable() {
             @Override
-            public void close() throws SQLException
-            {
+            public void close() throws SQLException {
             }
         });
     }
 
-    public static Connection newInstance(Connection c, Closeable closeable)
-    {
+    public static Connection newInstance(Connection c, Closeable closeable) {
         return (Connection) Proxy.newProxyInstance(
                 ConnectionHandler.class.getClassLoader(),
                 new Class[]{Connection.class},
                 new ConnectionHandler(c, closeable));
     }
 
-    private static boolean isCloseMethod(Method method)
-    {
+    private static boolean isCloseMethod(Method method) {
         return method.getName().equals("close")
                 && method.getParameterTypes().length == 0;
     }
 
-    public static interface Closeable
-    {
+    public static interface Closeable {
         void close() throws SQLException;
     }
 }

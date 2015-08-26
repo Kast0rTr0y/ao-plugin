@@ -3,8 +3,7 @@ package com.atlassian.activeobjects.util;
 /**
  * A simple interface to get digests of any {@link String}
  */
-public interface Digester
-{
+public interface Digester {
     /**
      * Digests the String into another String
      *

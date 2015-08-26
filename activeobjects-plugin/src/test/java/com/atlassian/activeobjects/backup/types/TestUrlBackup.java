@@ -6,44 +6,34 @@ import net.java.ao.RawEntity;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public final class TestUrlBackup extends AbstractTestTypeBackup
-{
+public final class TestUrlBackup extends AbstractTestTypeBackup {
     @Test
     @NonTransactional
-    public void testSimpleEntityWithValue() throws Exception
-    {
+    public void testSimpleEntityWithValue() throws Exception {
         testBackupWithValue(new URL("http://some.example.com"));
     }
 
     @Test
     @NonTransactional
-    public void testSimpleEntityWithNull() throws Exception
-    {
+    public void testSimpleEntityWithNull() throws Exception {
         testBackupWithValue(null);
     }
 
-    private void testBackupWithValue(final URL value) throws Exception
-    {
+    private void testBackupWithValue(final URL value) throws Exception {
         final AtomicInteger eId = new AtomicInteger(-1);
-        testBackupType(new BackupType<Integer>()
-        {
+        testBackupType(new BackupType<Integer>() {
             @Override
-            public Class<? extends RawEntity<Integer>> getEntityClass()
-            {
+            public Class<? extends RawEntity<Integer>> getEntityClass() {
                 return SimpleEntity.class;
             }
 
             @Override
-            public void createData(EntityManager em) throws Exception
-            {
+            public void createData(EntityManager em) throws Exception {
                 SimpleEntity e = em.create(SimpleEntity.class);
                 e.setValue(value);
                 e.save();
@@ -51,15 +41,13 @@ public final class TestUrlBackup extends AbstractTestTypeBackup
             }
 
             @Override
-            public void checkData(EntityManager em) throws Exception
-            {
+            public void checkData(EntityManager em) throws Exception {
                 assertEquals(value, em.get(SimpleEntity.class, eId.get()).getValue());
             }
         });
     }
 
-    public static interface SimpleEntity extends Entity
-    {
+    public static interface SimpleEntity extends Entity {
         public URL getValue();
 
         public void setValue(URL value);

@@ -8,6 +8,5 @@ import com.atlassian.tenancy.api.TenantContext;
  *
  * @since 0.26.1
  */
-public interface CompatibilityTenantContext extends TenantContext
-{
+public interface CompatibilityTenantContext extends TenantContext {
 }

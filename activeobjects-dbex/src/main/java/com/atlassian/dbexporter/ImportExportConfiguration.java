@@ -7,8 +7,7 @@ import com.atlassian.dbexporter.progress.ProgressMonitor;
  *
  * @author Samuel Le Berrigaud
  */
-public interface ImportExportConfiguration
-{
+public interface ImportExportConfiguration {
     ConnectionProvider getConnectionProvider();
 
     ProgressMonitor getProgressMonitor();
