@@ -16,22 +16,18 @@ import java.util.Map;
  *
  * <p>The interceptor also ensures that the token value is available in the model under the key $xsrfTokenValue
  */
-public final class XsrfTokenInterceptor extends HandlerInterceptorAdapter
-{
+public final class XsrfTokenInterceptor extends HandlerInterceptorAdapter {
     private ApplicationProperties applicationProperties;
     private XsrfTokenGenerator xsrfTokenGenerator;
     private String redirectPath = "";
 
-    public XsrfTokenInterceptor()
-    {
+    public XsrfTokenInterceptor() {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception
-    {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getParameter(XsrfTokenGenerator.REQUEST_PARAM_NAME);
-        if ("POST".equals(request.getMethod()) && !xsrfTokenGenerator.validateToken(request, token))
-        {
+        if ("POST".equals(request.getMethod()) && !xsrfTokenGenerator.validateToken(request, token)) {
             response.sendRedirect(applicationProperties.getBaseUrl() + request.getServletPath() + redirectPath);
             return false;
         }
@@ -40,26 +36,22 @@ public final class XsrfTokenInterceptor extends HandlerInterceptorAdapter
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception
-    {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         @SuppressWarnings("unchecked")
         Map<String, Object> model = modelAndView.getModel();
         model.put("xsrfTokenName", xsrfTokenGenerator.getXsrfTokenName());
         model.put("xsrfTokenValue", xsrfTokenGenerator.generateToken(request));
     }
 
-    public void setApplicationProperties(ApplicationProperties applicationProperties)
-    {
+    public void setApplicationProperties(ApplicationProperties applicationProperties) {
         this.applicationProperties = applicationProperties;
     }
 
-    public void setRedirectPath(String redirectPath)
-    {
+    public void setRedirectPath(String redirectPath) {
         this.redirectPath = redirectPath;
     }
 
-    public void setXsrfTokenGenerator(XsrfTokenGenerator xsrfTokenGenerator)
-    {
+    public void setXsrfTokenGenerator(XsrfTokenGenerator xsrfTokenGenerator) {
         this.xsrfTokenGenerator = xsrfTokenGenerator;
     }
 }

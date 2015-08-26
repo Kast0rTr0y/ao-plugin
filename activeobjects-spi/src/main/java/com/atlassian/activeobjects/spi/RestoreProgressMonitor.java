@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.spi;
 
-public interface RestoreProgressMonitor
-{
+public interface RestoreProgressMonitor {
     void beginRestore();
 
     void endRestore();

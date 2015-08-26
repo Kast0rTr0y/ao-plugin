@@ -13,33 +13,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Extracts the dialect from the {@link net.sf.hibernate.SessionFactory hibernate session factory}, provided the
  * concrete implementation, also implements {@link net.sf.hibernate.engine.SessionFactoryImplementor}.
  */
-public final class HibernateSessionDialectExtractor implements DialectExtractor
-{
+public final class HibernateSessionDialectExtractor implements DialectExtractor {
     private final PluginHibernateSessionFactory sessionFactory;
 
     private final TransactionTemplate transactionTemplate;
 
-    public HibernateSessionDialectExtractor(PluginHibernateSessionFactory sessionFactory, TransactionTemplate transactionTemplate)
-    {
+    public HibernateSessionDialectExtractor(PluginHibernateSessionFactory sessionFactory, TransactionTemplate transactionTemplate) {
         this.sessionFactory = checkNotNull(sessionFactory);
         this.transactionTemplate = checkNotNull(transactionTemplate);
     }
 
-    public Class<? extends Dialect> getDialect()
-    {
+    public Class<? extends Dialect> getDialect() {
         // hibernate needs a transaction to create the session
-        return transactionTemplate.execute(new TransactionCallback<Class<? extends Dialect>>()
-        {
+        return transactionTemplate.execute(new TransactionCallback<Class<? extends Dialect>>() {
             @Override
-            public Class<? extends Dialect> doInTransaction()
-            {
+            public Class<? extends Dialect> doInTransaction() {
                 final SessionFactory hibernateSessionFactory = sessionFactory.getSession().getSessionFactory();
-                if (hibernateSessionFactory instanceof SessionFactoryImplementor)
-                {
+                if (hibernateSessionFactory instanceof SessionFactoryImplementor) {
                     return ((SessionFactoryImplementor) hibernateSessionFactory).getDialect().getClass();
-                }
-                else
-                {
+                } else {
                     return null;
                 }
             }

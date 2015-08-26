@@ -1,6 +1,5 @@
 package com.atlassian.activeobjects.internal;
 
-public interface DatabaseConfiguration
-{
+public interface DatabaseConfiguration {
     String getBaseDirectory();
 }

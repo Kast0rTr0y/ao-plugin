@@ -11,19 +11,16 @@ import net.java.ao.schema.info.EntityInfoResolverFactory;
 
 import javax.sql.DataSource;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class EntityManagerFactoryImpl implements EntityManagerFactory
-{
+public final class EntityManagerFactoryImpl implements EntityManagerFactory {
     private final DatabaseProviderFactory databaseProviderFactory;
 
-    public EntityManagerFactoryImpl(DatabaseProviderFactory databaseProviderFactory)
-    {
+    public EntityManagerFactoryImpl(DatabaseProviderFactory databaseProviderFactory) {
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
     }
 
-    public EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, String schema, ActiveObjectsConfiguration configuration)
-    {
+    public EntityManager getEntityManager(DataSource dataSource, DatabaseType databaseType, String schema, ActiveObjectsConfiguration configuration) {
         final DataSourceEntityManagerConfiguration entityManagerConfiguration =
                 new DataSourceEntityManagerConfiguration(
                         configuration.getNameConverters(),
@@ -33,40 +30,34 @@ public final class EntityManagerFactoryImpl implements EntityManagerFactory
         return new EntityManager(databaseProviderFactory.getDatabaseProvider(dataSource, databaseType, schema), entityManagerConfiguration);
     }
 
-    private static class DataSourceEntityManagerConfiguration implements EntityManagerConfiguration
-    {
+    private static class DataSourceEntityManagerConfiguration implements EntityManagerConfiguration {
         private final NameConverters nameConverters;
         private final SchemaConfiguration schemaConfiguration;
         private final EntityInfoResolverFactory entityInfoResolverFactory;
 
-        DataSourceEntityManagerConfiguration(NameConverters nameConverters, SchemaConfiguration schemaConfiguration, EntityInfoResolverFactory entityInfoResolverFactory)
-        {
+        DataSourceEntityManagerConfiguration(NameConverters nameConverters, SchemaConfiguration schemaConfiguration, EntityInfoResolverFactory entityInfoResolverFactory) {
             this.nameConverters = nameConverters;
             this.schemaConfiguration = schemaConfiguration;
             this.entityInfoResolverFactory = entityInfoResolverFactory;
         }
 
         @Override
-        public boolean useWeakCache()
-        {
+        public boolean useWeakCache() {
             return true;
         }
 
         @Override
-        public NameConverters getNameConverters()
-        {
+        public NameConverters getNameConverters() {
             return nameConverters;
         }
 
         @Override
-        public SchemaConfiguration getSchemaConfiguration()
-        {
+        public SchemaConfiguration getSchemaConfiguration() {
             return schemaConfiguration;
         }
 
         @Override
-        public EntityInfoResolverFactory getEntityInfoResolverFactory()
-        {
+        public EntityInfoResolverFactory getEntityInfoResolverFactory() {
             return entityInfoResolverFactory;
         }
     }

@@ -30,22 +30,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DataExporterTest
-{
-    @Mock private ImportExportErrorService errorService;
-    @Mock private ExportConfiguration configuration;
-    @Mock private ConnectionProvider connectionProvider;
-    @Mock private Connection connection;
-    @Mock private DatabaseMetaData metaData;
-    @Mock private ProgressMonitor progressMonitor;
-    @Mock private EntityNameProcessor entityNameProcessor;
-    @Mock private NodeCreator nodeCreator;
+public class DataExporterTest {
+    @Mock
+    private ImportExportErrorService errorService;
+    @Mock
+    private ExportConfiguration configuration;
+    @Mock
+    private ConnectionProvider connectionProvider;
+    @Mock
+    private Connection connection;
+    @Mock
+    private DatabaseMetaData metaData;
+    @Mock
+    private ProgressMonitor progressMonitor;
+    @Mock
+    private EntityNameProcessor entityNameProcessor;
+    @Mock
+    private NodeCreator nodeCreator;
 
     private DataExporter dataExporter;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         when(configuration.getConnectionProvider()).thenReturn(connectionProvider);
         when(connectionProvider.getConnection()).thenReturn(connection);
         when(connection.getMetaData()).thenReturn(metaData);
@@ -57,9 +63,8 @@ public class DataExporterTest
     }
 
     @Test
-    public void shouldExportBinaryColumn() throws Exception
-    {
-        final byte[] bytes = new byte[] {0, 1, 100, 2};
+    public void shouldExportBinaryColumn() throws Exception {
+        final byte[] bytes = new byte[]{0, 1, 100, 2};
 
         when(nodeCreator.addNode(anyString())).thenReturn(nodeCreator);
         when(nodeCreator.addAttribute(anyString(), anyString())).thenReturn(nodeCreator);

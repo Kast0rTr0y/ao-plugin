@@ -8,17 +8,14 @@ import java.sql.SQLException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-final class DatabaseProviderConnectionProvider implements ConnectionProvider
-{
+final class DatabaseProviderConnectionProvider implements ConnectionProvider {
     private final DatabaseProvider provider;
 
-    public DatabaseProviderConnectionProvider(DatabaseProvider provider)
-    {
+    public DatabaseProviderConnectionProvider(DatabaseProvider provider) {
         this.provider = checkNotNull(provider);
     }
 
-    public Connection getConnection() throws SQLException
-    {
+    public Connection getConnection() throws SQLException {
         return provider.getConnection();
     }
 }

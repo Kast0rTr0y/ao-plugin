@@ -32,9 +32,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith (MockitoJUnitRunner.class)
-public class TenantAwareActiveObjectsTest
-{
+@RunWith(MockitoJUnitRunner.class)
+public class TenantAwareActiveObjectsTest {
     private TenantAwareActiveObjects babyBear;
 
     @Rule
@@ -70,8 +69,7 @@ public class TenantAwareActiveObjectsTest
     private ActiveObjectsConfiguration aoConfig;
 
     @Before
-    public void before()
-    {
+    public void before() {
         babyBear = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFunction);
 
         when(bundle.getSymbolicName()).thenReturn("some.bundle");
@@ -83,8 +81,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void init()
-    {
+    public void init() {
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         babyBear.init();
@@ -93,8 +90,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void setAoConfig() throws ExecutionException, InterruptedException
-    {
+    public void setAoConfig() throws ExecutionException, InterruptedException {
         babyBear.setAoConfiguration(aoConfig);
 
         assertThat(babyBear.aoConfigFuture.isDone(), is(true));
@@ -102,8 +98,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void setAoConfigMultiple()
-    {
+    public void setAoConfigMultiple() {
         babyBear.aoConfigFuture.set(aoConfig);
 
         expectedException.expect(IllegalStateException.class);
@@ -112,8 +107,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void delegate() throws ExecutionException, InterruptedException
-    {
+    public void delegate() throws ExecutionException, InterruptedException {
         babyBear.aoConfigFuture.set(aoConfig);
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
@@ -125,8 +119,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void delgateUntenanted()
-    {
+    public void delgateUntenanted() {
         babyBear.aoConfigFuture.set(aoConfig);
         expectedException.expect(NoDataSourceException.class);
 
@@ -134,46 +127,40 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void delegateNoConfig()
-    {
+    public void delegateNoConfig() {
         expectedException.expect(IllegalStateException.class);
 
         babyBear.delegate();
     }
 
     @Test
-    public void awaitInitNoTenant() throws ExecutionException, InterruptedException
-    {
+    public void awaitInitNoTenant() throws ExecutionException, InterruptedException {
         expectedException.expect(NoDataSourceException.class);
 
         babyBear.moduleMetaData().awaitInitialization();
     }
 
     @Test
-    public void awaitInitTimedNoTenant() throws ExecutionException, InterruptedException
-    {
+    public void awaitInitTimedNoTenant() throws ExecutionException, InterruptedException {
         expectedException.expect(NoDataSourceException.class);
 
         babyBear.moduleMetaData().awaitInitialization();
     }
 
     @Test
-    public void isInitializedNoTenant()
-    {
+    public void isInitializedNoTenant() {
         assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
     }
 
     @Test
-    public void isInitializedNotComplete()
-    {
+    public void isInitializedNotComplete() {
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isInitialized(), is(false));
     }
 
     @Test
-    public void isInitializedException()
-    {
+    public void isInitializedException() {
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
@@ -185,8 +172,7 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void isInitializedComplete()
-    {
+    public void isInitializedComplete() {
         final Promise<ActiveObjects> aoPromise = Promises.promise(ao);
         babyBear.aoPromisesByTenant.put(tenant, aoPromise);
 
@@ -196,14 +182,12 @@ public class TenantAwareActiveObjectsTest
     }
 
     @Test
-    public void isDataSourcePresentNo()
-    {
+    public void isDataSourcePresentNo() {
         assertThat(babyBear.moduleMetaData().isDataSourcePresent(), is(false));
     }
 
     @Test
-    public void isDataSourcePresentYes()
-    {
+    public void isDataSourcePresentYes() {
         when(tenantContext.getCurrentTenant()).thenReturn(tenant);
 
         assertThat(babyBear.moduleMetaData().isDataSourcePresent(), is(true));

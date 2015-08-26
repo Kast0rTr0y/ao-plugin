@@ -7,17 +7,14 @@ import com.atlassian.dbexporter.node.NodeParser;
  * <p>A no-op around importer, convenient when only overriding one method.</p>
  * <p>The isn't much reason using it for anything else...</p>
  */
-public class NoOpAroundImporter implements AroundImporter
-{
+public class NoOpAroundImporter implements AroundImporter {
     @Override
-    public void before(NodeParser node, ImportConfiguration configuration, Context context)
-    {
+    public void before(NodeParser node, ImportConfiguration configuration, Context context) {
         // do nothing
     }
 
     @Override
-    public void after(NodeParser node, ImportConfiguration configuration, Context context)
-    {
+    public void after(NodeParser node, ImportConfiguration configuration, Context context) {
         // do nothing
     }
 }
