@@ -9,7 +9,6 @@ import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvider;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,8 +24,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class ActiveObjectsServiceFactoryTest
-{
+public final class ActiveObjectsServiceFactoryTest {
     private ActiveObjectsServiceFactory serviceFactory;
 
     @Mock
@@ -52,19 +50,18 @@ public final class ActiveObjectsServiceFactoryTest
 
     @Mock
     private Bundle bundle;
-    
+
     @Mock
     private TransactionSynchronisationManager tranSyncManager;
-    
+
     @Mock
     private DataSourceProvider dataSourceProvider;
-    
+
     @Mock
     private TransactionTemplate transactionTemplate;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         serviceFactory = new ActiveObjectsServiceFactory(factory, configurationProvider, eventPublisher,
                 tranSyncManager, dataSourceProvider, transactionTemplate);
 
@@ -73,16 +70,14 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void testGetService()
-    {
+    public void testGetService() {
         final Object ao = serviceFactory.getService(bundle, null); // the service registration is not used
         assertNotNull(ao);
         assertTrue(ao instanceof DelegatingActiveObjects);
     }
 
     @Test
-    public void testUnGetService()
-    {
+    public void testUnGetService() {
         Object ao = serviceFactory.getService(bundle, null);
         assertEquals(1, serviceFactory.aoInstances.size());
         serviceFactory.ungetService(bundle, null, ao);

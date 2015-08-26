@@ -15,18 +15,18 @@ import java.io.File;
 import static com.atlassian.activeobjects.test.ActiveObjectsAssertions.assertDatabaseExists;
 import static com.atlassian.activeobjects.test.Plugins.newConfigurationPlugin;
 import static com.atlassian.activeobjects.test.Plugins.newConsumerPlugin;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.endsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseActiveObjectsIntegrationTest
-{
+public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseActiveObjectsIntegrationTest {
     private static final String CONSUMER_PLUGIN_KEY = "ao-test-consumer";
     private static final String CONFIGURATION_PLUGIN_KEY = "ao-config-1";
 
     private File homeDirectory;
 
     @Before
-    public final void setUp()
-    {
+    public final void setUp() {
         // plugin settings
         final PluginSettings globalSettings = mock(PluginSettings.class);
         when(globalSettings.get(endsWith(ActiveObjectsSettingKeys.DATA_SOURCE_TYPE))).thenReturn(DataSourceType.HSQLDB.name());
@@ -41,14 +41,12 @@ public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseA
     }
 
     @After
-    public final void tearDown()
-    {
+    public final void tearDown() {
         container.stop();
     }
 
     @Test
-    public final void databaseCreatedInDefaultDirectoryWithinHomeDirectory() throws Exception
-    {
+    public final void databaseCreatedInDefaultDirectoryWithinHomeDirectory() throws Exception {
         container.install(newConsumerPlugin(CONSUMER_PLUGIN_KEY));
         container.getService(ActiveObjectsTestConsumer.class).run();
 
@@ -56,8 +54,7 @@ public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseA
     }
 
     @Test
-    public void databaseCreatedInConfiguredDirectoryWithinHomeDirectory() throws Exception
-    {
+    public void databaseCreatedInConfiguredDirectoryWithinHomeDirectory() throws Exception {
         final Plugin configPlugin = container.install(newConfigurationPlugin(CONFIGURATION_PLUGIN_KEY, "foo"));
         File consumerPluginFile = newConsumerPlugin(CONSUMER_PLUGIN_KEY);
         Plugin installedConsumerPlugin = container.install(consumerPluginFile);
@@ -77,17 +74,12 @@ public final class TestActiveObjectsPluginWithEmbeddedHsqlDatabase extends BaseA
         assertDatabaseExists(homeDirectory, "foo2", CONSUMER_PLUGIN_KEY);
     }
 
-    private void uninstallPlugin(Plugin configPlugin)
-    {
-        try
-        {
+    private void uninstallPlugin(Plugin configPlugin) {
+        try {
             container.unInstall(configPlugin);
-        }
-        catch (PluginException e)
-        {
+        } catch (PluginException e) {
             //ignore the unable to delete file failure since it might happen on windows
-            if (!e.getMessage().contains("Unable to delete file"))
-            {
+            if (!e.getMessage().contains("Unable to delete file")) {
                 Assert.fail(e.getMessage());
             }
         }

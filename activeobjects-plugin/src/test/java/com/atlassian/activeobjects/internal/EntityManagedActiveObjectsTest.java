@@ -3,11 +3,9 @@ package com.atlassian.activeobjects.internal;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.collect.Sets;
-
 import net.java.ao.DatabaseProvider;
 import net.java.ao.DisposableDataSource;
 import net.java.ao.EntityManager;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,8 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityManagedActiveObjectsTest
-{
+public class EntityManagedActiveObjectsTest {
     private EntityManagedActiveObjects activeObjects;
 
     @Mock
@@ -33,14 +30,12 @@ public class EntityManagedActiveObjectsTest
     private TransactionManager transactionManager;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         activeObjects = new EntityManagedActiveObjects(entityManager, transactionManager, DatabaseType.HSQL);
     }
 
     @Test
-    public void testExecuteInTransaction() throws Exception
-    {
+    public void testExecuteInTransaction() throws Exception {
         final DatabaseProvider databaseProvider = mockProvider();
         when(entityManager.getProvider()).thenReturn(databaseProvider);
 
@@ -50,8 +45,7 @@ public class EntityManagedActiveObjectsTest
         verify(transactionManager).doInTransaction(callback);
     }
 
-    private DatabaseProvider mockProvider() throws Exception
-    {
+    private DatabaseProvider mockProvider() throws Exception {
         final DisposableDataSource disposableDataSource = mock(DisposableDataSource.class);
         final Connection connection = mock(Connection.class);
         final DatabaseMetaData metaData = mock(DatabaseMetaData.class);
@@ -59,12 +53,10 @@ public class EntityManagedActiveObjectsTest
         when(disposableDataSource.getConnection()).thenReturn(connection);
         when(connection.getMetaData()).thenReturn(metaData);
         when(metaData.getIdentifierQuoteString()).thenReturn("");
-        
-        return new DatabaseProvider(disposableDataSource, null)
-        {
+
+        return new DatabaseProvider(disposableDataSource, null) {
             @Override
-            protected Set<String> getReservedWords()
-            {
+            protected Set<String> getReservedWords() {
                 return Sets.newHashSet();
             }
         };

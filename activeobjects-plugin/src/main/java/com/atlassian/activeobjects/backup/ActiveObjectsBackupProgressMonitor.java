@@ -3,34 +3,29 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-final class ActiveObjectsBackupProgressMonitor implements ProgressMonitor
-{
+final class ActiveObjectsBackupProgressMonitor implements ProgressMonitor {
     private final BackupProgressMonitor backupProgressMonitor;
 
-    ActiveObjectsBackupProgressMonitor(BackupProgressMonitor backupProgressMonitor)
-    {
+    ActiveObjectsBackupProgressMonitor(BackupProgressMonitor backupProgressMonitor) {
         this.backupProgressMonitor = checkNotNull(backupProgressMonitor);
     }
 
     @Override
-    public void begin(Object... args)
-    {
+    public void begin(Object... args) {
         backupProgressMonitor.beginBackup();
     }
 
     @Override
-    public void end(Object... args)
-    {
+    public void end(Object... args) {
         backupProgressMonitor.endBackup();
     }
 
     @Override
-    public void begin(Task task, Object... args)
-    {
-        switch (task)
-        {
+    public void begin(Task task, Object... args) {
+        switch (task) {
             case DATABASE_INFORMATION:
                 backupProgressMonitor.beginDatabaseInformationBackup();
                 break;
@@ -49,10 +44,8 @@ final class ActiveObjectsBackupProgressMonitor implements ProgressMonitor
     }
 
     @Override
-    public void end(Task task, Object... args)
-    {
-        switch (task)
-        {
+    public void end(Task task, Object... args) {
+        switch (task) {
             case DATABASE_INFORMATION:
                 backupProgressMonitor.endDatabaseInformationBackup();
                 break;
@@ -71,8 +64,7 @@ final class ActiveObjectsBackupProgressMonitor implements ProgressMonitor
     }
 
     @Override
-    public void totalNumberOfTables(int size)
-    {
+    public void totalNumberOfTables(int size) {
         backupProgressMonitor.updateTotalNumberOfTablesToBackup(size);
     }
 }

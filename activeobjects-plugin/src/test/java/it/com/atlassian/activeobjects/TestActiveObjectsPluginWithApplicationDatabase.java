@@ -11,19 +11,19 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.io.File;
 
-import static com.atlassian.activeobjects.test.ActiveObjectsAssertions.*;
-import static com.atlassian.activeobjects.test.Plugins.*;
-import static org.mockito.Mockito.*;
+import static com.atlassian.activeobjects.test.ActiveObjectsAssertions.assertDatabaseExists;
+import static com.atlassian.activeobjects.test.Plugins.newConsumerPlugin;
+import static org.mockito.Mockito.endsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public final class TestActiveObjectsPluginWithApplicationDatabase extends BaseActiveObjectsIntegrationTest
-{
+public final class TestActiveObjectsPluginWithApplicationDatabase extends BaseActiveObjectsIntegrationTest {
     private static final String CONSUMER_PLUGIN_KEY = "ao-test-consumer";
 
     private File applicationDatabaseDirectory;
 
     @Before
-    public final void setUp()
-    {
+    public final void setUp() {
         // plugin settings
         final PluginSettings globalSettings = mock(PluginSettings.class);
         when(globalSettings.get(endsWith(ActiveObjectsSettingKeys.DATA_SOURCE_TYPE))).thenReturn(DataSourceType.APPLICATION.name());
@@ -38,22 +38,19 @@ public final class TestActiveObjectsPluginWithApplicationDatabase extends BaseAc
     }
 
     @After
-    public final void tearDown()
-    {
+    public final void tearDown() {
         container.stop();
     }
 
     @Test
-    public final void databaseCreatedInApplicationDatabaseDirectory() throws Exception
-    {
+    public final void databaseCreatedInApplicationDatabaseDirectory() throws Exception {
         container.install(newConsumerPlugin(CONSUMER_PLUGIN_KEY));
         container.getService(ActiveObjectsTestConsumer.class).run();
 
         assertDatabaseExists(applicationDatabaseDirectory, CONSUMER_PLUGIN_KEY);
     }
 
-    private static DataSource hsqlDataSource(File applicationDatabaseDirectory, String dbName)
-    {
+    private static DataSource hsqlDataSource(File applicationDatabaseDirectory, String dbName) {
         final jdbcDataSource hsqlDs = new jdbcDataSource();
         hsqlDs.setUser("sa");
         hsqlDs.setPassword("");

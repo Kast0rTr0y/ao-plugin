@@ -24,71 +24,60 @@ import com.atlassian.plugin.osgi.factory.OsgiPluginFactory;
 import com.atlassian.plugin.osgi.hostcomponents.ComponentRegistrar;
 import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 import com.atlassian.plugin.repositories.FilePluginInstaller;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.io.File;
 import java.util.Arrays;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.Assert.*;
-
-public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsContainer
-{
+public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsContainer {
     private DefaultPluginManager pluginManager;
     private FelixOsgiContainerManager osgiContainerManager;
 
-    public JUnitAtlassianPluginsContainer(AtlassianPluginsContainerConfiguration configuration)
-    {
+    public JUnitAtlassianPluginsContainer(AtlassianPluginsContainerConfiguration configuration) {
         initPluginManager(configuration.getHostComponentProvider(), configuration.getPackageScannerConfiguration(), configuration.getTmpDir());
     }
 
     @Override
-    public void start()
-    {
+    public void start() {
         pluginManager.init();
     }
 
     @Override
-    public void stop()
-    {
+    public void stop() {
         pluginManager.shutdown();
     }
 
     @Override
-    public void restart()
-    {
+    public void restart() {
         pluginManager.warmRestart();
     }
 
     @Override
-    public Plugin install(File file)
-    {
+    public Plugin install(File file) {
         return getPlugin(pluginManager.installPlugin(newPluginArtifact(file)));
     }
 
     @Override
-    public void unInstall(Plugin plugin)
-    {
+    public void unInstall(Plugin plugin) {
         pluginManager.uninstall(plugin);
     }
 
-    private Plugin getPlugin(String key)
-    {
+    private Plugin getPlugin(String key) {
         return pluginManager.getPlugin(key);
     }
 
     @Override
-    public <T> T getService(Class<T> serviceType) throws InterruptedException
-    {
+    public <T> T getService(Class<T> serviceType) throws InterruptedException {
         final ServiceTracker tracker = new ServiceTracker(osgiContainerManager.getBundles()[0].getBundleContext(), serviceType.getName(), null);
         tracker.open();
         return serviceType.cast(tracker.waitForService(10000));
     }
 
-    private void initPluginManager(HostComponentProvider hostComponentProvider, PackageScannerConfiguration scannerConfiguration, File tmpDir)
-    {
+    private void initPluginManager(HostComponentProvider hostComponentProvider, PackageScannerConfiguration scannerConfiguration, File tmpDir) {
         final PluginEventManager pluginEventManager = new DefaultPluginEventManager();
         final ModuleDescriptorFactory moduleDescriptorFactory = new DefaultModuleDescriptorFactory(new DefaultHostContainer());
         final HostComponentProvider requiredWrappingProvider = newWrappingHostComponentProvider(hostComponentProvider, pluginEventManager);
@@ -106,33 +95,26 @@ public final class JUnitAtlassianPluginsContainer implements AtlassianPluginsCon
         pluginManager.setPluginInstaller(new FilePluginInstaller(pluginsDir));
     }
 
-    private static HostComponentProvider newWrappingHostComponentProvider(final HostComponentProvider hostComponentProvider, final PluginEventManager pluginEventManager)
-    {
-        return new HostComponentProvider()
-        {
-            public void provide(ComponentRegistrar registrar)
-            {
+    private static HostComponentProvider newWrappingHostComponentProvider(final HostComponentProvider hostComponentProvider, final PluginEventManager pluginEventManager) {
+        return new HostComponentProvider() {
+            public void provide(ComponentRegistrar registrar) {
                 registrar.register(PluginEventManager.class).forInstance(pluginEventManager);
-                if (hostComponentProvider != null)
-                {
+                if (hostComponentProvider != null) {
                     hostComponentProvider.provide(registrar);
                 }
             }
         };
     }
 
-    private static JarPluginArtifact newPluginArtifact(File file)
-    {
+    private static JarPluginArtifact newPluginArtifact(File file) {
         return new JarPluginArtifact(file);
     }
 
-    private static File getDir(File parentDir, String name)
-    {
+    private static File getDir(File parentDir, String name) {
         return mkdirs(new File(parentDir, name));
     }
 
-    private static File mkdirs(final File dir)
-    {
+    private static File mkdirs(final File dir) {
         assertTrue(dir.mkdirs());
         return dir;
     }

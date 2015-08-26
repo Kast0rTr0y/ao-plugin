@@ -24,15 +24,15 @@ import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.websudo.WebSudoManager;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import static org.mockito.Mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import static org.mockito.Mockito.when;
 
 /**
  * <p>This configures the basics of the system on which the Active Objects plugin can run.</p>
@@ -71,8 +71,7 @@ import org.mockito.stubbing.Answer;
                 @PackageVersion(value = "com.atlassian.activeobjects*", version = "100")
         }
 )
-public abstract class BaseActiveObjectsIntegrationTest
-{
+public abstract class BaseActiveObjectsIntegrationTest {
     /**
      * Using a 'configurable' {@link org.junit.rules.TemporaryFolder} so that we can keep the temporary folder for inspection when needed.
      *
@@ -121,21 +120,18 @@ public abstract class BaseActiveObjectsIntegrationTest
 
     @MockHostComponent
     protected EventPublisher eventPublisher;
-    
+
     @MockHostComponent
     protected TransactionSynchronisationManager transactionSynchronizationManager;
 
     @MockHostComponent
     protected ModuleFactory moduleFactory;
-    
+
     @Before
-    public void initHostComponents()
-    {
-        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
+    public void initHostComponents() {
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
+            public Object answer(InvocationOnMock invocation) throws Throwable {
                 return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
             }
         });

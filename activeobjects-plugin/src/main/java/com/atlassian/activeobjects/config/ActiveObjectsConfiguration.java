@@ -10,9 +10,10 @@ import net.java.ao.schema.NameConverters;
 import java.util.List;
 import java.util.Set;
 
-/** <p>This represents the configuration of active objects for a given module descriptor.</p> */
-public interface ActiveObjectsConfiguration
-{
+/**
+ * <p>This represents the configuration of active objects for a given module descriptor.</p>
+ */
+public interface ActiveObjectsConfiguration {
     static final String AO_TABLE_PREFIX = "AO";
 
     /**

@@ -5,7 +5,6 @@ package it.com.atlassian.activeobjects;
  *
  * @see com.atlassian.activeobjects.test.Plugins#newConsumerPlugin(String)
  */
-public interface ActiveObjectsTestConsumer
-{
+public interface ActiveObjectsTestConsumer {
     Object run() throws Exception;
 }

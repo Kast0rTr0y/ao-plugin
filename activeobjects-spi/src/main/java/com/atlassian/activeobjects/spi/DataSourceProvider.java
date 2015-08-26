@@ -5,8 +5,7 @@ import javax.sql.DataSource;
 /**
  * Gives access to the host application data source.
  */
-public interface DataSourceProvider
-{
+public interface DataSourceProvider {
     /**
      * @return the host application data source
      */

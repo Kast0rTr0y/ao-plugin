@@ -5,8 +5,7 @@ import com.atlassian.plugin.osgi.hostcomponents.HostComponentProvider;
 
 import java.io.File;
 
-public interface AtlassianPluginsContainerConfiguration
-{
+public interface AtlassianPluginsContainerConfiguration {
     HostComponentProvider getHostComponentProvider();
 
     PackageScannerConfiguration getPackageScannerConfiguration();

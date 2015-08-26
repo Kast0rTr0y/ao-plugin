@@ -15,11 +15,10 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.base.Suppliers.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Suppliers.memoize;
 
-public final class JiraDataSourceProvider extends AbstractDataSourceProvider
-{
+public final class JiraDataSourceProvider extends AbstractDataSourceProvider {
     private static final Map<org.ofbiz.core.entity.jdbc.dbtype.DatabaseType, DatabaseType> DB_TYPE_TO_DB_TYPE = ImmutableMap.<org.ofbiz.core.entity.jdbc.dbtype.DatabaseType, DatabaseType>builder()
             .put(DatabaseTypeFactory.DB2, DatabaseType.DB2)
             .put(DatabaseTypeFactory.HSQL, DatabaseType.HSQL)
@@ -36,39 +35,29 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
     private final JiraDatabaseTypeExtractor databaseTypeExtractor;
     private final DataSource ds;
 
-    public JiraDataSourceProvider(OfBizConnectionFactory connectionFactory, JiraDatabaseTypeExtractor databaseTypeExtractor)
-    {
+    public JiraDataSourceProvider(OfBizConnectionFactory connectionFactory, JiraDatabaseTypeExtractor databaseTypeExtractor) {
         this.connectionFactory = checkNotNull(connectionFactory);
         this.databaseTypeExtractor = checkNotNull(databaseTypeExtractor);
         this.ds = new OfBizDataSource(connectionFactory);
     }
 
-    public DataSource getDataSource()
-    {
+    public DataSource getDataSource() {
         return ds;
     }
 
     @Override
-    public DatabaseType getDatabaseType()
-    {
-        return memoize(new Supplier<DatabaseType>()
-        {
+    public DatabaseType getDatabaseType() {
+        return memoize(new Supplier<DatabaseType>() {
             @Override
-            public DatabaseType get()
-            {
+            public DatabaseType get() {
                 Connection connection = null;
-                try
-                {
+                try {
                     connection = ds.getConnection();
                     final DatabaseType type = DB_TYPE_TO_DB_TYPE.get(databaseTypeExtractor.getDatabaseType(connection));
                     return type != null ? type : DatabaseType.UNKNOWN;
-                }
-                catch (SQLException e)
-                {
+                } catch (SQLException e) {
                     throw new IllegalStateException("Could not get database type", e);
-                }
-                finally
-                {
+                } finally {
                     closeQuietly(connection);
                 }
             }
@@ -76,54 +65,42 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
     }
 
     @Override
-    public String getSchema()
-    {
+    public String getSchema() {
         return connectionFactory.getDatasourceInfo().getSchemaName();
     }
 
-    private static void closeQuietly(Connection connection)
-    {
-        if (connection != null)
-        {
-            try
-            {
+    private static void closeQuietly(Connection connection) {
+        if (connection != null) {
+            try {
                 connection.close();
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 throw new IllegalStateException("There was an exception closing a database connection", e);
             }
         }
     }
 
-    private static class OfBizDataSource extends AbstractDataSource
-    {
+    private static class OfBizDataSource extends AbstractDataSource {
         private final OfBizConnectionFactory connectionFactory;
 
-        public OfBizDataSource(OfBizConnectionFactory connectionFactory)
-        {
+        public OfBizDataSource(OfBizConnectionFactory connectionFactory) {
             this.connectionFactory = checkNotNull(connectionFactory);
         }
 
-        public Connection getConnection() throws SQLException
-        {
+        public Connection getConnection() throws SQLException {
             return connectionFactory.getConnection();
         }
 
-        public Connection getConnection(String username, String password) throws SQLException
-        {
+        public Connection getConnection(String username, String password) throws SQLException {
             throw new IllegalStateException("Not allowed to get a connection for non default username/password");
         }
     }
 
-    private static abstract class AbstractDataSource implements DataSource
-    {
+    private static abstract class AbstractDataSource implements DataSource {
         /**
          * Returns 0, indicating to use the default system timeout.
          */
         @Override
-        public int getLoginTimeout() throws SQLException
-        {
+        public int getLoginTimeout() throws SQLException {
             return 0;
         }
 
@@ -131,8 +108,7 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
          * Setting a login timeout is not supported.
          */
         @Override
-        public void setLoginTimeout(int timeout) throws SQLException
-        {
+        public void setLoginTimeout(int timeout) throws SQLException {
             throw new UnsupportedOperationException("setLoginTimeout");
         }
 
@@ -140,8 +116,7 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
          * LogWriter methods are not supported.
          */
         @Override
-        public PrintWriter getLogWriter()
-        {
+        public PrintWriter getLogWriter() {
             throw new UnsupportedOperationException("getLogWriter");
         }
 
@@ -149,26 +124,22 @@ public final class JiraDataSourceProvider extends AbstractDataSourceProvider
          * LogWriter methods are not supported.
          */
         @Override
-        public void setLogWriter(PrintWriter pw) throws SQLException
-        {
+        public void setLogWriter(PrintWriter pw) throws SQLException {
             throw new UnsupportedOperationException("setLogWriter");
         }
 
         @Override
-        public <T> T unwrap(Class<T> tClass) throws SQLException
-        {
+        public <T> T unwrap(Class<T> tClass) throws SQLException {
             throw new UnsupportedOperationException("unwrap");
         }
 
         @Override
-        public boolean isWrapperFor(Class<?> aClass) throws SQLException
-        {
+        public boolean isWrapperFor(Class<?> aClass) throws SQLException {
             throw new UnsupportedOperationException("isWrapperFor");
         }
 
         // @Override Java 7 only
-        public Logger getParentLogger() throws SQLFeatureNotSupportedException
-        {
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
             throw new SQLFeatureNotSupportedException();
         }
     }

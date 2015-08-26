@@ -4,7 +4,6 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.SchemaConfiguration;
-import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.NameConverters;
 import net.java.ao.schema.TableNameConverter;
 import org.junit.After;
@@ -25,29 +24,25 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.EntityManagerFactoryImpl}
  */
 @RunWith(MockitoJUnitRunner.class)
-public final class EntityManagerFactoryImplTest
-{
+public final class EntityManagerFactoryImplTest {
     private EntityManagerFactory entityManagerFactory;
 
     @Mock
     private DatabaseProviderFactory databaseProviderFactory;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         entityManagerFactory = new EntityManagerFactoryImpl(databaseProviderFactory);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         entityManagerFactory = null;
         databaseProviderFactory = null;
     }
 
     @Test
-    public void testGetEntityManager() throws Exception
-    {
+    public void testGetEntityManager() throws Exception {
         final String schema = null;
         final DataSource dataSource = mock(DataSource.class);
         final DatabaseType databaseType = DatabaseType.UNKNOWN;
@@ -61,8 +56,7 @@ public final class EntityManagerFactoryImplTest
         verify(databaseProviderFactory).getDatabaseProvider(dataSource, databaseType, schema);
     }
 
-    private ActiveObjectsConfiguration getMockConfiguration()
-    {
+    private ActiveObjectsConfiguration getMockConfiguration() {
         final NameConverters nameConverters = mock(NameConverters.class);
         final TableNameConverter tableNameConverter = mock(TableNameConverter.class);
         final SchemaConfiguration schemaConfiguration = mock(SchemaConfiguration.class);

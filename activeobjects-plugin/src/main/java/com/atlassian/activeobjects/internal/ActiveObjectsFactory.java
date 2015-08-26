@@ -1,14 +1,13 @@
 package com.atlassian.activeobjects.internal;
 
+import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.activeobjects.spi.DatabaseType;
-import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 
 /**
  * Factory to create instances of {@link com.atlassian.activeobjects.external.ActiveObjects}.
  */
-public interface ActiveObjectsFactory
-{
+public interface ActiveObjectsFactory {
     /**
      * Tells whether the give data source type is supported by this factory, users should call this method before
      * calling {@link #create(ActiveObjectsConfiguration)} to avoid an {@link IllegalStateException} being thrown.

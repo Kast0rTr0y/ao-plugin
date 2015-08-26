@@ -19,7 +19,8 @@ import static org.mockito.Mockito.when;
 public class ConnectionHandlerTest {
 
 
-    @Rule public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     /**
      * <p>Test that public methods can be invoked when the delegate is an instance of a private class.</p>
@@ -33,13 +34,11 @@ public class ConnectionHandlerTest {
 
 
     /**
-     *
-     * @see <a href="https://ecosystem.atlassian.net/browse/AO-364">AO-364</a>
      * @throws Exception because it's a test :P
+     * @see <a href="https://ecosystem.atlassian.net/browse/AO-364">AO-364</a>
      */
     @Test
-    public void testIfExceptionsAreHandledCorrectly() throws Exception
-    {
+    public void testIfExceptionsAreHandledCorrectly() throws Exception {
         final Connection connectionMock = mock(Connection.class);
         final ConnectionHandler.Closeable closeableMock = mock(ConnectionHandler.Closeable.class);
 

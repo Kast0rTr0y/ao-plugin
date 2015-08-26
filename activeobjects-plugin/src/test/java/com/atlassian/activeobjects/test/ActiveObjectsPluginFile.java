@@ -4,20 +4,17 @@ import com.atlassian.activeobjects.junit.PluginFile;
 
 import java.io.File;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class ActiveObjectsPluginFile implements PluginFile
-{
+public final class ActiveObjectsPluginFile implements PluginFile {
     private static final String PLUGIN_JAR_PATH_PROPERTY_NAME = "plugin.jar";
 
     @Override
-    public File getPluginFile()
-    {
+    public File getPluginFile() {
         return new File(getPluginPath());
     }
 
-    private String getPluginPath()
-    {
+    private String getPluginPath() {
         final String path = System.getProperty(PLUGIN_JAR_PATH_PROPERTY_NAME);
 
         final StringBuilder errorMsg = new StringBuilder(180)

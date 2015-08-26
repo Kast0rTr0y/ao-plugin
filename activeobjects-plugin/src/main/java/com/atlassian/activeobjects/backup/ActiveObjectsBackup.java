@@ -7,6 +7,7 @@ import com.atlassian.activeobjects.internal.SimplePrefix;
 import com.atlassian.activeobjects.spi.Backup;
 import com.atlassian.activeobjects.spi.BackupProgressMonitor;
 import com.atlassian.activeobjects.spi.DataSourceProvider;
+import com.atlassian.activeobjects.spi.ImportExportException;
 import com.atlassian.activeobjects.spi.RestoreProgressMonitor;
 import com.atlassian.dbexporter.BatchMode;
 import com.atlassian.dbexporter.CleanupMode;
@@ -17,7 +18,6 @@ import com.atlassian.dbexporter.DbImporter;
 import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportConfiguration;
 import com.atlassian.dbexporter.ImportExportErrorService;
-import com.atlassian.activeobjects.spi.ImportExportException;
 import com.atlassian.dbexporter.exporter.ConnectionProviderInformationReader;
 import com.atlassian.dbexporter.exporter.DataExporter;
 import com.atlassian.dbexporter.exporter.DatabaseInformationExporter;
@@ -47,11 +47,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
-import static com.atlassian.activeobjects.ao.ConverterUtils.*;
-import static com.google.common.base.Preconditions.*;
+import static com.atlassian.activeobjects.ao.ConverterUtils.toUpperCase;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class ActiveObjectsBackup implements Backup
-{
+public final class ActiveObjectsBackup implements Backup {
     public static final Prefix PREFIX = new SimplePrefix("AO");
 
     private static final Charset CHARSET = Charset.forName("UTF-8");
@@ -61,25 +60,20 @@ public final class ActiveObjectsBackup implements Backup
     private final NameConverters nameConverters;
     private final ImportExportErrorService errorService;
 
-    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, NameConverters converters, ImportExportErrorService errorService)
-    {
-        this(new Supplier<DatabaseProvider>()
-        {
+    public ActiveObjectsBackup(final DatabaseProviderFactory databaseProviderFactory, final DataSourceProvider dataSourceProvider, NameConverters converters, ImportExportErrorService errorService) {
+        this(new Supplier<DatabaseProvider>() {
             @Override
-            public DatabaseProvider get()
-            {
+            public DatabaseProvider get() {
                 return checkNotNull(databaseProviderFactory).getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
             }
         }, converters, errorService);
     }
 
-    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService)
-    {
+    ActiveObjectsBackup(DatabaseProvider databaseProvider, NameConverters converters, ImportExportErrorService errorService) {
         this(Suppliers.ofInstance(checkNotNull(databaseProvider)), converters, errorService);
     }
 
-    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService)
-    {
+    private ActiveObjectsBackup(Supplier<DatabaseProvider> databaseProviderSupplier, NameConverters converters, ImportExportErrorService errorService) {
         this.databaseProviderSupplier = checkNotNull(databaseProviderSupplier);
         this.nameConverters = checkNotNull(converters);
         this.errorService = checkNotNull(errorService);
@@ -88,13 +82,12 @@ public final class ActiveObjectsBackup implements Backup
     /**
      * Saves the backup to an output stream.
      *
-     * @param stream the stream to write the backup to
+     * @param stream  the stream to write the backup to
      * @param monitor the progress monitor for the current backup
      * @throws ImportExportException or one of its sub-types if any error happens during the backup.
-     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportException}.
+     *                               {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportException}.
      */
-    public void save(OutputStream stream, BackupProgressMonitor monitor)
-    {
+    public void save(OutputStream stream, BackupProgressMonitor monitor) {
         final DatabaseProvider provider = databaseProviderSupplier.get();
         final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider(provider);
         final ExportConfiguration configuration = new ActiveObjectsExportConfiguration(connectionProvider, getProgressMonitor(monitor));
@@ -106,33 +99,28 @@ public final class ActiveObjectsBackup implements Backup
 
 
         NodeStreamWriter streamWriter = null;
-        try
-        {
+        try {
             streamWriter = new StaxStreamWriter(errorService, new OutputStreamWriter(stream, CHARSET), CHARSET, NAMESPACE);
             dbExporter.exportData(streamWriter, configuration);
             streamWriter.flush();
-        }
-        finally
-        {
+        } finally {
             closeCloseable(streamWriter);
         }
     }
 
-    public static SchemaConfiguration schemaConfiguration()
-    {
+    public static SchemaConfiguration schemaConfiguration() {
         return new PrefixedSchemaConfiguration(PREFIX);
     }
 
     /**
      * Restores the backup coming from the given input stream.
      *
-     * @param stream the stream of data previously backed up by the plugin.
+     * @param stream  the stream of data previously backed up by the plugin.
      * @param monitor the progress monitor for the current restore
      * @throws ImportExportException or one of its sub-types if any error happens during the backup.
-     * {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportException}.
+     *                               {@link java.sql.SQLException SQL exceptions} will be wrapped in {@link ImportExportException}.
      */
-    public void restore(InputStream stream, RestoreProgressMonitor monitor)
-    {
+    public void restore(InputStream stream, RestoreProgressMonitor monitor) {
         final DatabaseProvider provider = databaseProviderSupplier.get();
         final DatabaseProviderConnectionProvider connectionProvider = getConnectionProvider(provider);
 
@@ -152,139 +140,111 @@ public final class ActiveObjectsBackup implements Backup
                 ));
 
         NodeStreamReader streamReader = null;
-        try
-        {
+        try {
             streamReader = new StaxStreamReader(errorService, new InputStreamReader(stream, CHARSET));
             dbImporter.importData(streamReader, configuration);
-        }
-        finally
-        {
+        } finally {
             closeCloseable(streamReader);
         }
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
         final DatabaseProvider provider = databaseProviderSupplier.get();
         new ActiveObjectsDatabaseCleaner(provider, nameConverters, schemaConfiguration(), errorService).cleanup(CleanupMode.CLEAN);
     }
 
-    private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider)
-    {
+    private DatabaseInformation getDatabaseInformation(DatabaseProviderConnectionProvider connectionProvider) {
         return new DatabaseInformation(new ConnectionProviderInformationReader(errorService, connectionProvider).get());
     }
 
-    private static DatabaseProviderConnectionProvider getConnectionProvider(DatabaseProvider provider)
-    {
+    private static DatabaseProviderConnectionProvider getConnectionProvider(DatabaseProvider provider) {
         return new DatabaseProviderConnectionProvider(provider);
     }
 
-    private ProgressMonitor getProgressMonitor(BackupProgressMonitor backupProgressMonitor)
-    {
+    private ProgressMonitor getProgressMonitor(BackupProgressMonitor backupProgressMonitor) {
         return new ActiveObjectsBackupProgressMonitor(backupProgressMonitor);
     }
 
-    private ProgressMonitor getProgressMonitor(RestoreProgressMonitor restoreProgressMonitor)
-    {
+    private ProgressMonitor getProgressMonitor(RestoreProgressMonitor restoreProgressMonitor) {
         return new ActiveObjectsRestoreProgressMonitor(restoreProgressMonitor);
     }
 
-    private static void closeCloseable(Closeable streamWriter)
-    {
-        if (streamWriter != null)
-        {
-            try
-            {
+    private static void closeCloseable(Closeable streamWriter) {
+        if (streamWriter != null) {
+            try {
                 streamWriter.close();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 // ignore
             }
         }
     }
 
-    private static abstract class ActiveObjectsImportExportConfiguration implements ImportExportConfiguration
-    {
+    private static abstract class ActiveObjectsImportExportConfiguration implements ImportExportConfiguration {
         private final ConnectionProvider connectionProvider;
         private final ProgressMonitor progressMonitor;
         private final EntityNameProcessor entityNameProcessor;
 
-        ActiveObjectsImportExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor)
-        {
+        ActiveObjectsImportExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor) {
             this.connectionProvider = checkNotNull(connectionProvider);
             this.progressMonitor = checkNotNull(progressMonitor);
             this.entityNameProcessor = new UpperCaseEntityNameProcessor();
         }
 
         @Override
-        public final ConnectionProvider getConnectionProvider()
-        {
+        public final ConnectionProvider getConnectionProvider() {
             return connectionProvider;
         }
 
         @Override
-        public final ProgressMonitor getProgressMonitor()
-        {
+        public final ProgressMonitor getProgressMonitor() {
             return progressMonitor;
         }
 
         @Override
-        public final EntityNameProcessor getEntityNameProcessor()
-        {
+        public final EntityNameProcessor getEntityNameProcessor() {
             return entityNameProcessor;
         }
     }
 
-    private static final class ActiveObjectsExportConfiguration extends ActiveObjectsImportExportConfiguration implements ExportConfiguration
-    {
-        public ActiveObjectsExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor)
-        {
+    private static final class ActiveObjectsExportConfiguration extends ActiveObjectsImportExportConfiguration implements ExportConfiguration {
+        public ActiveObjectsExportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor) {
             super(connectionProvider, progressMonitor);
         }
     }
 
-    private static final class ActiveObjectsImportConfiguration extends ActiveObjectsImportExportConfiguration implements ImportConfiguration
-    {
+    private static final class ActiveObjectsImportConfiguration extends ActiveObjectsImportExportConfiguration implements ImportConfiguration {
         private final DatabaseInformation databaseInformation;
 
-        ActiveObjectsImportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor, DatabaseInformation databaseInformation)
-        {
+        ActiveObjectsImportConfiguration(ConnectionProvider connectionProvider, ProgressMonitor progressMonitor, DatabaseInformation databaseInformation) {
             super(connectionProvider, progressMonitor);
             this.databaseInformation = checkNotNull(databaseInformation);
         }
 
         @Override
-        public DatabaseInformation getDatabaseInformation()
-        {
+        public DatabaseInformation getDatabaseInformation() {
             return databaseInformation;
         }
 
         @Override
-        public CleanupMode getCleanupMode()
-        {
+        public CleanupMode getCleanupMode() {
             return CleanupMode.CLEAN;
         }
 
         @Override
-        public BatchMode getBatchMode()
-        {
+        public BatchMode getBatchMode() {
             return BatchMode.ON;
         }
     }
 
-    public static final class UpperCaseEntityNameProcessor implements EntityNameProcessor
-    {
+    public static final class UpperCaseEntityNameProcessor implements EntityNameProcessor {
         @Override
-        public String tableName(String tableName)
-        {
+        public String tableName(String tableName) {
             return toUpperCase(tableName);
         }
 
         @Override
-        public String columnName(String columnName)
-        {
+        public String columnName(String columnName) {
             return toUpperCase(columnName);
         }
     }

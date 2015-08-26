@@ -12,7 +12,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target(TYPE)
 @Inherited
-public @interface PackageIncludes
-{
+public @interface PackageIncludes {
     String[] value() default {};
 }

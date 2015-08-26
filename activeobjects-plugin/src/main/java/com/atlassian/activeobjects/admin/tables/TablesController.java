@@ -10,7 +10,6 @@ import com.atlassian.activeobjects.spi.PluginInformation;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.Table;
 import com.atlassian.dbexporter.exporter.TableReader;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -21,18 +20,16 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class TablesController
-{
+public final class TablesController {
     private final DatabaseProviderFactory databaseProviderFactory;
     private final NameConverters nameConverters;
     private final DataSourceProvider dataSourceProvider;
     private final ImportExportErrorServiceImpl errorService;
     private final PluginInformationFactory pluginInformationFactory;
 
-    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory)
-    {
+    public TablesController(DatabaseProviderFactory databaseProviderFactory, NameConverters nameConverters, DataSourceProvider dataSourceProvider, ImportExportErrorServiceImpl errorService, PluginInformationFactory pluginInformationFactory) {
         this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
         this.nameConverters = checkNotNull(nameConverters);
         this.databaseProviderFactory = checkNotNull(databaseProviderFactory);
@@ -40,8 +37,7 @@ public final class TablesController
         this.errorService = checkNotNull(errorService);
     }
 
-    public ModelAndView list(HttpServletRequest request, HttpServletResponse response) throws Exception
-    {
+    public ModelAndView list(HttpServletRequest request, HttpServletResponse response) throws Exception {
         final DatabaseProvider databaseProvider = getDatabaseProvider();
         final Iterable<Table> tables = readTables(newTableReader(databaseProvider));
         final RowCounter rowCounter = RowCounter.from(databaseProvider);
@@ -49,70 +45,57 @@ public final class TablesController
         return new ModelAndView("list-tables", "tables", tablesPerPlugin(tables, rowCounter));
     }
 
-    private Iterable<Table> readTables(TableReader tableReader)
-    {
+    private Iterable<Table> readTables(TableReader tableReader) {
         return tableReader.read(emptyDatabaseInformation(), newEntityNameProcessor());
     }
 
-    private ActiveObjectsBackup.UpperCaseEntityNameProcessor newEntityNameProcessor()
-    {
+    private ActiveObjectsBackup.UpperCaseEntityNameProcessor newEntityNameProcessor() {
         return new ActiveObjectsBackup.UpperCaseEntityNameProcessor();
     }
 
-    private DatabaseInformation emptyDatabaseInformation()
-    {
+    private DatabaseInformation emptyDatabaseInformation() {
         return new DatabaseInformation(Maps.<String, String>newHashMap());
     }
 
-    private ActiveObjectsTableReader newTableReader(DatabaseProvider databaseProvider)
-    {
+    private ActiveObjectsTableReader newTableReader(DatabaseProvider databaseProvider) {
         return new ActiveObjectsTableReader(errorService, nameConverters, databaseProvider, ActiveObjectsBackup.schemaConfiguration());
     }
 
-    private DatabaseProvider getDatabaseProvider()
-    {
+    private DatabaseProvider getDatabaseProvider() {
         return databaseProviderFactory.getDatabaseProvider(dataSourceProvider.getDataSource(), dataSourceProvider.getDatabaseType(), dataSourceProvider.getSchema());
     }
 
-    private Multimap<PluginInformation, TableInformation> tablesPerPlugin(Iterable<Table> tables, final RowCounter rowCounter)
-    {
+    private Multimap<PluginInformation, TableInformation> tablesPerPlugin(Iterable<Table> tables, final RowCounter rowCounter) {
         final Multimap<PluginInformation, TableInformation> tablesPerPlugin = HashMultimap.create();
-        for (Table table : tables)
-        {
+        for (Table table : tables) {
             final String tableName = table.getName();
             tablesPerPlugin.put(newPluginInformation(tableName), newTableInformation(tableName, rowCounter));
         }
         return tablesPerPlugin;
     }
 
-    private PluginInformation newPluginInformation(String tableName)
-    {
+    private PluginInformation newPluginInformation(String tableName) {
         return pluginInformationFactory.getPluginInformation(tableName);
     }
 
-    private TableInformation newTableInformation(String tableName, RowCounter rowCounter)
-    {
+    private TableInformation newTableInformation(String tableName, RowCounter rowCounter) {
         return new TableInformation(tableName, rowCounter.count(tableName));
     }
 
-    public static final class TableInformation
-    {
+    public static final class TableInformation {
         private final String table;
         private final String rows;
 
-        public TableInformation(String table, int rows)
-        {
+        public TableInformation(String table, int rows) {
             this.table = checkNotNull(table);
             this.rows = String.valueOf(rows);
         }
 
-        public String getTable()
-        {
+        public String getTable() {
             return table;
         }
 
-        public String getRows()
-        {
+        public String getRows() {
             return rows;
         }
     }

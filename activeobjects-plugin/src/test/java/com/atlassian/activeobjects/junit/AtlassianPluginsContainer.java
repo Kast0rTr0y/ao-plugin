@@ -4,8 +4,7 @@ import com.atlassian.plugin.Plugin;
 
 import java.io.File;
 
-public interface AtlassianPluginsContainer
-{
+public interface AtlassianPluginsContainer {
     void start();
 
     void stop();

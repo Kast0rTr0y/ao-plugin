@@ -8,12 +8,10 @@ import com.atlassian.activeobjects.util.ActiveObjectsConfigurationServiceProvide
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.util.concurrent.Promise;
 import com.atlassian.util.concurrent.Promises;
-
 import net.java.ao.DBParam;
 import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,13 +30,12 @@ import static org.mockito.Mockito.when;
  * The main reason for this tests is to ensure that we use the  supplier.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DelegatingActiveObjectsTest
-{
+public class DelegatingActiveObjectsTest {
     private ActiveObjects activeObjects;
 
     @Mock
     private ActiveObjects delegateActiveObjects;
-    
+
     @Mock
     private Bundle bundle;
 
@@ -47,39 +44,34 @@ public class DelegatingActiveObjectsTest
 
     @Mock
     private ActiveObjectsConfigurationServiceProvider configurationProvider;
-    
+
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         when(configurationProvider.hasConfiguration(bundle)).thenReturn(true);
         activeObjects = new DelegatingActiveObjects(Promises.promise(delegateActiveObjects), bundle, tranSyncManager, configurationProvider, DatabaseType.UNKNOWN);
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testMigrate() throws Exception
-    {
+    public void testMigrate() throws Exception {
         activeObjects.migrate(AnEntity.class);
         verify(delegateActiveObjects).migrate(AnEntity.class);
     }
 
     @Test
-    public void testFlushAll() throws Exception
-    {
+    public void testFlushAll() throws Exception {
         activeObjects.flushAll();
         verify(delegateActiveObjects).flushAll();
     }
 
     @Test
-    public void testFlush() throws Exception
-    {
+    public void testFlush() throws Exception {
         activeObjects.flush();
         verify(delegateActiveObjects).flush();
     }
 
     @Test
-    public void testGetEntityKey() throws Exception
-    {
+    public void testGetEntityKey() throws Exception {
         final Integer key = 1;
         activeObjects.get(AnEntity.class, key);
 
@@ -87,8 +79,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testGetEntityKeys() throws Exception
-    {
+    public void testGetEntityKeys() throws Exception {
         final Integer key1 = 1;
         final Integer key2 = 2;
         activeObjects.get(AnEntity.class, key1, key2);
@@ -96,39 +87,34 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testCreateEntityMap() throws Exception
-    {
+    public void testCreateEntityMap() throws Exception {
         final HashMap<String, Object> aMap = new HashMap<String, Object>();
         activeObjects.create(AnEntity.class, aMap);
         verify(delegateActiveObjects).create(AnEntity.class, aMap);
     }
 
     @Test
-    public void testCreateEntityDBParams() throws Exception
-    {
+    public void testCreateEntityDBParams() throws Exception {
         final DBParam dbParam = new DBParam("field", "value");
         activeObjects.create(AnEntity.class, dbParam);
         verify(delegateActiveObjects).create(AnEntity.class, dbParam);
     }
 
     @Test
-    public void testDelete() throws Exception
-    {
+    public void testDelete() throws Exception {
         final AnEntity entity = new AnEntity();
         activeObjects.delete(entity);
         verify(delegateActiveObjects).delete(entity);
     }
 
     @Test
-    public void testFindClass() throws Exception
-    {
+    public void testFindClass() throws Exception {
         activeObjects.find(AnEntity.class);
         verify(delegateActiveObjects).find(AnEntity.class);
     }
 
     @Test
-    public void testFindClassCriteriaObjects() throws Exception
-    {
+    public void testFindClassCriteriaObjects() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
         final String criteria = "criteria";
         final Object param = new Object();
@@ -138,8 +124,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testFindClassQuery() throws Exception
-    {
+    public void testFindClassQuery() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
         final Query query = Query.select();
 
@@ -148,8 +133,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testFindClassStringQuery() throws Exception
-    {
+    public void testFindClassStringQuery() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
         final String field = "field";
         final Query query = Query.select();
@@ -159,8 +143,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testFindWithSQL() throws Exception
-    {
+    public void testFindWithSQL() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
         final String keyField = "field";
         final String sql = "sql";
@@ -171,8 +154,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testCountClass() throws Exception
-    {
+    public void testCountClass() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
 
         activeObjects.count(type);
@@ -180,8 +162,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testCountClassStringObjects() throws Exception
-    {
+    public void testCountClassStringObjects() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
         final String criteria = "criteria";
         final Object param = new Object();
@@ -191,8 +172,7 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testCountClassQuery() throws Exception
-    {
+    public void testCountClassQuery() throws Exception {
         final Class<AnEntity> type = AnEntity.class;
         final Query query = Query.select();
 
@@ -201,53 +181,44 @@ public class DelegatingActiveObjectsTest
     }
 
     @Test
-    public void testExecuteInTransaction() throws Exception
-    {
+    public void testExecuteInTransaction() throws Exception {
         @SuppressWarnings({"unchecked"}) final TransactionCallback<Object> callback = mock(TransactionCallback.class);
         activeObjects.executeInTransaction(callback);
         verify(delegateActiveObjects).executeInTransaction(callback);
     }
 
-    @Test(expected=ActiveObjectsInitException.class)
-    public void testDoesNotWaitWithinTransactionWithHsqlDB() throws Exception
-    {
+    @Test(expected = ActiveObjectsInitException.class)
+    public void testDoesNotWaitWithinTransactionWithHsqlDB() throws Exception {
         when(tranSyncManager.isActiveSynchronisedTransaction()).thenReturn(true);
         Promise<ActiveObjects> promise = mock(Promise.class);
         when(promise.isDone()).thenReturn(false);
-        
+
         activeObjects = new DelegatingActiveObjects(promise, bundle, tranSyncManager, configurationProvider, DatabaseType.HSQL);
         activeObjects.moduleMetaData().awaitInitialization();
     }
 
     ///CLOVER:OFF
 
-    private static class AnEntity implements RawEntity<Integer>
-    {
-        public void init()
-        {
+    private static class AnEntity implements RawEntity<Integer> {
+        public void init() {
 
         }
 
-        public void save()
-        {
+        public void save() {
 
         }
 
-        public EntityManager getEntityManager()
-        {
+        public EntityManager getEntityManager() {
             return null;
         }
 
-        public void addPropertyChangeListener(PropertyChangeListener listener)
-        {
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
         }
 
-        public void removePropertyChangeListener(PropertyChangeListener listener)
-        {
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
 
-        public <X extends RawEntity<Integer>> Class<X> getEntityType()
-        {
+        public <X extends RawEntity<Integer>> Class<X> getEntityType() {
             return null;
         }
     }

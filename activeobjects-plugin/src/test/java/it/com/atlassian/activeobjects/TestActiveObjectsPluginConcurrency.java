@@ -13,20 +13,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.atlassian.activeobjects.test.ActiveObjectsAssertions.*;
-import static com.atlassian.activeobjects.test.Plugins.*;
+import static com.atlassian.activeobjects.test.ActiveObjectsAssertions.assertDatabaseExists;
+import static com.atlassian.activeobjects.test.Plugins.newConsumerPlugin;
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.endsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public final class TestActiveObjectsPluginConcurrency extends BaseActiveObjectsIntegrationTest
-{
+public final class TestActiveObjectsPluginConcurrency extends BaseActiveObjectsIntegrationTest {
     private static final String CONSUMER_PLUGIN_KEY = "ao-test-consumer";
 
     private File homeDirectory;
 
     @Before
-    public final void setUp()
-    {
+    public final void setUp() {
         // plugin settings
         final PluginSettings globalSettings = mock(PluginSettings.class);
         when(globalSettings.get(endsWith(ActiveObjectsSettingKeys.DATA_SOURCE_TYPE))).thenReturn(DataSourceType.HSQLDB.name());
@@ -41,30 +41,22 @@ public final class TestActiveObjectsPluginConcurrency extends BaseActiveObjectsI
     }
 
     @After
-    public final void tearDown()
-    {
+    public final void tearDown() {
         container.stop();
     }
 
     @Test
-    public final void lotsOfConcurrentCalls() throws Exception
-    {
+    public final void lotsOfConcurrentCalls() throws Exception {
         container.install(newConsumerPlugin(CONSUMER_PLUGIN_KEY));
         final ActiveObjectsTestConsumer consumer = container.getService(ActiveObjectsTestConsumer.class);
 
         final AtomicBoolean failFlag = new AtomicBoolean(false);
-        final Runnable r = new Runnable()
-        {
-            public void run()
-            {
-                if (!failFlag.get())
-                {
-                    try
-                    {
+        final Runnable r = new Runnable() {
+            public void run() {
+                if (!failFlag.get()) {
+                    try {
                         consumer.run();
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         failFlag.set(true);
                         e.printStackTrace();
                     }
@@ -78,11 +70,9 @@ public final class TestActiveObjectsPluginConcurrency extends BaseActiveObjectsI
         assertDatabaseExists(homeDirectory, "data/plugins/activeobjects", CONSUMER_PLUGIN_KEY);
     }
 
-    private void execute(Runnable r, int numberOfExecutions, int sizeOfPool) throws InterruptedException
-    {
+    private void execute(Runnable r, int numberOfExecutions, int sizeOfPool) throws InterruptedException {
         final ExecutorService executor = Executors.newFixedThreadPool(sizeOfPool);
-        for (int x = 0; x < numberOfExecutions; x++)
-        {
+        for (int x = 0; x < numberOfExecutions; x++) {
             executor.execute(r);
         }
         executor.shutdown();

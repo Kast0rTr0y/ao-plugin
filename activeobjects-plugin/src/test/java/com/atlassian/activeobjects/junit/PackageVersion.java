@@ -6,8 +6,7 @@ import java.lang.annotation.Documented;
 //@Retention(RUNTIME)
 //@Target(TYPE)
 //@Inherited
-public @interface PackageVersion
-{
+public @interface PackageVersion {
     String value();
 
     String version();

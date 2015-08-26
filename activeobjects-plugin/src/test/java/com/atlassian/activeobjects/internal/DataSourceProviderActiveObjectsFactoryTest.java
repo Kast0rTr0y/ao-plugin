@@ -7,9 +7,7 @@ import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.activeobjects.spi.TransactionSynchronisationManager;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-
 import net.java.ao.EntityManager;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +32,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.DataSourceProviderActiveObjectsFactory}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DataSourceProviderActiveObjectsFactoryTest
-{
+public class DataSourceProviderActiveObjectsFactoryTest {
     private DataSourceProviderActiveObjectsFactory activeObjectsFactory;
 
     @Mock
@@ -52,52 +49,43 @@ public class DataSourceProviderActiveObjectsFactoryTest
 
     @Mock
     private ActiveObjectsConfiguration configuration;
-    
-    @Mock 
+
+    @Mock
     private TransactionSynchronisationManager transactionSynchronizationManager;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         activeObjectsFactory = new DataSourceProviderActiveObjectsFactory(upgradeManager, entityManagerFactory, dataSourceProvider, transactionTemplate);
         activeObjectsFactory.setTransactionSynchronizationManager(transactionSynchronizationManager);
-        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
+            public Object answer(InvocationOnMock invocation) throws Throwable {
                 return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
             }
         });
     }
 
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
         activeObjectsFactory = null;
         entityManagerFactory = null;
         dataSourceProvider = null;
     }
 
     @Test
-    public void testCreateWithNullDataSource() throws Exception
-    {
+    public void testCreateWithNullDataSource() throws Exception {
         when(dataSourceProvider.getDataSource()).thenReturn(null); // not really needed, but just to make the test clear
         when(configuration.getDataSourceType()).thenReturn(DataSourceType.APPLICATION);
-        try
-        {
+        try {
             activeObjectsFactory.create(configuration, DatabaseType.UNKNOWN);
             fail("Should have thrown " + ActiveObjectsPluginException.class.getName());
-        }
-        catch (ActiveObjectsPluginException e)
-        {
+        } catch (ActiveObjectsPluginException e) {
             // ignored
         }
     }
 
     @Test
-    public void testCreateWithNonNullDataSource() throws Exception
-    {
+    public void testCreateWithNonNullDataSource() throws Exception {
         final DataSource dataSource = mock(DataSource.class);
         final EntityManager entityManager = mock(EntityManager.class);
 
@@ -109,18 +97,15 @@ public class DataSourceProviderActiveObjectsFactoryTest
         verify(entityManagerFactory).getEntityManager(anyDataSource(), anyDatabaseType(), anyString(), anyConfiguration());
     }
 
-    private static DataSource anyDataSource()
-    {
+    private static DataSource anyDataSource() {
         return Mockito.anyObject();
     }
 
-    private static DatabaseType anyDatabaseType()
-    {
+    private static DatabaseType anyDatabaseType() {
         return Mockito.anyObject();
     }
 
-    private static ActiveObjectsConfiguration anyConfiguration()
-    {
+    private static ActiveObjectsConfiguration anyConfiguration() {
         return Mockito.anyObject();
     }
 }

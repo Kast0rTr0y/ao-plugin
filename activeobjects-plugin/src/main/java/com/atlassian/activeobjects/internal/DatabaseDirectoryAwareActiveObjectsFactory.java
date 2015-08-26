@@ -8,10 +8,8 @@ import com.atlassian.activeobjects.spi.ActiveObjectsPluginConfiguration;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
-
 import net.java.ao.EntityManager;
 import net.java.ao.builder.EntityManagerBuilder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +17,7 @@ import java.io.File;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractActiveObjectsFactory
-{
+public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractActiveObjectsFactory {
     private static final String USER_NAME = "sa";
     private static final String PASSWORD = "";
 
@@ -30,23 +27,20 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
     private final ActiveObjectsPluginConfiguration dbConfiguration;
 
     public DatabaseDirectoryAwareActiveObjectsFactory(ActiveObjectUpgradeManager aoUpgradeManager,
-            ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration, TransactionTemplate transactionTemplate)
-    {
-        super(DataSourceType.HSQLDB, aoUpgradeManager,transactionTemplate);
+                                                      ApplicationProperties applicationProperties, ActiveObjectsPluginConfiguration dbConfiguration, TransactionTemplate transactionTemplate) {
+        super(DataSourceType.HSQLDB, aoUpgradeManager, transactionTemplate);
         this.applicationProperties = checkNotNull(applicationProperties);
         this.dbConfiguration = checkNotNull(dbConfiguration);
     }
 
     @Override
-    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType)
-    {
+    protected ActiveObjects doCreate(ActiveObjectsConfiguration configuration, DatabaseType dbType) {
         final File dbDir = getDatabaseDirectory(getDatabasesDirectory(getHomeDirectory()), configuration.getPluginKey());
         final EntityManager entityManager = getEntityManager(dbDir, configuration);
         return new DatabaseDirectoryAwareEntityManagedActiveObjects(entityManager, new EntityManagedTransactionManager(entityManager));
     }
 
-    private EntityManager getEntityManager(File dbDirectory, ActiveObjectsConfiguration configuration)
-    {
+    private EntityManager getEntityManager(File dbDirectory, ActiveObjectsConfiguration configuration) {
         return EntityManagerBuilder.url(getUri(dbDirectory)).username(USER_NAME).password(PASSWORD).auto()
                 .tableNameConverter(configuration.getNameConverters().getTableNameConverter())
                 .fieldNameConverter(configuration.getNameConverters().getFieldNameConverter())
@@ -57,16 +51,13 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
                 .build();
     }
 
-    private static String getUri(File dbDirectory)
-    {
+    private static String getUri(File dbDirectory) {
         return "jdbc:hsqldb:file:" + dbDirectory.getAbsolutePath() + "/db;hsqldb.default_table_type=cached";
     }
 
-    private File getDatabaseDirectory(File databasesDirectory, PluginKey pluginKey)
-    {
+    private File getDatabaseDirectory(File databasesDirectory, PluginKey pluginKey) {
         final File dbDir = new File(databasesDirectory, pluginKey.asString());
-        if (!dbDir.exists() && !dbDir.mkdir())
-        {
+        if (!dbDir.exists() && !dbDir.mkdir()) {
             throw new ActiveObjectsPluginException("Could not create database directory for plugin <" + pluginKey + "> at  <" + dbDir.getAbsolutePath() + ">");
         }
 
@@ -75,22 +66,18 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
         return dbDir;
     }
 
-    private File getDatabasesDirectory(File home)
-    {
+    private File getDatabasesDirectory(File home) {
         String path = dbConfiguration.getDatabaseBaseDirectory();
-        if (path.startsWith("/"))
-        {
+        if (path.startsWith("/")) {
             path = path.substring(1);
         }
         final File dbDirectory = new File(home, path);
 
-        if (dbDirectory.exists() && dbDirectory.isFile())
-        {
+        if (dbDirectory.exists() && dbDirectory.isFile()) {
             throw new ActiveObjectsPluginException("Database directory already exists, but is a file, at <" + dbDirectory.getPath() + ">");
         }
 
-        if (!dbDirectory.exists() && !dbDirectory.mkdirs())
-        {
+        if (!dbDirectory.exists() && !dbDirectory.mkdirs()) {
             throw new ActiveObjectsPluginException("Could not create directory for database at <" + dbDirectory.getPath() + ">");
         }
 
@@ -99,24 +86,19 @@ public final class DatabaseDirectoryAwareActiveObjectsFactory extends AbstractAc
         return dbDirectory;
     }
 
-    private File getHomeDirectory()
-    {
+    private File getHomeDirectory() {
         final File home = applicationProperties.getHomeDirectory();
-        if (home == null)
-        {
+        if (home == null) {
             throw new ActiveObjectsPluginException("Home directory undefined!");
         }
-        if (!home.exists() || !home.isDirectory())
-        {
+        if (!home.exists() || !home.isDirectory()) {
             throw new ActiveObjectsPluginException("The ActiveObjects plugin couldn't find a home directory at <" + home.getAbsolutePath() + ">");
         }
         return home;
     }
 
-    private static final class DatabaseDirectoryAwareEntityManagedActiveObjects extends EntityManagedActiveObjects implements DatabaseDirectoryAware
-    {
-        DatabaseDirectoryAwareEntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager)
-        {
+    private static final class DatabaseDirectoryAwareEntityManagedActiveObjects extends EntityManagedActiveObjects implements DatabaseDirectoryAware {
+        DatabaseDirectoryAwareEntityManagedActiveObjects(EntityManager entityManager, TransactionManager transactionManager) {
             super(entityManager, transactionManager, DatabaseType.HSQL);
         }
     }

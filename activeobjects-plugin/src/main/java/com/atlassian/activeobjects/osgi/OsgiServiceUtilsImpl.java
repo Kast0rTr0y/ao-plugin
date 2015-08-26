@@ -12,19 +12,17 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Default implementation of {@link OsgiServiceUtils}
  */
-public class OsgiServiceUtilsImpl implements OsgiServiceUtils
-{
+public class OsgiServiceUtilsImpl implements OsgiServiceUtils {
     private static final String PROPERTY_KEY = "com.atlassian.plugin.key";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public <S, O extends S> ServiceRegistration registerService(Bundle bundle, Class<S> ifce, O obj)
-    {
+    public <S, O extends S> ServiceRegistration registerService(Bundle bundle, Class<S> ifce, O obj) {
         checkNotNull(bundle);
         checkNotNull(obj);
         final Map<String, String> properties = getProperties(bundle);
@@ -34,61 +32,47 @@ public class OsgiServiceUtilsImpl implements OsgiServiceUtils
         return getContext(bundle).registerService(ifce.getName(), obj, new Hashtable<String, String>(properties));
     }
 
-    public <S> S getService(Bundle bundle, Class<S> ifce) throws TooManyServicesFoundException, NoServicesFoundException
-    {
+    public <S> S getService(Bundle bundle, Class<S> ifce) throws TooManyServicesFoundException, NoServicesFoundException {
         checkNotNull(bundle);
 
         return ifce.cast(getContext(bundle).getService(getServiceReference(bundle, ifce)));
     }
 
-    private ServiceReference getServiceReference(Bundle bundle, Class<?> ifce) throws NoServicesFoundException, TooManyServicesFoundException
-    {
+    private ServiceReference getServiceReference(Bundle bundle, Class<?> ifce) throws NoServicesFoundException, TooManyServicesFoundException {
         final String filter = getFilter(getProperties(bundle));
         final ServiceReference[] serviceReferences = getServiceReferences(bundle, ifce, filter);
-        if (serviceReferences == null || serviceReferences.length == 0)
-        {
+        if (serviceReferences == null || serviceReferences.length == 0) {
             throw new NoServicesFoundException("Was expecting one service reference for interface <"
                     + ifce.getName() + "> and filter <" + filter + ">. Got "
                     + (serviceReferences == null ? null : serviceReferences.length) + " ! "
                     + "You should check whether an ActiveObjectsPluginException was thrown at startup. It will give "
                     + "you more information about potential errors in the <ao> module in your atlassian-plugin.xml.");
-        }
-        else if (serviceReferences.length > 1)
-        {
+        } else if (serviceReferences.length > 1) {
             throw new TooManyServicesFoundException("Was expecting one service reference for interface <"
                     + ifce.getName() + "> and filter <" + filter + ">. Got " + serviceReferences.length + " !");
-        }
-        else
-        {
+        } else {
             return serviceReferences[0];
         }
     }
 
-    ServiceReference[] getServiceReferences(Bundle bundle, Class<?> ifce, String filter)
-    {
-        try
-        {
+    ServiceReference[] getServiceReferences(Bundle bundle, Class<?> ifce, String filter) {
+        try {
             return getContext(bundle).getServiceReferences(ifce.getName(), filter);
-        }
-        catch (InvalidSyntaxException e)
-        {
+        } catch (InvalidSyntaxException e) {
             throw new IllegalStateException("There was a syntax issue getting service reference for interface <"
                     + ifce.getName() + "> and filter <" + filter + ">.\nHow is that possible ?!", e);
         }
     }
 
-    Map<String, String> getProperties(Bundle bundle)
-    {
+    Map<String, String> getProperties(Bundle bundle) {
         final Map<String, String> props = new HashMap<String, String>();
         props.put(PROPERTY_KEY, bundle.getSymbolicName());
         return props;
     }
 
-    String getFilter(Map<String, String> properties)
-    {
+    String getFilter(Map<String, String> properties) {
         final StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : properties.entrySet())
-        {
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
             sb.append("(").append(entry.getKey()).append("=").append(entry.getValue()).append(")");
             sb.append("&");
         }
@@ -96,8 +80,7 @@ public class OsgiServiceUtilsImpl implements OsgiServiceUtils
         return sb.toString();
     }
 
-    private BundleContext getContext(Bundle bundle)
-    {
+    private BundleContext getContext(Bundle bundle) {
         return bundle.getBundleContext();
     }
 

@@ -5,8 +5,7 @@ import com.atlassian.dbexporter.CleanupMode;
 import com.atlassian.dbexporter.DatabaseInformation;
 import com.atlassian.dbexporter.ImportExportConfiguration;
 
-public interface ImportConfiguration extends ImportExportConfiguration
-{
+public interface ImportConfiguration extends ImportExportConfiguration {
     /**
      * This is information of the targeted database.
      *
@@ -17,6 +16,7 @@ public interface ImportConfiguration extends ImportExportConfiguration
 
     /**
      * Whether the database should be cleaned up before importing.
+     *
      * @return the clean up mode.
      */
     CleanupMode getCleanupMode();

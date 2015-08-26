@@ -4,9 +4,10 @@ import com.atlassian.plugin.test.PluginJarBuilder;
 
 import java.io.File;
 
-/** Some useful plugins to use for testing */
-public final class Plugins
-{
+/**
+ * Some useful plugins to use for testing
+ */
+public final class Plugins {
     /**
      * A simple plugin that is a basic consumer of the Active Objects service
      *
@@ -14,8 +15,7 @@ public final class Plugins
      * @return a ready-built plugin file
      * @throws Exception any error that might happen compiling, building the plugin
      */
-    public static File newConsumerPlugin(String pluginKey) throws Exception
-    {
+    public static File newConsumerPlugin(String pluginKey) throws Exception {
         return new PluginJarBuilder()
                 .addFormattedJava("my.Foo",
                         "package my;",
@@ -64,13 +64,12 @@ public final class Plugins
     /**
      * A configuration plugin used to configure some aspect of the Active Objects plugin.
      *
-     * @param pluginKey the key to use for that plugin
+     * @param pluginKey             the key to use for that plugin
      * @param databaseDirectoryPath the database directory path to use
      * @return a ready-built plugin file
      * @throws Exception any error that might happen compiling, building the plugin
      */
-    public static File newConfigurationPlugin(String pluginKey, String databaseDirectoryPath) throws Exception
-    {
+    public static File newConfigurationPlugin(String pluginKey, String databaseDirectoryPath) throws Exception {
         return new PluginJarBuilder()
                 .addFormattedJava("config.MyConfig",
                         "package config;",

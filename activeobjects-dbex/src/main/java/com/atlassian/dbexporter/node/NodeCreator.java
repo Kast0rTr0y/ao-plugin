@@ -15,11 +15,10 @@ import java.util.Date;
  *
  * @author Erik van Zijst
  * @see NodeParser  counterpart of this interface that provides read access to
- *      streaming node graphs.
+ * streaming node graphs.
  * @see NodeStreamWriter
  */
-public interface NodeCreator
-{
+public interface NodeCreator {
 
     /**
      * Creates a new child node under the current node.

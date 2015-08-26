@@ -11,24 +11,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Extracts the dialect from the {@link net.sf.hibernate.SessionFactory hibernate session factory}, provided the
  * concrete implementation, also implements {@link net.sf.hibernate.engine.SessionFactoryImplementor}.
  */
-public final class HibernateSessionDialectExtractor implements DialectExtractor
-{
+public final class HibernateSessionDialectExtractor implements DialectExtractor {
     private final PluginHibernateSessionFactory sessionFactory;
 
-    public HibernateSessionDialectExtractor(PluginHibernateSessionFactory sessionFactory)
-    {
+    public HibernateSessionDialectExtractor(PluginHibernateSessionFactory sessionFactory) {
         this.sessionFactory = checkNotNull(sessionFactory);
     }
 
-    public Class<? extends Dialect> getDialect()
-    {
+    public Class<? extends Dialect> getDialect() {
         final SessionFactory hibernateSessionFactory = sessionFactory.getSession().getSessionFactory();
-        if (hibernateSessionFactory instanceof SessionFactoryImplementor)
-        {
+        if (hibernateSessionFactory instanceof SessionFactoryImplementor) {
             return ((SessionFactoryImplementor) hibernateSessionFactory).getDialect().getClass();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
