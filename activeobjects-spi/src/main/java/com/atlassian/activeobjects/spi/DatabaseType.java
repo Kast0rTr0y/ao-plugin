@@ -14,5 +14,6 @@ public enum DatabaseType
     DB2,
     DERBY_EMBEDDED,
     DERBY_NETWORK,
+    NUODB,
     UNKNOWN
 }

@@ -10,6 +10,8 @@ import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
 import net.java.ao.db.H2DatabaseProvider;
 import net.java.ao.db.HSQLDatabaseProvider;
 import net.java.ao.db.MySQLDatabaseProvider;
+import net.java.ao.db.NuoDBDatabaseProvider;
+import net.java.ao.db.NuoDBDisposableDataSourceHandler;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.db.SQLServerDatabaseProvider;
@@ -133,7 +135,13 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                     {
                         return new H2DatabaseProvider(getDisposableDataSource(dataSource), schema);
                     }
-                };
+                },
+        NUODB(DatabaseType.NUODB, "nuodb") {
+            @Override
+            public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema) {
+                return new NuoDBDatabaseProvider(NuoDBDisposableDataSourceHandler.newInstance(dataSource), schema);
+            }
+        };
 
         private final DatabaseType databaseType;
         private final String driverName;
