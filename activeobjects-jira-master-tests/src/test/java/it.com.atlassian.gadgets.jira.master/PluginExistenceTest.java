@@ -10,13 +10,12 @@ import static org.junit.Assert.assertTrue;
  */
 public class PluginExistenceTest extends NimbleFuncTestCase {
 
-	public static final String PLUGIN_KEY = "com.atlassian.activeobjects.activeobjects-plugin";
+    public static final String PLUGIN_KEY = "com.atlassian.activeobjects.activeobjects-plugin";
 
-	@Test
-	public void testIfPluginIsInstalledAndEnabled() throws Exception
-	{
-		assertTrue("Plugin is not installed", administration.plugins().isPluginInstalled(PLUGIN_KEY));
-		assertTrue("Plugin is not enabled", administration.plugins().isPluginEnabled(PLUGIN_KEY));
-	}
+    @Test
+    public void testIfPluginIsInstalledAndEnabled() throws Exception {
+        assertTrue("Plugin is not installed", administration.plugins().isPluginInstalled(PLUGIN_KEY));
+        assertTrue("Plugin is not enabled", administration.plugins().isPluginEnabled(PLUGIN_KEY));
+    }
 
 }

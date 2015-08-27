@@ -6,20 +6,17 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(OracleTest.class)
-public class TestOracleActiveObjectBackup extends ActiveObjectsBackupDataSetup
-{
+public class TestOracleActiveObjectBackup extends ActiveObjectsBackupDataSetup {
 
     @Test
     @NonTransactional
-    public void testOracleBackup() throws Exception
-    {
+    public void testOracleBackup() throws Exception {
         testBackup(ORACLE, ORACLE_DATA);
     }
 
     @Test
     @NonTransactional
-    public void testLegacyOracleBackup() throws Exception
-    {
+    public void testLegacyOracleBackup() throws Exception {
         testBackup(LEGACY_ORACLE, LEGACY_ORACLE_DATA);
     }
 

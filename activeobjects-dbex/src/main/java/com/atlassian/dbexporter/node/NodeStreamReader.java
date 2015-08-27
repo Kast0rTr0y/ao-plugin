@@ -7,16 +7,15 @@ import java.io.Closeable;
  *
  * @author Erik van Zijst
  */
-public interface NodeStreamReader extends Closeable
-{
+public interface NodeStreamReader extends Closeable {
 
     /**
      * Returns the root node of the object tree. The method can only be invoked
      * once. Subsequent calls will raise an {@link IllegalStateException}.
      *
      * @return the root node of the graph.
-     * @throws IllegalStateException when the root node has already been
-     * returned.
+     * @throws IllegalStateException                          when the root node has already been
+     *                                                        returned.
      * @throws com.atlassian.dbexporter.ImportExportException when the document could not be parsed.
      */
     NodeParser getRootNode() throws IllegalStateException;

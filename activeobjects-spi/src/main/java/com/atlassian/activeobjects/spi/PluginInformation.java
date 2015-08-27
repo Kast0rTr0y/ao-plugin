@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.spi;
 
-public interface PluginInformation
-{
+public interface PluginInformation {
     /**
      * If the plugin information is available then the following methods will return non-{@code null} values.
      * <ul>

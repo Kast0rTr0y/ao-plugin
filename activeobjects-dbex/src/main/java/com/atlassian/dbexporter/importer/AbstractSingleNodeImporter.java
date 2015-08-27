@@ -5,22 +5,18 @@ import com.atlassian.dbexporter.node.NodeParser;
 
 import java.util.List;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public abstract class AbstractSingleNodeImporter extends AbstractImporter
-{
-    protected AbstractSingleNodeImporter(ImportExportErrorService errorService)
-    {
+public abstract class AbstractSingleNodeImporter extends AbstractImporter {
+    protected AbstractSingleNodeImporter(ImportExportErrorService errorService) {
         super(errorService);
     }
 
-    protected AbstractSingleNodeImporter(ImportExportErrorService errorService, List<AroundImporter> arounds)
-    {
+    protected AbstractSingleNodeImporter(ImportExportErrorService errorService, List<AroundImporter> arounds) {
         super(errorService, arounds);
     }
 
-    public final boolean supports(NodeParser node)
-    {
+    public final boolean supports(NodeParser node) {
         return checkNotNull(node).getName().equals(getNodeName());
     }
 

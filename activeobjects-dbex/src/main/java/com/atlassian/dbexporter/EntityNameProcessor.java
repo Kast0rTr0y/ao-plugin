@@ -1,7 +1,6 @@
 package com.atlassian.dbexporter;
 
-public interface EntityNameProcessor
-{
+public interface EntityNameProcessor {
     /**
      * Processes the table name
      *

@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -40,8 +42,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -55,8 +55,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * the application configuration.</p>
  */
 // @NotFinalForTesting
-public class ActiveObjectsServiceFactory implements ServiceFactory, InitializingBean, DisposableBean
-{
+public class ActiveObjectsServiceFactory implements ServiceFactory, InitializingBean, DisposableBean {
     private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
 
     private static final String INIT_TASK_TIMEOUT_MS_PROPERTY = "ao-plugin.init.task.timeout";
@@ -98,8 +97,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             @Nonnull final EventPublisher eventPublisher,
             @Nonnull final TenantContext tenantContext,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
-            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
-    {
+            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider) {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantContext = checkNotNull(tenantContext);
         checkNotNull(factory);
@@ -111,28 +109,21 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         aoContextThreadFactory = new ContextClassLoaderThreadFactory(bundleContextClassLoader);
 
         // loading cache for init executors pools
-        initExecutorsByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
-        {
+        initExecutorsByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>() {
             @Override
-            public ExecutorService load(@Nonnull final Tenant tenant) throws Exception
-            {
+            public ExecutorService load(@Nonnull final Tenant tenant) throws Exception {
                 logger.debug("creating new init executor for {}", tenant);
                 return initExecutorServiceProvider.initExecutorService(tenant);
             }
         });
 
         // initExecutor retrieval function
-        initExecutorFn = new Function<Tenant, ExecutorService>()
-        {
+        initExecutorFn = new Function<Tenant, ExecutorService>() {
             @Override
-            public ExecutorService apply(@Nullable final Tenant tenant)
-            {
-                if (destroying)
-                {
+            public ExecutorService apply(@Nullable final Tenant tenant) {
+                if (destroying) {
                     throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
-                }
-                else if (cleaning)
-                {
+                } else if (cleaning) {
                     throw new IllegalStateException("applied initExecutorFn during ActiveObjects cleaning");
                 }
 
@@ -143,25 +134,19 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         };
 
         // loading cache for ActiveObjects delegates
-        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<BundleRef, TenantAwareActiveObjects>()
-        {
+        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<BundleRef, TenantAwareActiveObjects>() {
             @Override
-            public TenantAwareActiveObjects load(@Nonnull final BundleRef bundleRef) throws Exception
-            {
+            public TenantAwareActiveObjects load(@Nonnull final BundleRef bundleRef) throws Exception {
                 TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundleRef.bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
                 unattachedConfigsLock.lock();
-                try
-                {
+                try {
                     final ActiveObjectsConfiguration aoConfig = unattachedConfigByBundle.get(bundleRef.bundle);
-                    if (aoConfig != null)
-                    {
+                    if (aoConfig != null) {
                         delegate.setAoConfiguration(aoConfig);
                         unattachedConfigByBundle.remove(bundleRef.bundle);
                     }
-                }
-                finally
-                {
+                } finally {
                     unattachedConfigsLock.unlock();
                 }
                 return delegate;
@@ -170,8 +155,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         logger.debug("afterPropertiesSet");
 
         // we want tenant arrival and hot restart event notifications
@@ -179,19 +163,16 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     }
 
     @Override
-    public void destroy() throws Exception
-    {
+    public void destroy() throws Exception {
         logger.debug("destroy");
 
         destroying = true;
 
-        for (ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
-        {
+        for (ExecutorService initExecutor : initExecutorsByTenant.asMap().values()) {
             initExecutor.shutdownNow();
         }
 
-        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
-        {
+        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values()) {
             aoDelegate.destroy();
         }
 
@@ -204,13 +185,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * eagerly initialise the lazy proxies that are not invoked during plugin startup.
      */
     @Override
-    public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
-    {
+    public Object getService(Bundle bundle, ServiceRegistration serviceRegistration) {
         checkNotNull(bundle);
         logger.debug("getService bundle [{}]", bundle.getSymbolicName());
 
-        if (destroying)
-        {
+        if (destroying) {
             throw new IllegalStateException("getService after ActiveObjectsServiceFactory destruction");
         }
 
@@ -224,43 +203,34 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * realise the module.
      */
     @Override
-    public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
-    {
+    public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao) {
         checkNotNull(bundle);
         logger.debug("ungetService bundle [{}]", bundle.getSymbolicName());
 
         aoDelegatesByBundle.invalidate(new BundleRef(bundle));
-        if (ao instanceof TenantAwareActiveObjects)
-        {
+        if (ao instanceof TenantAwareActiveObjects) {
             ((TenantAwareActiveObjects) ao).destroy();
         }
     }
 
-    public void startCleaning()
-    {
+    public void startCleaning() {
         logger.debug("startCleaning");
 
         cleaning = true;
 
-        for (final ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
-        {
+        for (final ExecutorService initExecutor : initExecutorsByTenant.asMap().values()) {
             initExecutor.shutdownNow();
-            try
-            {
-                if (!initExecutor.awaitTermination(INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS))
-                {
+            try {
+                if (!initExecutor.awaitTermination(INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
                     logger.error("startCleaning timed out after {}ms awaiting init thread completion, continuing; note that this timeout may be adjusted via the system property '{}'", INIT_TASK_TIMEOUT_MS, INIT_TASK_TIMEOUT_MS_PROPERTY);
                 }
-            }
-            catch (InterruptedException e)
-            {
+            } catch (InterruptedException e) {
                 logger.error("startCleaning interrupted while awaiting running init thread completion, continuing", e);
             }
         }
     }
 
-    public void stopCleaning()
-    {
+    public void stopCleaning() {
         logger.debug("stopCleaning");
 
         cleaning = false;
@@ -269,18 +239,15 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     /**
      * Listens for {@link TenantArrivedEvent} and allows initialisation of any uninitialised instances
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onTenantArrived(TenantArrivedEvent event)
-    {
+    public void onTenantArrived(TenantArrivedEvent event) {
         // ensure that the tenant is still present
         Tenant tenant = tenantContext.getCurrentTenant();
         logger.debug("onTenantArrived tenant arrived {}", tenant);
 
-        if (tenant != null)
-        {
-            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
-            {
+        if (tenant != null) {
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values())) {
                 logger.debug("onTenantArrived starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.startActiveObjects(tenant);
             }
@@ -291,25 +258,21 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * Listens for {@link HotRestartEvent} and recreate all {@link ActiveObjects} instances within the delegates with
      * the possibly different configuration and data source
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onHotRestart(HotRestartEvent hotRestartEvent)
-    {
+    public void onHotRestart(HotRestartEvent hotRestartEvent) {
         Tenant tenant = tenantContext.getCurrentTenant();
         logger.debug("onHotRestart performing hot restart with tenant {}", tenant);
 
-        if (tenant != null)
-        {
+        if (tenant != null) {
             final ExecutorService initExecutor = initExecutorsByTenant.getIfPresent(tenant);
             initExecutorsByTenant.invalidate(tenant);
-            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
-            {
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values())) {
                 logger.debug("onHotRestart restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);
             }
 
-            if (initExecutor != null)
-            {
+            if (initExecutor != null) {
                 logger.debug("onHotRestart terminating any initExecutor threads");
                 initExecutor.shutdownNow();
             }
@@ -320,44 +283,34 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * Listens for {@link PluginModuleEnabledEvent} for {@link ActiveObjectModuleDescriptor}.
      * Passes it to appropriate delegate i.e. the one for which the plugin/bundle key matches.
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent)
-    {
+    public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent) {
         final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
-        if (moduleDescriptor instanceof ActiveObjectModuleDescriptor)
-        {
+        if (moduleDescriptor instanceof ActiveObjectModuleDescriptor) {
             final Plugin plugin = moduleDescriptor.getPlugin();
-            if (plugin instanceof OsgiPlugin)
-            {
+            if (plugin instanceof OsgiPlugin) {
                 final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-                if (bundle != null)
-                {
+                if (bundle != null) {
 
                     boolean attachedToDelegate = false;
                     final ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
 
                     unattachedConfigsLock.lock();
-                    try
-                    {
-                        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
-                        {
-                            if (aoDelegate.getBundle().equals(bundle))
-                            {
+                    try {
+                        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values()) {
+                            if (aoDelegate.getBundle().equals(bundle)) {
                                 logger.debug("onPluginModuleEnabledEvent attaching <ao> configuration module to ActiveObjects service of [{}]", plugin);
                                 aoDelegate.setAoConfiguration(aoConfig);
                                 attachedToDelegate = true;
                                 break;
                             }
                         }
-                        if (!attachedToDelegate)
-                        {
+                        if (!attachedToDelegate) {
                             logger.debug("onPluginModuleEnabledEvent storing unattached <ao> configuration module for [{}]", plugin);
                             unattachedConfigByBundle.put(bundle, aoConfig);
                         }
-                    }
-                    finally
-                    {
+                    } finally {
                         unattachedConfigsLock.unlock();
                     }
                 }
@@ -370,18 +323,14 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * <code>aoDelegatesByBundle</code> to ensure that the configuration has been attached to a service, whether it has
      * been OSGi registered or not.
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent)
-    {
+    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent) {
         final Plugin plugin = pluginEnabledEvent.getPlugin();
-        if (plugin instanceof OsgiPlugin)
-        {
+        if (plugin instanceof OsgiPlugin) {
             final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-            if (bundle != null)
-            {
-                if (unattachedConfigByBundle.containsKey(bundle))
-                {
+            if (bundle != null) {
+                if (unattachedConfigByBundle.containsKey(bundle)) {
                     logger.debug("onPluginEnabledEvent attaching unbound <ao> to [{}]", plugin);
 
                     // the cacheloader will do the attaching, after locking first
@@ -396,30 +345,23 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * it will be removed to ensure that we don't leak resources and, more importantly, don't retain it if the plugin
      * is re-enabled.
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onPluginDisabledEvent(PluginDisabledEvent pluginDisabledEvent)
-    {
+    public void onPluginDisabledEvent(PluginDisabledEvent pluginDisabledEvent) {
         final Plugin plugin = pluginDisabledEvent.getPlugin();
-        if (plugin instanceof OsgiPlugin)
-        {
+        if (plugin instanceof OsgiPlugin) {
             final Bundle bundle = ((OsgiPlugin) plugin).getBundle();
-            if (bundle != null)
-            {
+            if (bundle != null) {
                 logger.debug("onPluginDisabledEvent removing delegate for [{}]", plugin);
                 aoDelegatesByBundle.invalidate(new BundleRef(bundle));
 
                 unattachedConfigsLock.lock();
-                try
-                {
-                    if (unattachedConfigByBundle.containsKey(bundle))
-                    {
+                try {
+                    if (unattachedConfigByBundle.containsKey(bundle)) {
                         logger.debug("onPluginDisabledEvent removing unbound <ao> for [{}]", plugin);
                         unattachedConfigByBundle.remove(bundle);
                     }
-                }
-                finally
-                {
+                } finally {
                     unattachedConfigsLock.unlock();
                 }
             }
@@ -430,19 +372,18 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * Provides a wrapper that gives explicit object identity hashing and reference equality (via identity hasing)of a
      * {@link Bundle}, for use in maps etc.
      */
-    protected static class BundleRef
-    {
+    protected static class BundleRef {
         final Bundle bundle;
 
-        public BundleRef(Bundle bundle)
-        {
+        public BundleRef(Bundle bundle) {
             this.bundle = checkNotNull(bundle);
         }
 
         @Override
-        public boolean equals(final Object o)
-        {
-            if (o == null || getClass() != o.getClass()) { return false; }
+        public boolean equals(final Object o) {
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             final BundleRef bundleRef = (BundleRef) o;
 
@@ -450,8 +391,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return System.identityHashCode(bundle);
         }
     }

@@ -1,10 +1,10 @@
 package com.atlassian.activeobjects.config.internal;
 
 import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
+import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.internal.DataSourceType;
 import com.atlassian.activeobjects.internal.DataSourceTypeResolver;
-import com.atlassian.activeobjects.config.PluginKey;
 import com.atlassian.activeobjects.internal.Prefix;
 import net.java.ao.RawEntity;
 import net.java.ao.SchemaConfiguration;
@@ -15,7 +15,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>Default implementation of the {@link com.atlassian.activeobjects.config.ActiveObjectsConfiguration}.</p>
@@ -23,8 +23,7 @@ import static com.google.common.base.Preconditions.*;
  * implementation are based solely on the {@link com.atlassian.activeobjects.config.PluginKey} and nothing else as this is
  * the only immutable field.</p>
  */
-public final class DefaultActiveObjectsConfiguration implements ActiveObjectsConfiguration
-{
+public final class DefaultActiveObjectsConfiguration implements ActiveObjectsConfiguration {
     private final PluginKey pluginKey;
     private final DataSourceTypeResolver dataSourceTypeResolver;
     private Prefix tableNamePrefix;
@@ -34,98 +33,80 @@ public final class DefaultActiveObjectsConfiguration implements ActiveObjectsCon
     private Set<Class<? extends RawEntity<?>>> entities;
     private List<ActiveObjectsUpgradeTask> upgradeTasks;
 
-    public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver)
-    {
+    public DefaultActiveObjectsConfiguration(PluginKey pluginKey, DataSourceTypeResolver dataSourceTypeResolver) {
         this.pluginKey = checkNotNull(pluginKey);
         this.dataSourceTypeResolver = checkNotNull(dataSourceTypeResolver);
     }
 
     @Override
-    public PluginKey getPluginKey()
-    {
+    public PluginKey getPluginKey() {
         return pluginKey;
     }
 
     @Override
-    public DataSourceType getDataSourceType()
-    {
+    public DataSourceType getDataSourceType() {
         return dataSourceTypeResolver.getDataSourceType(getTableNamePrefix());
     }
 
     @Override
-    public Prefix getTableNamePrefix()
-    {
+    public Prefix getTableNamePrefix() {
         return tableNamePrefix;
     }
 
-    public void setTableNamePrefix(Prefix tableNamePrefix)
-    {
+    public void setTableNamePrefix(Prefix tableNamePrefix) {
         this.tableNamePrefix = tableNamePrefix;
     }
 
     @Override
-    public NameConverters getNameConverters()
-    {
+    public NameConverters getNameConverters() {
         return nameConverters;
     }
 
-    public void setNameConverters(NameConverters nameConverters)
-    {
+    public void setNameConverters(NameConverters nameConverters) {
         this.nameConverters = nameConverters;
     }
 
     @Override
-    public SchemaConfiguration getSchemaConfiguration()
-    {
+    public SchemaConfiguration getSchemaConfiguration() {
         return schemaConfiguration;
     }
 
-    public void setSchemaConfiguration(SchemaConfiguration schemaConfiguration)
-    {
+    public void setSchemaConfiguration(SchemaConfiguration schemaConfiguration) {
         this.schemaConfiguration = schemaConfiguration;
     }
 
     @Override
-    public Set<Class<? extends RawEntity<?>>> getEntities()
-    {
+    public Set<Class<? extends RawEntity<?>>> getEntities() {
         return entities;
     }
 
-    public void setEntities(Set<Class<? extends RawEntity<?>>> entities)
-    {
+    public void setEntities(Set<Class<? extends RawEntity<?>>> entities) {
         this.entities = entities;
     }
 
     @Override
-    public List<ActiveObjectsUpgradeTask> getUpgradeTasks()
-    {
+    public List<ActiveObjectsUpgradeTask> getUpgradeTasks() {
         return upgradeTasks;
     }
 
-    public void setUpgradeTasks(List<ActiveObjectsUpgradeTask> upgradeTasks)
-    {
+    public void setUpgradeTasks(List<ActiveObjectsUpgradeTask> upgradeTasks) {
         this.upgradeTasks = upgradeTasks;
     }
 
     @Override
-    public final int hashCode()
-    {
+    public final int hashCode() {
         return new HashCodeBuilder(5, 13).append(pluginKey).toHashCode();
     }
 
     @Override
-    public final boolean equals(Object o)
-    {
-        if (o == null)
-        {
+    public final boolean equals(Object o) {
+        if (o == null) {
             return false;
         }
-        if (o == this)
-        {
+        if (o == this) {
             return true;
         }
-        if (o.getClass() != getClass())
-        {
+        if (o.getClass() != getClass()) {
             return false;
         }
 

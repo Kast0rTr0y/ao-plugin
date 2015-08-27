@@ -13,26 +13,22 @@ import java.net.URISyntaxException;
 /**
  * Limits access to users with system administration permission in the application.
  */
-public final class SystemAdminAuthorisationInterceptor extends HandlerInterceptorAdapter
-{
+public final class SystemAdminAuthorisationInterceptor extends HandlerInterceptorAdapter {
     private final UserManager userManager;
     private final LoginUriProvider loginUriProvider;
     private final ApplicationProperties applicationProperties;
 
-    public SystemAdminAuthorisationInterceptor(UserManager userManager, LoginUriProvider loginUriProvider, ApplicationProperties applicationProperties)
-    {
+    public SystemAdminAuthorisationInterceptor(UserManager userManager, LoginUriProvider loginUriProvider, ApplicationProperties applicationProperties) {
         this.userManager = userManager;
         this.loginUriProvider = loginUriProvider;
         this.applicationProperties = applicationProperties;
     }
 
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception
-    {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // We require SystemAdmin to prevent normal Administrators being able to elevate their privileges by manipulating
         // the user directories.
         final boolean isSystemAdmin = userManager.isSystemAdmin(userManager.getRemoteUsername(request));
-        if (!isSystemAdmin)
-        {
+        if (!isSystemAdmin) {
             String requestPath = request.getRequestURI().substring(request.getContextPath().length());
             request.getSession().setAttribute("seraph_originalurl", requestPath);
             response.sendRedirect(getRelativeLoginUrl(request.getContextPath(), requestPath));
@@ -46,17 +42,14 @@ public final class SystemAdminAuthorisationInterceptor extends HandlerIntercepto
      * This handles cases in Confluence clustering tests where we should redirect relative to the current
      * instance rather than to the absolute base URL.
      */
-    private String getRelativeLoginUrl(String contextPath, String originalRequestPath) throws URISyntaxException
-    {
+    private String getRelativeLoginUrl(String contextPath, String originalRequestPath) throws URISyntaxException {
         String loginUri = loginUriProvider.getLoginUri(new URI(originalRequestPath)).toString();
-        if (!loginUri.startsWith(applicationProperties.getBaseUrl()))
-        {
+        if (!loginUri.startsWith(applicationProperties.getBaseUrl())) {
             return loginUri;
         }
 
         loginUri = loginUri.substring(applicationProperties.getBaseUrl().length());
-        if (!loginUri.startsWith("/"))
-        {
+        if (!loginUri.startsWith("/")) {
             loginUri = "/" + loginUri;
         }
         return contextPath + loginUri;

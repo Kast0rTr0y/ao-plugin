@@ -7,32 +7,27 @@ import com.atlassian.dbexporter.ImportExportErrorService;
 
 import java.sql.SQLException;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class ImportExportErrorServiceImpl implements ImportExportErrorService
-{
+public final class ImportExportErrorServiceImpl implements ImportExportErrorService {
     private final PluginInformationFactory pluginInformationFactory;
 
-    public ImportExportErrorServiceImpl(PluginInformationFactory pluginInformationFactory)
-    {
+    public ImportExportErrorServiceImpl(PluginInformationFactory pluginInformationFactory) {
         this.pluginInformationFactory = checkNotNull(pluginInformationFactory);
     }
 
     @Override
-    public ImportExportException newImportExportException(String tableName, String message)
-    {
+    public ImportExportException newImportExportException(String tableName, String message) {
         return new ActiveObjectsImportExportException(tableName, getPluginInformation(tableName), message);
     }
 
     @Override
-    public ImportExportException newImportExportSqlException(String tableName, String message, SQLException e)
-    {
+    public ImportExportException newImportExportSqlException(String tableName, String message, SQLException e) {
         return new ActiveObjectsImportExportException(tableName, getPluginInformation(tableName), message, e);
     }
 
     @Override
-    public ImportExportException newRowImportSqlException(String tableName, long rowNum, SQLException e)
-    {
+    public ImportExportException newRowImportSqlException(String tableName, long rowNum, SQLException e) {
         return new ActiveObjectsImportExportException(tableName,
                 getPluginInformation(tableName),
                 "There has been a SQL exception importing row #"
@@ -41,25 +36,21 @@ public final class ImportExportErrorServiceImpl implements ImportExportErrorServ
     }
 
     @Override
-    public ImportExportException newParseException(Throwable t)
-    {
+    public ImportExportException newParseException(Throwable t) {
         return new ActiveObjectsImportExportException(null, getPluginInformation(null), t);
     }
 
     @Override
-    public ImportExportException newParseException(String message)
-    {
+    public ImportExportException newParseException(String message) {
         return new ActiveObjectsImportExportException(null, getPluginInformation(null), message);
     }
 
     @Override
-    public ImportExportException newParseException(String message, Throwable t)
-    {
+    public ImportExportException newParseException(String message, Throwable t) {
         return new ActiveObjectsImportExportException(null, getPluginInformation(null), message, t);
     }
 
-    private PluginInformation getPluginInformation(String tableName)
-    {
+    private PluginInformation getPluginInformation(String tableName) {
         return pluginInformationFactory.getPluginInformation(tableName);
     }
 }

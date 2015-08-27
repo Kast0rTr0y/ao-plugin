@@ -3,9 +3,9 @@ package com.atlassian.activeobjects.spi;
 import com.atlassian.tenancy.api.Tenant;
 import com.atlassian.tenancy.api.TenantAccessor;
 
-import java.util.Iterator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -15,12 +15,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @since 0.26.1
  */
-public class CompatibilityTenantContextImpl implements CompatibilityTenantContext
-{
+public class CompatibilityTenantContextImpl implements CompatibilityTenantContext {
     private final TenantAccessor tenantAccessor;
 
-    public CompatibilityTenantContextImpl(@Nonnull final TenantAccessor tenantAccessor)
-    {
+    public CompatibilityTenantContextImpl(@Nonnull final TenantAccessor tenantAccessor) {
         this.tenantAccessor = checkNotNull(tenantAccessor);
     }
 
@@ -36,16 +34,12 @@ public class CompatibilityTenantContextImpl implements CompatibilityTenantContex
      */
     @Nullable
     @Override
-    public Tenant getCurrentTenant()
-    {
+    public Tenant getCurrentTenant() {
         // just get the the first (and only) tenant
         Iterator<Tenant> tenantIterator = tenantAccessor.getAvailableTenants().iterator();
-        if (tenantIterator.hasNext())
-        {
+        if (tenantIterator.hasNext()) {
             return tenantIterator.next();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }

@@ -13,22 +13,19 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class ActiveObjectUpgradeManagerImplTest
-{
+public final class ActiveObjectUpgradeManagerImplTest {
     private ActiveObjectUpgradeManagerImpl upgradeManager;
 
     @Mock
     private ModelVersionManager modelVersionManager;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         upgradeManager = new ActiveObjectUpgradeManagerImpl(modelVersionManager);
     }
 
     @Test(expected = IllegalStateException.class)
-    public void twoUpgradeTasksWithSameModelVersionThrowsException()
-    {
+    public void twoUpgradeTasksWithSameModelVersionThrowsException() {
         final List<ActiveObjectsUpgradeTask> upgradeTasks = Lists.<ActiveObjectsUpgradeTask>newArrayList(
                 new MockActiveObjectsUpgradeTask(ModelVersion.valueOf("1")),
                 new MockActiveObjectsUpgradeTask(ModelVersion.valueOf("1")),
@@ -38,8 +35,7 @@ public final class ActiveObjectUpgradeManagerImplTest
     }
 
     @Test
-    public void sortedUpgradeTasksWithDifferentModelVersionDoesNotThrowException()
-    {
+    public void sortedUpgradeTasksWithDifferentModelVersionDoesNotThrowException() {
         final List<ActiveObjectsUpgradeTask> upgradeTasks = Lists.<ActiveObjectsUpgradeTask>newArrayList(
                 new MockActiveObjectsUpgradeTask(ModelVersion.valueOf("1")),
                 new MockActiveObjectsUpgradeTask(ModelVersion.valueOf("3")),
@@ -48,24 +44,20 @@ public final class ActiveObjectUpgradeManagerImplTest
         upgradeManager.verify(upgradeTasks);
     }
 
-    private static final class MockActiveObjectsUpgradeTask implements ActiveObjectsUpgradeTask
-    {
+    private static final class MockActiveObjectsUpgradeTask implements ActiveObjectsUpgradeTask {
         private final ModelVersion version;
 
-        public MockActiveObjectsUpgradeTask(ModelVersion version)
-        {
+        public MockActiveObjectsUpgradeTask(ModelVersion version) {
             this.version = version;
         }
 
         @Override
-        public ModelVersion getModelVersion()
-        {
+        public ModelVersion getModelVersion() {
             return version;
         }
 
         @Override
-        public void upgrade(ModelVersion currentVersion, ActiveObjects ao)
-        {
+        public void upgrade(ModelVersion currentVersion, ActiveObjects ao) {
         }
     }
 }

@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
@@ -14,9 +13,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.ElementNameAndAttributeQualifier;
-import org.custommonkey.xmlunit.ElementNameAndTextQualifier;
-import org.custommonkey.xmlunit.ElementNameQualifier;
-import org.custommonkey.xmlunit.ElementQualifier;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -37,17 +33,20 @@ import java.util.Map;
 
 import static com.atlassian.activeobjects.testplugin.BackupTestServlet.BACKUP;
 import static com.atlassian.activeobjects.testplugin.BackupTestServlet.CREATE;
-import static com.atlassian.dbexporter.node.NodeBackup.*;
-import static org.junit.Assert.*;
+import static com.atlassian.dbexporter.node.NodeBackup.DatabaseInformationNode;
+import static com.atlassian.dbexporter.node.NodeBackup.RootNode;
+import static com.atlassian.dbexporter.node.NodeBackup.TableDataNode;
+import static com.atlassian.dbexporter.node.NodeBackup.TableDefinitionNode;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public final class BackupRestoreTest
-{
+public final class BackupRestoreTest {
     private static final XPath DB_INFO_XPATH;
     private static final XPath TABLE_XPATH;
     private static final XPath DATA_XPATH;
 
-    static
-    {
+    static {
         final SimpleNamespaceContext context = new SimpleNamespaceContext(ImmutableMap.builder().put("ao", "http://www.atlassian.com/ao").build());
 
         DB_INFO_XPATH = DocumentHelper.createXPath("/" + RootNode.NAME + "/ao:" + DatabaseInformationNode.NAME);
@@ -61,13 +60,10 @@ public final class BackupRestoreTest
     private static final String BASE_URL = System.getProperty("baseurl");
     private static final String AO_TEST = BASE_URL + "/plugins/servlet/ao-test";
 
-    private static final Predicate TEST_PLUGIN_TABLE_ELEMENTS = new Predicate()
-    {
+    private static final Predicate TEST_PLUGIN_TABLE_ELEMENTS = new Predicate() {
         @Override
-        public boolean apply(Object node)
-        {
-            if (node instanceof Element)
-            {
+        public boolean apply(Object node) {
+            if (node instanceof Element) {
                 Element element = (Element) node;
                 return element.attributeValue("name").startsWith("AO_0F732C");
             }
@@ -75,13 +71,10 @@ public final class BackupRestoreTest
         }
     };
 
-    private static final Predicate TEST_PLUGIN_DATA_ELEMENTS = new Predicate()
-    {
+    private static final Predicate TEST_PLUGIN_DATA_ELEMENTS = new Predicate() {
         @Override
-        public boolean apply(Object node)
-        {
-            if (node instanceof Element)
-            {
+        public boolean apply(Object node) {
+            if (node instanceof Element) {
                 Element element = (Element) node;
                 return element.attributeValue("tableName").startsWith("AO_0F732C");
             }
@@ -92,8 +85,7 @@ public final class BackupRestoreTest
     private HttpClient client;
 
     @Test
-    public void testBackup() throws Exception
-    {
+    public void testBackup() throws Exception {
         final String backup = get(AO_TEST, parameters(CREATE, true)); // initial backup with creation of data
         assertBackupIsNotEmpty(backup);
 
@@ -107,19 +99,17 @@ public final class BackupRestoreTest
         Diff diff = new Diff(backup, backupAfterRestore);
         // we don't care about ordering
         diff.overrideElementQualifier(new ElementNameAndAttributeQualifier());
-        XMLAssert.assertXMLEqual("BackupAfterRestore is substantially different\n"+backup+"\nAfter: "+backupAfterRestore, diff, true);
+        XMLAssert.assertXMLEqual("BackupAfterRestore is substantially different\n" + backup + "\nAfter: " + backupAfterRestore, diff, true);
     }
 
-    private void assertBackupIsEmpty(String backup) throws DocumentException
-    {
+    private void assertBackupIsEmpty(String backup) throws DocumentException {
         final Document doc = DocumentHelper.parseText(backup);
         assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
         assertTrue(Collections2.filter(TABLE_XPATH.selectNodes(doc), TEST_PLUGIN_TABLE_ELEMENTS).isEmpty());
         assertTrue(Collections2.filter(DATA_XPATH.selectNodes(doc), TEST_PLUGIN_DATA_ELEMENTS).isEmpty());
     }
 
-    private void assertBackupIsNotEmpty(String backup) throws DocumentException
-    {
+    private void assertBackupIsNotEmpty(String backup) throws DocumentException {
         final Document doc = DocumentHelper.parseText(backup);
         assertEquals(1, DB_INFO_XPATH.selectNodes(doc).size());
         assertFalse(Collections2.filter(TABLE_XPATH.selectNodes(doc), TEST_PLUGIN_TABLE_ELEMENTS).isEmpty());
@@ -127,106 +117,88 @@ public final class BackupRestoreTest
     }
 
     @Before
-    public final void createHttpClient()
-    {
-        if (BASE_URL == null || BASE_URL.equals(""))
-        {
+    public final void createHttpClient() {
+        if (BASE_URL == null || BASE_URL.equals("")) {
             throw new IllegalStateException("BASE_URL is not set properly!");
         }
         client = new HttpClient();
     }
 
-    private String get(String path, Map<String, Object> parameters) throws IOException
-    {
+    private String get(String path, Map<String, Object> parameters) throws IOException {
         return service(newGetMethod(path, parameters));
     }
 
-    private HttpMethod newGetMethod(String path, Map<String, Object> parameters)
-    {
+    private HttpMethod newGetMethod(String path, Map<String, Object> parameters) {
         final GetMethod method = new GetMethod(path);
         method.setQueryString(toNameValuePairArray(parameters));
         return method;
     }
 
-    private NameValuePair[] toNameValuePairArray(Map<String, Object> parameters)
-    {
-        return Collections2.transform(parameters.entrySet(), new Function<Map.Entry<String, Object>, NameValuePair>()
-        {
-            public NameValuePair apply(Map.Entry<String, Object> from)
-            {
+    private NameValuePair[] toNameValuePairArray(Map<String, Object> parameters) {
+        return Collections2.transform(parameters.entrySet(), new Function<Map.Entry<String, Object>, NameValuePair>() {
+            public NameValuePair apply(Map.Entry<String, Object> from) {
                 return new NameValuePair(from.getKey(), from.getValue().toString());
             }
         }).toArray(new NameValuePair[parameters.size()]);
     }
 
-    private void post(String path, Map<String, Object> parameters) throws IOException
-    {
+    private void post(String path, Map<String, Object> parameters) throws IOException {
         service(newPostMethod(path, parameters));
     }
 
-    private HttpMethod newPostMethod(String path, Map<String, Object> parameters)
-    {
+    private HttpMethod newPostMethod(String path, Map<String, Object> parameters) {
         final PostMethod method = new PostMethod(path);
         method.setRequestHeader("Content-Type", PostMethod.FORM_URL_ENCODED_CONTENT_TYPE + ";charset=UTF-8");
         method.setRequestBody(toNameValuePairArray(parameters));
         return method;
     }
 
-    private void delete(String path) throws IOException
-    {
+    private void delete(String path) throws IOException {
         service(new DeleteMethod(path));
     }
 
-    private String service(HttpMethod method) throws IOException
-    {
+    private String service(HttpMethod method) throws IOException {
         final int statusCode = client.executeMethod(method);
-        if (statusCode != HttpStatus.SC_OK)
-        {
+        if (statusCode != HttpStatus.SC_OK) {
             throw new RuntimeException("Got status " + statusCode + " for " + method.getName() + " on URI " + method.getURI());
         }
         return IOUtils.toString(method.getResponseBodyAsStream());
     }
 
-    private Map<String, Object> parameters(String s, Object o)
-    {
+    private Map<String, Object> parameters(String s, Object o) {
         return ImmutableMap.of(s, o);
     }
 
-    /** A partial copy of IOUtils from commons-io */
-    private static class IOUtils
-    {
+    /**
+     * A partial copy of IOUtils from commons-io
+     */
+    private static class IOUtils {
         private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 
-        public static String toString(InputStream input) throws IOException
-        {
+        public static String toString(InputStream input) throws IOException {
             StringWriter sw = new StringWriter();
             copy(input, sw);
             return sw.toString();
         }
 
-        public static void copy(InputStream input, Writer output) throws IOException
-        {
+        public static void copy(InputStream input, Writer output) throws IOException {
             InputStreamReader in = new InputStreamReader(input, "UTF-8");
             copy(in, output);
         }
 
-        public static int copy(Reader input, Writer output) throws IOException
-        {
+        public static int copy(Reader input, Writer output) throws IOException {
             long count = copyLarge(input, output);
-            if (count > Integer.MAX_VALUE)
-            {
+            if (count > Integer.MAX_VALUE) {
                 return -1;
             }
             return (int) count;
         }
 
-        public static long copyLarge(Reader input, Writer output) throws IOException
-        {
+        public static long copyLarge(Reader input, Writer output) throws IOException {
             char[] buffer = new char[DEFAULT_BUFFER_SIZE];
             long count = 0;
             int n;
-            while (-1 != (n = input.read(buffer)))
-            {
+            while (-1 != (n = input.read(buffer))) {
                 output.write(buffer, 0, n);
                 count += n;
             }

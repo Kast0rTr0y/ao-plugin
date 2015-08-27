@@ -25,11 +25,10 @@ import java.util.TimeZone;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.transform;
-import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 
-public final class Model
-{
+public final class Model {
     private static final String DATE_FORMAT = "MMM d, yyyy";
 
     private static final String BRIAN_GOETZ = "Brian Goetz";
@@ -73,31 +72,26 @@ public final class Model
 
     private final ActiveObjects ao;
 
-    public Model(EntityManager entityManager)
-    {
+    public Model(EntityManager entityManager) {
         this.ao = new TestActiveObjects(checkNotNull(entityManager));
     }
 
-    public Model(ActiveObjects ao)
-    {
+    public Model(ActiveObjects ao) {
         this.ao = checkNotNull(ao);
     }
 
-    public void emptyDatabase()
-    {
+    public void emptyDatabase() {
         logger.debug("Emptying the database!");
         ao.migrateDestructively();
     }
 
-    public void migrateEntities()
-    {
+    public void migrateEntities() {
         final Class<? extends RawEntity<?>>[] entities = new Class[]{Book.class, Author.class, Authorship.class};
         logger.debug("Migrating entities ({}), this will create tables", Joiner.on(',').join(entities));
         ao.migrate(entities);
     }
 
-    public void createData()
-    {
+    public void createData() {
         logger.info("Adding data to the database!");
         resetDatabase();
 
@@ -110,19 +104,15 @@ public final class Model
         book(EJ2, EJ2_PRICE, EJ2_ISBN, EJ2_PUBLISHED, EJ2_READ, EJ2_PAGES, EJ2_ABSTRACT.get(), findAuthorWithName(toList(jcip), JOSHUA_BLOCH)); // author is Josh Bloch
     }
 
-    private Author[] authors(String... names)
-    {
-        return transform(newArrayList(names), new Function<String, Author>()
-        {
-            public Author apply(String name)
-            {
+    private Author[] authors(String... names) {
+        return transform(newArrayList(names), new Function<String, Author>() {
+            public Author apply(String name) {
                 return author(name);
             }
         }).toArray(new Author[names.length]);
     }
 
-    private Author author(String name)
-    {
+    private Author author(String name) {
         final Class<Author> type = Author.class;
 
         final Author author = ao.create(type);
@@ -132,8 +122,7 @@ public final class Model
     }
 
     private Book book(String title, double price, long isbn, Date published, boolean read, Integer pages,
-                      String bookAbstract, Author... authors)
-    {
+                      String bookAbstract, Author... authors) {
         final Book book = ao.create(Book.class, ImmutableMap.<String, Object>of("ISBN", isbn));
         book.setTitle(title);
         book.setAbstract(bookAbstract);
@@ -143,16 +132,14 @@ public final class Model
         book.setPublished(published);
         book.save();
 
-        for (Author author : authors)
-        {
+        for (Author author : authors) {
             authorship(book, author);
         }
 
         return book;
     }
 
-    private void authorship(Book book, Author author)
-    {
+    private void authorship(Book book, Author author) {
 
         final Authorship authorship = ao.create(Authorship.class);
         authorship.setBook(book);
@@ -160,14 +147,12 @@ public final class Model
         authorship.save();
     }
 
-    private void resetDatabase()
-    {
+    private void resetDatabase() {
         emptyDatabase();
         migrateEntities();
     }
 
-    public void checkAuthors()
-    {
+    public void checkAuthors() {
         ImmutableList<Author> authors = allAuthors();
         assertEquals(9, authors.size());
 
@@ -192,25 +177,20 @@ public final class Model
         assertEquals(0, findAuthorWithName(authors, me).getBooks().length);
     }
 
-    private Author findAuthorWithName(Iterable<Author> authors, final String name)
-    {
-        return Iterables.find(authors, new Predicate<Author>()
-        {
+    private Author findAuthorWithName(Iterable<Author> authors, final String name) {
+        return Iterables.find(authors, new Predicate<Author>() {
             @Override
-            public boolean apply(Author author)
-            {
+            public boolean apply(Author author) {
                 return name.equals(author.getName());
             }
         });
     }
 
-    private ImmutableList<Author> allAuthors()
-    {
+    private ImmutableList<Author> allAuthors() {
         return toList(ao.find(Author.class));
     }
 
-    public void checkBooks()
-    {
+    public void checkBooks() {
         final ImmutableList<Book> books = allBooks();
 
         assertEquals(3, books.size());
@@ -220,8 +200,7 @@ public final class Model
         checkBook(findBookWithTitle(books, EJ2), EJ2_ABSTRACT.get(), EJ2_PRICE, EJ2_ISBN, EJ2_PUBLISHED, EJ2_READ, EJ2_PAGES, 1);
     }
 
-    private void checkBook(Book book, String bookAbstract, double price, long isbn, Date published, boolean read, Integer pages, int i)
-    {
+    private void checkBook(Book book, String bookAbstract, double price, long isbn, Date published, boolean read, Integer pages, int i) {
         assertEquals(bookAbstract, book.getAbstract());
         assertEquals(price, book.getPrice(), 0d);
         assertEquals(published.getTime(), book.getPublished().getTime());
@@ -231,72 +210,54 @@ public final class Model
         assertEquals(i, book.getAuthors().length);
     }
 
-    private Book findBookWithTitle(Iterable<Book> books, final String title)
-    {
-        return Iterables.find(books, new Predicate<Book>()
-        {
+    private Book findBookWithTitle(Iterable<Book> books, final String title) {
+        return Iterables.find(books, new Predicate<Book>() {
             @Override
-            public boolean apply(Book book)
-            {
+            public boolean apply(Book book) {
                 return title.equals(book.getTitle());
             }
         });
     }
 
-    private ImmutableList<Book> allBooks()
-    {
+    private ImmutableList<Book> allBooks() {
         return toList(ao.find(Book.class));
     }
 
-    private <T> ImmutableList<T> toList(T[] authors)
-    {
+    private <T> ImmutableList<T> toList(T[] authors) {
         return ImmutableList.copyOf(newArrayList(authors));
     }
 
-    private static final class BookAbstractSupplier implements Supplier<String>
-    {
+    private static final class BookAbstractSupplier implements Supplier<String> {
         private final String resource;
 
-        public BookAbstractSupplier(String resource)
-        {
+        public BookAbstractSupplier(String resource) {
             this.resource = resource;
         }
 
         @Override
-        public String get()
-        {
+        public String get() {
             return resource == null ? "" : load();
         }
 
-        private String load()
-        {
+        private String load() {
             InputStream is = null;
-            try
-            {
+            try {
                 is = this.getClass().getResourceAsStream(resource);
                 return IOUtils.toString(is, "UTF-8");
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 throw new IllegalStateException(e);
-            }
-            finally
-            {
+            } finally {
                 IOUtils.closeQuietly(is);
             }
         }
     }
 
-    private static Date toDate(String date)
-    {
-        try
-        {
+    private static Date toDate(String date) {
+        try {
             final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             return sdf.parse(date);
-        }
-        catch (ParseException e)
-        {
+        } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }

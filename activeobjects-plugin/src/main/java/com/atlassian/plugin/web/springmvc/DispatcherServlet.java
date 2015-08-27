@@ -7,25 +7,20 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-public final class DispatcherServlet extends org.springframework.web.servlet.DispatcherServlet implements ApplicationContextAware
-{
+public final class DispatcherServlet extends org.springframework.web.servlet.DispatcherServlet implements ApplicationContextAware {
     private ApplicationContext pluginSpringContext;
 
-    public DispatcherServlet()
-    {
+    public DispatcherServlet() {
         // don't publish the Spring context in the servlet context -- this would affect other plugins
         setPublishContext(false);
     }
 
     @Override
-    protected WebApplicationContext findWebApplicationContext()
-    {
+    protected WebApplicationContext findWebApplicationContext() {
         // use the plugin Spring context as the parent for a new web application context
-        final XmlWebApplicationContext context = new XmlWebApplicationContext()
-        {
+        final XmlWebApplicationContext context = new XmlWebApplicationContext() {
             @Override
-            protected void initBeanDefinitionReader(final XmlBeanDefinitionReader beanDefinitionReader)
-            {
+            protected void initBeanDefinitionReader(final XmlBeanDefinitionReader beanDefinitionReader) {
                 beanDefinitionReader.setValidationMode(XmlBeanDefinitionReader.VALIDATION_NONE);
                 super.initBeanDefinitionReader(beanDefinitionReader);
             }
@@ -38,8 +33,7 @@ public final class DispatcherServlet extends org.springframework.web.servlet.Dis
         return context;
     }
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.pluginSpringContext = applicationContext;
     }
 }

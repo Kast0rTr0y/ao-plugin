@@ -25,64 +25,56 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.atlassian.dbexporter.importer.ImporterUtils.*;
-import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
-import static com.atlassian.dbexporter.node.NodeBackup.*;
-import static com.atlassian.dbexporter.progress.ProgressMonitor.*;
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.*;
+import static com.atlassian.dbexporter.importer.ImporterUtils.isNodeNotClosed;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.closeQuietly;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.metadata;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.preparedStatement;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.quote;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.withConnection;
+import static com.atlassian.dbexporter.node.NodeBackup.ColumnDataNode;
+import static com.atlassian.dbexporter.node.NodeBackup.RowDataNode;
+import static com.atlassian.dbexporter.node.NodeBackup.TableDataNode;
+import static com.atlassian.dbexporter.progress.ProgressMonitor.Task;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
-public final class DataImporter extends AbstractSingleNodeImporter
-{
+public final class DataImporter extends AbstractSingleNodeImporter {
     private final String schema;
     private final AroundTableImporter aroundTable;
 
-    public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, List<AroundImporter> arounds)
-    {
+    public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, List<AroundImporter> arounds) {
         super(errorService, arounds);
         this.schema = isBlank(schema) ? null : schema;
         this.aroundTable = checkNotNull(aroundTableImporter);
     }
 
-    public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, AroundImporter... arounds)
-    {
+    public DataImporter(ImportExportErrorService errorService, String schema, AroundTableImporter aroundTableImporter, AroundImporter... arounds) {
         this(errorService, schema, aroundTableImporter, newArrayList(checkNotNull(arounds)));
     }
 
     @Override
-    protected String getNodeName()
-    {
+    protected String getNodeName() {
         return TableDataNode.NAME;
     }
 
     @Override
-    protected void doImportNode(final NodeParser node, final ImportConfiguration configuration, final Context context)
-    {
+    protected void doImportNode(final NodeParser node, final ImportConfiguration configuration, final Context context) {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         monitor.begin(Task.TABLES_DATA);
-        withConnection(errorService, configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>()
-        {
-            public Void call(Connection connection)
-            {
-                try
-                {
+        withConnection(errorService, configuration.getConnectionProvider(), new JdbcUtils.JdbcCallable<Void>() {
+            public Void call(Connection connection) {
+                try {
                     final boolean autoCommit = connection.getAutoCommit();
-                    try
-                    {
+                    try {
                         connection.setAutoCommit(false);
-                        for (; TableDataNode.NAME.equals(node.getName()) && !node.isClosed(); node.getNextNode())
-                        {
+                        for (; TableDataNode.NAME.equals(node.getName()) && !node.isClosed(); node.getNextNode()) {
                             importTable(node, configuration, context, connection, configuration.getDatabaseInformation());
                         }
                         connection.commit();
-                    }
-                    finally
-                    {
+                    } finally {
                         connection.setAutoCommit(autoCommit);   // restore autocommit
                     }
-                }
-                catch (SQLException e)
-                {
+                } catch (SQLException e) {
                     throw errorService.newImportExportSqlException(null, "", e);
                 }
                 return null;
@@ -91,8 +83,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         monitor.end(Task.TABLES_DATA);
     }
 
-    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Context context, Connection connection, DatabaseInformation databaseInformation)
-    {
+    private NodeParser importTable(NodeParser node, ImportConfiguration configuration, Context context, Connection connection, DatabaseInformation databaseInformation) {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         final EntityNameProcessor entityNameProcessor = configuration.getEntityNameProcessor();
 
@@ -103,8 +94,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         final InserterBuilder builder = new InserterBuilder(errorService, schema, currentTable, configuration.getBatchMode());
 
         node = node.getNextNode();
-        for (; isNodeNotClosed(node, ColumnDataNode.NAME); node = node.getNextNode())
-        {
+        for (; isNodeNotClosed(node, ColumnDataNode.NAME); node = node.getNextNode()) {
             final String column = ColumnDataNode.getName(node);
             builder.addColumn(entityNameProcessor.columnName(column));
             node = node.getNextNode();  // close column node
@@ -113,27 +103,20 @@ public final class DataImporter extends AbstractSingleNodeImporter
         final Inserter inserter = builder.build(connection);
 
         long rowNum = 0L;
-        try
-        {
+        try {
             aroundTable.before(configuration, context, currentTable, connection);
 
-            for (; isNodeNotClosed(node, RowDataNode.NAME); node = node.getNextNode())
-            {
+            for (; isNodeNotClosed(node, RowDataNode.NAME); node = node.getNextNode()) {
                 node = node.getNextNode();  // read the first field node
-                for (; !node.isClosed(); node = node.getNextNode())
-                {
+                for (; !node.isClosed(); node = node.getNextNode()) {
                     inserter.setValue(node, databaseInformation);
                 }
                 inserter.execute();
                 rowNum++;
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw errorService.newRowImportSqlException(currentTable, rowNum, e);
-        }
-        finally
-        {
+        } finally {
             inserter.close();
             aroundTable.after(configuration, context, currentTable, connection);
         }
@@ -143,8 +126,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         return node;
     }
 
-    private static interface Inserter
-    {
+    private static interface Inserter {
         void setValue(NodeParser node, DatabaseInformation databaseInformation) throws SQLException;
 
         void execute() throws SQLException;
@@ -153,8 +135,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
     }
 
 
-    private static class InserterBuilder
-    {
+    private static class InserterBuilder {
         public static final int UNLIMITED_COLUMN_SIZE = -1;
 
         private final ImportExportErrorService errorService;
@@ -163,8 +144,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         private final BatchMode batch;
         private final List<String> columns;
 
-        public InserterBuilder(ImportExportErrorService errorService, String schema, String table, BatchMode batch)
-        {
+        public InserterBuilder(ImportExportErrorService errorService, String schema, String table, BatchMode batch) {
             this.errorService = checkNotNull(errorService);
             this.schema = schema;
             this.table = table;
@@ -172,37 +152,30 @@ public final class DataImporter extends AbstractSingleNodeImporter
             columns = new ArrayList<String>();
         }
 
-        public String getTable()
-        {
+        public String getTable() {
             return table;
         }
 
-        public void addColumn(String column)
-        {
+        public void addColumn(String column) {
             columns.add(column);
         }
 
-        public Inserter build(Connection connection)
-        {
+        public Inserter build(Connection connection) {
             final StringBuilder query = new StringBuilder("INSERT INTO ")
                     .append(tableName(connection))
                     .append(" (");
 
-            for (int i = 0; i < columns.size(); i++)
-            {
+            for (int i = 0; i < columns.size(); i++) {
                 query.append(quote(errorService, table, connection, columns.get(i)));
-                if (i < columns.size() - 1)
-                {
+                if (i < columns.size() - 1) {
                     query.append(", ");
                 }
             }
 
             query.append(") VALUES (");
-            for (int i = 0; i < columns.size(); i++)
-            {
+            for (int i = 0; i < columns.size(); i++) {
                 query.append("?");
-                if (i < columns.size() - 1)
-                {
+                if (i < columns.size() - 1) {
                     query.append(", ");
                 }
             }
@@ -213,14 +186,12 @@ public final class DataImporter extends AbstractSingleNodeImporter
             return newInserter(maxColumnSizes, ps);
         }
 
-        private String tableName(Connection connection)
-        {
+        private String tableName(Connection connection) {
             final String quoted = quote(errorService, table, connection, table);
             return schema != null ? schema + "." + quoted : quoted;
         }
 
-        private Inserter newInserter(List<Integer> maxColumnSizes, PreparedStatement ps)
-        {
+        private Inserter newInserter(List<Integer> maxColumnSizes, PreparedStatement ps) {
             return batch.equals(BatchMode.ON) ?
                     new BatchInserter(errorService, getTable(), columns, ps, maxColumnSizes) :
                     new ImmediateInserter(errorService, getTable(), columns, ps, maxColumnSizes);
@@ -233,91 +204,70 @@ public final class DataImporter extends AbstractSingleNodeImporter
          * @param columns
          * @return
          */
-        private List<Integer> calculateColumnSizes(Connection connection, List<String> columns)
-        {
+        private List<Integer> calculateColumnSizes(Connection connection, List<String> columns) {
             Map<String, Integer> columnSizeMap = Maps.newHashMap();
             ResultSet rs = null;
-            try
-            {
+            try {
                 rs = getColumnsResultSet(connection);
                 ColumnNameAndSize columnNameAndSize = getColumnNameAndSize(rs);
-                while (columnNameAndSize != ColumnNameAndSize.NULL)
-                {
+                while (columnNameAndSize != ColumnNameAndSize.NULL) {
                     columnSizeMap.put(columnNameAndSize.name, columnNameAndSize.size);
                     columnNameAndSize = getColumnNameAndSize(rs);
                 }
 
                 final List<Integer> sizes = newArrayList(0);
-                for (String column : columns)
-                {
+                for (String column : columns) {
                     final Integer size = columnSizeMap.get(column);
                     sizes.add(size != null ? size : UNLIMITED_COLUMN_SIZE);
                 }
                 return sizes;
-            }
-            finally
-            {
+            } finally {
                 closeQuietly(rs);
             }
         }
 
-        private ColumnNameAndSize getColumnNameAndSize(ResultSet rs)
-        {
-            try
-            {
-                if (rs.next())
-                {
+        private ColumnNameAndSize getColumnNameAndSize(ResultSet rs) {
+            try {
+                if (rs.next()) {
                     final String name = rs.getString("COLUMN_NAME");
                     final int size = rs.getInt("COLUMN_SIZE");
                     final int type = rs.getInt("DATA_TYPE");
                     return new ColumnNameAndSize(name, type == Types.CLOB ? UNLIMITED_COLUMN_SIZE : size);
-                }
-                else
-                {
+                } else {
                     return ColumnNameAndSize.NULL;
                 }
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 throw errorService.newImportExportSqlException(table, "", e);
             }
         }
 
-        private ResultSet getColumnsResultSet(Connection connection)
-        {
-            try
-            {
+        private ResultSet getColumnsResultSet(Connection connection) {
+            try {
                 return metadata(errorService, connection).getColumns(null, null, table, null);
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 throw errorService.newImportExportSqlException(table, "", e);
             }
         }
     }
 
-    private static class ColumnNameAndSize
-    {
+    private static class ColumnNameAndSize {
         private static ColumnNameAndSize NULL = new ColumnNameAndSize();
 
         public final String name;
         public final int size;
 
-        private ColumnNameAndSize()
-        {
+        private ColumnNameAndSize() {
             this.name = null;
             this.size = InserterBuilder.UNLIMITED_COLUMN_SIZE;
         }
 
-        public ColumnNameAndSize(String name, int size)
-        {
+        public ColumnNameAndSize(String name, int size) {
             this.name = checkNotNull(name);
             this.size = size <= 0 ? InserterBuilder.UNLIMITED_COLUMN_SIZE : size;
         }
     }
 
-    private static abstract class BaseInserter implements Inserter
-    {
+    private static abstract class BaseInserter implements Inserter {
         protected final ImportExportErrorService errorService;
         protected final String tableName;
 
@@ -329,8 +279,7 @@ public final class DataImporter extends AbstractSingleNodeImporter
         // e.g. HSQL doesn't provide sizes
         private final List<Integer> maxColumnSize;
 
-        public BaseInserter(ImportExportErrorService errorService, String tableName, List<String> columnNames, PreparedStatement ps, List<Integer> maxColumnSize)
-        {
+        public BaseInserter(ImportExportErrorService errorService, String tableName, List<String> columnNames, PreparedStatement ps, List<Integer> maxColumnSize) {
             this.errorService = checkNotNull(errorService);
             this.tableName = tableName;
             this.columnNames = columnNames;
@@ -339,137 +288,93 @@ public final class DataImporter extends AbstractSingleNodeImporter
             col = 1;
         }
 
-        private void setBoolean(Boolean value, DatabaseInformations.Database.Type databaseType) throws SQLException
-        {
-            if (value == null)
-            {
-                if (databaseType == DatabaseInformations.Database.Type.ORACLE)
-                {
+        private void setBoolean(Boolean value, DatabaseInformations.Database.Type databaseType) throws SQLException {
+            if (value == null) {
+                if (databaseType == DatabaseInformations.Database.Type.ORACLE) {
                     // Oracle stores booleans as NUMERICs with a precision of 1
                     ps.setNull(col, Types.NUMERIC);
-                }
-                else if (databaseType == DatabaseInformations.Database.Type.MSSQL)
-                {
+                } else if (databaseType == DatabaseInformations.Database.Type.MSSQL) {
                     // SQL Server stores booleans as BITs
-                    ps.setNull(col,  Types.BIT);
-                }
-                else
-                {
+                    ps.setNull(col, Types.BIT);
+                } else {
                     ps.setNull(col, Types.BOOLEAN);
                 }
                 // Derby stores booleans as SMALLINTs with a precision of 1 but is currently not being supported
-            }
-            else
-            {
-                if (databaseType == DatabaseInformations.Database.Type.ORACLE)
-                {
+            } else {
+                if (databaseType == DatabaseInformations.Database.Type.ORACLE) {
                     // Oracle stores booleans as NUMERICs with a precision of 1
                     ps.setObject(col, value, Types.NUMERIC, 1);
-                }
-                else
-                {
+                } else {
                     // setBoolean also handles BITs which are used by SQL Server
                     ps.setBoolean(col, value);
                 }
             }
         }
 
-        private void setString(String value) throws SQLException
-        {
-            if (value == null)
-            {
+        private void setString(String value) throws SQLException {
+            if (value == null) {
                 ps.setNull(col, Types.VARCHAR);
-            }
-            else
-            {
+            } else {
                 int maxSize = maxColumnSize.get(col);
-                if (maxSize != -1 && value.length() > maxSize)
-                {
+                if (maxSize != -1 && value.length() > maxSize) {
                     throw errorService.newImportExportException(tableName, "Could not import data in table '" + tableName + "' column #" + col + ", value is too big for column which size limit is " + maxSize + ", value is:\n" + value + "\n");
                 }
                 ps.setString(col, value);
             }
         }
 
-        private void setDate(Date value) throws SQLException
-        {
-            if (value == null)
-            {
+        private void setDate(Date value) throws SQLException {
+            if (value == null) {
                 ps.setNull(col, Types.TIMESTAMP);
-            }
-            else
-            {
+            } else {
                 ps.setTimestamp(col, new Timestamp(value.getTime()));
             }
         }
 
-        private void setBigInteger(BigInteger value) throws SQLException
-        {
-            if (value == null)
-            {
+        private void setBigInteger(BigInteger value) throws SQLException {
+            if (value == null) {
                 ps.setNull(col, Types.BIGINT);
-            }
-            else
-            {
+            } else {
                 ps.setBigDecimal(col, new BigDecimal(value));
             }
         }
 
-        private void setBigDecimal(BigDecimal value) throws SQLException
-        {
-            if (value == null)
-            {
+        private void setBigDecimal(BigDecimal value) throws SQLException {
+            if (value == null) {
                 ps.setNull(col, Types.DOUBLE);
-            }
-            else
-            {
+            } else {
                 ps.setBigDecimal(col, value);
             }
         }
 
-        public void setValue(NodeParser node, DatabaseInformation databaseInformation) throws SQLException
-        {
+        public void setValue(NodeParser node, DatabaseInformation databaseInformation) throws SQLException {
             DatabaseInformations.Database.Type databaseType = DatabaseInformations.database(databaseInformation).getType();
 
-            if (RowDataNode.isString(node))
-            {
+            if (RowDataNode.isString(node)) {
                 setString(node.getContentAsString());
-            }
-            else if (RowDataNode.isBoolean(node))
-            {
+            } else if (RowDataNode.isBoolean(node)) {
                 setBoolean(node.getContentAsBoolean(), databaseType);
-            }
-            else if (RowDataNode.isInteger(node))
-            {
+            } else if (RowDataNode.isInteger(node)) {
                 final BigInteger bigInt = node.getContentAsBigInteger();
                 if (bigInt != null && maxColumnSize.get(col) == 1)
                 // this is actually a boolean that was stored as an Integer!
                 // Happens with legacy Oracle.
                 {
                     setBoolean((bigInt.intValue() == 1), databaseType);
-                }
-                else
-                {
+                } else {
                     setBigInteger(bigInt);
                 }
-            }
-            else if (RowDataNode.isDouble(node))
-            {
+            } else if (RowDataNode.isDouble(node)) {
                 setBigDecimal(node.getContentAsBigDecimal());
-            }
-            else if (RowDataNode.isDate(node))
-            {
+            } else if (RowDataNode.isDate(node)) {
                 setDate(node.getContentAsDate());
-            }
-            else
-            {
+            } else {
                 throw new IllegalArgumentException("Unsupported field encountered: " + node.getName());
             }
             col++;
         }
 
-        public final void execute() throws SQLException
-        {
+        public final void execute() throws SQLException {
             executePS();
             col = 1;
         }
@@ -477,94 +382,73 @@ public final class DataImporter extends AbstractSingleNodeImporter
         protected abstract void executePS() throws SQLException;
     }
 
-    private static class ImmediateInserter extends BaseInserter
-    {
-        private ImmediateInserter(ImportExportErrorService errorService, String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize)
-        {
+    private static class ImmediateInserter extends BaseInserter {
+        private ImmediateInserter(ImportExportErrorService errorService, String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize) {
             super(errorService, table, columns, ps, maxColumnSize);
         }
 
-        protected void executePS() throws SQLException
-        {
+        protected void executePS() throws SQLException {
             ps.execute();
         }
 
-        public void close()
-        {
+        public void close() {
             closeQuietly(ps);
         }
     }
 
-    private static class BatchInserter extends BaseInserter
-    {
+    private static class BatchInserter extends BaseInserter {
         private final int batchSize;
         private int batch;
 
-        private BatchInserter(ImportExportErrorService errorService, String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize)
-        {
+        private BatchInserter(ImportExportErrorService errorService, String table, List<String> columns, PreparedStatement ps, List<Integer> maxColumnSize) {
             super(errorService, table, columns, ps, maxColumnSize);
             batchSize = 5000;
             batch = 0;
         }
 
-        protected void executePS() throws SQLException
-        {
+        protected void executePS() throws SQLException {
             ps.addBatch();
-            if ((++batch) % batchSize == 0)
-            {
+            if ((++batch) % batchSize == 0) {
                 flush();
                 batch = 0;
             }
         }
 
-        private void flush()
-        {
-            if (batch == 0)
-            {
+        private void flush() {
+            if (batch == 0) {
                 return;
             }
-            try
-            {
-                for (int result : ps.executeBatch())
-                {
-                    if (result == Statement.EXECUTE_FAILED)
-                    {
+            try {
+                for (int result : ps.executeBatch()) {
+                    if (result == Statement.EXECUTE_FAILED) {
                         throw new SQLException("SQL batch insert failed.");
                     }
                 }
                 ps.getConnection().commit();
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 throw errorService.newImportExportSqlException(tableName, "", e);
             }
         }
 
-        public void close()
-        {
+        public void close() {
             flush();
             closeQuietly(ps);
         }
     }
 
-    public static interface AroundTableImporter
-    {
+    public static interface AroundTableImporter {
         void before(ImportConfiguration configuration, Context context, String table, Connection connection);
 
         void after(ImportConfiguration configuration, Context context, String table, Connection connection);
     }
 
-    private static boolean isBlank(String str)
-    {
+    private static boolean isBlank(String str) {
         int strLen;
-        if (str == null || (strLen = str.length()) == 0)
-        {
+        if (str == null || (strLen = str.length()) == 0) {
             return true;
         }
-        for (int i = 0; i < strLen; i++)
-        {
-            if (!Character.isWhitespace(str.charAt(i)))
-            {
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
                 return false;
             }
         }

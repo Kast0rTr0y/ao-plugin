@@ -11,19 +11,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A {@link SchemaConfiguration schema configuration} that will allow table starting with a given {@link com.atlassian.activeobjects.internal.Prefix prefix}
  * to be managed.
  */
-public final class PrefixedSchemaConfiguration implements SchemaConfiguration
-{
+public final class PrefixedSchemaConfiguration implements SchemaConfiguration {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Prefix prefix;
 
-    public PrefixedSchemaConfiguration(Prefix prefix)
-    {
+    public PrefixedSchemaConfiguration(Prefix prefix) {
         this.prefix = checkNotNull(prefix);
     }
 
-    public final boolean shouldManageTable(String tableName, boolean caseSensitive)
-    {
+    public final boolean shouldManageTable(String tableName, boolean caseSensitive) {
         final boolean should = prefix.isStarting(tableName, caseSensitive);
         logger.debug("Active objects will {} manage table {}", should ? "" : "NOT", tableName);
         return should;

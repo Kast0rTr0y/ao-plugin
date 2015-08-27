@@ -16,11 +16,10 @@ import java.util.Date;
  *
  * @author Erik van Zijst
  * @see NodeCreator counterpart of this interface that provides the ability to
- *      write node graphs.
+ * write node graphs.
  * @see NodeStreamReader
  */
-public interface NodeParser
-{
+public interface NodeParser {
 
     /**
      * Retrieves the value of an attribute of the current node. If the attribute
@@ -28,11 +27,11 @@ public interface NodeParser
      *
      * @param key the name of the attribute.
      * @return the value of the attribute, or <code>null</code> if the attribute
-     *         does not exist.
+     * does not exist.
      * @throws ImportExportException when the input could not be parsed.
      * @throws IllegalStateException when this method was called after one of
-     * the <code>getContent...</code>, or the {@link NodeParser#getNextNode()}
-     * method was called.
+     *                               the <code>getContent...</code>, or the {@link NodeParser#getNextNode()}
+     *                               method was called.
      */
     String getAttribute(String key) throws IllegalStateException;
 
@@ -42,12 +41,12 @@ public interface NodeParser
      *
      * @param key the name of the attribute.
      * @return the value of the attribute (can be an empty string, or even
-     *         <code>null</code> if the attribute is present, but has no value - think
-     *         <code>xsi:nil="true"</code>).
+     * <code>null</code> if the attribute is present, but has no value - think
+     * <code>xsi:nil="true"</code>).
      * @throws ImportExportException when the input could not be parsed.
      * @throws IllegalStateException when this method was called after one of
-     * the <code>getContent...</code>, or the {@link NodeParser#getNextNode()}
-     * method was called.
+     *                               the <code>getContent...</code>, or the {@link NodeParser#getNextNode()}
+     *                               method was called.
      */
     String getRequiredAttribute(String key) throws IllegalStateException;
 
@@ -101,9 +100,9 @@ public interface NodeParser
      *
      * @return the content of the current node.
      * @throws ImportExportException when the current node is not a content node, or
-     * when the input could not be parsed.
+     *                               when the input could not be parsed.
      * @throws IllegalStateException if the current node cannot contain
-     * content (for instance because {@link NodeParser#isClosed()} is true.
+     *                               content (for instance because {@link NodeParser#isClosed()} is true.
      */
     String getContentAsString() throws IllegalStateException;
 
@@ -113,7 +112,7 @@ public interface NodeParser
      *
      * @return the content of the current node as a boolean value.
      * @throws IllegalStateException if the current node cannot contain
-     * content (for instance because {@link NodeParser#isClosed()} is true.
+     *                               content (for instance because {@link NodeParser#isClosed()} is true.
      */
     Boolean getContentAsBoolean() throws IllegalStateException;
 
@@ -123,10 +122,10 @@ public interface NodeParser
      *
      * @return the content of the current node as a {@link java.util.Date} instance.
      * @throws ImportExportException when the current node is not a content node, or
-     * when the input could not be parsed, or when the content does not conform
-     * to the standardized date format.
+     *                               when the input could not be parsed, or when the content does not conform
+     *                               to the standardized date format.
      * @throws IllegalStateException if the current node cannot contain
-     * content (for instance because {@link NodeParser#isClosed()} is true.
+     *                               content (for instance because {@link NodeParser#isClosed()} is true.
      */
     Date getContentAsDate() throws IllegalStateException;
 
@@ -136,10 +135,10 @@ public interface NodeParser
      *
      * @return the content of the current node as a {@link java.math.BigInteger} instance.
      * @throws ImportExportException when the current node is not a content node, or
-     * when the input could not be parsed, or the content does not contain a
-     * numeric integer value.
+     *                               when the input could not be parsed, or the content does not contain a
+     *                               numeric integer value.
      * @throws IllegalStateException if the current node cannot contain
-     * content (for instance because {@link NodeParser#isClosed()} is true.
+     *                               content (for instance because {@link NodeParser#isClosed()} is true.
      */
     BigInteger getContentAsBigInteger() throws IllegalStateException;
 
@@ -152,9 +151,9 @@ public interface NodeParser
      *
      * @param writer
      * @throws ImportExportException when the current node is not a content node, or
-     * when the input could not be parsed.
+     *                               when the input could not be parsed.
      * @throws IllegalStateException if the current node cannot contain
-     * content (for instance because {@link NodeParser#isClosed()} is true.
+     *                               content (for instance because {@link NodeParser#isClosed()} is true.
      */
     void getContent(Writer writer) throws IllegalStateException;
 }
