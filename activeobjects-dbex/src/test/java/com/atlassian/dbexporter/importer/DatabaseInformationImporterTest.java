@@ -12,12 +12,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DatabaseInformationImporterTest
-{
+public class DatabaseInformationImporterTest {
     @Rule
     public NodeParserRule nodeParser = new NodeParserRule();
 
@@ -37,8 +39,7 @@ public class DatabaseInformationImporterTest
 
     @Test
     @Xml("<database />")
-    public void importEmptyInformation()
-    {
+    public void importEmptyInformation() {
         final Context context = new Context();
         importer.doImportNode(nodeParser.getNode(), configuration, context);
 
@@ -49,8 +50,7 @@ public class DatabaseInformationImporterTest
 
     @Test
     @Xml("<database><meta key=\"a-key\" value=\"some-value\"/></database>")
-    public void importMetaInformation()
-    {
+    public void importMetaInformation() {
         final Context context = new Context();
         importer.doImportNode(nodeParser.getNode(), configuration, context);
 
@@ -61,21 +61,18 @@ public class DatabaseInformationImporterTest
     }
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         when(configuration.getProgressMonitor()).thenReturn(progressMonitor);
 
         importer = new DatabaseInformationImporter(errorService, checker);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         importer = null;
     }
 
-    private DatabaseInformation getDatabaseInformation(Context context)
-    {
+    private DatabaseInformation getDatabaseInformation(Context context) {
         return context.get(DatabaseInformation.class);
     }
 }

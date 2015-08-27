@@ -10,19 +10,16 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class InMemoryPluginToTablesMappingUnitTest
-{
+public class InMemoryPluginToTablesMappingUnitTest {
     private InMemoryPluginToTablesMapping pluginToTablesMapping;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         pluginToTablesMapping = new InMemoryPluginToTablesMapping();
     }
 
     @Test
-    public void addGet()
-    {
+    public void addGet() {
         final PluginInfo pluginInfo = mock(PluginInfo.class);
 
         pluginToTablesMapping.add(pluginInfo, ImmutableList.of("tableName1", "tableName2"));

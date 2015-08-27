@@ -6,11 +6,9 @@ package com.atlassian.activeobjects.spi;
  * <p>The effect of this will mainly be that AO will reconnect to the database and run the (idempotent) upgrade tasks
  * again.</p>
  */
-public final class HotRestartEvent
-{
+public final class HotRestartEvent {
     public static final HotRestartEvent INSTANCE = new HotRestartEvent();
 
-    private HotRestartEvent()
-    {
+    private HotRestartEvent() {
     }
 }

@@ -8,8 +8,7 @@ import javax.annotation.Nonnull;
  * This class provides a partial implementation of the {@link TenantAwareDataSourceProvider}
  * where {@link #getDatabaseType()} always returns {@link com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN}.
  */
-public abstract class AbstractTenantAwareDataSourceProvider implements TenantAwareDataSourceProvider
-{
+public abstract class AbstractTenantAwareDataSourceProvider implements TenantAwareDataSourceProvider {
     /**
      * Always returns com.atlassian.activeobjects.spi.DatabaseType#UNKNOWN
      *
@@ -17,14 +16,12 @@ public abstract class AbstractTenantAwareDataSourceProvider implements TenantAwa
      */
     @Override
     @Nonnull
-    public DatabaseType getDatabaseType(@Nonnull final Tenant tenant)
-    {
+    public DatabaseType getDatabaseType(@Nonnull final Tenant tenant) {
         return DatabaseType.UNKNOWN;
     }
 
     @Override
-    public String getSchema(@Nonnull final Tenant tenant)
-    {
+    public String getSchema(@Nonnull final Tenant tenant) {
         return null; // use the default schema configured for the user
     }
 }

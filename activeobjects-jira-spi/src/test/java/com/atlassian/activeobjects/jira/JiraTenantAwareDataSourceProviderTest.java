@@ -13,13 +13,15 @@ import org.ofbiz.core.entity.jdbc.dbtype.DatabaseTypeFactory;
 
 import java.sql.Connection;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-/** Testing {@link JiraTenantAwareDataSourceProviderTest} */
+/**
+ * Testing {@link JiraTenantAwareDataSourceProviderTest}
+ */
 @RunWith(MockitoJUnitRunner.class)
-public class JiraTenantAwareDataSourceProviderTest
-{
+public class JiraTenantAwareDataSourceProviderTest {
     private JiraTenantAwareDataSourceProvider dataSourceProvider;
 
     @Mock
@@ -32,20 +34,17 @@ public class JiraTenantAwareDataSourceProviderTest
     private Tenant tenant;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         dataSourceProvider = new JiraTenantAwareDataSourceProvider(ofBizConnectionFactory, jiraDatabaseTypeExtractor);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         dataSourceProvider = null;
     }
 
     @Test
-    public void testGetUnknownDatabaseType() throws Exception
-    {
+    public void testGetUnknownDatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.UNKNOWN, null);
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.UNKNOWN, DatabaseTypeFactory.CLOUDSCAPE);
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.UNKNOWN, DatabaseTypeFactory.FIREBIRD);
@@ -56,46 +55,39 @@ public class JiraTenantAwareDataSourceProviderTest
     }
 
     @Test
-    public void testGetDb2DatabaseType() throws Exception
-    {
+    public void testGetDb2DatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.DB2, DatabaseTypeFactory.DB2);
     }
 
     @Test
-    public void testGetHsqlDatabaseType() throws Exception
-    {
+    public void testGetHsqlDatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.HSQL, DatabaseTypeFactory.HSQL);
     }
 
     @Test
-    public void testGetMySqlDatabaseType() throws Exception
-    {
+    public void testGetMySqlDatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.MYSQL, DatabaseTypeFactory.MYSQL);
     }
 
     @Test
-    public void testGetPostgreSqlDatabaseType() throws Exception
-    {
+    public void testGetPostgreSqlDatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.POSTGRESQL, DatabaseTypeFactory.POSTGRES);
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.POSTGRESQL, DatabaseTypeFactory.POSTGRES_7_2);
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.POSTGRESQL, DatabaseTypeFactory.POSTGRES_7_3);
     }
 
     @Test
-    public void testGetOracleDatabaseType() throws Exception
-    {
+    public void testGetOracleDatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.ORACLE, DatabaseTypeFactory.ORACLE_8I);
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.ORACLE, DatabaseTypeFactory.ORACLE_10G);
     }
 
     @Test
-    public void testGetSqlServerDatabaseType() throws Exception
-    {
+    public void testGetSqlServerDatabaseType() throws Exception {
         assertDatabaseTypeFromJiraDatabaseType(DatabaseType.MS_SQL, DatabaseTypeFactory.MSSQL);
     }
 
-    private void assertDatabaseTypeFromJiraDatabaseType(DatabaseType databaseType, org.ofbiz.core.entity.jdbc.dbtype.DatabaseType value) throws Exception
-    {
+    private void assertDatabaseTypeFromJiraDatabaseType(DatabaseType databaseType, org.ofbiz.core.entity.jdbc.dbtype.DatabaseType value) throws Exception {
         final Connection connection = mock(Connection.class);
         when(ofBizConnectionFactory.getConnection()).thenReturn(connection);
         when(jiraDatabaseTypeExtractor.getDatabaseType(connection)).thenReturn(value);

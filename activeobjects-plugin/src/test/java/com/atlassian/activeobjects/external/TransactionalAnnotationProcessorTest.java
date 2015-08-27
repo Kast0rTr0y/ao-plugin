@@ -20,8 +20,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.external.TransactionalAnnotationProcessor}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TransactionalAnnotationProcessorTest
-{
+public class TransactionalAnnotationProcessorTest {
     private TransactionalAnnotationProcessor transactionalAnnotationProcessor;
 
     @Mock
@@ -29,41 +28,33 @@ public class TransactionalAnnotationProcessorTest
     private ActiveObjects ao;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         transactionalAnnotationProcessor = new TransactionalAnnotationProcessor(ao);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         transactionalAnnotationProcessor = null;
     }
 
     @Test
-    public void testPostProcessAfterInitializationDoesNothingWhenNotAnnotated() throws Exception
-    {
+    public void testPostProcessAfterInitializationDoesNothingWhenNotAnnotated() throws Exception {
         final Object o = new Object();
         assertSame(o, transactionalAnnotationProcessor.postProcessAfterInitialization(o, "a-bean-name"));
     }
 
     @Test
-    public void testPostProcessAfterInitializationReturnsProxyWhenAnnotatedAtClassLevel() throws Exception
-    {
-        final Object o = new AnnotatedInterface()
-        {
+    public void testPostProcessAfterInitializationReturnsProxyWhenAnnotatedAtClassLevel() throws Exception {
+        final Object o = new AnnotatedInterface() {
         };
         final Object proxy = transactionalAnnotationProcessor.postProcessAfterInitialization(o, "a-bean-name");
         assertFalse(o == proxy);
     }
 
     @Test
-    public void testPostProcessAfterInitializationReturnsProxyWhenAnnotatedAtMethodLevel() throws Exception
-    {
-        final Object o = new AnnotatedMethodInInterface()
-        {
-            public void doSomething()
-            {
+    public void testPostProcessAfterInitializationReturnsProxyWhenAnnotatedAtMethodLevel() throws Exception {
+        final Object o = new AnnotatedMethodInInterface() {
+            public void doSomething() {
             }
         };
         final Object proxy = transactionalAnnotationProcessor.postProcessAfterInitialization(o, "a-bean-name");
@@ -71,44 +62,34 @@ public class TransactionalAnnotationProcessorTest
     }
 
     @Test
-    public void throwingExceptionInTransactionalMethodActuallyThrowsSameException()
-    {
-        when(ao.executeInTransaction(Matchers.<TransactionCallback<Object>>any())).thenAnswer(new Answer()
-        {
-            public Object answer(InvocationOnMock invocation)
-            {
+    public void throwingExceptionInTransactionalMethodActuallyThrowsSameException() {
+        when(ao.executeInTransaction(Matchers.<TransactionCallback<Object>>any())).thenAnswer(new Answer() {
+            public Object answer(InvocationOnMock invocation) {
                 return ((TransactionCallback) invocation.getArguments()[0]).doInTransaction();
             }
         });
 
         final RuntimeException expectedException = new RuntimeException();
-        final Object o = new AnnotatedMethodInInterface()
-        {
-            public void doSomething()
-            {
+        final Object o = new AnnotatedMethodInInterface() {
+            public void doSomething() {
                 throw expectedException;
             }
         };
 
         final AnnotatedMethodInInterface proxy = (AnnotatedMethodInInterface) transactionalAnnotationProcessor.postProcessAfterInitialization(o, "a-bean-name");
         assertFalse(o == proxy);
-        try
-        {
+        try {
             proxy.doSomething();
-        }
-        catch (Exception actualException)
-        {
+        } catch (Exception actualException) {
             assertSame(expectedException, actualException);
         }
     }
 
     @Transactional
-    public static interface AnnotatedInterface
-    {
+    public static interface AnnotatedInterface {
     }
 
-    public static interface AnnotatedMethodInInterface
-    {
+    public static interface AnnotatedMethodInInterface {
         @Transactional
         @SuppressWarnings("unused")
         public void doSomething();

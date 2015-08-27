@@ -13,12 +13,10 @@ import java.util.Enumeration;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
-final class BundleContextScanner
-{
+final class BundleContextScanner {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    <T> Iterable<T> findClasses(BundleContext bundleContext, String packageName, Function<String, T> f, Predicate<T> p)
-    {
+    <T> Iterable<T> findClasses(BundleContext bundleContext, String packageName, Function<String, T> f, Predicate<T> p) {
         checkNotNull(bundleContext);
         checkNotNull(packageName);
         checkNotNull(f);
@@ -27,19 +25,15 @@ final class BundleContextScanner
         return filter(toIterable(getBundleEntries(bundleContext, packageName), f), p);
     }
 
-    private Enumeration getBundleEntries(BundleContext bundleContext, String packageName)
-    {
+    private Enumeration getBundleEntries(BundleContext bundleContext, String packageName) {
         log.debug("Scanning package '{}' of bundle {}", packageName, bundleContext.getBundle());
         return bundleContext.getBundle().findEntries(toFolder(packageName), "*.class", true);
     }
 
-    private <T> Iterable<T> toIterable(Enumeration entries, Function<String, T> f)
-    {
+    private <T> Iterable<T> toIterable(Enumeration entries, Function<String, T> f) {
         final ImmutableList.Builder<T> classes = ImmutableList.builder();
-        if (entries != null)
-        {
-            while (entries.hasMoreElements())
-            {
+        if (entries != null) {
+            while (entries.hasMoreElements()) {
                 final String className = getClassName((URL) entries.nextElement());
                 log.debug("Found class '{}'", className);
                 classes.add(f.apply(className));
@@ -48,20 +42,17 @@ final class BundleContextScanner
         return classes.build();
     }
 
-    private String getClassName(URL url)
-    {
+    private String getClassName(URL url) {
         return getClassName(url.getFile());
     }
 
-    private String getClassName(String file)
-    {
+    private String getClassName(String file) {
         String className = file.substring(1);  // remove the leading /
         className = className.substring(0, className.lastIndexOf('.')); // remove the .class
         return className.replace('/', '.');
     }
 
-    private String toFolder(String packageName)
-    {
+    private String toFolder(String packageName) {
         return '/' + packageName.replace('.', '/');
     }
 }

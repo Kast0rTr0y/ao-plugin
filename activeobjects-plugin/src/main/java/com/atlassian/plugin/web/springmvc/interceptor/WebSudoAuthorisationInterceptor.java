@@ -10,24 +10,18 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Requires a WebSudo session to access admin pages.
  */
-public final class WebSudoAuthorisationInterceptor extends HandlerInterceptorAdapter
-{
+public final class WebSudoAuthorisationInterceptor extends HandlerInterceptorAdapter {
     private WebSudoManager webSudoManager;
 
-    public WebSudoAuthorisationInterceptor(WebSudoManager webSudoManager)
-    {
+    public WebSudoAuthorisationInterceptor(WebSudoManager webSudoManager) {
         this.webSudoManager = webSudoManager;
     }
 
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception
-    {
-        try
-        {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        try {
             webSudoManager.willExecuteWebSudoRequest(request);
             return true;
-        }
-        catch (WebSudoSessionException wes)
-        {
+        } catch (WebSudoSessionException wes) {
             webSudoManager.enforceWebSudoProtection(request, response);
             return false;
         }

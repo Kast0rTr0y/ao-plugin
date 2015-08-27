@@ -10,8 +10,7 @@ import net.java.ao.schema.StringLength;
 
 import java.util.Date;
 
-public interface Book extends RawEntity<Long>
-{
+public interface Book extends RawEntity<Long> {
     @PrimaryKey
     @NotNull
     long getIsbn();

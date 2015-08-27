@@ -26,14 +26,14 @@ import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -48,8 +48,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * DDL / upgrade tasks will be initiated by the first call to the delegate or by a call to {@link #startActiveObjects}
  */
-class TenantAwareActiveObjects implements ActiveObjects
-{
+class TenantAwareActiveObjects implements ActiveObjects {
     private static final Logger logger = LoggerFactory.getLogger(TenantAwareActiveObjects.class);
 
     private final Bundle bundle;
@@ -65,43 +64,33 @@ class TenantAwareActiveObjects implements ActiveObjects
             @Nonnull final Bundle bundle,
             @Nonnull final ActiveObjectsFactory factory,
             @Nonnull final TenantContext tenantContext,
-            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction)
-    {
+            @Nonnull final Function<Tenant, ExecutorService> initExecutorFunction) {
         this.bundle = checkNotNull(bundle);
         this.tenantContext = checkNotNull(tenantContext);
         checkNotNull(factory);
         checkNotNull(initExecutorFunction);
 
         // loading cache for delegate promises by tenant
-        aoPromisesByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>()
-        {
+        aoPromisesByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, Promise<ActiveObjects>>() {
             @Override
-            public Promise<ActiveObjects> load(@Nonnull final Tenant tenant) throws Exception
-            {
+            public Promise<ActiveObjects> load(@Nonnull final Tenant tenant) throws Exception {
                 logger.debug("bundle [{}] loading new AO promise for {}", bundle.getSymbolicName(), tenant);
 
-                return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>()
-                {
+                return Promises.forFuture(aoConfigFuture).flatMap(new Function<ActiveObjectsConfiguration, Promise<ActiveObjects>>() {
                     @Override
-                    public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig)
-                    {
+                    public Promise<ActiveObjects> apply(@Nullable final ActiveObjectsConfiguration aoConfig) {
                         logger.debug("bundle [{}] got ActiveObjectsConfiguration", bundle.getSymbolicName(), tenant);
 
                         final SettableFuture<ActiveObjects> aoFuture = SettableFuture.create();
-                        initExecutorFunction.apply(tenant).submit(new Callable<Void>()
-                        {
+                        initExecutorFunction.apply(tenant).submit(new Callable<Void>() {
                             @Override
-                            public Void call() throws Exception
-                            {
+                            public Void call() throws Exception {
                                 logger.debug("bundle [{}] creating ActiveObjects", bundle.getSymbolicName());
-                                try
-                                {
+                                try {
                                     final ActiveObjects ao = factory.create(aoConfig, tenant);
                                     logger.debug("bundle [{}] created ActiveObjects", bundle.getSymbolicName());
                                     aoFuture.set(ao);
-                                }
-                                catch (Exception e)
-                                {
+                                } catch (Exception e) {
                                     final ActiveObjectsInitException activeObjectsInitException = new ActiveObjectsInitException("bundle [" + bundle.getSymbolicName() + "]", e);
                                     aoFuture.setException(activeObjectsInitException);
                                 }
@@ -116,126 +105,95 @@ class TenantAwareActiveObjects implements ActiveObjects
         });
     }
 
-    public void init()
-    {
+    public void init() {
         logger.debug("bundle [{}] init", bundle.getSymbolicName());
 
         // start things up now if we have a tenant
         Tenant tenant = tenantContext.getCurrentTenant();
-        if (tenant != null)
-        {
+        if (tenant != null) {
             aoPromisesByTenant.invalidate(tenant);
             startActiveObjects(tenant);
         }
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         aoConfigFuture.cancel(false);
-        for (Promise<ActiveObjects> aoPromise : aoPromisesByTenant.asMap().values())
-        {
+        for (Promise<ActiveObjects> aoPromise : aoPromisesByTenant.asMap().values()) {
             aoPromise.cancel(false);
         }
     }
 
-    void setAoConfiguration(@Nonnull final ActiveObjectsConfiguration aoConfiguration)
-    {
+    void setAoConfiguration(@Nonnull final ActiveObjectsConfiguration aoConfiguration) {
         logger.debug("setAoConfiguration [{}]", bundle.getSymbolicName());
 
-        if (aoConfigFuture.isDone())
-        {
+        if (aoConfigFuture.isDone()) {
             final RuntimeException e = new IllegalStateException("bundle [" + bundle.getSymbolicName() + "] has multiple active objects configurations - only one active objects module descriptor <ao> allowed per plugin!");
             aoConfigFuture.setException(e);
             throw e;
-        }
-        else
-        {
+        } else {
             aoConfigFuture.set(aoConfiguration);
         }
     }
 
-    void startActiveObjects(@Nonnull final Tenant tenant)
-    {
+    void startActiveObjects(@Nonnull final Tenant tenant) {
         checkNotNull(tenant);
         aoPromisesByTenant.getUnchecked(tenant);
     }
 
-    void restartActiveObjects(@Nonnull final Tenant tenant)
-    {
+    void restartActiveObjects(@Nonnull final Tenant tenant) {
         checkNotNull(tenant);
         aoPromisesByTenant.invalidate(tenant);
         aoPromisesByTenant.getUnchecked(tenant);
     }
 
     @VisibleForTesting
-    protected Promise<ActiveObjects> delegate()
-    {
-        if (!aoConfigFuture.isDone())
-        {
+    protected Promise<ActiveObjects> delegate() {
+        if (!aoConfigFuture.isDone()) {
             throw new IllegalStateException("plugin [{" + bundle.getSymbolicName() + "}] invoking ActiveObjects before <ao> configuration module is enabled or plugin is missing an <ao> configuration module. Note that scanning of entities from the ao.model package is no longer supported.");
         }
 
         Tenant tenant = tenantContext.getCurrentTenant();
-        if (tenant != null)
-        {
+        if (tenant != null) {
             return aoPromisesByTenant.getUnchecked(tenant);
-        }
-        else
-        {
+        } else {
             throw new NoDataSourceException();
         }
     }
 
     @Override
-    public ActiveObjectsModuleMetaData moduleMetaData()
-    {
-        return new ActiveObjectsModuleMetaData()
-        {
+    public ActiveObjectsModuleMetaData moduleMetaData() {
+        return new ActiveObjectsModuleMetaData() {
             @Override
-            public void awaitInitialization() throws ExecutionException, InterruptedException
-            {
+            public void awaitInitialization() throws ExecutionException, InterruptedException {
                 Tenant tenant = tenantContext.getCurrentTenant();
-                if (tenant != null)
-                {
+                if (tenant != null) {
                     aoPromisesByTenant.getUnchecked(tenant).get();
-                }
-                else
-                {
+                } else {
                     throw new NoDataSourceException();
                 }
             }
 
             @Override
             public void awaitInitialization(long timeout, TimeUnit unit)
-                    throws InterruptedException, ExecutionException, TimeoutException
-            {
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 Tenant tenant = tenantContext.getCurrentTenant();
-                if (tenant != null)
-                {
+                if (tenant != null) {
                     aoPromisesByTenant.getUnchecked(tenant).get(timeout, unit);
-                }
-                else
-                {
+                } else {
                     throw new NoDataSourceException();
                 }
             }
 
             @Override
-            public boolean isInitialized()
-            {
+            public boolean isInitialized() {
                 Tenant tenant = tenantContext.getCurrentTenant();
-                if (tenant != null)
-                {
+                if (tenant != null) {
                     Promise<ActiveObjects> aoPromise = aoPromisesByTenant.getUnchecked(tenant);
-                    if (aoPromise.isDone())
-                    {
-                        try
-                        {
+                    if (aoPromise.isDone()) {
+                        try {
                             aoPromise.claim();
                             return true;
-                        }
-                        catch (Exception e)
-                        {
+                        } catch (Exception e) {
                             // any exception indicates a failure in initialisation, or at least that the delegate is not usable
                         }
                     }
@@ -244,147 +202,123 @@ class TenantAwareActiveObjects implements ActiveObjects
             }
 
             @Override
-            public DatabaseType getDatabaseType()
-            {
+            public DatabaseType getDatabaseType() {
                 return delegate().claim().moduleMetaData().getDatabaseType();
             }
 
             @Override
-            public boolean isDataSourcePresent()
-            {
+            public boolean isDataSourcePresent() {
                 return tenantContext.getCurrentTenant() != null;
             }
         };
     }
 
     @Override
-    public void migrate(final Class<? extends RawEntity<?>>... entities)
-    {
+    public void migrate(final Class<? extends RawEntity<?>>... entities) {
         delegate().claim().migrate(entities);
     }
 
     @Override
-    public void migrateDestructively(final Class<? extends RawEntity<?>>... entities)
-    {
+    public void migrateDestructively(final Class<? extends RawEntity<?>>... entities) {
         delegate().claim().migrateDestructively(entities);
     }
 
     @Override
-    public void flushAll()
-    {
+    public void flushAll() {
         delegate().claim().flushAll();
     }
 
     @Override
-    public void flush(final RawEntity<?>... entities)
-    {
+    public void flush(final RawEntity<?>... entities) {
         delegate().claim().flush(entities);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T[] get(final Class<T> type, final K... keys)
-    {
+    public <T extends RawEntity<K>, K> T[] get(final Class<T> type, final K... keys) {
         return delegate().claim().get(type, keys);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T get(final Class<T> type, final K key)
-    {
+    public <T extends RawEntity<K>, K> T get(final Class<T> type, final K key) {
         return delegate().claim().get(type, key);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T create(final Class<T> type, final DBParam... params)
-    {
+    public <T extends RawEntity<K>, K> T create(final Class<T> type, final DBParam... params) {
         return delegate().claim().create(type, params);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T create(final Class<T> type, final Map<String, Object> params)
-    {
+    public <T extends RawEntity<K>, K> T create(final Class<T> type, final Map<String, Object> params) {
         return delegate().claim().create(type, params);
     }
 
     @Override
-    public void delete(final RawEntity<?>... entities)
-    {
+    public void delete(final RawEntity<?>... entities) {
         delegate().claim().delete(entities);
     }
 
     @Override
-    public <K> int deleteWithSQL(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
-    {
+    public <K> int deleteWithSQL(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters) {
         return delegate().claim().deleteWithSQL(type, criteria, parameters);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T[] find(final Class<T> type)
-    {
+    public <T extends RawEntity<K>, K> T[] find(final Class<T> type) {
         return delegate().claim().find(type);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String criteria, final Object... parameters)
-    {
+    public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String criteria, final Object... parameters) {
         return delegate().claim().find(type, criteria, parameters);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final Query query)
-    {
+    public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final Query query) {
         return delegate().claim().find(type, query);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String field, final Query query)
-    {
+    public <T extends RawEntity<K>, K> T[] find(final Class<T> type, final String field, final Query query) {
         return delegate().claim().find(type, field, query);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> T[] findWithSQL(final Class<T> type, final String keyField, final String sql, final Object... parameters)
-    {
+    public <T extends RawEntity<K>, K> T[] findWithSQL(final Class<T> type, final String keyField, final String sql, final Object... parameters) {
         return delegate().claim().findWithSQL(type, keyField, sql, parameters);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> void stream(final Class<T> type, final EntityStreamCallback<T, K> streamCallback)
-    {
+    public <T extends RawEntity<K>, K> void stream(final Class<T> type, final EntityStreamCallback<T, K> streamCallback) {
         delegate().claim().stream(type, streamCallback);
     }
 
     @Override
-    public <T extends RawEntity<K>, K> void stream(final Class<T> type, final Query query, final EntityStreamCallback<T, K> streamCallback)
-    {
+    public <T extends RawEntity<K>, K> void stream(final Class<T> type, final Query query, final EntityStreamCallback<T, K> streamCallback) {
         delegate().claim().stream(type, query, streamCallback);
     }
 
     @Override
-    public <K> int count(final Class<? extends RawEntity<K>> type)
-    {
+    public <K> int count(final Class<? extends RawEntity<K>> type) {
         return delegate().claim().count(type);
     }
 
     @Override
-    public <K> int count(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters)
-    {
+    public <K> int count(final Class<? extends RawEntity<K>> type, final String criteria, final Object... parameters) {
         return delegate().claim().count(type, criteria, parameters);
     }
 
     @Override
-    public <K> int count(final Class<? extends RawEntity<K>> type, final Query query)
-    {
+    public <K> int count(final Class<? extends RawEntity<K>> type, final Query query) {
         return delegate().claim().count(type, query);
     }
 
     @Override
-    public <T> T executeInTransaction(final TransactionCallback<T> callback)
-    {
+    public <T> T executeInTransaction(final TransactionCallback<T> callback) {
         return delegate().claim().executeInTransaction(callback);
     }
 
-    public Bundle getBundle()
-    {
+    public Bundle getBundle() {
         return bundle;
     }
 }

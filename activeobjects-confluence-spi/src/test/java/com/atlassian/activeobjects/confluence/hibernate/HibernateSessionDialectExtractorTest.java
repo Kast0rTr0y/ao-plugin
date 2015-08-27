@@ -26,8 +26,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.confluence.hibernate.HibernateSessionDialectExtractor}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class HibernateSessionDialectExtractorTest
-{
+public class HibernateSessionDialectExtractorTest {
     private HibernateSessionDialectExtractor dialectExtractor;
 
     @Mock
@@ -37,35 +36,29 @@ public class HibernateSessionDialectExtractorTest
     private TransactionTemplate transactionTemplate;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         dialectExtractor = new HibernateSessionDialectExtractor(pluginSessionFactory, transactionTemplate);
-        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>()
-        {
+        when(transactionTemplate.execute(Matchers.any(TransactionCallback.class))).thenAnswer(new Answer<Object>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
+            public Object answer(InvocationOnMock invocation) throws Throwable {
                 return ((TransactionCallback<?>) invocation.getArguments()[0]).doInTransaction();
             }
         });
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         dialectExtractor = null;
     }
 
     @Test
-    public void testGetDialectReturnsNullIfSessionFactoryDoesNotImplementSessionFactoryImplementor() throws Exception
-    {
+    public void testGetDialectReturnsNullIfSessionFactoryDoesNotImplementSessionFactoryImplementor() throws Exception {
         mockPluginSessionFactory(SessionFactory.class);
         assertNull(dialectExtractor.getDialect());
     }
 
     @Test
-    public void testGetDialectReturnsCorrectDialectIfSessionFactoryDoesImplementSessionFactoryImplementor() throws Exception
-    {
+    public void testGetDialectReturnsCorrectDialectIfSessionFactoryDoesImplementSessionFactoryImplementor() throws Exception {
         final Dialect dialect = mock(Dialect.class);
         final SessionFactoryImplementor sessionFactory = mockPluginSessionFactory(SessionFactoryImplementor.class);
         when(sessionFactory.getDialect()).thenReturn(dialect);
@@ -73,8 +66,7 @@ public class HibernateSessionDialectExtractorTest
         assertEquals(dialect.getClass(), dialectExtractor.getDialect());
     }
 
-    private <S extends SessionFactory> S mockPluginSessionFactory(Class<S> sessionFactoryClass)
-    {
+    private <S extends SessionFactory> S mockPluginSessionFactory(Class<S> sessionFactoryClass) {
         final Session session = mock(Session.class);
         final S sessionFactory = mock(sessionFactoryClass);
         when(pluginSessionFactory.getSession()).thenReturn(session);

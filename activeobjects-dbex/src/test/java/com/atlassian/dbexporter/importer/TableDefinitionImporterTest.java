@@ -7,8 +7,8 @@ import com.atlassian.dbexporter.EntityNameProcessor;
 import com.atlassian.dbexporter.ImportExportErrorService;
 import com.atlassian.dbexporter.NoOpEntityNameProcessor;
 import com.atlassian.dbexporter.Table;
-import com.atlassian.dbexporter.progress.ProgressMonitor;
 import com.atlassian.dbexporter.node.NodeParser;
+import com.atlassian.dbexporter.progress.ProgressMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,12 +22,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TableDefinitionImporterTest
-{
+public class TableDefinitionImporterTest {
     @Rule
     public NodeParserRule nodeParser = new NodeParserRule();
 
@@ -52,8 +53,7 @@ public class TableDefinitionImporterTest
 
     @Test
     @Xml(SINGLE_TABLE)
-    public void singleTableDefinition() throws Exception
-    {
+    public void singleTableDefinition() throws Exception {
         final NodeParser node = nodeParser.getNode();
         tableDefinitionImporter.doImportNode(node, configuration, context);
 
@@ -65,8 +65,7 @@ public class TableDefinitionImporterTest
 
     @Test
     @Xml(MULTIPLE_TABLES)
-    public void multipleTableDefinitions() throws Exception
-    {
+    public void multipleTableDefinitions() throws Exception {
         final NodeParser node = nodeParser.getNode();
         tableDefinitionImporter.doImportNode(node.getNextNode(), configuration, context);
 
@@ -82,16 +81,14 @@ public class TableDefinitionImporterTest
     }
 
     @SuppressWarnings("unchecked")
-    private List<Table> verifyTables()
-    {
+    private List<Table> verifyTables() {
         final ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
         verify(tableCreator).create(Matchers.<DatabaseInformation>any(), argument.capture(), Matchers.<EntityNameProcessor>any(), Matchers.<ProgressMonitor>any());
         return argument.getValue();
     }
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         when(configuration.getProgressMonitor()).thenReturn(monitor);
         when(configuration.getEntityNameProcessor()).thenReturn(new NoOpEntityNameProcessor());
         context = new Context();
@@ -99,8 +96,7 @@ public class TableDefinitionImporterTest
     }
 
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
         tableDefinitionImporter = null;
         context = null;
     }
@@ -129,13 +125,11 @@ public class TableDefinitionImporterTest
             "</table>\n" +
             "</database>";
 
-    private static void assertTable(Table table, String tableName, int columnsCount, String... columnNames)
-    {
+    private static void assertTable(Table table, String tableName, int columnsCount, String... columnNames) {
         assertEquals(tableName, table.getName());
         assertEquals(columnsCount, table.getColumns().size());
         final Iterator<Column> colIt = table.getColumns().iterator();
-        for (String columnName : columnNames)
-        {
+        for (String columnName : columnNames) {
             assertEquals(columnName, colIt.next().getName());
         }
     }

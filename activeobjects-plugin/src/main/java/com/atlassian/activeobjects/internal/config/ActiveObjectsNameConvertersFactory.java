@@ -11,10 +11,9 @@ import net.java.ao.schema.SequenceNameConverter;
 import net.java.ao.schema.TriggerNameConverter;
 import net.java.ao.schema.UniqueNameConverter;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class ActiveObjectsNameConvertersFactory implements NameConvertersFactory
-{
+public final class ActiveObjectsNameConvertersFactory implements NameConvertersFactory {
     private final FieldNameConverter fieldNameConverter;
     private final SequenceNameConverter sequenceNameConverter;
     private final TriggerNameConverter triggerNameConverter;
@@ -23,8 +22,7 @@ public final class ActiveObjectsNameConvertersFactory implements NameConvertersF
 
     public ActiveObjectsNameConvertersFactory(FieldNameConverter fieldNameConverter, SequenceNameConverter sequenceNameConverter,
                                               TriggerNameConverter triggerNameConverter, IndexNameConverter indexNameConverter,
-                                              UniqueNameConverter uniqueNameConverter)
-    {
+                                              UniqueNameConverter uniqueNameConverter) {
         this.fieldNameConverter = checkNotNull(fieldNameConverter);
         this.sequenceNameConverter = checkNotNull(sequenceNameConverter);
         this.triggerNameConverter = checkNotNull(triggerNameConverter);
@@ -33,8 +31,7 @@ public final class ActiveObjectsNameConvertersFactory implements NameConvertersF
     }
 
     @Override
-    public NameConverters getNameConverters(Prefix prefix)
-    {
+    public NameConverters getNameConverters(Prefix prefix) {
         return new SimpleNameConverters(
                 new AtlassianTableNameConverter(new AtlassianTablePrefix(prefix)),
                 fieldNameConverter,
