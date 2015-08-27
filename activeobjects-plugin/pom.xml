@@ -789,75 +789,7 @@
         <profile>
             <!-- This is the release profile that maven will activate for us when releasing -->
             <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <configuration>
-                            <attach>false</attach>
-                        </configuration>
-                    </plugin>
-                    <!-- we use the assembly plugin here, because of a not so common configuration -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <version>2.2</version>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/main/assembly/src.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sources</id>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <phase>package</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
             <dependencies>
-                <dependency>
-                    <groupId>com.atlassian.activeobjects</groupId>
-                    <artifactId>activeobjects-core</artifactId>
-                    <version>${project.version}</version>
-                    <classifier>sources</classifier>
-                </dependency>
-                <dependency>
-                    <groupId>com.atlassian.activeobjects</groupId>
-                    <artifactId>activeobjects-dbex</artifactId>
-                    <version>${project.version}</version>
-                    <classifier>sources</classifier>
-                </dependency>
-                <dependency>
-                    <groupId>net.java.dev.activeobjects</groupId>
-                    <artifactId>activeobjects</artifactId>
-                    <version>${ao.version}</version>
-                    <classifier>sources</classifier>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-core</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-queries</artifactId>
-                        </exclusion>
-                        <exclusion><!-- Provided by the host app -->
-                            <groupId>com.google.guava</groupId>
-                            <artifactId>guava</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>com.google</groupId>
-                            <artifactId>collections</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-
                 <!-- using hsql for the release -->
                 <dependency>
                     <groupId>hsqldb</groupId>
