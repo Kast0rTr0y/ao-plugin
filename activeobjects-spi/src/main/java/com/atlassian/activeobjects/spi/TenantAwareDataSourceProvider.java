@@ -8,8 +8,7 @@ import javax.sql.DataSource;
 /**
  * Gives access to the host application data source.
  */
-public interface TenantAwareDataSourceProvider
-{
+public interface TenantAwareDataSourceProvider {
     /**
      * Provide host application data source associated with a tenant.
      *

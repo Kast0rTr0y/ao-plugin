@@ -4,10 +4,8 @@ import com.atlassian.activeobjects.backup.AbstractTestActiveObjectsBackup;
 import net.java.ao.EntityManager;
 import net.java.ao.RawEntity;
 
-abstract class AbstractTestTypeBackup extends AbstractTestActiveObjectsBackup
-{
-    final void testBackupType(BackupType<?> bt) throws Exception
-    {
+abstract class AbstractTestTypeBackup extends AbstractTestActiveObjectsBackup {
+    final void testBackupType(BackupType<?> bt) throws Exception {
         entityManager.migrate(bt.getEntityClass());
 
         bt.createData(entityManager);
@@ -27,8 +25,7 @@ abstract class AbstractTestTypeBackup extends AbstractTestActiveObjectsBackup
         bt.checkData(entityManager);
     }
 
-    static interface BackupType<K>
-    {
+    static interface BackupType<K> {
         Class<? extends RawEntity<K>> getEntityClass();
 
         void createData(EntityManager em) throws Exception;

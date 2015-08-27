@@ -10,31 +10,25 @@ import com.google.common.base.Function;
 
 import java.util.Collection;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.transform;
-import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Iterables.concat;
 
-public final class ForeignKeyAroundImporter extends NoOpAroundImporter
-{
+public final class ForeignKeyAroundImporter extends NoOpAroundImporter {
     private final ForeignKeyCreator foreignKeyCreator;
 
-    public ForeignKeyAroundImporter(ForeignKeyCreator foreignKeyCreator)
-    {
+    public ForeignKeyAroundImporter(ForeignKeyCreator foreignKeyCreator) {
         this.foreignKeyCreator = checkNotNull(foreignKeyCreator);
     }
 
     @Override
-    public void after(NodeParser node, ImportConfiguration configuration, Context context)
-    {
+    public void after(NodeParser node, ImportConfiguration configuration, Context context) {
         foreignKeyCreator.create(concat(transform(context.getAll(Table.class), getForeignKeysFunction())), configuration.getEntityNameProcessor());
     }
 
-    private Function<Table, Collection<ForeignKey>> getForeignKeysFunction()
-    {
-        return new Function<Table, Collection<ForeignKey>>()
-        {
-            public Collection<ForeignKey> apply(Table from)
-            {
+    private Function<Table, Collection<ForeignKey>> getForeignKeysFunction() {
+        return new Function<Table, Collection<ForeignKey>>() {
+            public Collection<ForeignKey> apply(Table from) {
                 return from.getForeignKeys();
             }
         };

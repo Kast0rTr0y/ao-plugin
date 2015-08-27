@@ -16,25 +16,23 @@ import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StaxStreamWriterTest
-{
-    @Mock private ImportExportErrorService errorService;
+public class StaxStreamWriterTest {
+    @Mock
+    private ImportExportErrorService errorService;
     private Writer output;
 
     private StaxStreamWriter staxStreamWriter;
 
     @Before
-    public void setUp() throws Exception
-    {
-       output = new StringWriter();
-       staxStreamWriter = new StaxStreamWriter(errorService, output, Charset.forName("utf-8"), "");
+    public void setUp() throws Exception {
+        output = new StringWriter();
+        staxStreamWriter = new StaxStreamWriter(errorService, output, Charset.forName("utf-8"), "");
 
     }
 
     @Test
-    public void nodeCreatorShouldEncodeBinaryAsBase64() throws Exception
-    {
-        final byte[] bytes = new byte[] {0, 1, 100, 2};
+    public void nodeCreatorShouldEncodeBinaryAsBase64() throws Exception {
+        final byte[] bytes = new byte[]{0, 1, 100, 2};
 
         staxStreamWriter.addRootNode("root").setContentAsBinary(bytes);
         staxStreamWriter.close();

@@ -3,8 +3,7 @@ package com.atlassian.activeobjects.spi;
 /**
  * Represents the type of database.
  */
-public enum DatabaseType
-{
+public enum DatabaseType {
     H2,
     HSQL,
     MYSQL,

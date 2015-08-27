@@ -4,8 +4,7 @@ import com.atlassian.activeobjects.spi.ImportExportException;
 
 import java.sql.SQLException;
 
-public interface ImportExportErrorService
-{
+public interface ImportExportErrorService {
     ImportExportException newImportExportException(String tableName, String message);
 
     ImportExportException newImportExportSqlException(String tableName, String message, SQLException e);

@@ -5,7 +5,6 @@ import net.java.ao.schema.NameConverters;
 
 import java.util.Set;
 
-public interface EntitiesValidator
-{
+public interface EntitiesValidator {
     Set<Class<? extends RawEntity<?>>> check(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters);
 }

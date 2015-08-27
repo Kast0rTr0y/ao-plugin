@@ -41,8 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class ActiveObjectsServiceFactoryTest
-{
+public final class ActiveObjectsServiceFactoryTest {
     private ActiveObjectsServiceFactory serviceFactory;
 
     @Rule
@@ -107,8 +106,7 @@ public final class ActiveObjectsServiceFactoryTest
     private ActiveObjectsConfiguration aoConfig2;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         serviceFactory = new ActiveObjectsServiceFactory(factory, eventPublisher, tenantContext,
                 threadLocalDelegateExecutorFactory, initExecutorServiceProvider);
 
@@ -129,16 +127,14 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         serviceFactory.afterPropertiesSet();
 
         verify(eventPublisher).register(serviceFactory);
     }
 
     @Test
-    public void destroy() throws Exception
-    {
+    public void destroy() throws Exception {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
@@ -156,8 +152,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void startCleaning() throws InterruptedException
-    {
+    public void startCleaning() throws InterruptedException {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
         serviceFactory.initExecutorsByTenant.put(tenant3, executorService3);
@@ -179,8 +174,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void initExecutorFn()
-    {
+    public void initExecutorFn() {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
         serviceFactory.initExecutorsByTenant.put(tenant2, executorService2);
 
@@ -188,8 +182,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void initExecutorFnAfterDestroy() throws Exception
-    {
+    public void initExecutorFnAfterDestroy() throws Exception {
         serviceFactory.destroy();
 
         expectedException.expect(IllegalStateException.class);
@@ -198,8 +191,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void getService()
-    {
+    public void getService() {
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
@@ -208,8 +200,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void unGetService()
-    {
+    public void unGetService() {
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
@@ -226,8 +217,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onTenantArrived()
-    {
+    public void onTenantArrived() {
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
 
@@ -240,8 +230,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onHotRestart()
-    {
+    public void onHotRestart() {
         serviceFactory.initExecutorsByTenant.put(tenant1, executorService1);
 
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
@@ -259,16 +248,14 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginModuleEnabledEventNoDelegate()
-    {
+    public void onPluginModuleEnabledEventNoDelegate() {
         serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
 
         assertThat(serviceFactory.unattachedConfigByBundle, hasEntry(bundle1, aoConfig1));
     }
 
     @Test
-    public void onPluginModuleEnabledEventNonOsgi()
-    {
+    public void onPluginModuleEnabledEventNonOsgi() {
         when(moduleDescriptor.getPlugin()).thenReturn(nonOsgiPlugin);
 
         serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
@@ -277,8 +264,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginModuleEnabledEventHasDelegate()
-    {
+    public void onPluginModuleEnabledEventHasDelegate() {
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
 
         serviceFactory.onPluginModuleEnabledEvent(moduleEnabledEvent);
@@ -289,8 +275,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginEnabledAttachMatching()
-    {
+    public void onPluginEnabledAttachMatching() {
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig1);
 
         serviceFactory.onPluginEnabledEvent(enabledEvent);
@@ -299,8 +284,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginEnabledIgnoreNonMatching()
-    {
+    public void onPluginEnabledIgnoreNonMatching() {
         serviceFactory.unattachedConfigByBundle.put(bundle2, aoConfig1);
 
         serviceFactory.onPluginEnabledEvent(enabledEvent);
@@ -309,8 +293,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginEnabledNonOsgi()
-    {
+    public void onPluginEnabledNonOsgi() {
         when(enabledEvent.getPlugin()).thenReturn(nonOsgiPlugin);
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig1);
 
@@ -320,8 +303,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void onPluginDisabledEvent()
-    {
+    public void onPluginDisabledEvent() {
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle1), babyBear1);
         serviceFactory.aoDelegatesByBundle.put(new BundleRef(bundle2), babyBear2);
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig1);
@@ -336,8 +318,7 @@ public final class ActiveObjectsServiceFactoryTest
     }
 
     @Test
-    public void aoDelegatesByBundleLoader() throws ExecutionException, InterruptedException
-    {
+    public void aoDelegatesByBundleLoader() throws ExecutionException, InterruptedException {
         serviceFactory.unattachedConfigByBundle.put(bundle1, aoConfig1);
 
         final TenantAwareActiveObjects aoDelegate = serviceFactory.aoDelegatesByBundle.get(new BundleRef(bundle1));

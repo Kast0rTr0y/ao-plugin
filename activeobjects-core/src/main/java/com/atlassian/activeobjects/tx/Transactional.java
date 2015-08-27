@@ -19,12 +19,12 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * {@link TransactionalAnnotationProcessor} as a component within their plugin.
  * This processor is a {@link BeanPostProcessor} which will only be able to handle classes instanciated as a
  * <a href="http://confluence.atlassian.com/display/PLUGINFRAMEWORK/Component+Plugin+Module">components</a>.</p>
+ *
  * @see TransactionalAnnotationProcessor
  */
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
 @Inherited
 @Documented
-public @interface Transactional
-{
+public @interface Transactional {
 }

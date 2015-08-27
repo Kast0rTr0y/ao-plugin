@@ -11,29 +11,26 @@ import com.atlassian.pageobjects.Tester;
 import com.atlassian.pageobjects.page.HomePage;
 import com.atlassian.pageobjects.page.LoginPage;
 import com.atlassian.webdriver.refapp.RefappTestedProduct;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.atlassian.activeobjects.pageobjects.AoTable.table;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-public final class ActiveObjectsAdminFunctionalTest
-{
+public final class ActiveObjectsAdminFunctionalTest {
     private static final String TEST_PLUGIN_NAME = "ActiveObjects Plugin - Test Plugin";
-    private static final Predicate<AoTable> MATCHES_TEST_PLUGIN = new Predicate<AoTable>()
-    {
+    private static final Predicate<AoTable> MATCHES_TEST_PLUGIN = new Predicate<AoTable>() {
         @Override
-        public boolean apply(AoTable table)
-        {
+        public boolean apply(AoTable table) {
             return TEST_PLUGIN_NAME.equals(table.plugin);
         }
     };
@@ -41,16 +38,14 @@ public final class ActiveObjectsAdminFunctionalTest
     private TestedProduct<? extends Tester> product;
 
     @Before
-    public final void setUp()
-    {
+    public final void setUp() {
         product = TestedProductFactory.create(System.getProperty("tested.app", RefappTestedProduct.class.getName()));
         //delete the database before starting the test
         loginAsSysAdmin(product, ActiveObjectsDeleteDatabasePage.class);
     }
 
     @Test
-    public final void testAdmin()
-    {
+    public final void testAdmin() {
         final ActiveObjectsAdminPage admin = loginAsSysAdmin(product, ActiveObjectsAdminPage.class);
         assertThat(admin.getTitle(), containsString("Plugin Data Storage"));
 
@@ -65,23 +60,17 @@ public final class ActiveObjectsAdminFunctionalTest
                 Lists.newArrayList(Collections2.filter(product.visit(ActiveObjectsAdminPage.class).getTables(), MATCHES_TEST_PLUGIN)));
     }
 
-    private void assertTables(List<AoTable> expected, List<AoTable> actual)
-    {
+    private void assertTables(List<AoTable> expected, List<AoTable> actual) {
         assertEquals(expected.size(), actual.size());
-        for (AoTable e : expected)
-        {
+        for (AoTable e : expected) {
             assertTrue("Didn't find " + e + " in " + actual, actual.contains(e));
         }
     }
 
-    private <P extends Page> P loginAsSysAdmin(TestedProduct<? extends Tester> product, Class<P> nextPage)
-    {
-        if (!product.visit(HomePage.class).getHeader().isLoggedIn())
-        {
+    private <P extends Page> P loginAsSysAdmin(TestedProduct<? extends Tester> product, Class<P> nextPage) {
+        if (!product.visit(HomePage.class).getHeader().isLoggedIn()) {
             return product.visit(LoginPage.class).loginAsSysAdmin(nextPage);
-        }
-        else
-        {
+        } else {
             return product.visit(nextPage);
         }
     }

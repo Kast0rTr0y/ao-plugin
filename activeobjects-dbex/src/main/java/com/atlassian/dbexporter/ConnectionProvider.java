@@ -9,7 +9,6 @@ import java.sql.SQLException;
  * behave consistently when closed, with regards to transactions, etc. I.e. no assumptions should be made on how connections
  * might be used.</p>
  */
-public interface ConnectionProvider
-{
+public interface ConnectionProvider {
     Connection getConnection() throws SQLException;
 }

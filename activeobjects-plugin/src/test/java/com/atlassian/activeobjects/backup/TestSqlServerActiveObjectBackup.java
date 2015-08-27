@@ -6,12 +6,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(SqlServerTest.class)
-public class TestSqlServerActiveObjectBackup extends ActiveObjectsBackupDataSetup
-{
+public class TestSqlServerActiveObjectBackup extends ActiveObjectsBackupDataSetup {
     @Test
     @NonTransactional
-    public void testSqlServerBackup() throws Exception
-    {
+    public void testSqlServerBackup() throws Exception {
         testBackup(SQLSERVER, SQL_SERVER_DATA);
     }
 

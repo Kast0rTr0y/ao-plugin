@@ -18,91 +18,71 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Iterables.any;
 
-public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements EntitiesValidator
-{
+public final class NamesLengthAndOracleReservedWordsEntitiesValidator implements EntitiesValidator {
     static final Set<String> RESERVED_WORDS = ImmutableSet.of("BLOB", "CLOB", "NUMBER", "ROWID", "TIMESTAMP", "VARCHAR2");
     static final int MAX_NUMBER_OF_ENTITIES = 200;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public Set<Class<? extends RawEntity<?>>> check(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters)
-    {
-        if (entityClasses.size() > MAX_NUMBER_OF_ENTITIES)
-        {
+    public Set<Class<? extends RawEntity<?>>> check(Set<Class<? extends RawEntity<?>>> entityClasses, NameConverters nameConverters) {
+        if (entityClasses.size() > MAX_NUMBER_OF_ENTITIES) {
             throw new PluginException("Plugins are allowed no more than " + MAX_NUMBER_OF_ENTITIES + " entities!");
         }
-        for (Class<? extends RawEntity<?>> entityClass : entityClasses)
-        {
+        for (Class<? extends RawEntity<?>> entityClass : entityClasses) {
             check(entityClass, nameConverters);
         }
         return entityClasses;
     }
 
-    void check(Class<? extends RawEntity<?>> entityClass, NameConverters nameConverters)
-    {
+    void check(Class<? extends RawEntity<?>> entityClass, NameConverters nameConverters) {
         checkTableName(entityClass, nameConverters.getTableNameConverter());
 
         final FieldNameConverter fieldNameConverter = nameConverters.getFieldNameConverter();
-        for (Method method : entityClass.getMethods())
-        {
+        for (Method method : entityClass.getMethods()) {
             checkColumnName(method, fieldNameConverter);
             checkPolymorphicColumnName(method, fieldNameConverter);
         }
     }
 
-    void checkTableName(Class<? extends RawEntity<?>> entityClass, TableNameConverter tableNameConverter)
-    {
+    void checkTableName(Class<? extends RawEntity<?>> entityClass, TableNameConverter tableNameConverter) {
         final String tableName = tableNameConverter.getName(entityClass);// will throw an exception if the entity name is too long
-        if (isReservedWord(tableName))
-        {
+        if (isReservedWord(tableName)) {
             throw new ActiveObjectsException("Entity class' '" + entityClass.getName() + "' table name is " + tableName + " which is a reserved word!");
         }
     }
 
-    void checkColumnName(Method method, FieldNameConverter fieldNameConverter)
-    {
-        if ((Common.isAccessor(method) || Common.isMutator(method)) && !method.isAnnotationPresent(Ignore.class))
-        {
+    void checkColumnName(Method method, FieldNameConverter fieldNameConverter) {
+        if ((Common.isAccessor(method) || Common.isMutator(method)) && !method.isAnnotationPresent(Ignore.class)) {
             final String columnName = fieldNameConverter.getName(method);
-            if (isReservedWord(columnName))
-            {
-                if (method.isAnnotationPresent(IgnoreReservedKeyword.class))
-                {
+            if (isReservedWord(columnName)) {
+                if (method.isAnnotationPresent(IgnoreReservedKeyword.class)) {
                     logger.warn("Method " + method + " is annotated with " + IgnoreReservedKeyword.class.getName() + ", it may cause issue on Oracle. " +
                             "You should change this column name to a non-reserved keyword! "
                             + "The list of reserved keywords is the following: " + RESERVED_WORDS);
-                }
-                else
-                {
+                } else {
                     throw new ActiveObjectsException("Method '" + method + "' column name is " + columnName + " which is a reserved word!");
                 }
             }
         }
     }
 
-    private boolean isReservedWord(final String name)
-    {
-        return any(RESERVED_WORDS, new Predicate<String>()
-        {
+    private boolean isReservedWord(final String name) {
+        return any(RESERVED_WORDS, new Predicate<String>() {
             @Override
-            public boolean apply(String reservedWord)
-            {
+            public boolean apply(String reservedWord) {
                 return reservedWord.equalsIgnoreCase(name);
             }
         });
     }
 
-    void checkPolymorphicColumnName(Method method, FieldNameConverter fieldNameConverter)
-    {
+    void checkPolymorphicColumnName(Method method, FieldNameConverter fieldNameConverter) {
         final Class<?> attributeTypeFromMethod = Common.getAttributeTypeFromMethod(method);
-        if (attributeTypeFromMethod != null && attributeTypeFromMethod.isAnnotationPresent(Polymorphic.class))
-        {
+        if (attributeTypeFromMethod != null && attributeTypeFromMethod.isAnnotationPresent(Polymorphic.class)) {
             final String polyTypeName = fieldNameConverter.getPolyTypeName(method);
-            if (isReservedWord(polyTypeName))
-            {
+            if (isReservedWord(polyTypeName)) {
                 throw new ActiveObjectsException("Method '" + method + "' polymorphic column name is " + polyTypeName + " which is a reserved word!");
             }
         }

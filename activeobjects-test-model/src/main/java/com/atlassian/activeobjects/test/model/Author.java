@@ -6,10 +6,10 @@ import net.java.ao.schema.StringLength;
 import net.java.ao.schema.Table;
 
 @Table("LongNameToAuthor")
-public interface Author extends Entity
-{
+public interface Author extends Entity {
     @StringLength(60)
     String getName();
+
     @StringLength(60)
     void setName(String name);
 

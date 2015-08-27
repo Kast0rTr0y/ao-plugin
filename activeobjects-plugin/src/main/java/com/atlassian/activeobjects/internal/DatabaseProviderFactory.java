@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 /**
  * A factory to create database provider given a data source
  */
-public interface DatabaseProviderFactory
-{
+public interface DatabaseProviderFactory {
     DatabaseProvider getDatabaseProvider(DataSource dataSource, DatabaseType databaseType, String schema);
 }

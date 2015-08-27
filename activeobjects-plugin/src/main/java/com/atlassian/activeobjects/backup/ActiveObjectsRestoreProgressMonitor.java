@@ -3,34 +3,29 @@ package com.atlassian.activeobjects.backup;
 import com.atlassian.activeobjects.spi.RestoreProgressMonitor;
 import com.atlassian.dbexporter.progress.ProgressMonitor;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-final class ActiveObjectsRestoreProgressMonitor implements ProgressMonitor
-{
+final class ActiveObjectsRestoreProgressMonitor implements ProgressMonitor {
     private final RestoreProgressMonitor backupProgressMonitor;
 
-    ActiveObjectsRestoreProgressMonitor(RestoreProgressMonitor restoreProgressMonitor)
-    {
+    ActiveObjectsRestoreProgressMonitor(RestoreProgressMonitor restoreProgressMonitor) {
         this.backupProgressMonitor = checkNotNull(restoreProgressMonitor);
     }
 
     @Override
-    public void begin(Object... args)
-    {
+    public void begin(Object... args) {
         backupProgressMonitor.beginRestore();
     }
 
     @Override
-    public void end(Object... args)
-    {
+    public void end(Object... args) {
         backupProgressMonitor.endRestore();
     }
 
     @Override
-    public void begin(Task task, Object... args)
-    {
-        switch (task)
-        {
+    public void begin(Task task, Object... args) {
+        switch (task) {
             case DATABASE_INFORMATION:
                 backupProgressMonitor.beginDatabaseInformationRestore();
                 break;
@@ -57,10 +52,8 @@ final class ActiveObjectsRestoreProgressMonitor implements ProgressMonitor
     }
 
     @Override
-    public void end(Task task, Object... args)
-    {
-        switch (task)
-        {
+    public void end(Task task, Object... args) {
+        switch (task) {
             case DATABASE_INFORMATION:
                 backupProgressMonitor.endDatabaseInformationRestore();
                 break;
@@ -87,8 +80,7 @@ final class ActiveObjectsRestoreProgressMonitor implements ProgressMonitor
     }
 
     @Override
-    public void totalNumberOfTables(int size)
-    {
+    public void totalNumberOfTables(int size) {
         backupProgressMonitor.updateTotalNumberOfTablesToRestore(size);
     }
 }

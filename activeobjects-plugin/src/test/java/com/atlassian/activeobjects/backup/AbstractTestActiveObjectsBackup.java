@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 @RunWith(ActiveObjectsJUnitRunner.class)
 @NameConverters(
@@ -33,8 +33,7 @@ import static org.mockito.Mockito.*;
         sequence = AtlassianSequenceNameConverter.class,
         trigger = AtlassianTriggerNameConverter.class,
         index = AtlassianIndexNameConverter.class)
-public abstract class AbstractTestActiveObjectsBackup
-{
+public abstract class AbstractTestActiveObjectsBackup {
     private static final String UTF_8 = "UTF-8";
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -43,47 +42,36 @@ public abstract class AbstractTestActiveObjectsBackup
     private ActiveObjectsBackup aoBackup;
 
     @Before
-    public final void setUp()
-    {
-         aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class))), mock(ActiveObjectsServiceFactory.class));
+    public final void setUp() {
+        aoBackup = new ActiveObjectsBackup(entityManager.getProvider(), entityManager.getNameConverters(), new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class))), mock(ActiveObjectsServiceFactory.class));
     }
 
     @After
-    public final void tearDown()
-    {
+    public final void tearDown() {
         aoBackup = null;
     }
 
-    protected final String save()
-    {
+    protected final String save() {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         aoBackup.save(os, NullBackupProgressMonitor.INSTANCE);
-        try
-        {
+        try {
             return os.toString(UTF_8);
-        }
-        catch (UnsupportedEncodingException e)
-        {
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected final void restore(String xmlBackup) throws IOException
-    {
+    protected final void restore(String xmlBackup) throws IOException {
         aoBackup.restore(IOUtils.toInputStream(xmlBackup, UTF_8), NullRestoreProgressMonitor.INSTANCE);
     }
 
-    protected final String read(String resource) throws IOException
-    {
+    protected final String read(String resource) throws IOException {
         logger.debug("Reading resource from '{}'", resource);
         InputStream is = null;
-        try
-        {
+        try {
             is = this.getClass().getResourceAsStream(resource);
             return IOUtils.toString(is, UTF_8);
-        }
-        finally
-        {
+        } finally {
             IOUtils.closeQuietly(is);
         }
     }

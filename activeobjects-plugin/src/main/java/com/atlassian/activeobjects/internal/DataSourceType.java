@@ -3,8 +3,7 @@ package com.atlassian.activeobjects.internal;
 /**
  * Types of data sources that active objects plugin can use
  */
-public enum DataSourceType
-{
+public enum DataSourceType {
     /**
      * The data source comes from the configured {@link com.atlassian.sal.api.sql.DataSourceProvider}
      * provided by the host application.
