@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -38,8 +40,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -53,8 +53,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * the application configuration.</p>
  */
 // @NotFinalForTesting
-public class ActiveObjectsServiceFactory implements ServiceFactory, InitializingBean, DisposableBean
-{
+public class ActiveObjectsServiceFactory implements ServiceFactory, InitializingBean, DisposableBean {
     private static final Logger logger = LoggerFactory.getLogger(ActiveObjectsServiceFactory.class);
 
     private static final String INIT_TASK_TIMEOUT_MS_PROPERTY = "ao-plugin.init.task.timeout";
@@ -93,8 +92,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
             @Nonnull final EventPublisher eventPublisher,
             @Nonnull final TenantContext tenantContext,
             @Nonnull final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory,
-            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider)
-    {
+            @Nonnull final InitExecutorServiceProvider initExecutorServiceProvider) {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.tenantContext = checkNotNull(tenantContext);
         checkNotNull(factory);
@@ -106,28 +104,21 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         aoContextThreadFactory = new ContextClassLoaderThreadFactory(bundleContextClassLoader);
 
         // loading cache for init executors pools
-        initExecutorsByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>()
-        {
+        initExecutorsByTenant = CacheBuilder.newBuilder().build(new CacheLoader<Tenant, ExecutorService>() {
             @Override
-            public ExecutorService load(@Nonnull final Tenant tenant) throws Exception
-            {
+            public ExecutorService load(@Nonnull final Tenant tenant) throws Exception {
                 logger.debug("creating new init executor for {}", tenant);
                 return initExecutorServiceProvider.initExecutorService(tenant);
             }
         });
 
         // initExecutor retrieval function
-        initExecutorFn = new Function<Tenant, ExecutorService>()
-        {
+        initExecutorFn = new Function<Tenant, ExecutorService>() {
             @Override
-            public ExecutorService apply(@Nullable final Tenant tenant)
-            {
-                if (destroying)
-                {
+            public ExecutorService apply(@Nullable final Tenant tenant) {
+                if (destroying) {
                     throw new IllegalStateException("applied initExecutorFn after ActiveObjectsServiceFactory destruction");
-                }
-                else if (cleaning)
-                {
+                } else if (cleaning) {
                     throw new IllegalStateException("applied initExecutorFn during ActiveObjects cleaning");
                 }
 
@@ -138,26 +129,20 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
         };
 
         // loading cache for ActiveObjects delegates
-        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjects>()
-        {
+        aoDelegatesByBundle = CacheBuilder.newBuilder().build(new CacheLoader<Bundle, TenantAwareActiveObjects>() {
             @Override
-            public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception
-            {
+            public TenantAwareActiveObjects load(@Nonnull final Bundle bundle) throws Exception {
                 TenantAwareActiveObjects delegate = new TenantAwareActiveObjects(bundle, factory, tenantContext, initExecutorFn);
                 delegate.init();
                 unattachedConfigsLock.lock();
-                try
-                {
+                try {
                     final String pluginKey = OsgiHeaderUtil.getPluginKey(bundle);
                     final ActiveObjectsConfiguration aoConfig = unattachedConfigByPluginKey.get(pluginKey);
-                    if (aoConfig != null)
-                    {
+                    if (aoConfig != null) {
                         delegate.setAoConfiguration(aoConfig);
                         unattachedConfigByPluginKey.remove(pluginKey);
                     }
-                }
-                finally
-                {
+                } finally {
                     unattachedConfigsLock.unlock();
                 }
                 return delegate;
@@ -166,8 +151,7 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         logger.debug("afterPropertiesSet");
 
         // we want tenant arrival and hot restart event notifications
@@ -175,19 +159,16 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     }
 
     @Override
-    public void destroy() throws Exception
-    {
+    public void destroy() throws Exception {
         logger.debug("destroying");
 
         destroying = true;
 
-        for (ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
-        {
+        for (ExecutorService initExecutor : initExecutorsByTenant.asMap().values()) {
             initExecutor.shutdownNow();
         }
 
-        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
-        {
+        for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values()) {
             aoDelegate.destroy();
         }
 
@@ -195,13 +176,11 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     }
 
     @Override
-    public Object getService(Bundle bundle, ServiceRegistration serviceRegistration)
-    {
+    public Object getService(Bundle bundle, ServiceRegistration serviceRegistration) {
         checkNotNull(bundle);
         logger.debug("bundle [{}]", bundle.getSymbolicName());
 
-        if (destroying)
-        {
+        if (destroying) {
             throw new IllegalStateException("getService after ActiveObjectsServiceFactory destruction");
         }
 
@@ -209,40 +188,31 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     }
 
     @Override
-    public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao)
-    {
+    public void ungetService(Bundle bundle, ServiceRegistration serviceRegistration, Object ao) {
         aoDelegatesByBundle.invalidate(bundle);
-        if (ao instanceof TenantAwareActiveObjects)
-        {
+        if (ao instanceof TenantAwareActiveObjects) {
             ((TenantAwareActiveObjects) ao).destroy();
         }
     }
 
-    public void startCleaning()
-    {
+    public void startCleaning() {
         logger.debug("startCleaning");
 
         cleaning = true;
 
-        for (final ExecutorService initExecutor : initExecutorsByTenant.asMap().values())
-        {
+        for (final ExecutorService initExecutor : initExecutorsByTenant.asMap().values()) {
             initExecutor.shutdownNow();
-            try
-            {
-                if (!initExecutor.awaitTermination(INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS))
-                {
+            try {
+                if (!initExecutor.awaitTermination(INIT_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
                     logger.error("startCleaning timed out after {}ms awaiting init thread completion, continuing; note that this timeout may be adjusted via the system property '{}'", INIT_TASK_TIMEOUT_MS, INIT_TASK_TIMEOUT_MS_PROPERTY);
                 }
-            }
-            catch (InterruptedException e)
-            {
+            } catch (InterruptedException e) {
                 logger.error("startCleaning interrupted while awaiting running init thread completion, continuing", e);
             }
         }
     }
 
-    public void stopCleaning()
-    {
+    public void stopCleaning() {
         logger.debug("stopCleaning");
 
         cleaning = false;
@@ -251,18 +221,15 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
     /**
      * Listens for {@link TenantArrivedEvent} and allows initialisation of any uninitialised instances
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onTenantArrived(TenantArrivedEvent event)
-    {
+    public void onTenantArrived(TenantArrivedEvent event) {
         // ensure that the tenant is still present
         Tenant tenant = tenantContext.getCurrentTenant();
         logger.debug("tenant arrived {}", tenant);
 
-        if (tenant != null)
-        {
-            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
-            {
+        if (tenant != null) {
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values())) {
                 logger.debug("starting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.startActiveObjects(tenant);
             }
@@ -273,25 +240,21 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * Listens for {@link HotRestartEvent} and recreate all {@link ActiveObjects} instances within the delegates with
      * the possibly different configuration and data source
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onHotRestart(HotRestartEvent hotRestartEvent)
-    {
+    public void onHotRestart(HotRestartEvent hotRestartEvent) {
         Tenant tenant = tenantContext.getCurrentTenant();
         logger.debug("performing hot restart with tenant {}", tenant);
 
-        if (tenant != null)
-        {
+        if (tenant != null) {
             final ExecutorService initExecutor = initExecutorsByTenant.getIfPresent(tenant);
             initExecutorsByTenant.invalidate(tenant);
-            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values()))
-            {
+            for (TenantAwareActiveObjects aoDelegate : ImmutableList.copyOf(aoDelegatesByBundle.asMap().values())) {
                 logger.debug("restarting AO delegate for bundle [{}]", aoDelegate.getBundle().getSymbolicName());
                 aoDelegate.restartActiveObjects(tenant);
             }
 
-            if (initExecutor != null)
-            {
+            if (initExecutor != null) {
                 logger.debug("terminating any initExecutor threads");
                 initExecutor.shutdownNow();
             }
@@ -302,43 +265,32 @@ public class ActiveObjectsServiceFactory implements ServiceFactory, Initializing
      * Listens for {@link PluginModuleEnabledEvent} for {@link ActiveObjectModuleDescriptor}.
      * Passes it to appropriate delegate i.e. the one for which the plugin/bundle key matches.
      */
-    @SuppressWarnings ("UnusedDeclaration")
+    @SuppressWarnings("UnusedDeclaration")
     @EventListener
-    public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent)
-    {
-        if (pluginModuleEnabledEvent != null)
-        {
+    public void onPluginModuleEnabledEvent(PluginModuleEnabledEvent pluginModuleEnabledEvent) {
+        if (pluginModuleEnabledEvent != null) {
             final ModuleDescriptor moduleDescriptor = pluginModuleEnabledEvent.getModule();
-            if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor)
-            {
+            if (moduleDescriptor != null && moduleDescriptor instanceof ActiveObjectModuleDescriptor) {
                 final Plugin plugin = moduleDescriptor.getPlugin();
-                if (plugin != null)
-                {
+                if (plugin != null) {
                     final String pluginKey = plugin.getKey();
-                    if (pluginKey != null)
-                    {
+                    if (pluginKey != null) {
                         boolean attachedToDelegate = false;
                         ActiveObjectsConfiguration aoConfig = ((ActiveObjectModuleDescriptor) moduleDescriptor).getConfiguration();
 
                         unattachedConfigsLock.lock();
-                        try
-                        {
-                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values())
-                            {
-                                if (pluginKey.equals(OsgiHeaderUtil.getPluginKey(aoDelegate.getBundle())))
-                                {
+                        try {
+                            for (TenantAwareActiveObjects aoDelegate : aoDelegatesByBundle.asMap().values()) {
+                                if (pluginKey.equals(OsgiHeaderUtil.getPluginKey(aoDelegate.getBundle()))) {
                                     aoDelegate.setAoConfiguration(aoConfig);
                                     attachedToDelegate = true;
                                     break;
                                 }
                             }
-                            if (!attachedToDelegate)
-                            {
+                            if (!attachedToDelegate) {
                                 unattachedConfigByPluginKey.put(pluginKey, aoConfig);
                             }
-                        }
-                        finally
-                        {
+                        } finally {
                             unattachedConfigsLock.unlock();
                         }
                     }

@@ -6,13 +6,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(MySqlTest.class)
-public class TestMySqlActiveObjectBackup extends ActiveObjectsBackupDataSetup
-{
+public class TestMySqlActiveObjectBackup extends ActiveObjectsBackupDataSetup {
 
     @Test
     @NonTransactional
-    public void testMySqlBackup() throws Exception
-    {
+    public void testMySqlBackup() throws Exception {
         testBackup(MYSQL, MYSQL_DATA);
     }
 }

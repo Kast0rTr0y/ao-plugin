@@ -12,10 +12,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static com.atlassian.dbexporter.DatabaseInformations.database;
-import static com.atlassian.dbexporter.importer.ImporterUtils.*;
-import static com.atlassian.dbexporter.node.NodeBackup.*;
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.*;
+import static com.atlassian.dbexporter.importer.ImporterUtils.checkStartNode;
+import static com.atlassian.dbexporter.node.NodeBackup.RootNode;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * <p>Loads the data from a platform-independent backup file into the database.</p>
@@ -25,20 +26,17 @@ import static com.google.common.collect.Lists.*;
  * @author Erik van Zijst
  * @author Samuel Le Berrigaud
  */
-public final class DbImporter
-{
+public final class DbImporter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ImportExportErrorService errorService;
     private final List<Importer> importers;
 
-    public DbImporter(ImportExportErrorService errorService, final Importer... importers)
-    {
+    public DbImporter(ImportExportErrorService errorService, final Importer... importers) {
         this(errorService, newArrayList(checkNotNull(importers)));
     }
 
-    public DbImporter(ImportExportErrorService errorService, final List<Importer> importers)
-    {
+    public DbImporter(ImportExportErrorService errorService, final List<Importer> importers) {
         this.errorService = checkNotNull(errorService);
         checkArgument(!checkNotNull(importers).isEmpty(), "DbImporter must be created with at least one importer!");
         this.importers = importers;
@@ -47,13 +45,12 @@ public final class DbImporter
     /**
      * Imports the XML document read from the stream
      *
-     * @param streamReader the XML stream reader
+     * @param streamReader  the XML stream reader
      * @param configuration the import configuration
      * @throws IllegalStateException if the backup XML stream is not formatted as expected.
      * @throws ImportExportException or one of its sub-types if an unexpected exception happens during the import.
      */
-    public void importData(NodeStreamReader streamReader, ImportConfiguration configuration)
-    {
+    public void importData(NodeStreamReader streamReader, ImportConfiguration configuration) {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         final DatabaseInformations.Database database = database(configuration.getDatabaseInformation());
 
@@ -68,8 +65,7 @@ public final class DbImporter
         final Context context = new Context();
 
         logger.debug("Starting import from node {}", node);
-        do
-        {
+        do {
             getImporter(node).importNode(node, configuration, context);
         }
         while (!(node.getName().equals(RootNode.NAME) && node.isClosed()));
@@ -77,12 +73,9 @@ public final class DbImporter
         monitor.end(database);
     }
 
-    private Importer getImporter(NodeParser node)
-    {
-        for (Importer importer : importers)
-        {
-            if (importer.supports(node))
-            {
+    private Importer getImporter(NodeParser node) {
+        for (Importer importer : importers) {
+            if (importer.supports(node)) {
                 logger.debug("Found importer {} for node {}", importer, node);
                 return importer;
             }

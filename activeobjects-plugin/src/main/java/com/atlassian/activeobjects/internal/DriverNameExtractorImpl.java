@@ -6,37 +6,25 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public final class DriverNameExtractorImpl implements DriverNameExtractor
-{
-    public String getDriverName(final DataSource dataSource)
-    {
+public final class DriverNameExtractorImpl implements DriverNameExtractor {
+    public String getDriverName(final DataSource dataSource) {
         Connection connection = null;
-        try
-        {
+        try {
             connection = dataSource.getConnection();
             return connection.getMetaData().getDriverName();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new ActiveObjectsException(e);
-        }
-        finally
-        {
+        } finally {
             closeQuietly(connection);
         }
     }
 
-    private static void closeQuietly(Connection connection)
-    {
-        try
-        {
-            if (connection != null)
-            {
+    private static void closeQuietly(Connection connection) {
+        try {
+            if (connection != null) {
                 connection.close();
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

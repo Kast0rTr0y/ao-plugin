@@ -23,8 +23,7 @@ import java.sql.Types;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertEquals;
 
-public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObjectsBackup
-{
+public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObjectsBackup {
     protected static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
     protected static final String HSQL_EMPTY = "/com/atlassian/activeobjects/backup/hsql_empty.xml";
     protected static final String MYSQL = "/com/atlassian/activeobjects/backup/mysql.xml";
@@ -35,8 +34,7 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
 
     private Model model;
 
-    protected final void testBackup(String xml, Iterable<BackupData> data) throws Exception
-    {
+    protected final void testBackup(String xml, Iterable<BackupData> data) throws Exception {
         final String xmlBackup = read(xml);
 
         checkXmlBackup(xmlBackup, data);
@@ -51,116 +49,90 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
         checkXmlBackup(secondXmlBackup, getCurrentDatabaseData());
     }
 
-    private Iterable<BackupData> getCurrentDatabaseData()
-    {
+    private Iterable<BackupData> getCurrentDatabaseData() {
         final DatabaseProvider provider = entityManager.getProvider();
-        if (provider instanceof HSQLDatabaseProvider)
-        {
+        if (provider instanceof HSQLDatabaseProvider) {
             return HSQL_DATA;
-        }
-        else if (provider instanceof MySQLDatabaseProvider)
-        {
+        } else if (provider instanceof MySQLDatabaseProvider) {
             return MYSQL_DATA;
-        }
-        else if (provider instanceof PostgreSQLDatabaseProvider)
-        {
+        } else if (provider instanceof PostgreSQLDatabaseProvider) {
             return POSTGRES_DATA;
-        }
-        else if (provider instanceof OracleDatabaseProvider)
-        {
+        } else if (provider instanceof OracleDatabaseProvider) {
             return ORACLE_DATA;
-        }
-        else if (provider instanceof SQLServerDatabaseProvider)
-        {
+        } else if (provider instanceof SQLServerDatabaseProvider) {
             return SQL_SERVER_DATA;
-        }
-        else
-        {
+        } else {
             throw new IllegalStateException("Can't figure out which DB we're testing against!");
         }
     }
 
-    protected void checkXmlBackup(String xmlBackup, Iterable<BackupData> data) throws Exception
-    {
+    protected void checkXmlBackup(String xmlBackup, Iterable<BackupData> data) throws Exception {
         final XpathEngine engine = newXpathEngine();
         final Document doc = XMLUnit.buildControlDocument(xmlBackup);
 
-        for (BackupData bd : data)
-        {
+        for (BackupData bd : data) {
             assertHasBackupData(engine, doc, bd);
         }
     }
 
-    private void assertHasBackupData(XpathEngine xpathEngine, Document xmlBackupDoc, BackupData bd) throws Exception
-    {
+    private void assertHasBackupData(XpathEngine xpathEngine, Document xmlBackupDoc, BackupData bd) throws Exception {
         assertHasColumn(xpathEngine, xmlBackupDoc, bd.table, bd.column, bd.primaryKey, bd.autoIncrement, bd.sqlType);
     }
 
-    private void assertHasColumn(XpathEngine xpathEngine, Document xmlBackupDoc, String tableName, String columnName, boolean pK, boolean autoIncrement, SqlType sqlType) throws XpathException
-    {
+    private void assertHasColumn(XpathEngine xpathEngine, Document xmlBackupDoc, String tableName, String columnName, boolean pK, boolean autoIncrement, SqlType sqlType) throws XpathException {
         NodeList tableNodes = xpathEngine.getMatchingNodes("/ao:backup/ao:table[@name='" + tableName + "']/ao:column[@name='" + columnName + "']", xmlBackupDoc);
         assertEquals(1, tableNodes.getLength());
         Node table = tableNodes.item(0);
         assertAttributeEquals("Expected " + tableName + "." + columnName + " to " + (pK ? "" : "NOT ") + "be a primary key.", table, "primaryKey", pK);
         assertAttributeEquals("Expected " + tableName + "." + columnName + " to " + (autoIncrement ? "" : "NOT ") + "be auto increment.", table, "autoIncrement", autoIncrement);
         assertAttributeEquals("Expected " + tableName + "." + columnName + " to be of SQL Type: " + sqlType.type, table, "sqlType", sqlType.type);
-        if (sqlType.precision != null)
-        {
+        if (sqlType.precision != null) {
             assertAttributeEquals("Expected " + tableName + "." + columnName + " to have precision: " + sqlType.precision, table, "precision", sqlType.precision);
         }
-        if (sqlType.scale != null)
-        {
+        if (sqlType.scale != null) {
             assertAttributeEquals("Expected " + tableName + "." + columnName + " to have scale: " + sqlType.scale, table, "scale", sqlType.scale);
         }
 
         assertEquals(1, xpathEngine.getMatchingNodes("/ao:backup/ao:data[@tableName='" + tableName + "']/ao:column[@name='" + columnName + "']", xmlBackupDoc).getLength());
     }
 
-    private void assertAttributeEquals(String message, Node table, String attribute, Object expected)
-    {
+    private void assertAttributeEquals(String message, Node table, String attribute, Object expected) {
         assertEquals(message, String.valueOf(expected), attributeValue(table, attribute));
     }
 
-    private XpathEngine newXpathEngine()
-    {
+    private XpathEngine newXpathEngine() {
         XpathEngine engine = XMLUnit.newXpathEngine();
         engine.setNamespaceContext(new SimpleNamespaceContext(ImmutableMap.of("ao", "http://www.atlassian.com/ao")));
         return engine;
     }
 
-    private String attributeValue(Node node, String name)
-    {
+    private String attributeValue(Node node, String name) {
         return node.getAttributes().getNamedItem(name).getNodeValue();
     }
 
-    private void assertDataPresent()
-    {
+    private void assertDataPresent() {
         model.checkAuthors();
         model.checkBooks();
     }
 
     @Before
-    public void setUpModel()
-    {
+    public void setUpModel() {
         model = new Model(entityManager);
         model.emptyDatabase();
     }
 
     @After
-    public void tearDownModel()
-    {
+    public void tearDownModel() {
         model = null;
     }
 
-    private static final class BackupData
-    {
+    private static final class BackupData {
         public final String table, column;
         public final boolean primaryKey;
         public final boolean autoIncrement;
         public final SqlType sqlType;
 
-        public BackupData(String table, String column, boolean primaryKey, boolean autoIncrement, SqlType sqlType)
-        {
+        public BackupData(String table, String column, boolean primaryKey, boolean autoIncrement, SqlType sqlType) {
             this.table = table;
             this.column = column;
             this.sqlType = sqlType;
@@ -168,47 +140,39 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
             this.autoIncrement = autoIncrement;
         }
 
-        static BackupData of(String table, String column, SqlType sqlType)
-        {
+        static BackupData of(String table, String column, SqlType sqlType) {
             return of(table, column, sqlType, false, false);
         }
 
-        static BackupData of(String table, String column, SqlType sqlType, boolean primaryKey, boolean autoIncrement)
-        {
+        static BackupData of(String table, String column, SqlType sqlType, boolean primaryKey, boolean autoIncrement) {
             return new BackupData(table, column, primaryKey, autoIncrement, sqlType);
         }
 
-        static BackupData of(BackupData data, SqlType sqlType)
-        {
+        static BackupData of(BackupData data, SqlType sqlType) {
             return of(data.table, data.column, sqlType, data.primaryKey, data.autoIncrement);
         }
     }
 
-    private static final class SqlType
-    {
+    private static final class SqlType {
         public final int type;
         public final Integer precision;
         public final Integer scale;
 
-        public SqlType(int type, Integer precision, Integer scale)
-        {
+        public SqlType(int type, Integer precision, Integer scale) {
             this.type = type;
             this.precision = precision;
             this.scale = scale;
         }
 
-        static SqlType of(int type)
-        {
+        static SqlType of(int type) {
             return of(type, null);
         }
 
-        private static SqlType of(int type, Integer precision)
-        {
+        private static SqlType of(int type, Integer precision) {
             return of(type, precision, null);
         }
 
-        private static SqlType of(int type, Integer precision, Integer scale)
-        {
+        private static SqlType of(int type, Integer precision, Integer scale) {
             return new SqlType(type, precision, scale);
         }
     }

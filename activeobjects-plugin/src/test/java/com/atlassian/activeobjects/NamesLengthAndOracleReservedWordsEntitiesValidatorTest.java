@@ -17,11 +17,12 @@ import java.lang.reflect.Method;
 
 import static com.atlassian.activeobjects.NamesLengthAndOracleReservedWordsEntitiesValidator.RESERVED_WORDS;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
-{
+public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest {
     private static final Method GET_FIELD_METHOD = method(TestEntity.class, "getField");
     private static final Method IGNORE_METHOD = method(TestEntity.class, "getIgnoreMethod");
     private static final Method IGNORE_RESERVED_KEYWORD_METHOD = method(TestEntity.class, "getIgnoreReservedKeywordMethod");
@@ -37,152 +38,118 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
     private FieldNameConverter fieldNameConverter;
 
     @Before
-    public final void setUp()
-    {
+    public final void setUp() {
         validator = new NamesLengthAndOracleReservedWordsEntitiesValidator();
     }
 
     @Test
-    public void testCheckTableNameWithNoIssue()
-    {
+    public void testCheckTableNameWithNoIssue() {
         final Class<TestEntity> entityClass = TestEntity.class;
         validator.checkTableName(entityClass, tableNameConverter);
         verify(tableNameConverter).getName(entityClass);
     }
 
     @Test(expected = ActiveObjectsException.class)
-    public void testCheckTableNameWithException()
-    {
+    public void testCheckTableNameWithException() {
         when(tableNameConverter.getName(TestEntity.class)).thenThrow(new ActiveObjectsException());
         validator.checkTableName(TestEntity.class, tableNameConverter);
     }
 
     @Test
-    public void testCheckColumnNameWithNoIssue()
-    {
+    public void testCheckColumnNameWithNoIssue() {
         validator.checkColumnName(GET_FIELD_METHOD, fieldNameConverter);
         verify(fieldNameConverter).getName(GET_FIELD_METHOD);
     }
 
     @Test
-    public void testCheckColumnNameWithRandomMethod()
-    {
+    public void testCheckColumnNameWithRandomMethod() {
         validator.checkColumnName(RANDOM_METHOD, fieldNameConverter);
         verifyZeroInteractions(fieldNameConverter);
     }
 
     @Test(expected = ActiveObjectsException.class)
-    public void testCheckColumnNameWithException()
-    {
+    public void testCheckColumnNameWithException() {
         when(fieldNameConverter.getName(GET_FIELD_METHOD)).thenThrow(new ActiveObjectsException());
         validator.checkColumnName(GET_FIELD_METHOD, fieldNameConverter);
     }
 
     @Test
-    public void testCheckPolymorphicColumnNameNoIssue()
-    {
+    public void testCheckPolymorphicColumnNameNoIssue() {
         validator.checkPolymorphicColumnName(GET_ENTITY_METHOD, fieldNameConverter);
         verify(fieldNameConverter).getPolyTypeName(GET_ENTITY_METHOD);
     }
 
     @Test(expected = ActiveObjectsException.class)
-    public void testCheckPolymorphicColumnNameWithException()
-    {
+    public void testCheckPolymorphicColumnNameWithException() {
         when(fieldNameConverter.getPolyTypeName(GET_ENTITY_METHOD)).thenThrow(new ActiveObjectsException());
         validator.checkPolymorphicColumnName(GET_ENTITY_METHOD, fieldNameConverter);
     }
 
     @Test
-    public void testCheckPolymorphicColumnNameNonPolymorphic()
-    {
+    public void testCheckPolymorphicColumnNameNonPolymorphic() {
         validator.checkPolymorphicColumnName(GET_FIELD_METHOD, fieldNameConverter);
         verifyZeroInteractions(fieldNameConverter);
     }
 
     @Test
-    public void testCheckTableNameIsOracleKeyword()
-    {
-        for (String oracleReservedWord : RESERVED_WORDS)
-        {
+    public void testCheckTableNameIsOracleKeyword() {
+        for (String oracleReservedWord : RESERVED_WORDS) {
             when(tableNameConverter.getName(TestEntity.class)).thenReturn(oracleReservedWord);
-            try
-            {
+            try {
                 validator.checkTableName(TestEntity.class, tableNameConverter);
                 fail("The validator should have thrown an exception for table named '" + oracleReservedWord + "' which is an Oracle key word.");
-            }
-            catch (ActiveObjectsException e)
-            {
+            } catch (ActiveObjectsException e) {
                 // expected
             }
         }
     }
 
     @Test
-    public void testCheckFieldNameIsOracleKeyword()
-    {
-        for (String oracleReservedWord : RESERVED_WORDS)
-        {
+    public void testCheckFieldNameIsOracleKeyword() {
+        for (String oracleReservedWord : RESERVED_WORDS) {
             when(fieldNameConverter.getName(GET_FIELD_METHOD)).thenReturn(oracleReservedWord);
-            try
-            {
+            try {
                 validator.checkColumnName(GET_FIELD_METHOD, fieldNameConverter);
                 fail("The validator should have thrown an exception for field/column named '" + oracleReservedWord + "' which is an Oracle key word.");
-            }
-            catch (ActiveObjectsException e)
-            {
+            } catch (ActiveObjectsException e) {
                 // expected
             }
         }
     }
 
     @Test
-    public void testCheckFieldNameIsOracleKeywordAndMethodIsAnnotatedIgnore()
-    {
-        for (String oracleReservedWord : RESERVED_WORDS)
-        {
+    public void testCheckFieldNameIsOracleKeywordAndMethodIsAnnotatedIgnore() {
+        for (String oracleReservedWord : RESERVED_WORDS) {
             when(fieldNameConverter.getName(IGNORE_METHOD)).thenReturn(oracleReservedWord);
-            try
-            {
+            try {
                 validator.checkColumnName(IGNORE_METHOD, fieldNameConverter);
-            }
-            catch (ActiveObjectsException e)
-            {
+            } catch (ActiveObjectsException e) {
                 fail("The validator should NOT have thrown an exception for field/column named '" + oracleReservedWord + "' which is an Oracle key word.");
             }
         }
     }
 
     @Test
-    public void testCheckFieldNameIsOracleKeywordAndMethodIsAnnotatedIgnoreReservedKeyword()
-    {
-        for (String oracleReservedWord : RESERVED_WORDS)
-        {
+    public void testCheckFieldNameIsOracleKeywordAndMethodIsAnnotatedIgnoreReservedKeyword() {
+        for (String oracleReservedWord : RESERVED_WORDS) {
             when(fieldNameConverter.getName(IGNORE_RESERVED_KEYWORD_METHOD)).thenReturn(oracleReservedWord);
-            try
-            {
+            try {
                 validator.checkColumnName(IGNORE_RESERVED_KEYWORD_METHOD, fieldNameConverter);
-            }
-            catch (ActiveObjectsException e)
-            {
+            } catch (ActiveObjectsException e) {
                 fail("The validator should NOT have thrown an exception for field/column named '" + oracleReservedWord + "' which is an Oracle key word.");
             }
         }
     }
 
-    private static Method method(Class<?> type, String name)
-    {
-        try
-        {
+    private static Method method(Class<?> type, String name) {
+        try {
             return type.getMethod(name);
-        }
-        catch (NoSuchMethodException e)
-        {
+        } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    private static interface TestEntity extends RawEntity<Object>
-    {
+    private static interface TestEntity extends RawEntity<Object> {
         int getField();
 
         void randomMethod();
@@ -197,7 +164,6 @@ public final class NamesLengthAndOracleReservedWordsEntitiesValidatorTest
     }
 
     @Polymorphic
-    private static interface PolymorphicEntity extends RawEntity<Object>
-    {
+    private static interface PolymorphicEntity extends RawEntity<Object> {
     }
 }

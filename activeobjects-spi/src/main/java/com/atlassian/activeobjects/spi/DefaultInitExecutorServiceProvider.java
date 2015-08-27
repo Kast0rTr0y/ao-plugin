@@ -7,13 +7,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import javax.annotation.Nonnull;
 
-public class DefaultInitExecutorServiceProvider implements InitExecutorServiceProvider
-{
+public class DefaultInitExecutorServiceProvider implements InitExecutorServiceProvider {
     private static final Logger logger = LoggerFactory.getLogger(DefaultInitExecutorServiceProvider.class);
 
     private final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory;
@@ -21,8 +20,7 @@ public class DefaultInitExecutorServiceProvider implements InitExecutorServicePr
     @VisibleForTesting
     final ThreadFactory aoContextThreadFactory;
 
-    public DefaultInitExecutorServiceProvider(final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory)
-    {
+    public DefaultInitExecutorServiceProvider(final ThreadLocalDelegateExecutorFactory threadLocalDelegateExecutorFactory) {
         this.threadLocalDelegateExecutorFactory = threadLocalDelegateExecutorFactory;
 
         // store the CCL of the ao-plugin bundle for use by all shared thread pool executors
@@ -41,8 +39,7 @@ public class DefaultInitExecutorServiceProvider implements InitExecutorServicePr
      */
     @Nonnull
     @Override
-    public ExecutorService initExecutorService(@Nonnull Tenant tenant)
-    {
+    public ExecutorService initExecutorService(@Nonnull Tenant tenant) {
         logger.debug("creating default init executor");
 
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()

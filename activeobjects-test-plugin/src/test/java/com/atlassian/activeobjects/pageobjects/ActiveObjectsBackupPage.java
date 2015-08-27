@@ -5,14 +5,12 @@ import com.atlassian.webdriver.AtlassianWebDriver;
 
 import javax.inject.Inject;
 
-public final class ActiveObjectsBackupPage implements Page
-{
+public final class ActiveObjectsBackupPage implements Page {
     @Inject
     protected AtlassianWebDriver driver;
 
     @Override
-    public String getUrl()
-    {
+    public String getUrl() {
         return "/plugins/servlet/ao-test?create=true";
     }
 }

@@ -8,18 +8,13 @@ import org.slf4j.LoggerFactory;
  * An abstract implementation that log at debug level runtime exception that cross the boundary
  * of a transaction.
  */
-abstract class AbstractLoggingTransactionManager implements TransactionManager
-{
+abstract class AbstractLoggingTransactionManager implements TransactionManager {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public final <T> T doInTransaction(TransactionCallback<T> callback)
-    {
-        try
-        {
+    public final <T> T doInTransaction(TransactionCallback<T> callback) {
+        try {
             return inTransaction(callback);
-        }
-        catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             logger.debug("Exception thrown within transaction", e);
             throw e;
         }

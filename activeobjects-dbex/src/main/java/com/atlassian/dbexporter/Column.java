@@ -1,9 +1,8 @@
 package com.atlassian.dbexporter;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class Column
-{
+public final class Column {
     private final String name;
     private final int sqlType;
     private final Boolean primaryKey;
@@ -11,8 +10,7 @@ public final class Column
     private final Integer precision;
     private final Integer scale;
 
-    public Column(String name, int sqlType, Boolean pk, Boolean autoIncrement, Integer precision, Integer scale)
-    {
+    public Column(String name, int sqlType, Boolean pk, Boolean autoIncrement, Integer precision, Integer scale) {
         this.name = checkNotNull(name);
         this.sqlType = sqlType;
         this.primaryKey = pk;
@@ -21,33 +19,27 @@ public final class Column
         this.scale = scale;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public Boolean isPrimaryKey()
-    {
+    public Boolean isPrimaryKey() {
         return primaryKey;
     }
 
-    public Boolean isAutoIncrement()
-    {
+    public Boolean isAutoIncrement() {
         return autoIncrement;
     }
 
-    public int getSqlType()
-    {
+    public int getSqlType() {
         return sqlType;
     }
 
-    public Integer getPrecision()
-    {
+    public Integer getPrecision() {
         return precision;
-}
+    }
 
-    public Integer getScale()
-    {
+    public Integer getScale() {
         return scale;
     }
 }

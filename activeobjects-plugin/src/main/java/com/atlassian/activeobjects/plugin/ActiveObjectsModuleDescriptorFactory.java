@@ -17,8 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * The factory to create the &lt;ao ...&gt; module descriptor.
  */
-public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDescriptorFactory<ActiveObjectModuleDescriptor>
-{
+public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDescriptorFactory<ActiveObjectModuleDescriptor> {
     private final ModuleFactory moduleFactory;
     private final OsgiServiceUtils osgiUtils;
     private final PluginToTablesMapping pluginToTablesMapping;
@@ -34,8 +33,7 @@ public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDesc
                                                 PluginToTablesMapping pluginToTablesMapping,
                                                 EntitiesValidator entitiesValidator,
                                                 TenantAccessor tenantAccessor,
-                                                EventPublisher eventPublisher)
-    {
+                                                EventPublisher eventPublisher) {
         super(checkNotNull(hostContainer), "ao", ActiveObjectModuleDescriptor.class);
         this.moduleFactory = checkNotNull(moduleFactory);
         this.configurationFactory = checkNotNull(configurationFactory);
@@ -47,8 +45,7 @@ public final class ActiveObjectsModuleDescriptorFactory extends SingleModuleDesc
     }
 
     @Override
-    public ModuleDescriptor getModuleDescriptor(String type) throws PluginParseException, IllegalAccessException, InstantiationException, ClassNotFoundException
-    {
+    public ModuleDescriptor getModuleDescriptor(String type) throws PluginParseException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         return hasModuleDescriptor(type) ? new ActiveObjectModuleDescriptor(moduleFactory, configurationFactory, osgiUtils, pluginToTablesMapping, entitiesValidator, tenantAccessor, eventPublisher) : null;
     }
 }

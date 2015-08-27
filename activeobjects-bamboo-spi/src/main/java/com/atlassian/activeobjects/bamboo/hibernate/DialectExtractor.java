@@ -5,8 +5,7 @@ import net.sf.hibernate.dialect.Dialect;
 /**
  * Allows to find the current Hibernate dialect
  */
-public interface DialectExtractor
-{
+public interface DialectExtractor {
     /**
      * Gets the dialect currently used.
      *

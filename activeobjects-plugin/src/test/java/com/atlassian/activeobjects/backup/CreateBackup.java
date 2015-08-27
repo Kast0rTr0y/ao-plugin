@@ -24,10 +24,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
-public final class CreateBackup
-{
+public final class CreateBackup {
     private final static ImmutableMap<String, JdbcConfiguration> JDBC = ImmutableMap.<String, JdbcConfiguration>builder()
             .put("hsql", new Hsql())
             .put("mysql", new MySql())
@@ -38,8 +37,7 @@ public final class CreateBackup
 
     private static final String CUSTOM = "custom";
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         final ImportExportErrorService errorService = new ImportExportErrorServiceImpl(new PluginInformationFactory(mock(PluginToTablesMapping.class), mock(PluginAccessor.class)));
 
         final JdbcConfiguration jdbc = selectJdbcDriver();
@@ -55,8 +53,7 @@ public final class CreateBackup
         System.out.println(stream.toString("UTF-8"));
     }
 
-    private static EntityManager newEntityManager(JdbcConfiguration jdbc)
-    {
+    private static EntityManager newEntityManager(JdbcConfiguration jdbc) {
         return EntityManagerBuilder
                 .url(jdbc.getUrl())
                 .username(jdbc.getUsername())
@@ -68,64 +65,50 @@ public final class CreateBackup
                 .build();
     }
 
-    private static JdbcConfiguration selectJdbcDriver() throws IOException
-    {
+    private static JdbcConfiguration selectJdbcDriver() throws IOException {
         final String choice = chooseJdbcConfiguration();
-        if (CUSTOM.equalsIgnoreCase(choice))
-        {
+        if (CUSTOM.equalsIgnoreCase(choice)) {
             return customJdbc();
-        }
-        else if (JDBC.containsKey(choice))
-        {
+        } else if (JDBC.containsKey(choice)) {
             return JDBC.get(choice);
-        }
-        else
-        {
+        } else {
             System.out.println("Please choose a valid JDBC configuration!");
             return selectJdbcDriver();
         }
     }
 
-    private static JdbcConfiguration customJdbc() throws IOException
-    {
+    private static JdbcConfiguration customJdbc() throws IOException {
         final String url = prompt("Url:");
         final String username = prompt("Username:", "ao_user");
         final String password = prompt("Password:", "ao_password");
         final String schema = prompt("Schema:", "");
 
-        return new JdbcConfiguration()
-        {
+        return new JdbcConfiguration() {
             @Override
-            public String getUrl()
-            {
+            public String getUrl() {
                 return url;
             }
 
             @Override
-            public String getSchema()
-            {
+            public String getSchema() {
                 return schema;
             }
 
             @Override
-            public String getUsername()
-            {
+            public String getUsername() {
                 return username;
             }
 
             @Override
-            public String getPassword()
-            {
+            public String getPassword() {
                 return password;
             }
         };
     }
 
-    private static String chooseJdbcConfiguration() throws IOException
-    {
+    private static String chooseJdbcConfiguration() throws IOException {
         final StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, JdbcConfiguration> configs : JDBC.entrySet())
-        {
+        for (Map.Entry<String, JdbcConfiguration> configs : JDBC.entrySet()) {
             final JdbcConfiguration jdbc = configs.getValue();
             sb.append(configs.getKey()).append(": ")
                     .append(jdbc.getUrl()).append(" - <")
@@ -138,20 +121,17 @@ public final class CreateBackup
         return prompt("Choose a configuration:\n" + sb, JDBC.keySet().iterator().next());
     }
 
-    private static String prompt(String message) throws IOException
-    {
+    private static String prompt(String message) throws IOException {
         return prompt(message, null);
     }
 
-    private static String prompt(String message, String defaultValue) throws IOException
-    {
+    private static String prompt(String message, String defaultValue) throws IOException {
         System.out.println(isNotEmpty(defaultValue) ? message + "[" + defaultValue + "]" : message);
         final String value = new BufferedReader(new InputStreamReader(System.in)).readLine();
         return isNotEmpty(value) ? value : defaultValue;
     }
 
-    private static boolean isNotEmpty(String s)
-    {
+    private static boolean isNotEmpty(String s) {
         return s != null && !s.equals("");
     }
 }

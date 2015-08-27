@@ -14,68 +14,54 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static com.atlassian.activeobjects.backup.SqlUtils.*;
-import static com.atlassian.dbexporter.jdbc.JdbcUtils.*;
-import static com.google.common.base.Preconditions.*;
+import static com.atlassian.activeobjects.backup.SqlUtils.executeUpdate;
+import static com.atlassian.dbexporter.jdbc.JdbcUtils.closeQuietly;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator
-{
+final class ActiveObjectsForeignKeyCreator implements ForeignKeyCreator {
     private final ImportExportErrorService errorService;
     private final NameConverters converters;
     private final DatabaseProvider provider;
 
-    public ActiveObjectsForeignKeyCreator(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider)
-    {
+    public ActiveObjectsForeignKeyCreator(ImportExportErrorService errorService, NameConverters converters, DatabaseProvider provider) {
         this.errorService = checkNotNull(errorService);
         this.converters = checkNotNull(converters);
         this.provider = checkNotNull(provider);
     }
 
-    public void create(Iterable<ForeignKey> foreignKeys, EntityNameProcessor entityNameProcessor)
-    {
+    public void create(Iterable<ForeignKey> foreignKeys, EntityNameProcessor entityNameProcessor) {
         Connection conn = null;
         Statement stmt = null;
-        try
-        {
+        try {
             conn = provider.getConnection();
             stmt = conn.createStatement();
-            for (ForeignKey foreignKey : foreignKeys)
-            {
+            for (ForeignKey foreignKey : foreignKeys) {
                 final DDLAction a = new DDLAction(DDLActionType.ALTER_ADD_KEY);
                 a.setKey(toDdlForeignKey(foreignKey, entityNameProcessor));
                 final Iterable<SQLAction> sqlActions = provider.renderAction(converters, a);
-                for (SQLAction sql : sqlActions)
-                {
+                for (SQLAction sql : sqlActions) {
                     executeUpdate(errorService, tableName(a), stmt, sql.getStatement());
                 }
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw errorService.newImportExportSqlException(null, "", e);
-        }
-        finally
-        {
+        } finally {
             closeQuietly(stmt);
             closeQuietly(conn);
         }
     }
 
-    private String tableName(DDLAction a)
-    {
-        if (a == null)
-        {
+    private String tableName(DDLAction a) {
+        if (a == null) {
             return null;
         }
-        if (a.getTable() == null)
-        {
+        if (a.getTable() == null) {
             return null;
         }
         return a.getTable().getName();
     }
 
-    private DDLForeignKey toDdlForeignKey(ForeignKey foreignKey, EntityNameProcessor entityNameProcessor)
-    {
+    private DDLForeignKey toDdlForeignKey(ForeignKey foreignKey, EntityNameProcessor entityNameProcessor) {
         final DDLForeignKey ddlForeignKey = new DDLForeignKey();
         ddlForeignKey.setDomesticTable(entityNameProcessor.tableName(foreignKey.getFromTable()));
         ddlForeignKey.setField(entityNameProcessor.columnName(foreignKey.getFromField()));

@@ -1,7 +1,6 @@
 package com.atlassian.activeobjects.spi;
 
-public interface BackupProgressMonitor
-{
+public interface BackupProgressMonitor {
     void beginBackup();
 
     void endBackup();

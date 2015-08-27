@@ -8,9 +8,10 @@ import com.atlassian.dbexporter.progress.ProgressMonitor;
 
 import java.util.List;
 
-import static com.atlassian.dbexporter.node.NodeBackup.*;
-import static com.google.common.base.Preconditions.*;
-import static com.google.common.collect.Lists.*;
+import static com.atlassian.dbexporter.node.NodeBackup.RootNode;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * <p>Creates an export of a database. What exactly the export 'looks' like depends heavily on the exporters passed-in.</p>
@@ -19,17 +20,14 @@ import static com.google.common.collect.Lists.*;
  * @author Erik van Zijst
  * @author Samuel Le Berrigaud
  */
-public final class DbExporter
-{
+public final class DbExporter {
     private final List<Exporter> exporters;
 
-    public DbExporter(final Exporter... exporters)
-    {
+    public DbExporter(final Exporter... exporters) {
         this(newArrayList(checkNotNull(exporters)));
     }
 
-    public DbExporter(final List<Exporter> exporters)
-    {
+    public DbExporter(final List<Exporter> exporters) {
         checkArgument(!checkNotNull(exporters).isEmpty(), "DbExporter must be created with at least one Exporter!");
         this.exporters = exporters;
     }
@@ -37,19 +35,17 @@ public final class DbExporter
     /**
      * Imports the XML document read from the stream
      *
-     * @param streamWriter the stream to write the XML to
+     * @param streamWriter  the stream to write the XML to
      * @param configuration the export configuration
      * @throws ImportExportException or one of its sub-types if an unexpected exception happens during the import.
      */
-    public void exportData(NodeStreamWriter streamWriter, ExportConfiguration configuration)
-    {
+    public void exportData(NodeStreamWriter streamWriter, ExportConfiguration configuration) {
         final ProgressMonitor monitor = configuration.getProgressMonitor();
         monitor.begin();
 
         final NodeCreator node = RootNode.add(streamWriter);
         final Context context = new Context();
-        for (Exporter exporter : exporters)
-        {
+        for (Exporter exporter : exporters) {
             exporter.export(node, configuration, context);
         }
 

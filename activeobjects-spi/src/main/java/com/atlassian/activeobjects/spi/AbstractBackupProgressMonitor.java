@@ -1,59 +1,47 @@
 package com.atlassian.activeobjects.spi;
 
-public abstract class AbstractBackupProgressMonitor implements BackupProgressMonitor
-{
+public abstract class AbstractBackupProgressMonitor implements BackupProgressMonitor {
     @Override
-    public void beginBackup()
-    {
+    public void beginBackup() {
     }
 
     @Override
-    public void endBackup()
-    {
+    public void endBackup() {
     }
 
     @Override
-    public void beginDatabaseInformationBackup()
-    {
+    public void beginDatabaseInformationBackup() {
     }
 
     @Override
-    public void beginTableDefinitionsBackup()
-    {
+    public void beginTableDefinitionsBackup() {
     }
 
     @Override
-    public void beginTablesBackup()
-    {
+    public void beginTablesBackup() {
     }
 
     @Override
-    public void beginTableBackup(String tableName)
-    {
+    public void beginTableBackup(String tableName) {
     }
 
     @Override
-    public void updateTotalNumberOfTablesToBackup(int tableCount)
-    {
+    public void updateTotalNumberOfTablesToBackup(int tableCount) {
     }
 
     @Override
-    public void endDatabaseInformationBackup()
-    {
+    public void endDatabaseInformationBackup() {
     }
 
     @Override
-    public void endTableDefinitionsBackup()
-    {
+    public void endTableDefinitionsBackup() {
     }
 
     @Override
-    public void endTablesBackup()
-    {
+    public void endTablesBackup() {
     }
 
     @Override
-    public void endTableBackup(String tableName)
-    {
+    public void endTableBackup(String tableName) {
     }
 }

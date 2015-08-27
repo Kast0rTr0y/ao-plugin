@@ -12,18 +12,17 @@ import java.util.concurrent.TimeoutException;
  *
  * @since 0.24
  */
-public interface ActiveObjectsModuleMetaData
-{
+public interface ActiveObjectsModuleMetaData {
     /**
      * Awaits initialization of the ActiveObjects model,this method will block until the active objects schema has been
      * initialized for the current data source.
-     * 
+     *
      * This method cannot be called from within an UpgradeTask
      *
      * Blocks indefinitely.
      *
      * @throws com.atlassian.activeobjects.external.NoDataSourceException
-     * @throws com.atlassian.activeobjects.ActiveObjectsInitException if an exception occurred during initializations
+     * @throws com.atlassian.activeobjects.ActiveObjectsInitException     if an exception occurred during initializations
      */
     void awaitInitialization() throws ExecutionException, InterruptedException;
 
@@ -31,8 +30,7 @@ public interface ActiveObjectsModuleMetaData
      * See {@link #awaitInitialization()}
      *
      * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
-     *
+     * @param unit    the time unit of the timeout argument
      * @since 0.26
      */
     void awaitInitialization(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
@@ -40,7 +38,7 @@ public interface ActiveObjectsModuleMetaData
     /**
      * Indicates if initialization has completed successfully. If this returns true a call to awaitInitialization will
      * return immediately and won't throw an exception, providing a tenant is present.
-     * 
+     *
      * @return true if initialized, false otherwise
      */
     boolean isInitialized();
