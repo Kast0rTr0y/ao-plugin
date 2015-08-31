@@ -152,6 +152,13 @@
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
+                            <bundledArtifacts>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                            </bundledArtifacts>
                             <output>${project.build.directory}/refapp.log</output>
                         </product>
                         <!--<product>-->
