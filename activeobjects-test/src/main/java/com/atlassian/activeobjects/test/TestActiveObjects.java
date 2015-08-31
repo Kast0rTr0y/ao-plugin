@@ -16,6 +16,7 @@ import java.util.Map;
 public final class TestActiveObjects extends EntityManagedActiveObjects {
 
     private static final Map<String, DatabaseType> DATABASE_PRODUCT_TO_TYPE_MAP = ImmutableMap.<String, DatabaseType>builder()
+            .put("H2", DatabaseType.H2)
             .put("HSQL Database Engine", DatabaseType.HSQL)
             .put("MySQL", DatabaseType.MYSQL)
             .put("PostgreSQL", DatabaseType.POSTGRESQL)
