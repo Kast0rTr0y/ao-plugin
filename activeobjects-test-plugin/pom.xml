@@ -105,30 +105,6 @@
             <version>${refapp.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- jira -->
-        <dependency>
-            <groupId>com.atlassian.activeobjects</groupId>
-            <artifactId>activeobjects-jira-spi</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.atlassian.jira</groupId>
-            <artifactId>atlassian-jira-pageobjects</artifactId>
-            <version>${refapp.jira.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                 <exclusion>
-                     <groupId>com.google.collections</groupId>
-                     <artifactId>google-collections</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.slf4j</groupId>
-                     <artifactId>slf4j-simple</artifactId>
-                 </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
@@ -151,12 +127,14 @@
                                     <artifactId>activeobjects-plugin</artifactId>
                                     <version>${project.version}</version>
                                 </bundledArtifact>
-                                <bundledArtifact>
+                            </bundledArtifacts>
+                            <libArtifacts>
+                                <libArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
                                     <artifactId>activeobjects-spi</artifactId>
                                     <version>${project.version}</version>
-                                </bundledArtifact>
-                            </bundledArtifacts>
+                                </libArtifact>
+                            </libArtifacts>
                             <output>${project.build.directory}/refapp.log</output>
                         </product>
                     </products>
