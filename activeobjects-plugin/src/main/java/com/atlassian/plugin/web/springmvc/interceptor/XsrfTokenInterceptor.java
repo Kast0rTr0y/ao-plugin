@@ -1,13 +1,15 @@
 package com.atlassian.plugin.web.springmvc.interceptor;
 
-import com.atlassian.plugin.web.springmvc.xsrf.XsrfTokenGenerator;
-import com.atlassian.sal.api.ApplicationProperties;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
+
+import com.atlassian.plugin.web.springmvc.xsrf.XsrfTokenGenerator;
+import com.atlassian.sal.api.ApplicationProperties;
+
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
  * Small, self-contained implementation of the XSRF token generator, copied directly from our XWork implementation.
@@ -37,10 +39,13 @@ public final class XsrfTokenInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> model = modelAndView.getModel();
-        model.put("xsrfTokenName", xsrfTokenGenerator.getXsrfTokenName());
-        model.put("xsrfTokenValue", xsrfTokenGenerator.generateToken(request));
+        // can be null when no handler was mapped
+        if (modelAndView != null)
+        {
+            Map<String, Object> model = modelAndView.getModel();
+            model.put("xsrfTokenName", xsrfTokenGenerator.getXsrfTokenName());
+            model.put("xsrfTokenValue", xsrfTokenGenerator.generateToken(request));
+        }
     }
 
     public void setApplicationProperties(ApplicationProperties applicationProperties) {
