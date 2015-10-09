@@ -911,7 +911,7 @@
                 <plugins>
                     <plugin>
                         <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-refapp-plugin</artifactId>
+                        <artifactId>maven-amps-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
