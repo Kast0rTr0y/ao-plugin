@@ -21,7 +21,10 @@ import org.w3c.dom.NodeList;
 
 import java.sql.Types;
 
+import static net.java.ao.Common.fuzzyTypeCompare;
 import static org.custommonkey.xmlunit.XMLAssert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObjectsBackup {
     protected static final String HSQL = "/com/atlassian/activeobjects/backup/hsql.xml";
@@ -85,7 +88,10 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
         Node table = tableNodes.item(0);
         assertAttributeEquals("Expected " + tableName + "." + columnName + " to " + (pK ? "" : "NOT ") + "be a primary key.", table, "primaryKey", pK);
         assertAttributeEquals("Expected " + tableName + "." + columnName + " to " + (autoIncrement ? "" : "NOT ") + "be auto increment.", table, "autoIncrement", autoIncrement);
-        assertAttributeEquals("Expected " + tableName + "." + columnName + " to be of SQL Type: " + sqlType.type, table, "sqlType", sqlType.type);
+
+        assertThat("Expected " + tableName + "." + columnName + " to be of SQL Type: " + sqlType.type,
+                fuzzyTypeCompare(sqlType.type, Integer.valueOf(attributeValue(table, "sqlType"))), is(true));
+
         if (sqlType.precision != null) {
             assertAttributeEquals("Expected " + tableName + "." + columnName + " to have precision: " + sqlType.precision, table, "precision", sqlType.precision);
         }
