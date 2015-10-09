@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.db.H2DatabaseProvider;
 import net.java.ao.db.HSQLDatabaseProvider;
+import net.java.ao.db.MsJdbcSQLServerDatabaseProvider;
 import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
@@ -66,7 +67,8 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
             return POSTGRES_DATA;
         } else if (provider.getClass() == OracleDatabaseProvider.class) {
             return ORACLE_DATA;
-        } else if (provider.getClass() == SQLServerDatabaseProvider.class) {
+        } else if (provider.getClass() == SQLServerDatabaseProvider.class
+                || provider.getClass() == MsJdbcSQLServerDatabaseProvider.class) {
             return SQL_SERVER_DATA;
         } else {
             throw new IllegalStateException("Can't figure out which DB we're testing against!");
