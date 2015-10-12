@@ -175,7 +175,7 @@
                         <webdriver.browser>firefox</webdriver.browser>
                         <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
-                    <!--<containerId>tomcat7x</containerId>-->
+                    <containerId>tomcat7x</containerId>
                     <products>
                         <product>
                             <id>refapp</id>
