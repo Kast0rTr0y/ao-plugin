@@ -52,7 +52,7 @@
     </modules>
 
     <properties>
-        <amps.version>6.0.6</amps.version>
+        <amps.version>6.1.2</amps.version>
         <ao.version>1.1.3</ao.version>
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>4.1.4.RELEASE</spring.library.version>
@@ -72,7 +72,9 @@
         <hamcrest.version>1.1</hamcrest.version>
         <mockito.version>1.8.4</mockito.version>
         <atlassian.selenium.version>2.3-m7</atlassian.selenium.version>
-        <refapp.jira.version>7.0.0-QR20150630142413</refapp.jira.version>
+        <jira.version>7.0.0</jira.version>
+        <bitbucket.server.version>4.0.0</bitbucket.server.version>
+        <confluence.version>5.9.1-OD-2015.42.0-0277</confluence.version>
         <atlassian.concurrent.version>2.4.0</atlassian.concurrent.version>
         <atlassian.beehive.version>0.1.3</atlassian.beehive.version>
 
@@ -136,7 +138,6 @@
                                 <version>${refapp.version}</version>
                             </product>
                         </products>
-                        <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
                     </configuration>
                 </plugin>

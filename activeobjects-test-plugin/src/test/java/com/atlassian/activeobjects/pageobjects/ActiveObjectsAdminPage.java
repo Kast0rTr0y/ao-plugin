@@ -31,7 +31,7 @@ public class ActiveObjectsAdminPage implements Page {
     public List<AoTable> getTables() {
         final List<AoTable> tables = new LinkedList<AoTable>();
         for (PageElement tr : plugins.findAll(By.tagName("tr"))) {
-            final String pluginName = tr.find(By.className("ao-plugin-name")).getText();
+            final String pluginName = tr.find(By.tagName("td")).find(By.tagName("span")).getText();
             final List<PageElement> tableNames = tr.find(By.className("ao-table-names")).findAll(By.tagName("li"));
             final List<PageElement> rowCounts = tr.find(By.className("ao-row-counts")).findAll(By.tagName("li"));
 

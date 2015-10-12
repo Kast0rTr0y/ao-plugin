@@ -105,6 +105,64 @@
             <version>${refapp.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- jira -->
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>atlassian-jira-pageobjects</artifactId>
+            <version>${jira.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- confluence -->
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-confluence-spi</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.confluence</groupId>
+            <artifactId>atlassian-confluence-pageobjects</artifactId>
+            <version>${confluence.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- bitbucket server -->
+        <dependency>
+            <groupId>com.atlassian.bitbucket.server</groupId>
+            <artifactId>bitbucket-page-objects</artifactId>
+            <version>${bitbucket.server.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.restassured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>2.4.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>
@@ -117,7 +175,7 @@
                         <webdriver.browser>firefox</webdriver.browser>
                         <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
-                    <containerId>tomcat8x</containerId>
+                    <containerId>tomcat7x</containerId>
                     <products>
                         <product>
                             <id>refapp</id>
@@ -137,8 +195,74 @@
                             </libArtifacts>
                             <output>${project.build.directory}/refapp.log</output>
                         </product>
+                        <product>
+                            <id>jira</id>
+                            <version>${jira.version}</version>
+                            <productDataVersion>${jira.version}</productDataVersion>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
+                            <bundledArtifacts>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-plugin</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                            </bundledArtifacts>
+                            <output>${project.build.directory}/jira.log</output>
+                        </product>
+                        <product>
+                            <id>confluence</id>
+                            <version>${confluence.version}</version>
+                            <productDataVersion>${confluence.version}</productDataVersion>
+                            <output>${project.build.directory}/confluence.log</output>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
+                            <bundledArtifacts>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-plugin</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-confluence-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                            </bundledArtifacts>
+                        </product>
+                        <product>
+                            <id>bitbucket</id>
+                            <version>${bitbucket.server.version}</version>
+                            <productDataVersion>${bitbucket.server.version}</productDataVersion>
+                            <output>${project.build.directory}/bitbucket.log</output>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
+                            <bundledArtifacts>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-plugin</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                            </bundledArtifacts>
+                        </product>
                     </products>
                     <testGroups>
+                        <!--
                         <testGroup>
                             <id>refapp</id>
                             <productIds>
@@ -149,6 +273,45 @@
                             </includes>
                             <systemProperties>
                                 <tested.app>com.atlassian.webdriver.refapp.RefappTestedProduct</tested.app>
+                            </systemProperties>
+                        </testGroup>
+                        <testGroup>
+                            <id>jira</id>
+                            <productIds>
+                                <productId>jira</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**</include>
+                            </includes>
+                            <systemProperties>
+                                <tested.app>com.atlassian.jira.pageobjects.JiraTestedProduct</tested.app>
+                            </systemProperties>
+                        </testGroup>
+
+                        <testGroup>
+                            <id>confluence</id>
+                            <productIds>
+                                <productId>confluence</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**</include>
+                            </includes>
+                            <systemProperties>
+                                <tested.app>com.atlassian.confluence.pageobjects.ConfluenceTestedProduct</tested.app>
+                            </systemProperties>
+                        </testGroup>
+                        -->
+                        <testGroup>
+                            <id>bitbucket</id>
+                            <productIds>
+                                <productId>bitbucket</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**</include>
+                            </includes>
+                            <systemProperties>
+                                <tested.app>com.atlassian.webdriver.stash.StashTestedProduct</tested.app>
+                                <!--<tested.app>com.atlassian.webdriver.bitbucket.BitbucketTestedProduct</tested.app>-->
                             </systemProperties>
                         </testGroup>
                     </testGroups>
