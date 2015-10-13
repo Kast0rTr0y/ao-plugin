@@ -139,7 +139,6 @@
                                 <version>${refapp.version}</version>
                             </product>
                         </products>
-                        <log4jProperties>src/aps/log4j.properties</log4jProperties>
                         <extractDependencies>true</extractDependencies>
                     </configuration>
                 </plugin>
