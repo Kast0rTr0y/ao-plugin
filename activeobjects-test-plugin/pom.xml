@@ -120,6 +120,14 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-simple</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- confluence -->
@@ -146,11 +154,26 @@
             </exclusions>
         </dependency>
         <!-- bitbucket server -->
+        <!--
         <dependency>
             <groupId>com.atlassian.bitbucket.server</groupId>
             <artifactId>bitbucket-page-objects</artifactId>
             <version>${bitbucket.server.version}</version>
-            <scope>test</scope>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>
@@ -163,7 +186,54 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        -->
+        <!--Bamboo-->
+        <dependency>
+            <groupId>com.atlassian.bamboo</groupId>
+            <artifactId>atlassian-bamboo-pageobjects</artifactId>
+            <version>${bamboo.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>bitbucket</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.atlassian.bitbucket.server</groupId>
+                    <artifactId>bitbucket-page-objects</artifactId>
+                    <version>${bitbucket.server.version}</version>
+                    <scope>provided</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-log4j12</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-simple</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>log4j</groupId>
+                            <artifactId>log4j</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>com.jayway.restassured</groupId>
+                    <artifactId>rest-assured</artifactId>
+                    <version>2.4.1</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.codehaus.groovy</groupId>
+                            <artifactId>groovy</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -175,7 +245,7 @@
                         <webdriver.browser>firefox</webdriver.browser>
                         <xvfb.enable>true</xvfb.enable>
                     </systemPropertyVariables>
-                    <containerId>tomcat7x</containerId>
+                    <containerId>tomcat8x</containerId>
                     <products>
                         <product>
                             <id>refapp</id>
@@ -260,8 +330,44 @@
                                 </bundledArtifact>
                             </bundledArtifacts>
                         </product>
+                        <product>
+                            <id>bamboo</id>
+                            <version>${bamboo.version}</version>
+                            <productDataVersion>${bamboo.version}</productDataVersion>
+                            <libArtifacts>
+                                <libArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-spi</artifactId>
+                                    <version>${project.version}</version>
+                                </libArtifact>
+                                <libArtifact>
+                                    <groupId>com.atlassian.tenancy</groupId>
+                                    <artifactId>atlassian-tenancy-api</artifactId>
+                                    <version>${tenancy.libversion}</version>
+                                </libArtifact>
+                                <libArtifact>
+                                    <groupId>com.atlassian.beehive</groupId>
+                                    <artifactId>beehive-api</artifactId>
+                                    <version>${atlassian.beehive.version}</version>
+                                </libArtifact>
+                            </libArtifacts>
+                            <bundledArtifacts>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.activeobjects</groupId>
+                                    <artifactId>activeobjects-plugin</artifactId>
+                                    <version>${project.version}</version>
+                                </bundledArtifact>
+                                <bundledArtifact>
+                                    <groupId>com.atlassian.tenancy</groupId>
+                                    <artifactId>atlassian-tenancy-compatibility-plugin</artifactId>
+                                    <version>${tenancy.libversion}</version>
+                                </bundledArtifact>
+                            </bundledArtifacts>
+                            <output>${project.build.directory}/bamboo.log</output>
+                        </product>
                     </products>
                     <testGroups>
+                        <!--
                         <testGroup>
                             <id>refapp</id>
                             <productIds>
@@ -286,7 +392,6 @@
                                 <tested.app>com.atlassian.jira.pageobjects.JiraTestedProduct</tested.app>
                             </systemProperties>
                         </testGroup>
-
                         <testGroup>
                             <id>confluence</id>
                             <productIds>
@@ -299,7 +404,6 @@
                                 <tested.app>com.atlassian.confluence.pageobjects.ConfluenceTestedProduct</tested.app>
                             </systemProperties>
                         </testGroup>
-                        <!--
                         <testGroup>
                             <id>bitbucket</id>
                             <productIds>
@@ -309,11 +413,22 @@
                                 <include>it/**</include>
                             </includes>
                             <systemProperties>
-                                <tested.app>com.atlassian.webdriver.stash.StashTestedProduct</tested.app>
                                 <tested.app>com.atlassian.webdriver.bitbucket.BitbucketTestedProduct</tested.app>
                             </systemProperties>
                         </testGroup>
                         -->
+                        <testGroup>
+                            <id>bamboo</id>
+                            <productIds>
+                                <productId>bamboo</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**</include>
+                            </includes>
+                            <systemProperties>
+                                <tested.app>com.atlassian.bamboo.pageobjects.BambooTestedProduct</tested.app>
+                            </systemProperties>
+                        </testGroup>
                     </testGroups>
                 </configuration>
             </plugin>
