@@ -96,20 +96,15 @@
             <version>1.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.refapp</groupId>
+            <artifactId>atlassian-refapp-pageobjects</artifactId>
+            <version>${refapp.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>refapp</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.atlassian.refapp</groupId>
-                    <artifactId>atlassian-refapp-pageobjects</artifactId>
-                    <version>${refapp.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
         <profile>
             <id>jira</id>
             <dependencies>
@@ -145,17 +140,7 @@
                     <artifactId>atlassian-confluence-pageobjects</artifactId>
                     <version>${confluence.version}</version>
                     <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>com.google.collections</groupId>
-                            <artifactId>google-collections</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-simple</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
+                  </dependency>
             </dependencies>
         </profile>
         <profile>
@@ -166,20 +151,6 @@
                     <artifactId>bitbucket-page-objects</artifactId>
                     <version>${bitbucket.server.version}</version>
                     <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-log4j12</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-simple</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>log4j</groupId>
-                            <artifactId>log4j</artifactId>
-                        </exclusion>
-                    </exclusions>
                 </dependency>
                 <dependency>
                     <groupId>com.jayway.restassured</groupId>
@@ -339,7 +310,6 @@
                         </product>
                     </products>
                     <testGroups>
-                        <!--
                         <testGroup>
                             <id>refapp</id>
                             <productIds>
@@ -400,7 +370,6 @@
                                 <tested.app>com.atlassian.bamboo.pageobjects.BambooTestedProduct</tested.app>
                             </systemProperties>
                         </testGroup>
-                        -->
                     </testGroups>
                 </configuration>
             </plugin>
