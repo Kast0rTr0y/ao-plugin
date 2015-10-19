@@ -68,18 +68,6 @@ public final class ActiveObjectsAdminFunctionalTest {
     }
 
     private <P extends Page> P loginAsSysAdmin(TestedProduct<? extends Tester> product, Class<P> nextPage) {
-//        //For some products like Stash, product.visit(HomePage.class) throws exception if user is not logged in, because they have some assertions there.
-//        //Hence redirecting to login page if it throws exception.
-//        try{
-//            if (!product.visit(HomePage.class).getHeader().isLoggedIn()) {
-//                return product.visit(LoginPage.class).loginAsSysAdmin(nextPage);
-//            } else {
-//                return product.visit(nextPage);
-//            }
-//        }
-//        catch (Exception e){
-//            return product.visit(LoginPage.class).loginAsSysAdmin(nextPage);
-//        }
         return product.visit(LoginPage.class).loginAsSysAdmin(nextPage);
     }
 

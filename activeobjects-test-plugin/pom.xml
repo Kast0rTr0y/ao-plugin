@@ -130,12 +130,6 @@
             <id>confluence</id>
             <dependencies>
                 <dependency>
-                    <groupId>com.atlassian.activeobjects</groupId>
-                    <artifactId>activeobjects-confluence-spi</artifactId>
-                    <version>${project.version}</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
                     <groupId>com.atlassian.confluence</groupId>
                     <artifactId>atlassian-confluence-pageobjects</artifactId>
                     <version>${confluence.version}</version>
@@ -156,12 +150,6 @@
                     <groupId>com.jayway.restassured</groupId>
                     <artifactId>rest-assured</artifactId>
                     <version>2.4.1</version>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.codehaus.groovy</groupId>
-                            <artifactId>groovy</artifactId>
-                        </exclusion>
-                    </exclusions>
                 </dependency>
             </dependencies>
         </profile>
@@ -244,11 +232,6 @@
                                 <bundledArtifact>
                                     <groupId>com.atlassian.activeobjects</groupId>
                                     <artifactId>activeobjects-plugin</artifactId>
-                                    <version>${project.version}</version>
-                                </bundledArtifact>
-                                <bundledArtifact>
-                                    <groupId>com.atlassian.activeobjects</groupId>
-                                    <artifactId>activeobjects-confluence-spi</artifactId>
                                     <version>${project.version}</version>
                                 </bundledArtifact>
                             </bundledArtifacts>
