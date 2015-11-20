@@ -5,6 +5,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.db.ClientDerbyDatabaseProvider;
 import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
 import net.java.ao.db.HSQLDatabaseProvider;
+import net.java.ao.db.MsJdbcSQLServerDatabaseProvider;
 import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
@@ -12,7 +13,9 @@ import net.java.ao.db.SQLServerDatabaseProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -25,7 +28,6 @@ import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +39,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class JdbcDriverDatabaseProviderFactoryTest {
     private static final String SOME_UNKOWN_DRIVER = "com.example.jdbc.SomeUnkownDriver";
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private DatabaseProviderFactory databaseProviderFactory;
     @Mock
@@ -55,12 +60,8 @@ public class JdbcDriverDatabaseProviderFactoryTest {
 
     @Test
     public void testGetDatabaseProviderForUnknownDriver() throws Exception {
-        try {
-            databaseProviderFactory.getDatabaseProvider(getMockDataSource(SOME_UNKOWN_DRIVER), DatabaseType.UNKNOWN, null);
-            fail("Should have thrown " + DatabaseProviderNotFoundException.class.getName());
-        } catch (DatabaseProviderNotFoundException e) {
-            assertEquals(SOME_UNKOWN_DRIVER, e.getDriverClassName());
-        }
+        expectedException.expect(DatabaseProviderNotFoundException.class);
+        databaseProviderFactory.getDatabaseProvider(getMockDataSource(SOME_UNKOWN_DRIVER), DatabaseType.UNKNOWN, null);
     }
 
     @Test
@@ -115,17 +116,30 @@ public class JdbcDriverDatabaseProviderFactoryTest {
     }
 
     @Test
-    public void testGetDatabaseProviderForMsSqlDriver() throws Exception {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.UNKNOWN);
+    public void testGetDatabaseProviderForMsSqlDriverMsSqlDatabaseType() throws Exception {
+        testGetProviderOfTypeForDriverClassName(MsJdbcSQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.MS_SQL);
     }
 
     @Test
-    public void testGetDatabaseProviderForMsSqlDatabaseType() throws Exception {
+    public void testGetDatabaseProviderForJtdsDriverMsSqlDatabaseType() throws Exception {
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.MS_SQL);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForUnknownDriverMsSqlDatabaseType() throws Exception {
+        expectedException.expect(DatabaseProviderNotFoundException.class);
         testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, SOME_UNKOWN_DRIVER, DatabaseType.MS_SQL);
     }
 
     @Test
-    public void testGetDatabaseProviderForJtdsDriver() throws Exception {
+    public void testGetDatabaseProviderForMsSqlDriverUnknownDatabaseType() throws Exception {
+        expectedException.expect(DatabaseProviderNotFoundException.class);
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.UNKNOWN);
+    }
+
+    @Test
+    public void testGetDatabaseProviderForJtdsDriverUnknownDatabaseType() throws Exception {
+        expectedException.expect(DatabaseProviderNotFoundException.class);
         testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.UNKNOWN);
     }
 
