@@ -81,6 +81,8 @@
 
         <sal.api.compatibility.version>2.4</sal.api.compatibility.version>
         <tenancy.api.compatibility.version>1.4</tenancy.api.compatibility.version>
+
+        <javadoc.additional.params>-Xdoclint:none</javadoc.additional.params>
     </properties>
     <build>
         <pluginManagement>
