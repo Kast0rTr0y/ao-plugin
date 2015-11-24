@@ -35,10 +35,9 @@ import static org.mockito.Mockito.when;
  * Testing {@link com.atlassian.activeobjects.internal.JdbcDriverDatabaseProviderFactory}
  */
 
-// TODO fix the test so that drivers are actually loaded and we can test with their real name
 @RunWith(MockitoJUnitRunner.class)
 public class JdbcDriverDatabaseProviderFactoryTest {
-    private static final String SOME_UNKOWN_DRIVER = "com.example.jdbc.SomeUnkownDriver";
+    private static final String SOME_UNKOWN_DRIVER = "some unknown driver";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -66,7 +65,7 @@ public class JdbcDriverDatabaseProviderFactoryTest {
 
     @Test
     public void testGetDatabaseProviderForMySqlDriver() throws Exception {
-        testGetProviderOfTypeForDriverClassName(MySQLDatabaseProvider.class, "com.mysql.jdbc.Driver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(MySQLDatabaseProvider.class, "MySQL-AB JDBC Driver", DatabaseType.UNKNOWN);
     }
 
     @Test
@@ -76,7 +75,7 @@ public class JdbcDriverDatabaseProviderFactoryTest {
 
     @Test
     public void testGetDatabaseProviderForClientDerbyDriver() throws Exception {
-        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, "org.apache.derby.jdbc.ClientDriver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(ClientDerbyDatabaseProvider.class, "Apache Derby Embedded JDBC Driver", DatabaseType.UNKNOWN);
     }
 
     @Test
@@ -97,7 +96,7 @@ public class JdbcDriverDatabaseProviderFactoryTest {
 
     @Test
     public void testGetDatabaseProviderForOracleDriver() throws Exception {
-        testGetProviderOfTypeForDriverClassName(OracleDatabaseProvider.class, "oracle.jdbc.OracleDriver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(OracleDatabaseProvider.class, "Oracle JDBC driver", DatabaseType.UNKNOWN);
     }
 
     @Test
@@ -107,7 +106,7 @@ public class JdbcDriverDatabaseProviderFactoryTest {
 
     @Test
     public void testGetDatabaseProviderForPostgresDriver() throws Exception {
-        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, "org.postgresql.Driver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(PostgreSQLDatabaseProvider.class, "PostgreSQL Native Driver", DatabaseType.UNKNOWN);
     }
 
     @Test
@@ -117,12 +116,12 @@ public class JdbcDriverDatabaseProviderFactoryTest {
 
     @Test
     public void testGetDatabaseProviderForMsSqlDriverMsSqlDatabaseType() throws Exception {
-        testGetProviderOfTypeForDriverClassName(MsJdbcSQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.MS_SQL);
+        testGetProviderOfTypeForDriverClassName(MsJdbcSQLServerDatabaseProvider.class, "Microsoft JDBC Driver 4.2 for SQL Server", DatabaseType.MS_SQL);
     }
 
     @Test
     public void testGetDatabaseProviderForJtdsDriverMsSqlDatabaseType() throws Exception {
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.MS_SQL);
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "jTDS Type 4 JDBC Driver for MS SQL Server and Sybase", DatabaseType.MS_SQL);
     }
 
     @Test
@@ -134,18 +133,18 @@ public class JdbcDriverDatabaseProviderFactoryTest {
     @Test
     public void testGetDatabaseProviderForMsSqlDriverUnknownDatabaseType() throws Exception {
         expectedException.expect(DatabaseProviderNotFoundException.class);
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "com.microsoft.sqlserver.jdbc.SQLServerDriver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "Microsoft JDBC Driver 4.2 for SQL Server", DatabaseType.UNKNOWN);
     }
 
     @Test
     public void testGetDatabaseProviderForJtdsDriverUnknownDatabaseType() throws Exception {
         expectedException.expect(DatabaseProviderNotFoundException.class);
-        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "net.sourceforge.jtds.jdbc.Driver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(SQLServerDatabaseProvider.class, "jTDS Type 4 JDBC Driver for MS SQL Server and Sybase", DatabaseType.UNKNOWN);
     }
 
     @Test
     public void testGetDatabaseProviderForHsqlDriver() throws Exception {
-        testGetProviderOfTypeForDriverClassName(HSQLDatabaseProvider.class, "org.hsqldb.jdbcDriver", DatabaseType.UNKNOWN);
+        testGetProviderOfTypeForDriverClassName(HSQLDatabaseProvider.class, "HSQL Database Engine Driver", DatabaseType.UNKNOWN);
     }
 
     @Test

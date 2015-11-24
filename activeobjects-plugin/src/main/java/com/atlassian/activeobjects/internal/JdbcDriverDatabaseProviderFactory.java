@@ -79,7 +79,7 @@ public final class JdbcDriverDatabaseProviderFactory implements DatabaseProvider
                 return new PostgreSQLDatabaseProvider(getDisposableDataSource(dataSource), schema);
             }
         },
-        MSSQL(DatabaseType.MS_SQL, "sqlserver", true) {
+        MSSQL(DatabaseType.MS_SQL, "microsoft", true) {
             @Override
             public DatabaseProvider getDatabaseProvider(DataSource dataSource, String schema) {
                 return new MsJdbcSQLServerDatabaseProvider(getDisposableDataSource(dataSource), schema);
