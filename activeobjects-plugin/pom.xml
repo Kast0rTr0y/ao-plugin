@@ -20,7 +20,7 @@
         <mysql.version>5.1.14</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
         <jtds.version>1.2.4</jtds.version>
-        <msjdbc.version>4.0.2206</msjdbc.version>
+        <sqljdbc.version>4.0.2206</sqljdbc.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
         <c3p0.version>0.9.1.1</c3p0.version>
     </properties>
@@ -829,7 +829,7 @@
             </build>
         </profile>
         <profile>
-            <id>sqlserver</id>
+            <id>sqlserver-jtds</id>
             <properties>
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
@@ -903,7 +903,7 @@
                 <dependency>
                     <groupId>com.microsoft.sqlserver</groupId>
                     <artifactId>sqljdbc</artifactId>
-                    <version>${msjdbc.version}</version>
+                    <version>${sqljdbc.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
