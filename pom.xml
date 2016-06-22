@@ -56,7 +56,7 @@
         <maven.compiler.target>8</maven.compiler.target>
 
         <amps.version>6.0.6</amps.version>
-        <ao.version>1.1.5</ao.version>
+        <ao.version>1.2.0</ao.version>
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>4.1.4.RELEASE</spring.library.version>
         <spring.library.osgi.version>4.1</spring.library.osgi.version>
