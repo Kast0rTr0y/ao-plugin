@@ -1,6 +1,7 @@
 package com.atlassian.activeobjects.external;
 
 import com.atlassian.activeobjects.spi.DatabaseType;
+import net.java.ao.RawEntity;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -59,4 +60,12 @@ public interface ActiveObjectsModuleMetaData {
      * @since 0.26
      */
     boolean isDataSourcePresent();
+
+    /**
+     * Checks if the table corresponding to given type exists in the database.
+     *
+     * @param type to check against
+     * @return true if the table exists, false otherwise
+     */
+    boolean isTablePresent(Class<? extends RawEntity<?>> type);
 }

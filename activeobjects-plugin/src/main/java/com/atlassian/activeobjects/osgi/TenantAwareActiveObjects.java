@@ -223,6 +223,11 @@ class TenantAwareActiveObjects implements ActiveObjects {
             public boolean isDataSourcePresent() {
                 return tenantContext.getCurrentTenant() != null;
             }
+
+            @Override
+            public boolean isTablePresent(Class<? extends RawEntity<?>> type) {
+                return delegate().claim().moduleMetaData().isTablePresent(type);
+            }
         };
     }
 
