@@ -96,7 +96,9 @@
                             net.java.ao.builder;version="${ao.version}",
                             net.java.ao.db;version="${ao.version}",
                             net.java.ao.event;version="${ao.version}",
+                            net.java.ao.types;version="${ao.version}",
                             net.java.ao.schema;version="${ao.version}",
+                            net.java.ao.schema.ddl;version="${ao.version}",
                         </Export-Package>
                         <!-- Ensure plugin is spring powered - see https://extranet.atlassian.com/x/xBS9hQ -->
                         <Spring-Context>*</Spring-Context>
