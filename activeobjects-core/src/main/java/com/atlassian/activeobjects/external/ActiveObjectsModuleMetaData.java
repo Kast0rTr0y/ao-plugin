@@ -66,6 +66,7 @@ public interface ActiveObjectsModuleMetaData {
      *
      * @param type to check against
      * @return true if the table exists, false otherwise
+     * @since 1.2.1
      */
     boolean isTablePresent(Class<? extends RawEntity<?>> type);
 }
