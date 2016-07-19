@@ -5,12 +5,18 @@ import com.atlassian.activeobjects.external.ActiveObjectsModuleMetaData;
 import com.atlassian.activeobjects.spi.DatabaseType;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import net.java.ao.DBParam;
+import net.java.ao.DatabaseProvider;
 import net.java.ao.DefaultPolymorphicTypeMapper;
 import net.java.ao.EntityManager;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
+import net.java.ao.SchemaConfiguration;
+import net.java.ao.schema.NameConverters;
+import net.java.ao.schema.helper.DatabaseMetaDataReader;
+import net.java.ao.schema.helper.DatabaseMetaDataReaderImpl;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -213,6 +219,25 @@ public class EntityManagedActiveObjects implements ActiveObjects {
             @Override
             public boolean isDataSourcePresent() {
                 return false;
+            }
+
+            @Override
+            public boolean isTablePresent(Class<? extends RawEntity<?>> type) {
+                DatabaseProvider databaseProvider = entityManager.getProvider();
+                NameConverters nameConverters = entityManager.getNameConverters();
+                SchemaConfiguration schemaConfiguration = entityManager.getSchemaConfiguration();
+
+                DatabaseMetaDataReader databaseMetaDataReader = new DatabaseMetaDataReaderImpl(
+                        databaseProvider,
+                        nameConverters,
+                        schemaConfiguration
+                );
+
+                try (Connection connection = databaseProvider.getConnection()) {
+                    return databaseMetaDataReader.isTablePresent(connection.getMetaData(), type);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
