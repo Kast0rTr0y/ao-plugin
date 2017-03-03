@@ -8,14 +8,12 @@ import com.atlassian.activeobjects.config.ActiveObjectsConfiguration;
 import com.atlassian.activeobjects.config.ActiveObjectsConfigurationFactory;
 import com.atlassian.activeobjects.external.ActiveObjectsUpgradeTask;
 import com.atlassian.activeobjects.osgi.OsgiServiceUtils;
-import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginParseException;
 import com.atlassian.plugin.descriptors.AbstractModuleDescriptor;
 import com.atlassian.plugin.module.ContainerManagedPlugin;
 import com.atlassian.plugin.module.ModuleFactory;
 import com.atlassian.plugin.osgi.factory.OsgiPlugin;
-import com.atlassian.tenancy.api.TenantAccessor;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -43,14 +41,13 @@ import static com.google.common.collect.Lists.newLinkedList;
  * through a &lt;component-import ... &gt; module to configure the service appropriately.</p>
  */
 public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Object> {
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ActiveObjectsConfigurationFactory configurationFactory;
     private final OsgiServiceUtils osgiUtils;
     private final EntitiesValidator entitiesValidator;
     private final PluginToTablesMapping pluginToTablesMapping;
-    private final TenantAccessor tenantAccessor;
-    private final EventPublisher eventPublisher;
 
     /**
      * The service registration for the active objects configuration, defined by this plugin.
@@ -60,20 +57,16 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
 
     private ActiveObjectsConfiguration configuration;
 
-    public ActiveObjectModuleDescriptor(ModuleFactory moduleFactory,
-                                        ActiveObjectsConfigurationFactory configurationFactory,
-                                        OsgiServiceUtils osgiUtils,
-                                        PluginToTablesMapping pluginToTablesMapping,
-                                        EntitiesValidator entitiesValidator,
-                                        TenantAccessor tenantAccessor,
-                                        EventPublisher eventPublisher) {
+    ActiveObjectModuleDescriptor(ModuleFactory moduleFactory,
+                                 ActiveObjectsConfigurationFactory configurationFactory,
+                                 OsgiServiceUtils osgiUtils,
+                                 PluginToTablesMapping pluginToTablesMapping,
+                                 EntitiesValidator entitiesValidator) {
         super(moduleFactory);
         this.configurationFactory = checkNotNull(configurationFactory);
         this.osgiUtils = checkNotNull(osgiUtils);
         this.pluginToTablesMapping = checkNotNull(pluginToTablesMapping);
         this.entitiesValidator = checkNotNull(entitiesValidator);
-        this.tenantAccessor = checkNotNull(tenantAccessor);
-        this.eventPublisher = checkNotNull(eventPublisher);
     }
 
     @Override
@@ -120,7 +113,7 @@ public class ActiveObjectModuleDescriptor extends AbstractModuleDescriptor<Objec
         }
     }
 
-    void recordTables(Set<Class<? extends RawEntity<?>>> entityClasses, final TableNameConverter tableNameConverter) {
+    private void recordTables(final Set<Class<? extends RawEntity<?>>> entityClasses, final TableNameConverter tableNameConverter) {
         pluginToTablesMapping.add(PluginInfo.of(getPlugin()), Lists.transform(newLinkedList(entityClasses), new Function<Class<? extends RawEntity<?>>, String>() {
             @Override
             public String apply(Class<? extends RawEntity<?>> from) {
