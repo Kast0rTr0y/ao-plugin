@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- DO NOT change that file's name! It's there so that the plugin system doesn't automagically generate it for us.
+ DO NOT change this file's name! It's there so that the plugin system doesn't automagically generate it for us.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,7 +12,6 @@
     <!-- stuff for the AO plugin itself. services not used during a Restore, are optional.  -->
     <osgi:reference id="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate" timeout="2000" cardinality="0..1"/>
     <osgi:reference id="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" timeout="2000" cardinality="0..1"/>
-    <osgi:reference id="tenantAccessor" interface="com.atlassian.tenancy.api.TenantAccessor" timeout="2000" cardinality="0..1"/>
 
     <bean id="aoSynchronizationManager" class="com.atlassian.activeobjects.spring.OptionalServiceFactoryBean">
         <constructor-arg value="com.atlassian.activeobjects.spi.TransactionSynchronisationManager" />
