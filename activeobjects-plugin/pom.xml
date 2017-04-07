@@ -16,13 +16,19 @@
 
     <properties>
         <db.skip>false</db.skip>
+        <db.host>localhost</db.host>
+        <db.name>ao_test</db.name>
+        <db.username>ao_user</db.username>
+        <db.password>ao_password</db.password>
+        <db.schema>ao_schema</db.schema>
         <h2.version>1.4.181</h2.version>
         <mysql.version>5.1.14</mysql.version>
-        <postgres.version>8.4-701.jdbc3</postgres.version>
+        <postgres.version>9.2-1002.jdbc4</postgres.version>
         <jtds.version>1.2.4</jtds.version>
         <msjdbc.version>4.0.2206</msjdbc.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
         <c3p0.version>0.9.1.1</c3p0.version>
+        <docker.skip>true</docker.skip>
     </properties>
 
     <build>
@@ -105,39 +111,52 @@
                     <log4jProperties>src/test/resources/log4j.properties</log4jProperties>
                 </configuration>
             </plugin>
-            <!-- creates and drops databases before and after tests -->
+
             <plugin>
-                <groupId>org.leberrigaud.maven.plugins</groupId>
-                <artifactId>database-maven-plugin</artifactId>
-                <version>0.10</version>
-                <configuration>
-                    <!--These comes from the individual database profiles-->
-                    <skip>${db.skip}</skip>
-                    <database>${ao.test.database}</database>
-                    <schema>${db.schema}</schema>
-                    <name>${db.name}</name>
-                    <host>${db.host}</host>
-                    <username>${db.username}</username>
-                    <password>${db.password}</password>
-                    <rootUsername>${db.system.username}</rootUsername>
-                    <rootPassword>${db.system.password}</rootPassword>
-                </configuration>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-db</id>
+                        <id>start</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>create</goal>
+                            <goal>start</goal>
                         </goals>
-                        <phase>process-test-resources</phase>
                     </execution>
                     <execution>
-                        <id>drop-db</id>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
                         <goals>
-                            <goal>drop</goal>
+                            <goal>stop</goal>
                         </goals>
-                        <phase>test</phase>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>**/*Test*.java</include>
+                    </includes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -356,6 +375,46 @@
 
     <profiles>
         <profile>
+            <id>createDB</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.leberrigaud.maven.plugins</groupId>
+                        <artifactId>database-maven-plugin</artifactId>
+                        <version>0.10</version>
+                        <configuration>
+                            <!--These comes from the individual database profiles-->
+                            <skip>${db.skip}</skip>
+                            <database>${ao.test.database}</database>
+                            <schema>${db.schema}</schema>
+                            <name>${db.name}</name>
+                            <host>${db.host}</host>
+                            <username>${db.username}</username>
+                            <password>${db.password}</password>
+                            <rootUsername>${db.system.username}</rootUsername>
+                            <rootPassword>${db.system.password}</rootPassword>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>create-db</id>
+                                <goals>
+                                    <goal>create</goal>
+                                </goals>
+                                <phase>pre-integration-test</phase>
+                            </execution>
+                            <execution>
+                                <id>drop-db</id>
+                                <goals>
+                                    <goal>drop</goal>
+                                </goals>
+                                <phase>post-integration-test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>hsql</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -370,8 +429,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -385,8 +444,6 @@
                                 com.atlassian.activeobjects.junit.SqlServerTest,
                                 com.atlassian.activeobjects.junit.PostgresTest
                             </excludedGroups>
-                            <productVersion>${refapp.version}</productVersion>
-                            <output>${project.build.directory}/refapp.log</output>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -417,8 +474,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -456,8 +513,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -495,8 +552,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -520,13 +577,16 @@
             <properties>
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
-                <db.sid>orcl</db.sid>
                 <db.username>ao_user</db.username>
                 <db.password>ao_password</db.password>
                 <db.schema>ao_schema</db.schema>
+                <db.url>jdbc:mysql://localhost:${db.port}/${db.name}?autoReconnect=true</db.url>
                 <ao.test.database>mysql</ao.test.database>
+                <docker.wait.log>starting as process 1</docker.wait.log>
+                <docker.image>mysql:5.5</docker.image>
+                <docker.skip>false</docker.skip>
                 <db.system.username>root</db.system.username>
-                <db.system.password />
+                <db.system.password>root</db.system.password>
             </properties>
             <dependencies>
                 <dependency>
@@ -538,19 +598,37 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.leberrigaud.maven.plugins</groupId>
-                        <artifactId>database-maven-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>mysql</groupId>
-                                <artifactId>mysql-connector-java</artifactId>
-                                <version>${mysql.version}</version>
-                            </dependency>
-                        </dependencies>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${docker.image}</name>
+                                    <run>
+                                        <ports>
+                                            <port>db.port:3306</port>
+                                        </ports>
+                                        <env>
+                                            <MYSQL_DATABASE>${db.name}</MYSQL_DATABASE>
+                                            <MYSQL_USER>${db.username}</MYSQL_USER>
+                                            <MYSQL_PASSWORD>${db.password}</MYSQL_PASSWORD>
+                                            <MYSQL_ROOT_PASSWORD>${db.system.password}</MYSQL_ROOT_PASSWORD>
+                                        </env>
+                                        <wait>
+                                            <log>${docker.wait.log}</log>
+                                            <time>120000</time>
+                                        </wait>
+                                        <log>
+                                            <prefix>mysql</prefix>
+                                        </log>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -576,15 +654,13 @@
         <profile>
             <id>postgres</id>
             <properties>
-                <db.host>localhost</db.host>
-                <db.name>ao_test</db.name>
-                <db.sid>orcl</db.sid>
-                <db.username>ao_user</db.username>
-                <db.password>ao_password</db.password>
-                <db.schema>ao_schema</db.schema>
                 <ao.test.database>postgres</ao.test.database>
-                <db.system.username>postgres</db.system.username>
-                <db.system.password>postgres</db.system.password>
+                <db.schema>public</db.schema>
+                <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
+
+                <docker.image>postgres:9.2</docker.image>
+                <docker.skip>false</docker.skip>
+                <docker.wait.log>PostgreSQL init process complete</docker.wait.log>
             </properties>
             <dependencies>
                 <dependency>
@@ -597,8 +673,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -620,18 +696,33 @@
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>org.leberrigaud.maven.plugins</groupId>
-                        <artifactId>database-maven-plugin</artifactId>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
                         <configuration>
-                            <schema>${db.schema}</schema>
+                            <images>
+                                <image>
+                                    <name>${docker.image}</name>
+
+                                    <run>
+                                        <ports>
+                                            <port>db.port:5432</port>
+                                        </ports>
+                                        <env>
+                                            <POSTGRES_DB>${db.name}</POSTGRES_DB>
+                                            <POSTGRES_USER>${db.username}</POSTGRES_USER>
+                                            <POSTGRES_PASSWORD>${db.password}</POSTGRES_PASSWORD>
+                                        </env>
+                                        <wait>
+                                            <log>${docker.wait.log}</log>
+                                            <time>1200000</time>
+                                        </wait>
+                                        <log>
+                                            <prefix>postgres</prefix>
+                                        </log>
+                                    </run>
+                                </image>
+                            </images>
                         </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>postgresql</groupId>
-                                <artifactId>postgresql</artifactId>
-                                <version>${postgres.version}</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
@@ -661,8 +752,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -725,8 +816,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -789,8 +880,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -852,8 +943,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -910,8 +1001,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
