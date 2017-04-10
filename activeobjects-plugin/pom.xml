@@ -16,6 +16,11 @@
 
     <properties>
         <db.skip>false</db.skip>
+        <db.host>localhost</db.host>
+        <db.name>ao_test</db.name>
+        <db.username>ao_user</db.username>
+        <db.password>ao_password</db.password>
+        <db.schema>ao_schema</db.schema>
         <h2.version>1.4.181</h2.version>
         <mysql.version>5.1.14</mysql.version>
         <postgres.version>8.4-701.jdbc3</postgres.version>
@@ -105,16 +110,8 @@
                     </instructions>
                     <noWebapp>true</noWebapp>
                     <log4jProperties>src/test/resources/log4j.properties</log4jProperties>
-                    <systemPropertyVariables>
-                        <db.username>${db.username}</db.username>
-                        <db.password>${db.password}</db.password>
-                        <db.name>${db.name}</db.name>
-                        <db.schema>${db.schema}</db.schema>
-                        <db.url>${db.url}</db.url>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <!-- creates and drops databases before and after tests -->
 
             <plugin>
                 <groupId>io.fabric8</groupId>
@@ -123,14 +120,14 @@
                 <executions>
                     <execution>
                         <id>start</id>
-                        <phase>process-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>start</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>stop</id>
-                        <phase>test</phase>
+                        <phase>post-integration-test</phase>
                         <goals>
                             <goal>stop</goal>
                         </goals>
@@ -354,6 +351,27 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-amps-plugin</artifactId>
+                        <configuration> <!-- maven-amps-plugin cannot handle null properties, so we cannot enable this globally -->
+                            <systemPropertyVariables>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <db.name>${db.name}</db.name>
+                                <db.schema>${db.schema}</db.schema>
+                                <db.url>${db.url}</db.url>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>createDB</id>
             <build>
@@ -608,8 +626,24 @@
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-amps-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                         <configuration>
                             <systemPropertyVariables>
                                 <ao.test.database>${ao.test.database}</ao.test.database>
@@ -619,6 +653,9 @@
                                 <db.url>${db.url}</db.url>
                                 <db.schema>${db.schema}</db.schema>
                             </systemPropertyVariables>
+                            <includes>
+                                <include>**/*Test*.java</include>
+                            </includes>
                             <excludedGroups>
                                 com.atlassian.activeobjects.junit.H2Test,
                                 com.atlassian.activeobjects.junit.HsqlTest,
