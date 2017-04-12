@@ -9,8 +9,14 @@ import org.junit.experimental.categories.Category;
 public class TestSqlServerActiveObjectBackup extends ActiveObjectsBackupDataSetup {
     @Test
     @NonTransactional
-    public void testSqlServerBackup() throws Exception {
-        testBackup(SQLSERVER, SQL_SERVER_DATA);
+    public void testJtdcSqlServerBackup() throws Exception {
+        testBackup(SQLSERVER_JTDS, SQL_SERVER_DATA_JTDS);
+    }
+
+    @Test
+    @NonTransactional
+    public void testMsjdbcSqlServerBackup() throws Exception {
+        testBackup(SQLSERVER_MSJDBC, SQL_SERVER_DATA_MSJDBC);
     }
 
 }
