@@ -23,7 +23,7 @@
         <db.schema>ao_schema</db.schema>
         <h2.version>1.4.181</h2.version>
         <mysql.version>5.1.14</mysql.version>
-        <postgres.version>8.4-701.jdbc3</postgres.version>
+        <postgres.version>9.2-1002.jdbc4</postgres.version>
         <jtds.version>1.2.4</jtds.version>
         <sqljdbc.version>4.0.2206</sqljdbc.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
@@ -653,15 +653,12 @@
         <profile>
             <id>postgres</id>
             <properties>
-                <db.host>localhost</db.host>
-                <db.name>ao_test</db.name>
-                <db.sid>orcl</db.sid>
-                <db.username>ao_user</db.username>
-                <db.password>ao_password</db.password>
-                <db.schema>ao_schema</db.schema>
                 <ao.test.database>postgres</ao.test.database>
-                <db.system.username>postgres</db.system.username>
-                <db.system.password>postgres</db.system.password>
+                <db.schema>public</db.schema>
+                <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
+
+                <docker.image>postgres:9.2</docker.image>
+                <docker.wait.log>PostgreSQL init process complete</docker.wait.log>
             </properties>
             <dependencies>
                 <dependency>
@@ -697,18 +694,33 @@
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>org.leberrigaud.maven.plugins</groupId>
-                        <artifactId>database-maven-plugin</artifactId>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
                         <configuration>
-                            <schema>${db.schema}</schema>
+                            <images>
+                                <image>
+                                    <name>${docker.image}</name>
+
+                                    <run>
+                                        <ports>
+                                            <port>db.port:5432</port>
+                                        </ports>
+                                        <env>
+                                            <POSTGRES_DB>${db.name}</POSTGRES_DB>
+                                            <POSTGRES_USER>${db.username}</POSTGRES_USER>
+                                            <POSTGRES_PASSWORD>${db.password}</POSTGRES_PASSWORD>
+                                        </env>
+                                        <wait>
+                                            <log>${docker.wait.log}</log>
+                                            <time>1200000</time>
+                                        </wait>
+                                        <log>
+                                            <prefix>postgres</prefix>
+                                        </log>
+                                    </run>
+                                </image>
+                            </images>
                         </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>postgresql</groupId>
-                                <artifactId>postgresql</artifactId>
-                                <version>${postgres.version}</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
