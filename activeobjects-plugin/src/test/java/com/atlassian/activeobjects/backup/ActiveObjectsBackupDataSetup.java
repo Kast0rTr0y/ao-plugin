@@ -36,7 +36,8 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
     protected static final String ORACLE = "/com/atlassian/activeobjects/backup/oracle.xml";
     protected static final String LEGACY_ORACLE = "/com/atlassian/activeobjects/backup/legacy_oracle.xml";
     protected static final String POSTGRES = "/com/atlassian/activeobjects/backup/postgres.xml";
-    protected static final String SQLSERVER = "/com/atlassian/activeobjects/backup/sqlserver.xml";
+    protected static final String SQLSERVER_JTDS = "/com/atlassian/activeobjects/backup/sqlserver_jtds.xml";
+    protected static final String SQLSERVER_MSJDBC = "/com/atlassian/activeobjects/backup/sqlserver_msjdbc.xml";
 
     private Model model;
 
@@ -67,9 +68,10 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
             return POSTGRES_DATA;
         } else if (provider.getClass() == OracleDatabaseProvider.class) {
             return ORACLE_DATA;
-        } else if (provider.getClass() == SQLServerDatabaseProvider.class
-                || provider.getClass() == MsJdbcSQLServerDatabaseProvider.class) {
-            return SQL_SERVER_DATA;
+        } else if (provider.getClass() == SQLServerDatabaseProvider.class) {
+            return SQL_SERVER_DATA_JTDS;
+        } else if (provider.getClass() == MsJdbcSQLServerDatabaseProvider.class) {
+            return SQL_SERVER_DATA_MSJDBC;
         } else {
             throw new IllegalStateException("Can't figure out which DB we're testing against!");
         }
@@ -306,12 +308,29 @@ public abstract class ActiveObjectsBackupDataSetup extends AbstractTestActiveObj
             BackupData.of(AUTHOR_ID, SqlType.of(Types.NUMERIC, 11))
     );
 
-    protected static Iterable<BackupData> SQL_SERVER_DATA = ImmutableList.of(
+    protected static Iterable<BackupData> SQL_SERVER_DATA_JTDS = ImmutableList.of(
             AUTHORSHIP_AUTHOR_ID,
             AUTHORSHIP_BOOK_ID,
             AUTHORSHIP_ID,
 
             BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.CLOB)),
+            BOOK_ISBN,
+            BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
+            BOOK_PAGES,
+            BOOK_PRICE,
+            BOOK_PUBLISHED,
+            BOOK_TITLE,
+
+            AUTHOR_NAME,
+            AUTHOR_ID
+    );
+
+    protected static Iterable<BackupData> SQL_SERVER_DATA_MSJDBC = ImmutableList.of(
+            AUTHORSHIP_AUTHOR_ID,
+            AUTHORSHIP_BOOK_ID,
+            AUTHORSHIP_ID,
+
+            BackupData.of(BOOK_ABSTRACT, SqlType.of(Types.NVARCHAR)),
             BOOK_ISBN,
             BackupData.of(BOOK_READ, SqlType.of(Types.BIT)),
             BOOK_PAGES,

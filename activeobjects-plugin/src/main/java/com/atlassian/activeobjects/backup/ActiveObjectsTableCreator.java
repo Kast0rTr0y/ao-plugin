@@ -153,7 +153,8 @@ final class ActiveObjectsTableCreator implements TableCreator {
                         || sqlType == Types.NCHAR
                         || sqlType == Types.VARCHAR
                         || sqlType == Types.CLOB
-                        || sqlType == Types.NCLOB;
+                        || sqlType == Types.NCLOB
+                        || sqlType == Types.NVARCHAR;
     }
 
     /**
