@@ -28,6 +28,7 @@
         <sqljdbc.version>4.0.2206</sqljdbc.version>
         <ao.spi.compatibility.version>0.26.0</ao.spi.compatibility.version>
         <c3p0.version>0.9.1.1</c3p0.version>
+        <docker.skip>true</docker.skip>
     </properties>
 
     <build>
@@ -584,6 +585,7 @@
                 <db.url>jdbc:mysql://localhost:${db.port}/${db.name}?autoReconnect=true</db.url>
                 <ao.test.database>mysql</ao.test.database>
                 <docker.image>mysql:5.5</docker.image>
+                <docker.skip>false</docker.skip>
                 <db.system.username>root</db.system.username>
                 <db.system.password>root</db.system.password>
             </properties>
@@ -658,6 +660,7 @@
                 <db.url>jdbc:postgresql://localhost:${db.port}/${db.name}</db.url>
 
                 <docker.image>postgres:9.2</docker.image>
+                <docker.skip>false</docker.skip>
                 <docker.wait.log>PostgreSQL init process complete</docker.wait.log>
             </properties>
             <dependencies>
