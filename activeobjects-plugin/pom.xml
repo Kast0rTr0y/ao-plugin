@@ -584,6 +584,7 @@
                 <db.schema>ao_schema</db.schema>
                 <db.url>jdbc:mysql://localhost:${db.port}/${db.name}?autoReconnect=true</db.url>
                 <ao.test.database>mysql</ao.test.database>
+                <docker.wait.log>starting as process</docker.wait.log>
                 <docker.image>mysql:5.5</docker.image>
                 <docker.skip>false</docker.skip>
                 <db.system.username>root</db.system.username>
