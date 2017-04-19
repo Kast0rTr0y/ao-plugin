@@ -920,7 +920,7 @@
             </build>
         </profile>
         <profile>
-            <id>sqlserver</id>
+            <id>sqlserver-jtds</id>
             <properties>
                 <db.host>localhost</db.host>
                 <db.name>ao_test</db.name>
