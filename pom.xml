@@ -59,7 +59,7 @@
         <slf4j.version>1.6.4</slf4j.version>
         <spring.library.version>2.5.6</spring.library.version>
         <hsqldb.version>1.8.0.7</hsqldb.version>
-        <refapp.version>2.22.3</refapp.version>
+        <refapp.version>2.21.3</refapp.version>
 
         <tenancy.libversion>1.4.1</tenancy.libversion>
         <plugins.libversion>3.0.16</plugins.libversion>
