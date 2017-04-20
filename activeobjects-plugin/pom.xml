@@ -133,6 +133,7 @@
                             <version>${project.version}</version>
                         </bundledArtifact>
                     </bundledArtifacts>
+                    <skipUTs>true</skipUTs>
                 </configuration>
             </plugin>
 
